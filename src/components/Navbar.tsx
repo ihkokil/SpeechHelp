@@ -26,34 +26,35 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <a href="#" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-600">
-              SpeechHelp
+            <span className="text-2xl font-bold">
+              <span className="text-pink-600">SPEECH</span>
+              <span className="text-white">HELP</span>
             </span>
           </a>
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <a
-              href="#features"
-              className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200"
+              href="#"
+              className="text-sm font-medium text-white hover:text-pink-500 transition-colors duration-200"
             >
-              Features
+              Home
             </a>
             <a
-              href="#how-it-works"
-              className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200"
+              href="#about-us"
+              className="text-sm font-medium text-white hover:text-pink-500 transition-colors duration-200"
             >
-              How It Works
+              About Us
             </a>
             <a
-              href="#testimonials"
-              className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200"
+              href="#help"
+              className="text-sm font-medium text-white hover:text-pink-500 transition-colors duration-200"
             >
-              Testimonials
+              Help
             </a>
             <a
               href="#pricing"
-              className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200"
+              className="text-sm font-medium text-white hover:text-pink-500 transition-colors duration-200"
             >
               Pricing
             </a>
@@ -61,9 +62,6 @@ const Navbar = () => {
           
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <ButtonCustom variant="minimal" size="default">
-              Sign In
-            </ButtonCustom>
             <ButtonCustom variant="premium" size="default" className="animate-pulse-subtle">
               Try for Free
             </ButtonCustom>
@@ -75,9 +73,9 @@ const Navbar = () => {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <X className="h-6 w-6 text-gray-700" />
+              <X className="h-6 w-6 text-white" />
             ) : (
-              <Menu className="h-6 w-6 text-gray-700" />
+              <Menu className="h-6 w-6 text-white" />
             )}
           </button>
         </div>
@@ -89,37 +87,34 @@ const Navbar = () => {
           <div className="glass absolute top-[72px] left-0 right-0 z-50 px-6 py-6 shadow-md animate-slide-in">
             <nav className="flex flex-col space-y-4">
               <a
-                href="#features"
-                className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                href="#"
+                className="text-sm font-medium text-white hover:text-pink-500 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Features
+                Home
               </a>
               <a
-                href="#how-it-works"
-                className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                href="#about-us"
+                className="text-sm font-medium text-white hover:text-pink-500 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                How It Works
+                About Us
               </a>
               <a
-                href="#testimonials"
-                className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                href="#help"
+                className="text-sm font-medium text-white hover:text-pink-500 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Testimonials
+                Help
               </a>
               <a
                 href="#pricing"
-                className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                className="text-sm font-medium text-white hover:text-pink-500 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Pricing
               </a>
-              <div className="pt-2 flex flex-col space-y-2">
-                <ButtonCustom variant="minimal" size="lg" className="w-full">
-                  Sign In
-                </ButtonCustom>
+              <div className="pt-2">
                 <ButtonCustom variant="premium" size="lg" className="w-full">
                   Try for Free
                 </ButtonCustom>
