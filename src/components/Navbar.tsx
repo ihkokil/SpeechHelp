@@ -1,135 +1,137 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import { ButtonCustom } from "./ui/button-custom";
+import UserMenu from "./UserMenu";
 
 const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 10);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 py-4 transition-all duration-300 ${
-        isScrolled ? "backdrop-blur-lg bg-gradient-to-r from-pink-600/95 to-purple-600/95 shadow-sm" : "bg-transparent"
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+        isScrolled
+          ? "bg-white shadow-md py-3"
+          : "bg-transparent py-5"
       }`}
     >
-      <div className="container mx-auto px-6 md:px-12">
+      <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <a href="#" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold">
-              <span className="text-white">SPEECH</span>
-              <span className="text-white">HELP</span>
+          <Link
+            to="/"
+            className="flex items-center space-x-2"
+          >
+            <span className="bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text text-2xl font-bold">
+              SpeechHelp
             </span>
-          </a>
-          
+          </Link>
+
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <a
-              href="#"
-              className="text-sm font-medium text-white hover:text-pink-200 transition-colors duration-200"
+          <div className="hidden md:flex items-center space-x-8">
+            <Link
+              to="/"
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               Home
-            </a>
-            <a
-              href="#about-us"
-              className="text-sm font-medium text-white hover:text-pink-200 transition-colors duration-200"
+            </Link>
+            <Link
+              to="#features"
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
-              About Us
-            </a>
-            <a
-              href="#help"
-              className="text-sm font-medium text-white hover:text-pink-200 transition-colors duration-200"
+              Features
+            </Link>
+            <Link
+              to="#how-it-works"
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
-              Help
-            </a>
-            <a
-              href="#pricing"
-              className="text-sm font-medium text-white hover:text-pink-200 transition-colors duration-200"
+              How It Works
+            </Link>
+            <Link
+              to="#testimonials"
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
-              Pricing
-            </a>
-          </nav>
-          
-          {/* CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <ButtonCustom variant="outline" size="default" className="border-white text-white hover:bg-white hover:text-pink-600">
-              Log in
-            </ButtonCustom>
-            <ButtonCustom variant="minimal" size="default">
-              Sign Up Free
-            </ButtonCustom>
+              Testimonials
+            </Link>
+            <Link
+              to="#contact"
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+            >
+              Contact
+            </Link>
+
+            <UserMenu />
           </div>
-          
+
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6 text-white" />
-            ) : (
-              <Menu className="h-6 w-6 text-white" />
-            )}
-          </button>
+          <div className="md:hidden flex items-center space-x-4">
+            <UserMenu />
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-gray-700"
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
-      </div>
-      
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden">
-          <div className="bg-gradient-to-r from-pink-600/95 to-purple-600/95 absolute top-[72px] left-0 right-0 z-50 px-6 py-6 shadow-md animate-slide-in">
-            <nav className="flex flex-col space-y-4">
-              <a
-                href="#"
-                className="text-sm font-medium text-white hover:text-pink-200 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden mt-4 bg-white rounded-lg shadow-lg p-4">
+            <div className="flex flex-col space-y-4">
+              <Link
+                to="/"
+                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+                onClick={() => setIsMenuOpen(false)}
               >
                 Home
-              </a>
-              <a
-                href="#about-us"
-                className="text-sm font-medium text-white hover:text-pink-200 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+              </Link>
+              <Link
+                to="#features"
+                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+                onClick={() => setIsMenuOpen(false)}
               >
-                About Us
-              </a>
-              <a
-                href="#help"
-                className="text-sm font-medium text-white hover:text-pink-200 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                Features
+              </Link>
+              <Link
+                to="#how-it-works"
+                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+                onClick={() => setIsMenuOpen(false)}
               >
-                Help
-              </a>
-              <a
-                href="#pricing"
-                className="text-sm font-medium text-white hover:text-pink-200 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                How It Works
+              </Link>
+              <Link
+                to="#testimonials"
+                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+                onClick={() => setIsMenuOpen(false)}
               >
-                Pricing
-              </a>
-              <div className="pt-2 flex flex-col space-y-2">
-                <ButtonCustom variant="outline" size="default" className="border-white text-white hover:bg-white hover:text-pink-600 w-full">
-                  Log in
-                </ButtonCustom>
-                <ButtonCustom variant="minimal" size="default" className="w-full">
-                  Sign Up Free
-                </ButtonCustom>
-              </div>
-            </nav>
+                Testimonials
+              </Link>
+              <Link
+                to="#contact"
+                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contact
+              </Link>
+            </div>
           </div>
-        </div>
-      )}
-    </header>
+        )}
+      </div>
+    </nav>
   );
 };
 
