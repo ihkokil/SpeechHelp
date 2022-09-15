@@ -4,8 +4,9 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
 import HowItWorks from '@/components/HowItWorks';
+import SpeechGallery from '@/components/SpeechGallery';
 import Testimonials from '@/components/Testimonials';
-import CallToAction from '@/components/CallToAction';
+import ContactForm from '@/components/ContactForm';
 import Footer from '@/components/Footer';
 
 const Index = () => {
@@ -22,10 +23,10 @@ const Index = () => {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white">
+      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
         <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
-          <p className="mt-4 text-gray-600">Loading SpeechHelp...</p>
+          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+          <p className="mt-4 text-white text-lg font-medium">Loading SpeechHelp...</p>
         </div>
       </div>
     );
@@ -38,8 +39,9 @@ const Index = () => {
         <Hero />
         <Features />
         <HowItWorks />
+        <SpeechGallery />
         <Testimonials />
-        <CallToAction />
+        <ContactForm />
       </main>
       <Footer />
     </div>

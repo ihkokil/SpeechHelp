@@ -39,12 +39,12 @@ const Feature = ({ icon, title, description, delay }: FeatureProps) => {
   return (
     <div
       ref={featureRef}
-      className={`bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 opacity-0 ${
+      className={`bg-white rounded-md p-6 border border-gray-100 transition-all duration-300 opacity-0 group hover:border-pink-200 ${
         isVisible ? 'animate-scale-in' : ''
       }`}
     >
-      <div className="p-3 rounded-lg bg-blue-50 w-fit mb-4">{icon}</div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <div className="p-2 rounded-full bg-pink-100 w-fit mb-4 text-pink-600">{icon}</div>
+      <h3 className="text-lg font-semibold mb-2 text-gray-800 group-hover:text-pink-600 transition-colors">{title}</h3>
       <p className="text-gray-600">{description}</p>
     </div>
   );
@@ -77,53 +77,50 @@ const Features = () => {
 
   const features = [
     {
-      icon: <SparklesIcon className="h-6 w-6 text-blue-600" />,
-      title: "AI-Powered Suggestions",
-      description: "Our advanced AI analyzes your topic, audience, and goals to generate personalized speech suggestions."
+      icon: <SparklesIcon className="h-6 w-6" />,
+      title: "AI-Powered Speech Magic",
+      description: "Our advanced AI analyzes your topic and audience to generate personalized speech suggestions."
     },
     {
-      icon: <BookOpenIcon className="h-6 w-6 text-blue-600" />,
-      title: "Comprehensive Templates",
-      description: "Choose from a wide range of professionally crafted templates for any occasion or purpose."
+      icon: <BookOpenIcon className="h-6 w-6" />,
+      title: "The Perfect Speech Library",
+      description: "Choose from professionally crafted templates for any occasion or purpose."
     },
     {
-      icon: <MicIcon className="h-6 w-6 text-blue-600" />,
-      title: "Voice Delivery Training",
-      description: "Receive coaching on tone, pace, and emphasis to deliver your speech with confidence and impact."
+      icon: <MicIcon className="h-6 w-6" />,
+      title: "Practice Makes Perfect",
+      description: "Receive coaching on tone, pace, and emphasis to deliver with confidence."
     },
     {
-      icon: <ClockIcon className="h-6 w-6 text-blue-600" />,
-      title: "Time-Saving Tools",
-      description: "Create compelling speeches in minutes instead of hours with our intuitive AI assistant."
+      icon: <ClockIcon className="h-6 w-6" />,
+      title: "Create Speeches On Time",
+      description: "Create compelling speeches in minutes instead of hours with our intuitive AI."
     },
     {
-      icon: <GlobeIcon className="h-6 w-6 text-blue-600" />,
-      title: "Multi-Language Support",
+      icon: <GlobeIcon className="h-6 w-6" />,
+      title: "The Perfect Structure",
       description: "Generate and edit speeches in multiple languages to connect with diverse audiences."
     },
     {
-      icon: <HeartIcon className="h-6 w-6 text-blue-600" />,
-      title: "Emotional Intelligence",
-      description: "Our AI understands emotional context, helping craft speeches that genuinely resonate with listeners."
+      icon: <HeartIcon className="h-6 w-6" />,
+      title: "The Emotional Connection",
+      description: "Our AI understands emotional context, helping craft speeches that genuinely resonate."
     }
   ];
 
   return (
-    <section id="features" className="py-20 md:py-32 bg-gray-50 relative">
+    <section id="features" className="py-16 md:py-24 bg-white relative">
       <div className="container mx-auto px-6 md:px-12">
-        <div className="max-w-3xl mx-auto text-center mb-16" ref={sectionRef}>
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 mb-4 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
-            Features
-          </span>
-          <h2 className={`text-3xl md:text-4xl font-bold mb-6 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>
-            Everything You Need for <span className="text-gradient">Perfect Speeches</span>
+        <div className="max-w-3xl mx-auto text-center mb-12" ref={sectionRef}>
+          <h2 className={`text-3xl md:text-4xl font-bold mb-4 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
+            Welcome to <span className="text-pink-600">Speech Help!</span>
           </h2>
-          <p className={`text-lg text-gray-600 opacity-0 ${isVisible ? 'animate-fade-in stagger-2' : ''}`}>
-            Our comprehensive toolset is designed to help you create, refine, and deliver speeches that leave a lasting impression.
+          <p className={`text-lg text-gray-600 mb-6 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>
+            Our award-winning tool makes speech creation simple and stress-free. With cutting-edge AI technology, we're transforming public speaking help, making it accessible to everyone.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <Feature
               key={index}
