@@ -1,3 +1,4 @@
+
 import { Facebook, Twitter, Instagram, Linkedin, MessageSquare } from 'lucide-react';
 
 const Footer = () => {
@@ -9,9 +10,17 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-1 md:col-span-2">
             <a href="#" className="inline-block mb-4">
-              <span className="text-2xl font-bold">
-                <span className="text-pink-600">SPEECH</span>HELP
-              </span>
+              <div className="flex items-center">
+                <span className="font-bold text-xl text-black">
+                  SPEECH
+                </span>
+                <div className="relative ml-1">
+                  <MessageSquare className="h-8 w-8 text-purple-600 fill-purple-600" />
+                  <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-bold text-xs">
+                    HELP
+                  </span>
+                </div>
+              </div>
             </a>
             <p className="text-gray-600 mb-6 max-w-md">
               Empower your voice with our AI-driven platform. Create unforgettable speeches for every occasion with ease and precision.

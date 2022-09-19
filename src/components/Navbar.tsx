@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MessageSquare } from "lucide-react";
 import UserMenu from "./UserMenu";
 
 const Navbar = () => {
@@ -31,9 +31,17 @@ const Navbar = () => {
             to="/"
             className="flex items-center space-x-2"
           >
-            <span className={`text-2xl font-bold ${isScrolled ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text' : 'text-white'}`}>
-              SpeechHelp
-            </span>
+            <div className="flex items-center">
+              <span className={`font-bold text-xl ${isScrolled ? 'text-black' : 'text-white'}`}>
+                SPEECH
+              </span>
+              <div className="relative ml-1">
+                <MessageSquare className="h-8 w-8 text-purple-600 fill-purple-600" />
+                <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-bold text-xs">
+                  HELP
+                </span>
+              </div>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
