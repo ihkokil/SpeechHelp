@@ -1,5 +1,4 @@
-
-import { Facebook, Twitter, Instagram, Linkedin, MessageSquare } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -11,12 +10,11 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <a href="#" className="inline-block mb-4">
               <div className="flex items-center">
-                <span className="font-bold text-xl text-black">
+                <span className="font-black text-2xl text-black">
                   SPEECH
                 </span>
-                <div className="relative ml-1">
-                  <MessageSquare className="h-8 w-8 text-purple-600 fill-purple-600" />
-                  <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-bold text-xs">
+                <div className="ml-2 bg-purple-600 rounded-lg px-3 py-1">
+                  <span className="text-white font-black text-2xl">
                     HELP
                   </span>
                 </div>
