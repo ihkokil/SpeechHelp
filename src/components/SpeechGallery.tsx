@@ -11,7 +11,7 @@ interface GalleryItemProps {
 const GalleryItem = ({ image, title, isVisible, index }: GalleryItemProps) => {
   return (
     <div className={`group relative rounded-md overflow-hidden opacity-0 ${isVisible ? `animate-fade-in delay-${index % 5 * 100}` : ''}`}>
-      <img src={`${image}?auto=format&fit=crop&w=500&q=80`} alt={title} className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110" />
+      <img src={image} alt={title} className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-70"></div>
       <div className="absolute bottom-0 left-0 p-3">
         <h3 className="text-white text-sm font-medium">{title}</h3>
