@@ -1,3 +1,4 @@
+
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 
 const Footer = () => {
@@ -9,16 +10,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-1 md:col-span-2">
             <a href="#" className="inline-block mb-4">
-              <div className="flex items-center">
-                <span className="font-black text-2xl text-black">
-                  SPEECH
-                </span>
-                <div className="ml-2 bg-purple-600 rounded-lg px-3 py-1">
-                  <span className="text-white font-black text-2xl">
-                    HELP
-                  </span>
-                </div>
-              </div>
+              <img 
+                src="/SpeechHelp-Logo.png" 
+                alt="SpeechHelp Logo" 
+                className="h-12" 
+              />
             </a>
             <p className="text-gray-600 mb-6 max-w-md">
               Empower your voice with our AI-driven platform. Create unforgettable speeches for every occasion with ease and precision.

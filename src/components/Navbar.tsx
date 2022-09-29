@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
@@ -30,16 +31,11 @@ const Navbar = () => {
             to="/"
             className="flex items-center space-x-2"
           >
-            <div className="flex items-center">
-              <span className={`font-black text-2xl ${isScrolled ? 'text-black' : 'text-white'}`}>
-                SPEECH
-              </span>
-              <div className="ml-2 bg-purple-600 rounded-lg px-3 py-1">
-                <span className="text-white font-black text-2xl">
-                  HELP
-                </span>
-              </div>
-            </div>
+            <img 
+              src="/SpeechHelp-Logo.png" 
+              alt="SpeechHelp Logo" 
+              className="h-10" 
+            />
           </Link>
 
           {/* Desktop Navigation */}
