@@ -1,3 +1,4 @@
+
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 
 const Footer = () => {
@@ -12,7 +13,7 @@ const Footer = () => {
               <img 
                 src="/SpeechHelp-Logo.png" 
                 alt="SpeechHelp Logo" 
-                className="h-15" 
+                className="h-12" 
               />
             </a>
             <p className="text-gray-600 mb-6 max-w-md">

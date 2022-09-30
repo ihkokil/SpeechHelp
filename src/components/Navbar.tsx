@@ -34,7 +34,7 @@ const Navbar = () => {
             <img 
               src="/SpeechHelp-Logo.png" 
               alt="SpeechHelp Logo" 
-              className="h-12.5" /* Increased from h-10 to h-12.5 (25% larger) */
+              className="h-10" 
             />
           </Link>
 
