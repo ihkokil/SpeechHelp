@@ -31,7 +31,7 @@ const UserMenu = () => {
     return (
       <Link to="/auth">
         <ButtonCustom variant="magenta">
-          Log In
+          Login | Sign Up
         </ButtonCustom>
       </Link>
     );
