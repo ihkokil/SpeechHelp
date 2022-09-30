@@ -29,11 +29,18 @@ const UserMenu = () => {
 
   if (!user) {
     return (
-      <Link to="/auth">
-        <ButtonCustom variant="magenta">
-          Log In
-        </ButtonCustom>
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link to="/auth">
+          <ButtonCustom variant="magenta">
+            Log In
+          </ButtonCustom>
+        </Link>
+        <Link to="/auth?signup=true">
+          <ButtonCustom variant="outline" className="border-pink-600 text-pink-600 hover:bg-pink-50">
+            Sign Up
+          </ButtonCustom>
+        </Link>
+      </div>
     );
   }
 
