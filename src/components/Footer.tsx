@@ -12,7 +12,7 @@ const Footer = () => {
               <img 
                 src="/SpeechHelp-Logo.png" 
                 alt="SpeechHelp Logo" 
-                className="h-15" 
+                className="h-11" 
               />
             </a>
             <p className="text-gray-600 mb-6 max-w-md">
