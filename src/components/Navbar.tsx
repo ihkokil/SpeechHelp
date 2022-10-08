@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
@@ -33,7 +34,7 @@ const Navbar = () => {
             <img 
               src="/SpeechHelp-Logo.png" 
               alt="SpeechHelp Logo" 
-              className="h-9" 
+              className="h-11" 
             />
           </Link>
 
