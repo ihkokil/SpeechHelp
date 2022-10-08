@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
@@ -21,8 +20,8 @@ const Navbar = () => {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
         isScrolled
-          ? "bg-white shadow-md py-3"
-          : "bg-transparent py-5"
+          ? "bg-white/50 backdrop-blur-md shadow-md py-3"
+          : "bg-white py-5"
       }`}
     >
       <div className="container mx-auto px-4 md:px-6">
@@ -42,31 +41,31 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             <Link
               to="/"
-              className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-pink-600 font-medium transition-colors`}
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               Home
             </Link>
             <Link
               to="#features"
-              className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-pink-600 font-medium transition-colors`}
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               Features
             </Link>
             <Link
               to="#how-it-works"
-              className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-pink-600 font-medium transition-colors`}
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               How It Works
             </Link>
             <Link
               to="#testimonials"
-              className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-pink-600 font-medium transition-colors`}
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               Testimonials
             </Link>
             <Link
               to="#contact"
-              className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-pink-600 font-medium transition-colors`}
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               Contact
             </Link>
@@ -79,7 +78,7 @@ const Navbar = () => {
             <UserMenu />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`${isScrolled ? 'text-gray-700' : 'text-white'}`}
+              className="text-gray-700"
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" />
