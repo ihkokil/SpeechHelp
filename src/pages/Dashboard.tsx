@@ -16,6 +16,8 @@ const Dashboard = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const [userName, setUserName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   
   // Redirect if not logged in
   useEffect(() => {
@@ -24,17 +26,30 @@ const Dashboard = () => {
     }
   }, [user, isLoading, navigate]);
   
-  // Set user name from email (or fetch from profile in future)
+  // Set user information from metadata
   useEffect(() => {
-    if (user?.email) {
-      // Extract first part of email as username
-      const nameFromEmail = user.email.split('@')[0];
-      // Capitalize first letter and clean up
-      const formattedName = nameFromEmail
-        .split(/[._-]/)
-        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(' ');
-      setUserName(formattedName);
+    if (user) {
+      // Get first and last name from user metadata if available
+      const metadata = user.user_metadata;
+      const firstNameFromMeta = metadata?.first_name || '';
+      const lastNameFromMeta = metadata?.last_name || '';
+      
+      setFirstName(firstNameFromMeta);
+      setLastName(lastNameFromMeta);
+      
+      // Fallback to email if no names are available
+      if (!firstNameFromMeta && !lastNameFromMeta && user.email) {
+        // Extract first part of email as username
+        const nameFromEmail = user.email.split('@')[0];
+        // Capitalize first letter and clean up
+        const formattedName = nameFromEmail
+          .split(/[._-]/)
+          .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(' ');
+        setUserName(formattedName);
+      } else {
+        setUserName(`${firstNameFromMeta} ${lastNameFromMeta}`);
+      }
     }
   }, [user]);
 
@@ -70,7 +85,11 @@ const Dashboard = () => {
         {/* Main dashboard content */}
         <main className="px-6 pb-12">
           {/* Welcome card */}
-          <WelcomeCard userName={userName} />
+          <WelcomeCard 
+            userName={userName} 
+            firstName={firstName} 
+            lastName={lastName}
+          />
           
           {/* Dashboard Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">

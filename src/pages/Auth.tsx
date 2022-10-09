@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -89,7 +91,18 @@ const Auth = () => {
         });
         setIsForgotPassword(false);
       } else if (isSignUp) {
-        await signUp(email, password);
+        // For sign up, validate first and last name
+        if (!firstName.trim() || !lastName.trim()) {
+          toast({
+            title: "Missing information",
+            description: "Please provide both first and last name.",
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
+        
+        await signUp(email, password, firstName, lastName);
       } else {
         await signIn(email, password);
         navigate('/');
@@ -131,6 +144,39 @@ const Auth = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {isSignUp && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name
+                </label>
+                <input
+                  id="firstName"
+                  type="text"
+                  required
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
+                  placeholder="John"
+                />
+              </div>
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  required
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
+                  placeholder="Doe"
+                />
+              </div>
+            </div>
+          )}
+
           {!isResetPassword && (
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
