@@ -1,0 +1,46 @@
+
+import { useEffect, useState } from 'react';
+
+interface WelcomeCardProps {
+  userName: string;
+}
+
+const WelcomeCard = ({ userName }: WelcomeCardProps) => {
+  const [greeting, setGreeting] = useState('');
+  
+  useEffect(() => {
+    // Set greeting based on time of day
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      setGreeting('Good morning');
+    } else if (hour < 18) {
+      setGreeting('Good afternoon');
+    } else {
+      setGreeting('Good evening');
+    }
+  }, []);
+  
+  // Get day of week
+  const dayOfWeek = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-8 flex justify-between">
+      <div>
+        <h1 className="text-3xl font-bold text-purple-600">
+          Welcome, <span className="text-pink-600">{userName}!</span>
+        </h1>
+        <p className="text-gray-500 mt-2">Have a nice {dayOfWeek}.</p>
+      </div>
+      
+      <div className="hidden md:block">
+        <img 
+          src="/placeholder.svg" 
+          alt="Desk Illustration" 
+          className="h-32 w-auto"
+        />
+      </div>
+    </div>
+  );
+};
+
+export default WelcomeCard;

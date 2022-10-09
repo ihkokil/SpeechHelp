@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { UserCircle } from 'lucide-react';
+import { LayoutDashboardIcon, UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const UserMenu = () => {
@@ -63,6 +63,14 @@ const UserMenu = () => {
         <div className="px-2 py-1.5">
           <p className="text-sm font-medium truncate">{user.email}</p>
         </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => navigate('/dashboard')}
+        >
+          <LayoutDashboardIcon className="h-4 w-4 mr-2" />
+          Dashboard
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer text-red-600 focus:text-red-600"
