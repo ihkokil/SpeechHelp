@@ -9,6 +9,7 @@ import {
 import { ChevronDownIcon } from 'lucide-react';
 
 const languages = [
+  { code: 'en-US', label: 'USA English', flag: '🇺🇸' },
   { code: 'en-GB', label: 'UK English', flag: '🇬🇧' },
   { code: 'fr', label: 'French', flag: '🇫🇷' },
   { code: 'es', label: 'Spanish', flag: '🇪🇸' }
