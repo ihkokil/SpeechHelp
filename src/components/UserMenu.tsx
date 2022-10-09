@@ -9,7 +9,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LayoutDashboardIcon, UserCircle } from 'lucide-react';
+import { 
+  LayoutDashboardIcon, 
+  UserCircle, 
+  Settings, 
+  HelpCircle, 
+  LogOut 
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const UserMenu = () => {
@@ -71,11 +77,20 @@ const UserMenu = () => {
           <LayoutDashboardIcon className="h-4 w-4 mr-2" />
           Dashboard
         </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer">
+          <Settings className="h-4 w-4 mr-2" />
+          Account Settings
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer">
+          <HelpCircle className="h-4 w-4 mr-2" />
+          Help & Support
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer text-red-600 focus:text-red-600"
           onClick={handleSignOut}
         >
+          <LogOut className="h-4 w-4 mr-2" />
           Log Out
         </DropdownMenuItem>
       </DropdownMenuContent>
