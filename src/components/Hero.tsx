@@ -24,27 +24,18 @@ const Hero = () => {
       
       <div className="container relative z-10 mx-auto px-6 md:px-12">
         <div className="max-w-5xl mx-auto text-center">
-          {/* Logo */}
-          <div className={`flex justify-center mb-8 opacity-0 ${isLoaded ? 'animate-fade-in' : ''}`}>
-            <img 
-              src="/lovable-uploads/9ee8afbd-bc4f-42fe-b872-029b4f09c573.png" 
-              alt="Speech Help Logo" 
-              className="h-20 md:h-24"
-            />
-          </div>
-          
           {/* Main Headline */}
-          <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
+          <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in' : ''}`}>
             Need a <span className="text-pink-400">creative speech?</span>
           </h1>
           
           {/* Subheadline - updated to match main heading font size */}
-          <p className={`text-4xl md:text-5xl lg:text-6xl text-white/80 max-w-3xl mx-auto mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
+          <p className={`text-4xl md:text-5xl lg:text-6xl text-white/80 max-w-3xl mx-auto mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
             We can help!
           </p>
           
           {/* Play button */}
-          <div className={`flex justify-center items-center mb-10 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
+          <div className={`flex justify-center items-center mb-10 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
             <div className="relative inline-block">
               <div className="absolute inset-0 rounded-full bg-pink-500/30 animate-ping"></div>
               <PlayCircle className="h-16 w-16 text-pink-500 relative z-10 cursor-pointer hover:text-pink-400 transition-colors" />
@@ -52,14 +43,14 @@ const Hero = () => {
           </div>
           
           {/* CTA Button */}
-          <div className={`flex justify-center mb-12 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
+          <div className={`flex justify-center mb-12 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
             <ButtonCustom variant="magenta" size="lg" className="group">
               <span>Try it Now</span>
             </ButtonCustom>
           </div>
           
           {/* Features/Benefits Icons */}
-          <div className={`grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto mt-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-5' : ''}`}>
+          <div className={`grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto mt-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
             <div className="text-center">
               <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
                 <span className="text-base font-bold">AI</span>
