@@ -23,6 +23,15 @@ const Hero = () => {
       </div>
       
       <div className="container relative z-10 mx-auto px-6 md:px-12">
+        {/* Logo */}
+        <div className={`flex justify-center mb-6 opacity-0 ${isLoaded ? 'animate-fade-in' : ''}`}>
+          <img 
+            src="/SpeechHelp-Logo.png" 
+            alt="SpeechHelp Logo" 
+            className="h-16 md:h-20"
+          />
+        </div>
+        
         <div className="max-w-5xl mx-auto text-center">
           {/* Main Headline */}
           <h1 className={`font-heading text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in' : ''}`}>
