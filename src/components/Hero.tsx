@@ -24,15 +24,6 @@ const Hero = () => {
       
       <div className="container relative z-10 mx-auto px-6 md:px-12">
         <div className="max-w-5xl mx-auto text-center">
-          {/* Logo */}
-          <div className={`flex justify-center mb-8 opacity-0 ${isLoaded ? 'animate-fade-in' : ''}`}>
-            <img 
-              src="/lovable-uploads/9ee8afbd-bc4f-42fe-b872-029b4f09c573.png" 
-              alt="Speech Help Logo" 
-              className="h-20 md:h-24"
-            />
-          </div>
-          
           {/* Main Headline */}
           <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
             Need a <span className="text-pink-400">creative speech?</span>
