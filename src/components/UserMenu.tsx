@@ -38,8 +38,8 @@ const UserMenu = () => {
       <div className="flex items-center gap-2">
         <Link to="/auth">
           <ButtonCustom 
-            variant="outline" 
-            className="font-semibold text-pink-600 border-transparent hover:bg-gray-100 px-4"
+            variant="ghost" 
+            className="font-semibold text-pink-600 hover:bg-transparent px-4"
           >
             Log In
           </ButtonCustom>
