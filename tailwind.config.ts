@@ -155,8 +155,7 @@ export default {
 			},
 			fontFamily: {
 				sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
-				heading: ['var(--font-heading)', 'system-ui', 'sans-serif'],
-				phenix: ['var(--font-phenix)', 'cursive']
+				heading: ['var(--font-heading)', 'system-ui', 'sans-serif']
 			}
 		}
 	},
