@@ -9,6 +9,7 @@ import {
   FieldValues,
   FormProvider,
   useFormContext,
+  FormState,
 } from "react-hook-form"
 
 import { cn } from "@/lib/utils"
@@ -43,10 +44,33 @@ const FormField = <
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
-  const { getFieldState, formState } = useFormContext() || { getFieldState: () => ({}), formState: {} }
-
+  
   if (!fieldContext) {
     throw new Error("useFormField should be used within <FormField>")
+  }
+
+  // Create a properly typed mock for when useFormContext returns null/undefined
+  const formContext = useFormContext()
+  // Type-safe default values for formState and getFieldState
+  const defaultFormState = {
+    isDirty: false,
+    isLoading: false,
+    isSubmitted: false,
+    isSubmitSuccessful: false,
+    isSubmitting: false,
+    isValidating: false,
+    isValid: false,
+    submitCount: 0,
+    dirtyFields: {},
+    touchedFields: {},
+    errors: {},
+    defaultValues: undefined,
+  } as FormState<FieldValues>
+  
+  // Use the actual context or fallback to safe defaults
+  const { getFieldState, formState } = formContext || { 
+    getFieldState: () => ({ invalid: false, isDirty: false, isTouched: false, error: undefined }), 
+    formState: defaultFormState 
   }
 
   const fieldState = getFieldState(fieldContext.name, formState)
