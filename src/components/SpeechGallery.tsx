@@ -71,13 +71,13 @@ const SpeechGallery = () => {
 
   const speeches = [
     { 
-      image: "https://images.unsplash.com/photo-1475721027785-f74ec9c7180a",
+      image: "/lovable-uploads/33c67c99-8bf4-4acf-8736-21af0686d079.png",
       title: "Wedding Speech",
       subtitle: "Best Man, Maid of Honor, Father/Mother of the Bride, Groom, Bride",
       icon: <Heart className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c",
+      image: "https://images.unsplash.com/photo-1627556592933-ffe99c1cd9eb",
       title: "Graduation Speech",
       subtitle: "Commencement Address, Valedictorian Speech",
       icon: <GraduationCap className="h-4 w-4" />
