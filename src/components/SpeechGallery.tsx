@@ -89,7 +89,7 @@ const SpeechGallery = () => {
       icon: <Cake className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0",
+      image: "/lovable-uploads/77293a90-2a43-4957-8542-0613049ec390.png",
       title: "Business Speech",
       subtitle: "Sales Pitch, Team Meeting, Corporate Training, Product Launch",
       icon: <Briefcase className="h-4 w-4" />
