@@ -77,7 +77,7 @@ const SpeechGallery = () => {
       icon: <Heart className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1627556592933-ffe99c1cd9eb",
+      image: "/lovable-uploads/9be03b29-2155-4883-8cab-d839e223604b.png",
       title: "Graduation Speech",
       subtitle: "Commencement Address, Valedictorian Speech",
       icon: <GraduationCap className="h-4 w-4" />
