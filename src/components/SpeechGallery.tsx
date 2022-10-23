@@ -107,7 +107,7 @@ const SpeechGallery = () => {
       icon: <Flame className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1530023367847-a683933f4172",
+      image: "/lovable-uploads/6b579e66-022a-4509-a23a-be31636b6aa7.png",
       title: "Funeral/Commemorative Speech",
       subtitle: "Eulogy, Funeral Speech",
       icon: <Flower className="h-4 w-4" />
