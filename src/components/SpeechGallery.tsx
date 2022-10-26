@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { 
   Heart, 
@@ -131,19 +130,19 @@ const SpeechGallery = () => {
       icon: <Hand className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
+      image: "/lovable-uploads/aeaae355-f442-4199-9e24-7e5be18d5085.png",
       title: "Informative Speech",
       subtitle: "Informative Speech, Demonstrative Speech",
       icon: <BookOpen className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1569779213435-ba3167ecfcbe",
+      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
       title: "Persuasive Speech",
       subtitle: "Persuasive Speech, Political Campaign Speech",
       icon: <Megaphone className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a",
+      image: "https://images.unsplash.com/photo-1569779213435-ba3167ecfcbe",
       title: "Entertaining Speech",
       subtitle: "Humorous and Engaging Presentations",
       icon: <Music className="h-4 w-4" />
