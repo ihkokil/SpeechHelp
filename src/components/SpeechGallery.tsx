@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from 'react';
 import { 
   Heart, 
@@ -118,7 +119,7 @@ const SpeechGallery = () => {
       icon: <Speaker className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1507608158173-1dcec673a2e5",
+      image: "/lovable-uploads/792f3ee8-f60a-42c3-8537-923c72ec3992.png",
       title: "Social Speech",
       subtitle: "After-Dinner Speech, Toast, Roast",
       icon: <Users className="h-4 w-4" />
