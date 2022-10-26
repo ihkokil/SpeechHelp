@@ -125,7 +125,7 @@ const SpeechGallery = () => {
       icon: <Users className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1528605248644-14dd04022da1",
+      image: "/lovable-uploads/c0a526b7-d971-41ab-afd7-3345ffe18a83.png",
       title: "Farewell Speech",
       subtitle: "Goodbye Messages and Tributes",
       icon: <Hand className="h-4 w-4" />
