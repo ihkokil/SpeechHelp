@@ -148,7 +148,7 @@ const SpeechGallery = () => {
       icon: <Music className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205",
+      image: "/lovable-uploads/2759cdfb-30f5-48e6-bbcc-7076095f6195.png",
       title: "Retirement Speech",
       subtitle: "Career Celebration and Reflections",
       icon: <Armchair className="h-4 w-4" />
