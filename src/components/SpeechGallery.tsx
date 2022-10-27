@@ -154,7 +154,7 @@ const SpeechGallery = () => {
       icon: <Armchair className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1551818255-e6e10975bc17",
+      image: "/lovable-uploads/0ccb56bd-8358-4d39-bd27-1a676faf9ba6.png",
       title: "Award Ceremony Speech",
       subtitle: "Award Presentation Speech, Award Acceptance Speech",
       icon: <Award className="h-4 w-4" />
