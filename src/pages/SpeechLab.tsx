@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { 
@@ -41,15 +40,22 @@ type Message = {
 };
 
 const speechTypes = [
-  { value: 'wedding', label: 'Wedding Toast' },
-  { value: 'birthday', label: 'Birthday Speech' },
+  { value: 'wedding', label: 'Wedding Speech' },
   { value: 'graduation', label: 'Graduation Speech' },
-  { value: 'bridesmaid', label: 'Bridesmaid Speech' },
-  { value: 'bestman', label: 'Best Man Speech' },
-  { value: 'retirement', label: 'Retirement Speech' },
-  { value: 'introduction', label: 'Introduction Speech' },
+  { value: 'birthday', label: 'Birthday Speech / Anniversary / Special Occasion' },
+  { value: 'business', label: 'Business Speech' },
+  { value: 'tedtalk', label: 'TED Talk' },
+  { value: 'motivational', label: 'Motivational Speech' },
+  { value: 'funeral', label: 'Funeral / Commemorative Speech' },
+  { value: 'keynote', label: 'Keynote Address' },
+  { value: 'social', label: 'Social Speech' },
   { value: 'farewell', label: 'Farewell Speech' },
-  { value: 'award', label: 'Award Acceptance Speech' },
+  { value: 'informative', label: 'Informative Speech' },
+  { value: 'persuasive', label: 'Persuasive Speech' },
+  { value: 'entertaining', label: 'Entertaining Speech' },
+  { value: 'retirement', label: 'Retirement Speech' },
+  { value: 'award', label: 'Award Ceremony Speech' },
+  { value: 'other', label: 'Other Speech / Special Event Speech' },
 ];
 
 const weddingRoles = [
@@ -772,215 +778,3 @@ const SpeechLab = () => {
             );
           })}
         </div>
-        
-        <div className="flex justify-end pt-4">
-          <ButtonCustom onClick={handleQuestionnaireSubmit}>
-            Generate Speech
-          </ButtonCustom>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="min-h-screen flex">
-      <DashboardSidebar />
-      
-      <div className="flex-1 bg-gray-50 overflow-auto">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-6">Speech Lab</h1>
-          
-          <Tabs defaultValue="chat" onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="chat">Speech Generator</TabsTrigger>
-              <TabsTrigger value="practice">Practice Mode</TabsTrigger>
-              <TabsTrigger value="analyze">Analysis Mode</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="chat" className="space-y-6">
-              <Card className="shadow-md">
-                <CardHeader>
-                  <CardTitle>AI Speech Generator</CardTitle>
-                  <CardDescription>
-                    Create personalized speeches with our AI assistant
-                  </CardDescription>
-                  
-                  <div className="mt-4">
-                    <Select onValueChange={handleSpeechTypeChange} value={selectedSpeechType}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select speech type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {speechTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardHeader>
-                
-                <CardContent>
-                  <div className="border rounded-md h-[400px] mb-4 overflow-y-auto p-4 bg-gray-50">
-                    {messages.map((message) => (
-                      <div 
-                        key={message.id} 
-                        className={`mb-4 ${message.role === 'assistant' ? 'mr-12' : 'ml-12'}`}
-                      >
-                        <div 
-                          className={`p-3 rounded-lg ${
-                            message.role === 'assistant' 
-                              ? 'bg-gray-100 text-gray-800' 
-                              : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                          }`}
-                        >
-                          {message.content}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {message.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {isTyping && (
-                      <div className="mr-12 mb-4">
-                        <div className="p-3 rounded-lg bg-gray-100 text-gray-800">
-                          <div className="flex space-x-1">
-                            <div className="h-2 w-2 rounded-full bg-gray-400 animate-bounce"></div>
-                            <div className="h-2 w-2 rounded-full bg-gray-400 animate-bounce delay-100"></div>
-                            <div className="h-2 w-2 rounded-full bg-gray-400 animate-bounce delay-200"></div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div ref={messagesEndRef} />
-                  </div>
-                  
-                  {renderQuestionnaire()}
-                  
-                  {generatedSpeech && (
-                    <div className="border rounded-md p-4 mb-4 bg-white">
-                      <div className="flex justify-between items-center mb-2">
-                        <h3 className="font-semibold text-gray-700">Generated Speech</h3>
-                        <ButtonCustom 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={handleDownloadSpeech}
-                        >
-                          <DownloadIcon className="h-4 w-4 mr-2" /> Download
-                        </ButtonCustom>
-                      </div>
-                      <Textarea 
-                        value={generatedSpeech} 
-                        readOnly 
-                        className="min-h-[200px]" 
-                      />
-                    </div>
-                  )}
-                  
-                  {!showQuestionnaire && (
-                    <div className="flex gap-2">
-                      <Input
-                        value={inputMessage}
-                        onChange={(e) => setInputMessage(e.target.value)}
-                        placeholder="Type your message here..."
-                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                        disabled={!selectedSpeechType || isGeneratingSpeech}
-                      />
-                      <ButtonCustom
-                        onClick={handleSendMessage}
-                        disabled={!inputMessage.trim() || !selectedSpeechType || isGeneratingSpeech}
-                      >
-                        <SendIcon className="h-4 w-4" />
-                      </ButtonCustom>
-                    </div>
-                  )}
-                  
-                  {selectedSpeechType && messages.length === 2 && !showQuestionnaire && (
-                    <div className="flex justify-center mt-4">
-                      <ButtonCustom onClick={handleShowQuestionnaire}>
-                        Fill out detailed questionnaire
-                      </ButtonCustom>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="practice" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Practice Your Speech</CardTitle>
-                  <CardDescription>
-                    Record yourself practicing a speech and get instant feedback
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="bg-gray-100 rounded-lg p-6 text-center">
-                    <div className="mb-4">
-                      <MicIcon className="h-16 w-16 mx-auto text-pink-600" />
-                    </div>
-                    <p className="text-gray-700 mb-6">
-                      Press the button below to start recording your speech practice session
-                    </p>
-                    <ButtonCustom 
-                      variant="magenta" 
-                      className="w-full md:w-auto"
-                    >
-                      Start Recording
-                    </ButtonCustom>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div>
-                    <h3 className="font-medium text-lg mb-3">Recent Practice Sessions</h3>
-                    <div className="bg-white rounded-lg border p-4 flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium">Practice Session #1</h4>
-                        <p className="text-sm text-gray-500">Recorded 2 days ago - 3:45 minutes</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <ButtonCustom size="sm" variant="outline">
-                          <PlayIcon className="h-4 w-4" />
-                        </ButtonCustom>
-                        <ButtonCustom size="sm" variant="outline">
-                          <RefreshCwIcon className="h-4 w-4" />
-                        </ButtonCustom>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="analyze" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Speech Analysis</CardTitle>
-                  <CardDescription>
-                    Upload a speech recording to get in-depth analysis and feedback
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="bg-gray-100 rounded-lg p-6 text-center">
-                    <p className="text-gray-700 mb-6">
-                      Drag and drop your speech recording here or click to browse files
-                    </p>
-                    <ButtonCustom variant="magenta" className="w-full md:w-auto">
-                      Upload Recording
-                    </ButtonCustom>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default SpeechLab;
