@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Heart, GraduationCap, Cake, Briefcase, Mic, Flame, Flower, Speaker, Users, Hand, BookOpen, Megaphone, Music, Armchair, Award, CalendarDays } from 'lucide-react';
+
 interface GalleryItemProps {
   image: string;
   title: string;
@@ -8,6 +9,7 @@ interface GalleryItemProps {
   index: number;
   icon: JSX.Element;
 }
+
 const GalleryItem = ({
   image,
   title,
@@ -28,9 +30,11 @@ const GalleryItem = ({
       </div>
     </div>;
 };
+
 const SpeechGallery = () => {
   const [isVisible, setIsVisible] = useState(false);
   const galleryRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
@@ -39,15 +43,18 @@ const SpeechGallery = () => {
     }, {
       threshold: 0.1
     });
+
     if (galleryRef.current) {
       observer.observe(galleryRef.current);
     }
+
     return () => {
       if (galleryRef.current) {
         observer.unobserve(galleryRef.current);
       }
     };
   }, []);
+
   const speeches = [{
     image: "/lovable-uploads/33c67c99-8bf4-4acf-8736-21af0686d079.png",
     title: "Wedding Speech",
@@ -129,14 +136,14 @@ const SpeechGallery = () => {
     subtitle: "For Any Unique Occasion",
     icon: <CalendarDays className="h-4 w-4" />
   }];
+
   return <section className="py-16 md:py-24 bg-white">
       <div className="container mx-auto px-6 md:px-12" ref={galleryRef}>
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h2 className={`text-3xl md:text-4xl font-bold mb-6 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
             Speech for <span className="text-pink-600">Every Occasion</span>
           </h2>
-          <p className={`text-lg text-gray-600 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>We offer speech templates and easy-to-use prompt wizard 
-questionnaires for all types of events and occasions
+          <p className={`text-lg text-gray-600 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>We offer speech templates and easy-to-use "prompt wizard" questionnaires for all types of events and occasions
         </p>
         </div>
 
@@ -146,4 +153,5 @@ questionnaires for all types of events and occasions
       </div>
     </section>;
 };
+
 export default SpeechGallery;
