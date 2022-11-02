@@ -17,7 +17,8 @@ import {
   RefreshCwIcon, 
   SendIcon, 
   DownloadIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  TrashIcon
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -686,6 +687,32 @@ const SpeechLab = () => {
     });
   };
 
+  const handleClearAll = () => {
+    setSelectedSpeechType('');
+    setMessages([
+      {
+        id: '1',
+        role: 'assistant',
+        content: 'Welcome to the Speech Generator! I can help you create personalized speeches for various occasions. To get started, please select the type of speech you need from the dropdown above.',
+        timestamp: new Date(),
+      },
+    ]);
+    setInputMessage('');
+    setIsTyping(false);
+    setIsGeneratingSpeech(false);
+    setGeneratedSpeech(null);
+    setCurrentQuestion(0);
+    setIsQuestionnaire(false);
+    setQuestionnaireAnswers({});
+    setShowQuestionnaire(false);
+    setActiveTab('chat');
+    
+    toast({
+      title: "Speech Generator Reset",
+      description: "All inputs have been cleared. You can start fresh!",
+    });
+  };
+
   const renderQuestionnaire = () => {
     if (!selectedSpeechType || !showQuestionnaire) return null;
     
@@ -810,10 +837,23 @@ const SpeechLab = () => {
             <div className="lg:w-2/3">
               <Card className="mb-6">
                 <CardHeader>
-                  <CardTitle>Speech Generator</CardTitle>
-                  <CardDescription>
-                    Select a speech type and generate a personalized speech
-                  </CardDescription>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Speech Generator</CardTitle>
+                      <CardDescription>
+                        Select a speech type and generate a personalized speech
+                      </CardDescription>
+                    </div>
+                    <ButtonCustom 
+                      onClick={handleClearAll} 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center gap-1"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                      Clear All
+                    </ButtonCustom>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="mb-6">
@@ -907,7 +947,14 @@ const SpeechLab = () => {
                             <div className="border rounded-md p-4 bg-white h-96 overflow-y-auto whitespace-pre-line">
                               {generatedSpeech}
                             </div>
-                            <div className="flex justify-end">
+                            <div className="flex justify-end space-x-2">
+                              <ButtonCustom 
+                                variant="outline" 
+                                onClick={handleClearAll}
+                              >
+                                <TrashIcon className="w-4 h-4 mr-2" />
+                                Start Over
+                              </ButtonCustom>
                               <ButtonCustom onClick={handleDownloadSpeech}>
                                 <DownloadIcon className="w-4 h-4 mr-2" />
                                 Download
