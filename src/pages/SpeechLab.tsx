@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { 
   Card, 
@@ -18,7 +19,8 @@ import {
   SendIcon, 
   DownloadIcon,
   ChevronDownIcon,
-  TrashIcon
+  TrashIcon,
+  SaveIcon
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -32,6 +34,14 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type Message = {
   id: string;
@@ -281,6 +291,7 @@ const speechQuestions = {
 };
 
 const SpeechLab = () => {
+  const { user, saveSpeech } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('chat');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -294,6 +305,8 @@ const SpeechLab = () => {
   const [isQuestionnaire, setIsQuestionnaire] = useState(false);
   const [questionnaireAnswers, setQuestionnaireAnswers] = useState<Record<string, any>>({});
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [speechTitle, setSpeechTitle] = useState('');
 
   useEffect(() => {
     if (activeTab === 'chat' && messages.length === 0) {
@@ -385,6 +398,10 @@ const SpeechLab = () => {
       setMessages(prev => [...prev, assistantMessage]);
       setGeneratedSpeech(speech);
       setIsGeneratingSpeech(false);
+      setActiveTab('result');
+      
+      const speechTypeLabel = speechTypes.find(type => type.value === selectedSpeechType)?.label || 'Custom Speech';
+      setSpeechTitle(`${speechTypeLabel} - ${new Date().toLocaleDateString()}`);
       
       toast({
         title: "Speech Generated!",
@@ -477,6 +494,10 @@ const SpeechLab = () => {
       setMessages(prev => [...prev, newMessage]);
       setGeneratedSpeech(speechContent);
       setIsGeneratingSpeech(false);
+      setActiveTab('result');
+      
+      const speechTypeLabel = speechTypes.find(type => type.value === selectedSpeechType)?.label || 'Custom Speech';
+      setSpeechTitle(`${speechTypeLabel} - ${new Date().toLocaleDateString()}`);
       
       toast({
         title: "Speech Generated!",
@@ -490,7 +511,6 @@ const SpeechLab = () => {
     
     switch (speechType) {
       case 'wedding':
-        // Extract all information from the questionnaire
         const role = answers.role || 'friend';
         const speakerRelationship = answers.relationship || 'close friend';
         const names = answers.names || '';
@@ -511,7 +531,6 @@ const SpeechLab = () => {
         const additionalElements = answers.additional_elements || '';
         const avoidTopics = answers.avoid_topics || '';
         
-        // Handle opening quote
         let opening = '';
         if (answers.opening_quote === 'yes' && answers.quote_text) {
           opening = `"${answers.quote_text}" `;
@@ -519,7 +538,6 @@ const SpeechLab = () => {
           opening = `"Love is not about how many days, months, or years you have been together. Love is about how much you love each other every single day." `;
         }
         
-        // Handle toast ending
         let closing = '';
         if (answers.toast_ending === 'yes' && answers.toast_text) {
           closing = `${answers.toast_text}`;
@@ -527,24 +545,19 @@ const SpeechLab = () => {
           closing = `So let's raise our glasses to ${brideName} and ${groomName}. May your love story continue to unfold, chapter after beautiful chapter. To a lifetime of love, laughter, and happily ever after!`;
         }
         
-        // Build the speech with all provided information
         let speech = '';
         
-        // Add opening
         if (opening) {
           speech += `${opening}\n\n`;
         }
         
-        // Add introduction
         speech += `Ladies and gentlemen, family and friends, I am honored to stand before you today as ${getRoleTitle(role)} to celebrate the union of ${brideName} and ${groomName}.\n\n`;
         speech += `My name is ${speakerRelationship}, and I've had the privilege of witnessing their beautiful journey together.\n\n`;
         
-        // Add anecdote if provided
         if (anecdote) {
           speech += `${anecdote}\n\n`;
         }
         
-        // Add qualities for bride and groom
         if (brideQualities) {
           speech += `What makes ${brideName} so special is ${brideQualities}. `;
         }
@@ -553,32 +566,26 @@ const SpeechLab = () => {
           speech += `And ${groomName}, your ${groomQualities} complement each other perfectly.\n\n`;
         }
         
-        // Add memorable moment if provided
         if (memorableMoment) {
           speech += `One of my favorite memories with them is ${memorableMoment}.\n\n`;
         }
         
-        // Add message theme if provided
         if (messageTheme) {
           speech += `As I reflect on their relationship, I'm reminded of ${messageTheme}.\n\n`;
         }
         
-        // Add cultural or religious references if provided
         if (culturalReligious) {
           speech += `${culturalReligious}\n\n`;
         }
         
-        // Add inside jokes if provided
         if (insideJokes) {
           speech += `${insideJokes}\n\n`;
         }
         
-        // Add additional elements if provided
         if (additionalElements) {
           speech += `${additionalElements}\n\n`;
         }
         
-        // Add closing toast
         if (closing) {
           speech += `${closing}`;
         }
@@ -588,7 +595,6 @@ const SpeechLab = () => {
         return speech;
       
       case 'birthday':
-        // Extract all birthday speech information
         const birthdayRelationship = answers.relationship || 'friend';
         const birthdayAge = answers.age || '';
         const birthdayTone = answers.tone || 'heartwarming';
@@ -598,7 +604,6 @@ const SpeechLab = () => {
         const birthdayInsideJokes = answers.inside_jokes || '';
         const birthdayWishes = answers.wishes || '';
         
-        // Build birthday speech
         let birthdaySpeech = `Ladies and gentlemen, friends and family,\n\n`;
         birthdaySpeech += `It's my privilege to stand before you today as ${birthdayRelationship} to celebrate this special birthday.\n\n`;
         
@@ -687,6 +692,37 @@ const SpeechLab = () => {
     });
   };
 
+  const handleSaveSpeech = () => {
+    if (!generatedSpeech) return;
+    setIsSaveDialogOpen(true);
+  };
+
+  const confirmSaveSpeech = async () => {
+    if (!generatedSpeech || !user) return;
+    
+    try {
+      await saveSpeech(
+        speechTitle, 
+        generatedSpeech,
+        selectedSpeechType
+      );
+      
+      setIsSaveDialogOpen(false);
+      
+      toast({
+        title: "Speech Saved",
+        description: "Your speech has been saved to your account and will appear in your dashboard.",
+      });
+    } catch (error) {
+      console.error('Error saving speech:', error);
+      toast({
+        title: "Error Saving Speech",
+        description: "There was an error saving your speech. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleClearAll = () => {
     setSelectedSpeechType('');
     setMessages([
@@ -706,6 +742,7 @@ const SpeechLab = () => {
     setQuestionnaireAnswers({});
     setShowQuestionnaire(false);
     setActiveTab('chat');
+    setSpeechTitle('');
     
     toast({
       title: "Speech Generator Reset",
@@ -960,6 +997,13 @@ const SpeechLab = () => {
                                 <TrashIcon className="w-4 h-4 mr-2" />
                                 Start Over
                               </ButtonCustom>
+                              <ButtonCustom 
+                                variant="outline"
+                                onClick={handleSaveSpeech}
+                              >
+                                <SaveIcon className="w-4 h-4 mr-2" />
+                                Save
+                              </ButtonCustom>
                               <ButtonCustom onClick={handleDownloadSpeech}>
                                 <DownloadIcon className="w-4 h-4 mr-2" />
                                 Download
@@ -1045,8 +1089,6 @@ const SpeechLab = () => {
           </div>
         </div>
       </main>
-    </div>
-  );
-};
 
-export default SpeechLab;
+      <
+
