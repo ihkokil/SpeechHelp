@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -21,7 +20,8 @@ import {
   DownloadIcon,
   ChevronDownIcon,
   TrashIcon,
-  SaveIcon
+  SaveIcon,
+  PlusIcon
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -308,6 +308,8 @@ const SpeechLab = () => {
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [speechTitle, setSpeechTitle] = useState('');
+  const [isNewSpeechDialogOpen, setIsNewSpeechDialogOpen] = useState(false);
+  const [newSpeechTitle, setNewSpeechTitle] = useState('');
 
   useEffect(() => {
     if (activeTab === 'chat' && messages.length === 0) {
@@ -744,10 +746,37 @@ const SpeechLab = () => {
     setShowQuestionnaire(false);
     setActiveTab('chat');
     setSpeechTitle('');
+    setNewSpeechTitle('');
     
     toast({
       title: "Speech Generator Reset",
       description: "All inputs have been cleared. You can start fresh!",
+    });
+  };
+
+  const handleCreateNewSpeech = () => {
+    setIsNewSpeechDialogOpen(true);
+  };
+
+  const handleStartNewSpeech = () => {
+    if (!newSpeechTitle.trim()) {
+      toast({
+        title: "Title Required",
+        description: "Please enter a title for your speech.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    handleClearAll();
+    
+    setSpeechTitle(newSpeechTitle);
+    
+    setIsNewSpeechDialogOpen(false);
+    
+    toast({
+      title: "New Speech Created",
+      description: `Your speech "${newSpeechTitle}" has been created. Please select a speech type to begin.`,
     });
   };
 
@@ -879,18 +908,29 @@ const SpeechLab = () => {
                     <div>
                       <CardTitle>Speech Generator</CardTitle>
                       <CardDescription>
-                        Select a speech type and generate a personalized speech
+                        {speechTitle ? `Current speech: ${speechTitle}` : 'Select a speech type and generate a personalized speech'}
                       </CardDescription>
                     </div>
-                    <ButtonCustom 
-                      onClick={handleClearAll} 
-                      variant="outline" 
-                      size="sm"
-                      className="flex items-center gap-1"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                      Clear All
-                    </ButtonCustom>
+                    <div className="flex space-x-2">
+                      <ButtonCustom 
+                        onClick={handleCreateNewSpeech} 
+                        variant="primary" 
+                        size="sm"
+                        className="flex items-center gap-1"
+                      >
+                        <PlusIcon className="w-4 h-4" />
+                        Create A New Speech
+                      </ButtonCustom>
+                      <ButtonCustom 
+                        onClick={handleClearAll} 
+                        variant="outline" 
+                        size="sm"
+                        className="flex items-center gap-1"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                        Clear All
+                      </ButtonCustom>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -1111,6 +1151,33 @@ const SpeechLab = () => {
               </ButtonCustom>
               <ButtonCustom onClick={confirmSaveSpeech}>
                 Save
+              </ButtonCustom>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {isNewSpeechDialogOpen && (
+        <Dialog open={isNewSpeechDialogOpen} onOpenChange={setIsNewSpeechDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create A New Speech</DialogTitle>
+              <DialogDescription>
+                Please enter a title for your new speech.
+              </DialogDescription>
+            </DialogHeader>
+            <Input
+              placeholder="Speech Title"
+              value={newSpeechTitle}
+              onChange={(e) => setNewSpeechTitle(e.target.value)}
+              className="mt-2"
+            />
+            <DialogFooter className="mt-4">
+              <ButtonCustom variant="outline" onClick={() => setIsNewSpeechDialogOpen(false)}>
+                Cancel
+              </ButtonCustom>
+              <ButtonCustom onClick={handleStartNewSpeech}>
+                Continue
               </ButtonCustom>
             </DialogFooter>
           </DialogContent>
