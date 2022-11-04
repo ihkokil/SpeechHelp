@@ -57,7 +57,7 @@ const Footer = () => {
             <h3 className="font-medium text-gray-900 mb-4">Contact Us</h3>
             <ul className="space-y-3">
               <li>
-                <a href="mailto:hello@speechhelp.com" className="text-gray-600 hover:text-pink-600 transition-colors">hello@speechhelp.com</a>
+                <a href="mailto:hello@speechhelp.ai" className="text-gray-600 hover:text-pink-600 transition-colors">hello@speechhelp.ai</a>
               </li>
               <li>
                 <a href="tel:+18005551234" className="text-gray-600 hover:text-pink-600 transition-colors">+1 (800) 555-1234</a>

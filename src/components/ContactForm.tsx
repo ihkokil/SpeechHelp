@@ -83,7 +83,7 @@ const ContactForm = () => {
                 <h3 className="text-2xl font-semibold mb-6">Contact Information</h3>
                 <p className="mb-6">We're here to answer your questions and help you get the most out of SpeechHelp.</p>
                 
-                <ContactIcon title="hello@speechhelp.com">
+                <ContactIcon title="hello@speechhelp.ai">
                   <MailIcon className="h-5 w-5 text-pink-600" />
                 </ContactIcon>
                 
