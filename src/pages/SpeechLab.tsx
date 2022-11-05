@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -338,7 +339,7 @@ const SpeechLab = () => {
     const newMessage: Message = {
       id: Date.now().toString(),
       role: 'assistant',
-      content: `Great! I'll help you create a ${speechType}. Would you like to answer a few questions from our SpeechHelp "wizard" to personalize your speech, or would you prefer a conversational approach?`,
+      content: `Great! I'll help you create a ${speechType}. Would you like to answer a few questions from our SpeechHelp "wizard" to personalize your speech, or would you prefer a conversational approach? (If you'd like to use the wizard questionnaire, simply type "wizard" in the chat)`,
       timestamp: new Date(),
     };
     
@@ -426,10 +427,17 @@ const SpeechLab = () => {
     setMessages(prev => [...prev, newUserMessage]);
     setInputMessage('');
     
+    // Check if the user typed "wizard" to access the questionnaire
+    if (inputMessage.toLowerCase().trim() === "wizard") {
+      handleShowQuestionnaire();
+      return;
+    }
+    
     if (messages.length === 2 && messages[1].role === 'assistant' && 
-        messages[1].content.includes('Would you like to fill out a detailed questionnaire')) {
+        messages[1].content.includes('Would you like to answer a few questions')) {
       
-      if (inputMessage.toLowerCase().includes('questionnaire')) {
+      if (inputMessage.toLowerCase().includes('questionnaire') || 
+          inputMessage.toLowerCase().includes('wizard')) {
         handleShowQuestionnaire();
         return;
       } else {
@@ -1194,4 +1202,3 @@ const SpeechLab = () => {
 };
 
 export default SpeechLab;
-
