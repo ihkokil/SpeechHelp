@@ -316,7 +316,6 @@ const SpeechLab = () => {
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [speechTitle, setSpeechTitle] = useState('');
   const [isNewSpeechDialogOpen, setIsNewSpeechDialogOpen] = useState(false);
-  const [newSpeechTitle, setNewSpeechTitle] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
 
   useEffect(() => {
@@ -342,9 +341,14 @@ const SpeechLab = () => {
     setQuestionnaireAnswers({});
     setCurrentQuestion(0);
     
+    // Update immediately to step 3 (skipping the name step)
     setCurrentStep(3);
     
     const speechType = speechTypes.find(type => type.value === value)?.label;
+    
+    // Auto-generate a default title based on the speech type
+    const defaultTitle = `${speechType} - ${new Date().toLocaleDateString()}`;
+    setSpeechTitle(defaultTitle);
     
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -360,6 +364,7 @@ const SpeechLab = () => {
     setShowQuestionnaire(true);
     setIsQuestionnaire(true);
     
+    // Move directly to step 4 (Details) from step 3 (Select Type)
     setCurrentStep(4);
     
     const userMessage: Message = {
@@ -391,7 +396,7 @@ const SpeechLab = () => {
   const handleQuestionnaireSubmit = () => {
     setIsGeneratingSpeech(true);
     setShowQuestionnaire(false);
-    setCurrentStep(5);
+    setCurrentStep(5); // Review & Save
     
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -417,8 +422,7 @@ const SpeechLab = () => {
       setIsGeneratingSpeech(false);
       setActiveTab('result');
       
-      const speechTypeLabel = speechTypes.find(type => type.value === selectedSpeechType)?.label || 'Custom Speech';
-      setSpeechTitle(`${speechTypeLabel} - ${new Date().toLocaleDateString()}`);
+      // Title is already set when selecting speech type
       
       toast({
         title: "Speech Generated!",
@@ -746,6 +750,17 @@ const SpeechLab = () => {
     }
   };
 
+  const handleCreateNewSpeech = () => {
+    // Move directly to speech type selection (step 2)
+    setCurrentStep(2);
+    
+    // Generate a default title
+    const defaultTitle = `New Speech - ${new Date().toLocaleDateString()}`;
+    setSpeechTitle(defaultTitle);
+    
+    handleClearAll();
+  };
+
   const handleClearAll = () => {
     setSelectedSpeechType('');
     setMessages([
@@ -765,39 +780,10 @@ const SpeechLab = () => {
     setQuestionnaireAnswers({});
     setShowQuestionnaire(false);
     setActiveTab('chat');
-    setSpeechTitle('');
-    setNewSpeechTitle('');
     
     toast({
       title: "Speech Generator Reset",
       description: "All inputs have been cleared. You can start fresh!",
-    });
-  };
-
-  const handleCreateNewSpeech = () => {
-    setIsNewSpeechDialogOpen(true);
-  };
-
-  const handleStartNewSpeech = () => {
-    if (!newSpeechTitle.trim()) {
-      toast({
-        title: "Title Required",
-        description: "Please enter a title for your speech.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    handleClearAll();
-    
-    setSpeechTitle(newSpeechTitle);
-    setCurrentStep(2);
-    
-    setIsNewSpeechDialogOpen(false);
-    
-    toast({
-      title: "New Speech Created",
-      description: `You've started a new speech titled "${newSpeechTitle}". Follow the steps to create your speech.`
     });
   };
 
@@ -820,49 +806,13 @@ const SpeechLab = () => {
         );
       
       case 2:
-        return (
-          <div className="flex flex-col h-full p-8">
-            <h2 className="text-2xl font-bold mb-4">Name Your Speech</h2>
-            <p className="text-lg mb-6">Enter a title for your speech</p>
-            
-            <div className="w-full max-w-md mb-6">
-              <Input
-                placeholder="Enter a title for your speech"
-                value={newSpeechTitle}
-                onChange={(e) => setNewSpeechTitle(e.target.value)}
-                className="bg-white"
-              />
-            </div>
-            
-            <Button 
-              onClick={() => {
-                if (!newSpeechTitle.trim()) {
-                  toast({
-                    title: "Title Required",
-                    description: "Please enter a title for your speech.",
-                    variant: "destructive"
-                  });
-                  return;
-                }
-                setSpeechTitle(newSpeechTitle);
-                setCurrentStep(3);
-              }}
-              className="mt-4 self-start bg-purple-600 hover:bg-purple-700 flex items-center gap-2"
-              disabled={!newSpeechTitle.trim()}
-            >
-              Continue
-              <ArrowRightIcon className="h-4 w-4" />
-            </Button>
-          </div>
-        );
-      
-      case 3:
+        // Skip the "Name your speech" step and go directly to speech type selection
         return (
           <div className="flex flex-col h-full p-8">
             <h2 className="text-2xl font-bold mb-4">Choose Your Speech Type</h2>
             <p className="text-lg mb-6">Select the type of speech you'd like to create</p>
             
-            <div className="w-full max-w-md mb-6 relative z-20">
+            <div className="w-full max-w-md mb-6 relative z-10">
               <Select onValueChange={handleSpeechTypeChange} value={selectedSpeechType}>
                 <SelectTrigger className="w-full bg-white cursor-pointer">
                   <SelectValue placeholder="Select a speech type" />
@@ -876,19 +826,10 @@ const SpeechLab = () => {
                 </SelectContent>
               </Select>
             </div>
-            
-            {selectedSpeechType && (
-              <Button 
-                onClick={() => setCurrentStep(4)}
-                className="mt-4 self-start bg-purple-600 hover:bg-purple-700 flex items-center gap-2"
-              >
-                Continue
-                <ArrowRightIcon className="h-4 w-4" />
-              </Button>
-            )}
           </div>
         );
       
+      case 3:
       case 4:
       case 5:
       default:
@@ -1148,38 +1089,12 @@ const SpeechLab = () => {
         </div>
       </div>
       
-      <Dialog open={isNewSpeechDialogOpen} onOpenChange={setIsNewSpeechDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Speech</DialogTitle>
-            <DialogDescription>
-              Give your speech a name to help you identify it later.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Input
-              placeholder="Enter speech title..."
-              value={newSpeechTitle}
-              onChange={(e) => setNewSpeechTitle(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNewSpeechDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleStartNewSpeech} className="bg-purple-600 hover:bg-purple-700">
-              Start
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
       <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Save Speech</DialogTitle>
             <DialogDescription>
-              Give your speech a name to save it to your account.
+              Confirm or edit the name of your speech before saving it to your account.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -1204,4 +1119,3 @@ const SpeechLab = () => {
 };
 
 export default SpeechLab;
-

@@ -9,10 +9,9 @@ type StepIndicatorProps = {
 const SpeechStepIndicator = ({ currentStep }: StepIndicatorProps) => {
   const steps = [
     { number: 1, title: 'Generate New Speech' },
-    { number: 2, title: 'Name Your Speech' },
-    { number: 3, title: 'Select Speech Type' },
-    { number: 4, title: 'Provide Speech Details' },
-    { number: 5, title: 'Review & Save' }
+    { number: 2, title: 'Select Speech Type' },
+    { number: 3, title: 'Provide Details' },
+    { number: 4, title: 'Review & Save' }
   ];
 
   return (
