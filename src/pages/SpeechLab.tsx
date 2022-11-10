@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -822,14 +823,14 @@ const SpeechLab = () => {
             <h2 className="text-2xl font-bold mb-4">Choose Your Speech Type</h2>
             <p className="text-lg mb-6">Select the type of speech you'd like to create</p>
             
-            <div className="w-full max-w-md mb-6 relative">
+            <div className="w-full max-w-md mb-6 relative z-10">
               <Select onValueChange={handleSpeechTypeChange} value={selectedSpeechType}>
-                <SelectTrigger className="w-full bg-white">
+                <SelectTrigger className="w-full bg-white cursor-pointer">
                   <SelectValue placeholder="Select a speech type" />
                 </SelectTrigger>
-                <SelectContent className="bg-white z-[100]">
+                <SelectContent className="bg-white z-[200]">
                   {speechTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value} className="cursor-pointer">
+                    <SelectItem key={type.value} value={type.value} className="cursor-pointer hover:bg-gray-100">
                       {type.label}
                     </SelectItem>
                   ))}
