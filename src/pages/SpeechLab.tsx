@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -342,6 +341,7 @@ const SpeechLab = () => {
     setSelectedSpeechType(value);
     setQuestionnaireAnswers({});
     setCurrentQuestion(0);
+    
     setCurrentStep(3);
     
     const speechType = speechTypes.find(type => type.value === value)?.label;
@@ -359,6 +359,8 @@ const SpeechLab = () => {
   const handleShowQuestionnaire = () => {
     setShowQuestionnaire(true);
     setIsQuestionnaire(true);
+    
+    setCurrentStep(4);
     
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -820,10 +822,47 @@ const SpeechLab = () => {
       case 2:
         return (
           <div className="flex flex-col h-full p-8">
+            <h2 className="text-2xl font-bold mb-4">Name Your Speech</h2>
+            <p className="text-lg mb-6">Enter a title for your speech</p>
+            
+            <div className="w-full max-w-md mb-6">
+              <Input
+                placeholder="Enter a title for your speech"
+                value={newSpeechTitle}
+                onChange={(e) => setNewSpeechTitle(e.target.value)}
+                className="bg-white"
+              />
+            </div>
+            
+            <Button 
+              onClick={() => {
+                if (!newSpeechTitle.trim()) {
+                  toast({
+                    title: "Title Required",
+                    description: "Please enter a title for your speech.",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                setSpeechTitle(newSpeechTitle);
+                setCurrentStep(3);
+              }}
+              className="mt-4 self-start bg-purple-600 hover:bg-purple-700 flex items-center gap-2"
+              disabled={!newSpeechTitle.trim()}
+            >
+              Continue
+              <ArrowRightIcon className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      
+      case 3:
+        return (
+          <div className="flex flex-col h-full p-8">
             <h2 className="text-2xl font-bold mb-4">Choose Your Speech Type</h2>
             <p className="text-lg mb-6">Select the type of speech you'd like to create</p>
             
-            <div className="w-full max-w-md mb-6 relative z-10">
+            <div className="w-full max-w-md mb-6 relative z-20">
               <Select onValueChange={handleSpeechTypeChange} value={selectedSpeechType}>
                 <SelectTrigger className="w-full bg-white cursor-pointer">
                   <SelectValue placeholder="Select a speech type" />
@@ -840,7 +879,7 @@ const SpeechLab = () => {
             
             {selectedSpeechType && (
               <Button 
-                onClick={() => setCurrentStep(3)}
+                onClick={() => setCurrentStep(4)}
                 className="mt-4 self-start bg-purple-600 hover:bg-purple-700 flex items-center gap-2"
               >
                 Continue
@@ -850,7 +889,6 @@ const SpeechLab = () => {
           </div>
         );
       
-      case 3:
       case 4:
       case 5:
       default:
@@ -1166,3 +1204,4 @@ const SpeechLab = () => {
 };
 
 export default SpeechLab;
+

@@ -22,7 +22,7 @@ const SpeechStepIndicator = ({ currentStep }: StepIndicatorProps) => {
         <div className="absolute h-1 bg-slate-200 top-1/2 left-0 right-0 -translate-y-1/2 z-0" />
         <div 
           className="absolute h-1 bg-purple-600 top-1/2 left-0 -translate-y-1/2 z-10 transition-all duration-500 ease-in-out" 
-          style={{ width: `${(currentStep - 1) / (steps.length - 1) * 100}%` }}
+          style={{ width: `${Math.max(0, (currentStep - 1) / (steps.length - 1) * 100)}%` }}
         />
         
         {/* Step circles */}
