@@ -30,7 +30,7 @@ const SpeechStepIndicator = ({ currentStep }: StepIndicatorProps) => {
           <div key={step.number} className="z-20 flex flex-col items-center gap-2">
             <div 
               className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
+                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors duration-300",
                 currentStep === step.number 
                   ? "bg-purple-600 text-white border-2 border-purple-600" 
                   : currentStep > step.number
@@ -42,7 +42,7 @@ const SpeechStepIndicator = ({ currentStep }: StepIndicatorProps) => {
             </div>
             <span 
               className={cn(
-                "text-xs font-medium whitespace-nowrap",
+                "text-xs font-medium whitespace-nowrap transition-colors duration-300",
                 currentStep === step.number 
                   ? "text-purple-600" 
                   : currentStep > step.number
