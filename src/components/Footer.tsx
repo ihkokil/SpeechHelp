@@ -11,7 +11,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <a href="#" className="inline-block mb-4">
               <img 
-                src="/SpeechHelp-Logo.png" 
+                src="/lovable-uploads/b6ea4638-2c5b-4af2-8d8a-69096499067b.png" 
                 alt="SpeechHelp Logo" 
                 className="h-13" 
               />
