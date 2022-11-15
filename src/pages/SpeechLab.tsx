@@ -53,6 +53,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import SpeechStepIndicator from '@/components/speech/SpeechStepIndicator';
 import ReactConfetti from 'react-confetti';
+import { cn } from '@/lib/utils';
 
 type Message = {
   id: string;
@@ -706,7 +707,7 @@ const SpeechLab = () => {
         return birthdaySpeech;
       
       default:
-        return "Ladies and gentlemen, distinguished guests...\n\nIt is my great pleasure to address you all today. This personalized speech would normally be generated based on all the detailed information you provided in the questionnaire, creating a meaningful and tailored message for your specific occasion.\n\nThe speech would include your personal anecdotes, the qualities you admire about the relevant people, and all the special moments you've shared. It would maintain the tone you selected and avoid any topics you mentioned.\n\nIn closing, thank you for the opportunity to be part of this special occasion. May this day be just the beginning of many more wonderful memories to come.";
+        return "Ladies and gentlemen, distinguished guests...\n\nIt is my great pleasure to address you all today. This personalized speech would normally be generated based on all the detailed information you provided in the questionnaire, creating a meaningful and tailored message for your specific occasion.\n\nThe speech would include your personal anecdotes, the qualities you admire about the relevant people, and all the special moments you've shared. It would maintain the tone you selected and avoid any topics you mentioned.\n\nIn closing, thank you for the opportunity to be part of this special occasion. May we carry the spirit of today forward in all our future endeavors.\n\nThank you.";
     }
   };
 
@@ -915,13 +916,20 @@ const SpeechLab = () => {
       case 5:
       default:
         return (
-          <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
+          <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab} value={activeTab}>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="chat" className="flex items-center gap-2">
                 <ListIcon className="h-4 w-4" />
                 Assistant Chat
               </TabsTrigger>
-              <TabsTrigger value="result" disabled={!generatedSpeech} className="flex items-center gap-2">
+              <TabsTrigger 
+                value="result" 
+                disabled={!generatedSpeech} 
+                className={cn(
+                  "flex items-center gap-2 transition-all duration-300",
+                  activeTab === 'result' && "bg-purple-600 text-white hover:bg-purple-700 hover:text-white"
+                )}
+              >
                 <FileTextIcon className="h-4 w-4" />
                 Generated Speech
               </TabsTrigger>
@@ -1093,7 +1101,7 @@ const SpeechLab = () => {
             
             <TabsContent value="result" className="mt-4">
               {generatedSpeech && (
-                <Card>
+                <Card className="border-purple-200 shadow-md">
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
                       <div className="flex flex-col">
