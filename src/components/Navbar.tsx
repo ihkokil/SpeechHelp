@@ -35,6 +35,7 @@ const Navbar = () => {
               src="/lovable-uploads/b6ea4638-2c5b-4af2-8d8a-69096499067b.png" 
               alt="SpeechHelp Logo" 
               className="h-11" 
+              style={{ display: 'block' }}
             />
           </Link>
 
