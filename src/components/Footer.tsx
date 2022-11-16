@@ -10,9 +10,9 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <a href="#" className="inline-block mb-4">
               <img 
-                src="/SpeechHelp-Logo.png" 
+                src="/lovable-uploads/84f00e48-230b-4b88-9f37-7a1ba9b6ffda.png" 
                 alt="SpeechHelp Logo" 
-                className="h-13" 
+                className="h-12" 
                 style={{ display: 'block' }}
               />
             </a>
