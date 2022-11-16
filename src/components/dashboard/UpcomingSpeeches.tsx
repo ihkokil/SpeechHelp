@@ -2,6 +2,8 @@
 import { Calendar, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/translations';
 
 interface SpeechEvent {
   id: string;
@@ -40,8 +42,11 @@ const MOCK_SPEECHES: SpeechEvent[] = [
 ];
 
 const UpcomingSpeeches = () => {
+  const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
+
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
+    return date.toLocaleDateString(currentLanguage.code, { 
       month: 'short', 
       day: 'numeric', 
       year: 'numeric' 
@@ -66,7 +71,7 @@ const UpcomingSpeeches = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm">
       <div className="border-b p-4">
-        <h2 className="text-lg font-semibold text-gray-800">Upcoming Speeches</h2>
+        <h2 className="text-lg font-semibold text-gray-800">{t('dashboard.upcomingSpeeches', currentLanguage.code)}</h2>
       </div>
       <div className="divide-y">
         {MOCK_SPEECHES.map((speech) => (
@@ -89,7 +94,7 @@ const UpcomingSpeeches = () => {
                 {speech.category.charAt(0).toUpperCase() + speech.category.slice(1)}
               </Badge>
               <Button variant="outline" size="sm" className="text-xs">
-                Prepare
+                {t('dashboard.prepare', currentLanguage.code)}
               </Button>
             </div>
           </div>
@@ -97,7 +102,7 @@ const UpcomingSpeeches = () => {
       </div>
       <div className="border-t p-4 text-center">
         <Button variant="link" className="text-pink-600 hover:text-pink-800 text-sm">
-          View All Speeches
+          {t('dashboard.viewAll', currentLanguage.code)}
         </Button>
       </div>
     </div>

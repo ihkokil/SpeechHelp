@@ -12,6 +12,8 @@ import LanguageSelector from '@/components/dashboard/LanguageSelector';
 import PreviousSpeeches from '@/components/dashboard/PreviousSpeeches';
 import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/translations';
 
 const Dashboard = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -19,6 +21,8 @@ const Dashboard = () => {
   const [userName, setUserName] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
   
   // Fetch speeches when component mounts
   useEffect(() => {
@@ -66,7 +70,7 @@ const Dashboard = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-          <p className="mt-4 text-white text-lg font-medium">Loading Dashboard...</p>
+          <p className="mt-4 text-white text-lg font-medium">{t('loading', currentLanguage.code)}...</p>
         </div>
       </div>
     );
@@ -105,15 +109,15 @@ const Dashboard = () => {
             <div className="lg:col-span-2 space-y-6">
               {/* Speech Summary Section */}
               <div>
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Summary</h2>
+                <h2 className="text-xl font-bold text-gray-800 mb-4">{t('dashboard.summary', currentLanguage.code)}</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Total Speeches Card */}
                   <SpeechSummaryCard 
                     icon={<FileTextIcon className="h-6 w-6 text-gray-600" />}
                     count={speeches.length}
-                    label="Total Speeches"
-                    period="All time"
+                    label="dashboard.totalSpeeches"
+                    period="dashboard.allTime"
                     bgColor="bg-gray-100"
                   />
                   
@@ -121,8 +125,8 @@ const Dashboard = () => {
                   <SpeechSummaryCard 
                     icon={<ShieldIcon className="h-6 w-6 text-gray-600" />}
                     count={2}
-                    label="In Progress"
-                    period="This month"
+                    label="dashboard.inProgress"
+                    period="dashboard.thisMonth"
                     bgColor="bg-red-50"
                   />
                   
@@ -130,8 +134,8 @@ const Dashboard = () => {
                   <SpeechSummaryCard 
                     icon={<TrendingUpIcon className="h-6 w-6 text-gray-600" />}
                     count={15}
-                    label="Improvement %"
-                    period="Last 30 days"
+                    label="dashboard.improvement"
+                    period="dashboard.last30Days"
                     bgColor="bg-green-50"
                   />
                 </div>

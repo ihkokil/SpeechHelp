@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -7,16 +6,10 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { ChevronDownIcon } from 'lucide-react';
-
-const languages = [
-  { code: 'en-US', label: 'USA English', flag: '🇺🇸' },
-  { code: 'en-GB', label: 'UK English', flag: '🇬🇧' },
-  { code: 'fr', label: 'French', flag: '🇫🇷' },
-  { code: 'es', label: 'Spanish', flag: '🇪🇸' }
-];
+import { useLanguage, languages } from '@/contexts/LanguageContext';
 
 const LanguageSelector = () => {
-  const [currentLanguage, setCurrentLanguage] = useState(languages[0]);
+  const { currentLanguage, setLanguage } = useLanguage();
 
   return (
     <DropdownMenu>
@@ -29,7 +22,7 @@ const LanguageSelector = () => {
         {languages.map((language) => (
           <DropdownMenuItem
             key={language.code}
-            onClick={() => setCurrentLanguage(language)}
+            onClick={() => setLanguage(language)}
             className="flex items-center cursor-pointer"
           >
             <span className="text-lg mr-2">{language.flag}</span>

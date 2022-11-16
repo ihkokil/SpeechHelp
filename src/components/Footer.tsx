@@ -1,7 +1,12 @@
+
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/translations';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
@@ -17,7 +22,7 @@ const Footer = () => {
               />
             </a>
             <p className="text-gray-600 mb-6 max-w-md">
-              Empower your voice with our AI-driven platform. Create unforgettable speeches for every occasion with ease and precision.
+              {t('footer.description', currentLanguage.code)}
             </p>
             <div className="flex space-x-4">
               <a href="#" className="p-2 rounded-full text-gray-600 hover:text-pink-600 hover:bg-pink-50 transition-colors">
@@ -39,22 +44,22 @@ const Footer = () => {
             <h3 className="font-medium text-gray-900 mb-4">You, the User</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">About Us</a>
+                <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.about', currentLanguage.code)}</a>
               </li>
               <li>
-                <a href="#features" className="text-gray-600 hover:text-pink-600 transition-colors">Features</a>
+                <a href="#features" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.features', currentLanguage.code)}</a>
               </li>
               <li>
-                <a href="#pricing" className="text-gray-600 hover:text-pink-600 transition-colors">Pricing</a>
+                <a href="#pricing" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.pricing', currentLanguage.code)}</a>
               </li>
               <li>
-                <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">FAQ</a>
+                <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.faq', currentLanguage.code)}</a>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-medium text-gray-900 mb-4">Contact Us</h3>
+            <h3 className="font-medium text-gray-900 mb-4">{t('footer.contactUs', currentLanguage.code)}</h3>
             <ul className="space-y-3">
               <li>
                 <a href="mailto:hello@speechhelp.ai" className="text-gray-600 hover:text-pink-600 transition-colors">hello@speechhelp.ai</a>
@@ -63,10 +68,10 @@ const Footer = () => {
                 <a href="tel:+18005551234" className="text-gray-600 hover:text-pink-600 transition-colors">+1 (800) 555-1234</a>
               </li>
               <li>
-                <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">Support</a>
+                <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.support', currentLanguage.code)}</a>
               </li>
               <li>
-                <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">Community</a>
+                <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.community', currentLanguage.code)}</a>
               </li>
             </ul>
           </div>
@@ -74,12 +79,12 @@ const Footer = () => {
 
         <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-500 text-sm mb-4 md:mb-0">
-            © {currentYear} SpeechHelp is a registered service of Creativity Crisis, LLC | All rights reserved.
+            © {currentYear} SpeechHelp is a registered service of Creativity Crisis, LLC | {t('footer.rights', currentLanguage.code)}
           </p>
           <div className="flex space-x-6 text-sm">
-            <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">Privacy Policy</a>
-            <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">Terms of Service</a>
-            <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">Cookie Policy</a>
+            <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.privacy', currentLanguage.code)}</a>
+            <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.terms', currentLanguage.code)}</a>
+            <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.cookies', currentLanguage.code)}</a>
           </div>
         </div>
       </div>
