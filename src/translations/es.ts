@@ -1,4 +1,3 @@
-
 export const es = {
   // General
   'app.name': 'SpeechHelp',
@@ -169,5 +168,47 @@ export const es = {
   'contact.infoTitle': 'Información de contacto',
   'contact.infoSubtitle': 'Estamos aquí para responder tus preguntas y ayudarte a aprovechar al máximo SpeechHelp.',
   'contact.emailAddress': 'hello@speechhelp.ai',
-  'contact.liveChatSupport': 'Soporte por chat en vivo'
+  'contact.liveChatSupport': 'Soporte por chat en vivo',
+  
+  // Speech Lab
+  'speechLab.title': 'Laboratorio de Discursos',
+  'speechLab.subtitle': 'Crea tu discurso perfecto en minutos',
+  'speechLab.step1': 'Paso 1',
+  'speechLab.step2': 'Paso 2',
+  'speechLab.step3': 'Paso 3',
+  'speechLab.step4': 'Paso 4',
+  'speechLab.occasionTitle': 'Seleccionar ocasión',
+  'speechLab.occasionDesc': '¿Qué tipo de discurso estás creando?',
+  'speechLab.detailsTitle': 'Ingresar detalles',
+  'speechLab.detailsDesc': 'Cuéntanos más sobre tu discurso',
+  'speechLab.generateTitle': 'Generar',
+  'speechLab.generateDesc': 'Revisar y generar tu discurso',
+  'speechLab.editTitle': 'Editar y guardar',
+  'speechLab.editDesc': 'Personaliza tu discurso',
+  'speechLab.audienceQuestion': '¿Quién es tu audiencia?',
+  'speechLab.audiencePlaceholder': 'Ej., familia y amigos, colegas, público general',
+  'speechLab.lengthQuestion': '¿Cuánto tiempo debe durar el discurso?',
+  'speechLab.lengthPlaceholder': 'Duración aproximada o cantidad de palabras',
+  'speechLab.toneQuestion': '¿Qué tono te gustaría?',
+  'speechLab.toneOptions.formal': 'Formal',
+  'speechLab.toneOptions.casual': 'Casual',
+  'speechLab.toneOptions.humorous': 'Humorístico',
+  'speechLab.toneOptions.inspirational': 'Inspirador',
+  'speechLab.toneOptions.emotional': 'Emotivo',
+  'speechLab.keyPointsQuestion': 'Puntos clave a incluir',
+  'speechLab.keyPointsPlaceholder': 'Enumera los puntos principales que quieres cubrir',
+  'speechLab.anecdotesQuestion': '¿Alguna anécdota personal?',
+  'speechLab.anecdotesPlaceholder': 'Comparte historias que te gustaría incluir',
+  'speechLab.nextButton': 'Siguiente paso',
+  'speechLab.backButton': 'Paso anterior',
+  'speechLab.generateButton': 'Generar discurso',
+  'speechLab.editButton': 'Editar discurso',
+  'speechLab.saveButton': 'Guardar discurso',
+  'speechLab.downloadButton': 'Descargar como PDF',
+  'speechLab.resetButton': 'Empezar de nuevo',
+  'speechLab.generatingMessage': 'Generando tu discurso...',
+  'speechLab.generatedSuccess': '¡Tu discurso está listo!',
+  'speechLab.savedSuccess': '¡Discurso guardado con éxito!',
+  'speechLab.speechTitleLabel': 'Título del discurso',
+  'speechLab.speechTitlePlaceholder': 'Ingresa un título para tu discurso'
 };

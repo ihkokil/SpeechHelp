@@ -1,4 +1,3 @@
-
 export const fr = {
   // General
   'app.name': 'SpeechHelp',
@@ -169,5 +168,47 @@ export const fr = {
   'contact.infoTitle': 'Informations de contact',
   'contact.infoSubtitle': 'Nous sommes là pour répondre à vos questions et vous aider à tirer le meilleur parti de SpeechHelp.',
   'contact.emailAddress': 'hello@speechhelp.ai',
-  'contact.liveChatSupport': 'Support par chat en direct'
+  'contact.liveChatSupport': 'Support par chat en direct',
+  
+  // Speech Lab
+  'speechLab.title': 'Laboratoire de Discours',
+  'speechLab.subtitle': 'Créez votre discours parfait en quelques minutes',
+  'speechLab.step1': 'Étape 1',
+  'speechLab.step2': 'Étape 2',
+  'speechLab.step3': 'Étape 3',
+  'speechLab.step4': 'Étape 4',
+  'speechLab.occasionTitle': 'Sélectionner l\'occasion',
+  'speechLab.occasionDesc': 'Quel type de discours créez-vous?',
+  'speechLab.detailsTitle': 'Entrer les détails',
+  'speechLab.detailsDesc': 'Parlez-nous davantage de votre discours',
+  'speechLab.generateTitle': 'Générer',
+  'speechLab.generateDesc': 'Examiner et générer votre discours',
+  'speechLab.editTitle': 'Modifier et sauvegarder',
+  'speechLab.editDesc': 'Personnalisez votre discours',
+  'speechLab.audienceQuestion': 'Qui est votre public?',
+  'speechLab.audiencePlaceholder': 'Ex., famille et amis, collègues, grand public',
+  'speechLab.lengthQuestion': 'Quelle devrait être la durée du discours?',
+  'speechLab.lengthPlaceholder': 'Durée approximative ou nombre de mots',
+  'speechLab.toneQuestion': 'Quel ton souhaiteriez-vous?',
+  'speechLab.toneOptions.formal': 'Formel',
+  'speechLab.toneOptions.casual': 'Décontracté',
+  'speechLab.toneOptions.humorous': 'Humoristique',
+  'speechLab.toneOptions.inspirational': 'Inspirant',
+  'speechLab.toneOptions.emotional': 'Émotionnel',
+  'speechLab.keyPointsQuestion': 'Points clés à inclure',
+  'speechLab.keyPointsPlaceholder': 'Listez les points principaux que vous voulez aborder',
+  'speechLab.anecdotesQuestion': 'Des anecdotes personnelles?',
+  'speechLab.anecdotesPlaceholder': 'Partagez des histoires que vous aimeriez inclure',
+  'speechLab.nextButton': 'Étape suivante',
+  'speechLab.backButton': 'Étape précédente',
+  'speechLab.generateButton': 'Générer le discours',
+  'speechLab.editButton': 'Modifier le discours',
+  'speechLab.saveButton': 'Sauvegarder le discours',
+  'speechLab.downloadButton': 'Télécharger en PDF',
+  'speechLab.resetButton': 'Recommencer',
+  'speechLab.generatingMessage': 'Génération de votre discours...',
+  'speechLab.generatedSuccess': 'Votre discours est prêt!',
+  'speechLab.savedSuccess': 'Discours sauvegardé avec succès!',
+  'speechLab.speechTitleLabel': 'Titre du discours',
+  'speechLab.speechTitlePlaceholder': 'Entrez un titre pour votre discours'
 };
