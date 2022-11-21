@@ -30,7 +30,7 @@ const Hero = () => {
         <div className="max-w-5xl mx-auto text-center">
           {/* Main Headline */}
           <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
-            {t('hero.headline', currentLanguage.code)} <span className="text-pink-400">creative speech?</span>
+            {t('hero.headline', currentLanguage.code).replace('creative speech?', '')} <span className="text-pink-400">creative speech?</span>
           </h1>
           
           {/* Subheadline - updated to match main heading font size */}
