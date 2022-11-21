@@ -8,6 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import Translate from '@/components/Translate';
+import { Label } from '@/components/ui/label';
 
 interface Step3Props {
   nextStep: () => void;
@@ -65,18 +66,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         </ButtonCustom>
       </CardFooter>
     </Card>
-  );
-};
-
-// Add Label component for TypeScript compatibility
-const Label: React.FC<{
-  htmlFor?: string;
-  children: React.ReactNode;
-}> = ({ htmlFor, children }) => {
-  return (
-    <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700 mb-1">
-      {children}
-    </label>
   );
 };
 
