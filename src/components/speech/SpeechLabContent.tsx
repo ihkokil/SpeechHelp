@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import SpeechStepIndicator from './SpeechStepIndicator';
 import SpeechLabHeader from './SpeechLabHeader';
@@ -137,7 +136,6 @@ const SpeechLabContent: React.FC = () => {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
       
-      // Generate speech content when moving from step 3 to 4
       if (currentStep === 3) {
         generateSpeechContent();
       }
@@ -150,7 +148,6 @@ const SpeechLabContent: React.FC = () => {
     }
   };
   
-  // Function to generate speech content based on form data
   const generateSpeechContent = () => {
     const speechType = speechTypes.find(type => type.id === selectedSpeechType)?.label || '';
     const speaker = formData["Who are you in relation to the wedding?"] || 
@@ -168,10 +165,8 @@ const SpeechLabContent: React.FC = () => {
       `Good evening, my name is ${name}${relationship ? `, ${relationship}` : ""}.` : 
       "Good evening, everyone.";
     
-    // Create a personalized speech intro based on the type
     let speech = `${introduction}\n\n`;
     
-    // Add appropriate content based on speech type
     switch (selectedSpeechType) {
       case 'wedding':
         speech += `I am honored to stand before you today as ${speaker} to celebrate the union of this wonderful couple.\n\n`;
@@ -205,29 +200,24 @@ const SpeechLabContent: React.FC = () => {
         break;
         
       default:
-        // Generic speech content
         speech += `I'm delighted to speak to you today.\n\n`;
         
-        // Add any personal stories if provided
         const storyKey = Object.keys(formData).find(key => key.toLowerCase().includes("story") || key.toLowerCase().includes("experience"));
         if (storyKey && formData[storyKey]) {
           speech += `${formData[storyKey]}\n\n`;
         }
         
-        // Add any qualities or achievements if provided
         const qualitiesKey = Object.keys(formData).find(key => key.toLowerCase().includes("qualities") || key.toLowerCase().includes("achievements"));
         if (qualitiesKey && formData[qualitiesKey]) {
           speech += `${formData[qualitiesKey]}\n\n`;
         }
         
-        // Generic closing
         speech += "Thank you for your attention and time today.";
     }
     
     setGeneratedSpeech(speech);
   };
 
-  // Update the steps for the progress indicator to match our flow
   const steps = [
     { number: 1, title: 'Select Occasion' },
     { number: 2, title: 'Let\'s Get Creative' },
@@ -275,6 +265,7 @@ const SpeechLabContent: React.FC = () => {
               prevStep={prevStep}
               generatedSpeech={generatedSpeech}
               speechTitle={formData["speechTitle"] || "My Speech"}
+              selectedSpeechType={selectedSpeechType}
             />
           )}
         </div>
