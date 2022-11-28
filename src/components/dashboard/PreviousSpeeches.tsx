@@ -8,9 +8,10 @@ import EditSpeechModal from './speeches/EditSpeechModal';
 import DeleteSpeechAlert from './speeches/DeleteSpeechAlert';
 import SpeechesTable from './speeches/SpeechesTable';
 import Translate from '@/components/Translate';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const PreviousSpeeches = () => {
-  const { speeches, updateSpeech, deleteSpeech } = useAuth();
+  const { speeches, updateSpeech, deleteSpeech, isLoading } = useAuth();
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -62,6 +63,41 @@ const PreviousSpeeches = () => {
     navigate('/speech-lab');
   };
 
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="p-4">
+          <Skeleton className="h-12 w-full mb-4" />
+          <Skeleton className="h-12 w-full mb-4" />
+          <Skeleton className="h-12 w-full mb-4" />
+        </div>
+      );
+    }
+
+    if (speeches.length === 0) {
+      return (
+        <div className="p-8 text-center">
+          <p className="text-gray-500 mb-4"><Translate text="dashboard.noSpeeches" /></p>
+          <ButtonCustom 
+            variant="outline" 
+            onClick={handleCreateNewSpeech}
+          >
+            <Translate text="dashboard.createFirstSpeech" />
+          </ButtonCustom>
+        </div>
+      );
+    }
+
+    return (
+      <SpeechesTable 
+        speeches={speeches}
+        onView={handleViewSpeech}
+        onEdit={handleEditSpeech}
+        onDelete={handleDeleteSpeech}
+      />
+    );
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border">
       <div className="p-4 flex justify-between items-center border-b">
@@ -75,24 +111,7 @@ const PreviousSpeeches = () => {
         </ButtonCustom>
       </div>
       
-      {speeches.length === 0 ? (
-        <div className="p-8 text-center">
-          <p className="text-gray-500 mb-4"><Translate text="dashboard.noSpeeches" /></p>
-          <ButtonCustom 
-            variant="outline" 
-            onClick={handleCreateNewSpeech}
-          >
-            <Translate text="dashboard.createFirstSpeech" />
-          </ButtonCustom>
-        </div>
-      ) : (
-        <SpeechesTable 
-          speeches={speeches}
-          onView={handleViewSpeech}
-          onEdit={handleEditSpeech}
-          onDelete={handleDeleteSpeech}
-        />
-      )}
+      {renderContent()}
       
       {/* Modals */}
       <ViewSpeechModal 
