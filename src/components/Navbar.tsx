@@ -39,7 +39,7 @@ const Navbar = () => {
             <img 
               src="/lovable-uploads/84f00e48-230b-4b88-9f37-7a1ba9b6ffda.png" 
               alt="SpeechHelp Logo" 
-              className="h-10" 
+              className="h-10 w-auto object-contain" 
               style={{ display: 'block' }}
             />
           </Link>
