@@ -53,12 +53,6 @@ const Navbar = () => {
               {t('nav.home', currentLanguage.code)}
             </Link>
             <Link
-              to="#features"
-              className="text-gray-700 hover:text-pink-600 font-medium transition-colors whitespace-nowrap"
-            >
-              {t('nav.features', currentLanguage.code)}
-            </Link>
-            <Link
               to="#how-it-works"
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors whitespace-nowrap"
             >
@@ -104,13 +98,6 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('nav.home', currentLanguage.code)}
-              </Link>
-              <Link
-                to="#features"
-                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {t('nav.features', currentLanguage.code)}
               </Link>
               <Link
                 to="#how-it-works"
