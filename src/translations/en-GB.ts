@@ -7,5 +7,5 @@ export const enGB = {
   'dashboard.niceDay': 'Have a pleasant',
   'dashboard.thisMonth': 'This month',
   'hero.headline': 'Need a ',
-  'features.title': 'Welcome!',
+  'features.title': 'Welcome To Speech Help !',
 };
