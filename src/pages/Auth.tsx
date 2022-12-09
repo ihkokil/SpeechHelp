@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -18,19 +17,17 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
-  // Check if the URL contains signup=true or if hash contains type=recovery
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('signup') === 'true') {
       setIsSignUp(true);
     }
 
-    // Check for password reset flow
     if (location.hash) {
       const hashParams = new URLSearchParams(location.hash.substring(1));
       if (hashParams.get('type') === 'recovery') {
@@ -39,12 +36,11 @@ const Auth = () => {
     }
   }, [location]);
 
-  // Redirect if already logged in (except for reset password flow)
   useEffect(() => {
-    if (user && !isResetPassword) {
-      navigate('/dashboard');
+    if (user && !isLoading && !isResetPassword) {
+      navigate('/dashboard', { replace: true });
     }
-  }, [user, navigate, isResetPassword]);
+  }, [user, navigate, isLoading, isResetPassword]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +48,6 @@ const Auth = () => {
 
     try {
       if (isResetPassword) {
-        // Handle reset password form submission
         if (newPassword !== confirmPassword) {
           toast({
             title: "Passwords don't match",
@@ -73,11 +68,9 @@ const Auth = () => {
           description: "Your password has been updated successfully. You can now log in with your new password.",
         });
 
-        // Reset state and redirect to login
         setIsResetPassword(false);
         setNewPassword('');
         setConfirmPassword('');
-        
       } else if (isForgotPassword) {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/auth`,
@@ -91,7 +84,6 @@ const Auth = () => {
         });
         setIsForgotPassword(false);
       } else if (isSignUp) {
-        // For sign up, validate first and last name
         if (!firstName.trim() || !lastName.trim()) {
           toast({
             title: "Missing information",
@@ -105,7 +97,6 @@ const Auth = () => {
         await signUp(email, password, firstName, lastName);
       } else {
         await signIn(email, password);
-        navigate('/dashboard');
       }
     } catch (error: any) {
       console.error('Authentication error:', error);

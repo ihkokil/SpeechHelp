@@ -23,6 +23,7 @@ const Dashboard = () => {
   const [lastName, setLastName] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const [isProcessingUser, setIsProcessingUser] = useState(true);
   
   // Fetch speeches when component mounts and auth state changes
   useEffect(() => {
@@ -62,10 +63,16 @@ const Dashboard = () => {
       } else {
         setUserName(`${firstNameFromMeta} ${lastNameFromMeta}`);
       }
+      
+      // Mark user processing as complete
+      setIsProcessingUser(false);
     }
   }, [user]);
 
-  if (isLoading) {
+  // Combined loading state to prevent flickering
+  const showLoading = isLoading || isProcessingUser;
+
+  if (showLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
         <div className="flex flex-col items-center">

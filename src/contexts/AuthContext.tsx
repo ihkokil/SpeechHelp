@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthContextType } from '@/types/auth';
 import { useAuthentication } from '@/hooks/use-authentication';
@@ -33,23 +33,60 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     deleteSpeech
   } = useSpeeches(user);
 
+  // Memoize fetchSpeeches to prevent unnecessary renders
+  const fetchSpeechesStable = useCallback(async () => {
+    if (user) {
+      try {
+        await fetchSpeeches();
+      } catch (err) {
+        console.error('Failed to fetch speeches:', err);
+      }
+    }
+  }, [user, fetchSpeeches]);
+
   useEffect(() => {
-    // Check for existing session
+    let mounted = true;
+    
+    // Set up auth state listener first
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      console.log(`Auth state changed: ${event}`);
+      
+      if (!mounted) return;
+      
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+      
+      if (newSession?.user && mounted) {
+        try {
+          await fetchSpeechesStable();
+        } catch (err) {
+          console.error('Failed to fetch speeches after auth state change:', err);
+        }
+      }
+      
+      if (mounted) {
+        setIsLoading(false);
+      }
+    });
+
+    // Then check for existing session
     const getSession = async () => {
       try {
+        if (!mounted) return;
+        
         setIsLoading(true);
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error getting session:', error);
-        } else if (data?.session) {
+        } else if (data?.session && mounted) {
           setSession(data.session);
           setUser(data.session.user);
           
           // Only attempt to fetch speeches if we have a valid session
-          if (data.session.user) {
+          if (data.session.user && mounted) {
             try {
-              await fetchSpeeches();
+              await fetchSpeechesStable();
             } catch (err) {
               console.error('Failed to fetch speeches during initialization:', err);
             }
@@ -58,50 +95,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } catch (err) {
         console.error('Unexpected error during session check:', err);
       } finally {
-        setIsLoading(false);
-        setIsInitialized(true);
+        if (mounted) {
+          setIsLoading(false);
+          setIsInitialized(true);
+        }
       }
     };
 
     getSession();
 
-    // Listen for auth state changes
-    const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      console.log(`Auth state changed: ${event}`);
-      
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
-      
-      if (newSession?.user) {
-        try {
-          await fetchSpeeches();
-        } catch (err) {
-          console.error('Failed to fetch speeches after auth state change:', err);
-        }
-      }
-      
-      setIsLoading(false);
-    });
-
     return () => {
-      data.subscription.unsubscribe();
+      mounted = false;
+      authListener.subscription.unsubscribe();
     };
-  }, [fetchSpeeches, setIsLoading, setSession, setUser]);
+  }, [fetchSpeechesStable, setIsLoading, setSession, setUser]);
+
+  // Prevent state changes during component unmounting
+  const contextValue = {
+    user, 
+    session, 
+    // Combine loading states to prevent flashing
+    isLoading: isLoading || !isInitialized, 
+    speeches, 
+    fetchSpeeches: fetchSpeechesStable, 
+    saveSpeech, 
+    updateSpeech, 
+    deleteSpeech, 
+    signIn, 
+    signUp, 
+    signOut 
+  };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      session, 
-      isLoading: isLoading || !isInitialized, // Prevent UI changes until fully initialized
-      speeches, 
-      fetchSpeeches, 
-      saveSpeech, 
-      updateSpeech, 
-      deleteSpeech, 
-      signIn, 
-      signUp, 
-      signOut 
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
