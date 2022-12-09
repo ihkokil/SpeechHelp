@@ -1,18 +1,16 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
-import { Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import AuthFormContainer from '@/components/auth/AuthFormContainer';
+import LoginForm from '@/components/auth/LoginForm';
+import SignUpForm from '@/components/auth/SignUpForm';
+import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
+import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
 
 const Auth = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -42,67 +40,56 @@ const Auth = () => {
     }
   }, [user, navigate, isLoading, isResetPassword]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (email: string, password: string) => {
     setLoading(true);
-
     try {
-      if (isResetPassword) {
-        if (newPassword !== confirmPassword) {
-          toast({
-            title: "Passwords don't match",
-            description: "Please make sure your passwords match.",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        const { error } = await supabase.auth.updateUser({
-          password: newPassword
-        });
-
-        if (error) throw error;
-
-        toast({
-          title: "Password updated",
-          description: "Your password has been updated successfully. You can now log in with your new password.",
-        });
-
-        setIsResetPassword(false);
-        setNewPassword('');
-        setConfirmPassword('');
-      } else if (isForgotPassword) {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth`,
-        });
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Reset link sent",
-          description: "Check your email for the password reset link.",
-        });
-        setIsForgotPassword(false);
-      } else if (isSignUp) {
-        if (!firstName.trim() || !lastName.trim()) {
-          toast({
-            title: "Missing information",
-            description: "Please provide both first and last name.",
-            variant: "destructive"
-          });
-          setLoading(false);
-          return;
-        }
-        
-        await signUp(email, password, firstName, lastName);
-      } else {
-        await signIn(email, password);
-      }
+      await signIn(email, password);
     } catch (error: any) {
-      console.error('Authentication error:', error);
+      console.error('Login error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignUp = async (email: string, password: string, firstName: string, lastName: string) => {
+    setLoading(true);
+    try {
+      if (!firstName.trim() || !lastName.trim()) {
+        toast({
+          title: "Missing information",
+          description: "Please provide both first and last name.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      await signUp(email, password, firstName, lastName);
+    } catch (error: any) {
+      console.error('Signup error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (email: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      
+      if (error) throw error;
+      
       toast({
-        title: "Authentication error",
-        description: error.message || "An error occurred during authentication",
+        title: "Reset link sent",
+        description: "Check your email for the password reset link.",
+      });
+      setIsForgotPassword(false);
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      toast({
+        title: "Password reset failed",
+        description: error.message || "An error occurred during password reset",
         variant: "destructive"
       });
     } finally {
@@ -110,182 +97,89 @@ const Auth = () => {
     }
   };
 
+  const handleResetPassword = async (newPassword: string, confirmPassword: string) => {
+    setLoading(true);
+    try {
+      if (newPassword !== confirmPassword) {
+        toast({
+          title: "Passwords don't match",
+          description: "Please make sure your passwords match.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password updated",
+        description: "Your password has been updated successfully. You can now log in with your new password.",
+      });
+
+      setIsResetPassword(false);
+    } catch (error: any) {
+      console.error('Password update error:', error);
+      toast({
+        title: "Password update failed",
+        description: error.message || "An error occurred during password update",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAuthFormTitle = () => {
+    if (isResetPassword) return 'Reset Your Password';
+    if (isForgotPassword) return 'Reset Password';
+    return isSignUp ? 'Create an Account' : 'Welcome Back';
+  };
+
+  const getAuthFormDescription = () => {
+    if (isResetPassword) return 'Enter your new password below';
+    if (isForgotPassword) return 'Enter your email to receive a reset link';
+    return isSignUp 
+      ? 'Sign up to start improving your speech' 
+      : 'Log in to continue your speech journey';
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600 p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            {isResetPassword 
-              ? 'Reset Your Password'
-              : isForgotPassword 
-                ? 'Reset Password'
-                : isSignUp 
-                  ? 'Create an Account' 
-                  : 'Welcome Back'}
-          </h1>
-          <p className="text-gray-600">
-            {isResetPassword
-              ? 'Enter your new password below'
-              : isForgotPassword
-                ? 'Enter your email to receive a reset link'
-                : isSignUp 
-                  ? 'Sign up to start improving your speech' 
-                  : 'Log in to continue your speech journey'}
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isSignUp && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name
-                </label>
-                <input
-                  id="firstName"
-                  type="text"
-                  required
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                  placeholder="John"
-                />
-              </div>
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name
-                </label>
-                <input
-                  id="lastName"
-                  type="text"
-                  required
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                  placeholder="Doe"
-                />
-              </div>
-            </div>
-          )}
-
-          {!isResetPassword && (
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                placeholder="your@email.com"
-              />
-            </div>
-          )}
-
-          {!isForgotPassword && !isResetPassword && (
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                placeholder="••••••••"
-                minLength={6}
-              />
-            </div>
-          )}
-
-          {isResetPassword && (
-            <>
-              <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                  New Password
-                </label>
-                <input
-                  id="newPassword"
-                  type="password"
-                  required
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                  placeholder="••••••••"
-                  minLength={6}
-                />
-              </div>
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                  Confirm New Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                  placeholder="••••••••"
-                  minLength={6}
-                />
-              </div>
-            </>
-          )}
-
-          <ButtonCustom
-            type="submit"
-            variant="magenta"
-            className="w-full py-2"
-            disabled={loading}
-          >
-            {loading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Processing...
-              </span>
-            ) : (
-              isResetPassword 
-                ? 'Update Password'
-                : isForgotPassword 
-                  ? 'Send Reset Link' 
-                  : (isSignUp ? 'Sign Up' : 'Log In')
-            )}
-          </ButtonCustom>
-        </form>
-
-        <div className="mt-6 text-center space-y-2">
-          {!isResetPassword && !isForgotPassword && (
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-pink-600 hover:text-pink-800 text-sm font-medium"
-            >
-              {isSignUp ? 'Already have an account? Log In' : 'Need an account? Sign Up'}
-            </button>
-          )}
-          
-          {!isResetPassword && (
-            <button
-              type="button"
-              onClick={() => setIsForgotPassword(!isForgotPassword)}
-              className="block w-full text-pink-600 hover:text-pink-800 text-sm font-medium"
-            >
-              {isForgotPassword 
-                ? 'Back to login' 
-                : 'Forgot your password?'}
-            </button>
-          )}
-        </div>
-      </div>
+      <AuthFormContainer 
+        title={getAuthFormTitle()} 
+        description={getAuthFormDescription()}
+      >
+        {isResetPassword ? (
+          <ResetPasswordForm 
+            onSubmit={handleResetPassword}
+            loading={loading}
+          />
+        ) : isForgotPassword ? (
+          <ForgotPasswordForm 
+            onSubmit={handleForgotPassword}
+            loading={loading}
+            onToggleLogin={() => setIsForgotPassword(false)}
+          />
+        ) : isSignUp ? (
+          <SignUpForm 
+            onSubmit={handleSignUp}
+            loading={loading}
+            onToggleLogin={() => setIsSignUp(false)}
+          />
+        ) : (
+          <LoginForm 
+            onSubmit={handleLogin}
+            loading={loading}
+            onToggleSignUp={() => setIsSignUp(true)}
+            onToggleForgotPassword={() => setIsForgotPassword(true)}
+          />
+        )}
+      </AuthFormContainer>
     </div>
   );
 };
