@@ -33,13 +33,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     deleteSpeech
   } = useSpeeches(user);
 
-  // Memoize fetchSpeeches to prevent unnecessary renders
+  // Memoized function to fetch speeches with better error handling
   const fetchSpeechesStable = useCallback(async () => {
     if (user) {
       try {
+        console.log("Attempting to fetch speeches from context");
         await fetchSpeeches();
       } catch (err) {
-        console.error('Failed to fetch speeches:', err);
+        console.error('Failed to fetch speeches from context:', err);
       }
     }
   }, [user, fetchSpeeches]);
@@ -49,7 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     // Set up auth state listener first
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      console.log(`Auth state changed: ${event}`);
+      console.log(`Auth state changed: ${event}`, newSession?.user?.id || 'No user');
       
       if (!mounted) return;
       
@@ -57,8 +58,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(newSession?.user ?? null);
       
       if (newSession?.user && mounted) {
+        console.log("User authenticated, will fetch speeches");
         try {
-          await fetchSpeechesStable();
+          // Delay fetching speeches slightly to ensure auth is complete
+          setTimeout(async () => {
+            if (mounted) {
+              await fetchSpeechesStable();
+            }
+          }, 500);
         } catch (err) {
           console.error('Failed to fetch speeches after auth state change:', err);
         }
@@ -75,22 +82,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (!mounted) return;
         
         setIsLoading(true);
+        console.log("Getting session...");
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error getting session:', error);
         } else if (data?.session && mounted) {
+          console.log("Session found, user ID:", data.session.user.id);
           setSession(data.session);
           setUser(data.session.user);
           
           // Only attempt to fetch speeches if we have a valid session
           if (data.session.user && mounted) {
             try {
-              await fetchSpeechesStable();
+              // Delay fetching speeches slightly to ensure auth is complete
+              setTimeout(async () => {
+                if (mounted) {
+                  await fetchSpeechesStable();
+                }
+              }, 500);
             } catch (err) {
               console.error('Failed to fetch speeches during initialization:', err);
             }
           }
+        } else {
+          console.log("No session found");
         }
       } catch (err) {
         console.error('Unexpected error during session check:', err);
@@ -105,10 +121,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     getSession();
 
     return () => {
+      console.log("Auth context cleanup");
       mounted = false;
-      authListener.subscription.unsubscribe();
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
     };
   }, [fetchSpeechesStable, setIsLoading, setSession, setUser]);
+
+  // Call fetchSpeeches again if user changes
+  useEffect(() => {
+    if (user && !isLoading && isInitialized) {
+      console.log("User changed, fetching speeches");
+      fetchSpeechesStable();
+    }
+  }, [user, isLoading, isInitialized, fetchSpeechesStable]);
 
   // Prevent state changes during component unmounting
   const contextValue = {
