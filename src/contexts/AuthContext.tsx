@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const {
     speeches,
+    isInitialized: speechesInitialized,
     fetchSpeeches,
     saveSpeech,
     updateSpeech,
@@ -54,24 +55,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (!mounted) return;
       
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
-      
-      if (newSession?.user && mounted) {
-        console.log("User authenticated, will fetch speeches");
-        try {
-          // Delay fetching speeches slightly to ensure auth is complete
-          setTimeout(async () => {
-            if (mounted) {
-              await fetchSpeechesStable();
-            }
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        setIsLoading(false);
+        
+        // Wait a brief moment before fetching speeches to ensure auth is complete
+        if (newSession?.user && mounted) {
+          setTimeout(() => {
+            if (mounted) fetchSpeechesStable();
           }, 500);
-        } catch (err) {
-          console.error('Failed to fetch speeches after auth state change:', err);
         }
-      }
-      
-      if (mounted) {
+      } else if (event === 'SIGNED_OUT') {
+        setSession(null);
+        setUser(null);
         setIsLoading(false);
       }
     });
@@ -87,32 +84,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (error) {
           console.error('Error getting session:', error);
+          setIsLoading(false);
         } else if (data?.session && mounted) {
           console.log("Session found, user ID:", data.session.user.id);
           setSession(data.session);
           setUser(data.session.user);
-          
-          // Only attempt to fetch speeches if we have a valid session
-          if (data.session.user && mounted) {
-            try {
-              // Delay fetching speeches slightly to ensure auth is complete
-              setTimeout(async () => {
-                if (mounted) {
-                  await fetchSpeechesStable();
-                }
-              }, 500);
-            } catch (err) {
-              console.error('Failed to fetch speeches during initialization:', err);
-            }
-          }
+          setIsLoading(false);
         } else {
           console.log("No session found");
+          setIsLoading(false);
         }
       } catch (err) {
         console.error('Unexpected error during session check:', err);
-      } finally {
         if (mounted) {
           setIsLoading(false);
+        }
+      } finally {
+        if (mounted) {
           setIsInitialized(true);
         }
       }
@@ -129,20 +117,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [fetchSpeechesStable, setIsLoading, setSession, setUser]);
 
-  // Call fetchSpeeches again if user changes
-  useEffect(() => {
-    if (user && !isLoading && isInitialized) {
-      console.log("User changed, fetching speeches");
-      fetchSpeechesStable();
-    }
-  }, [user, isLoading, isInitialized, fetchSpeechesStable]);
-
   // Prevent state changes during component unmounting
   const contextValue = {
     user, 
     session, 
     // Combine loading states to prevent flashing
-    isLoading: isLoading || !isInitialized, 
+    isLoading: isLoading || !isInitialized || !speechesInitialized, 
     speeches, 
     fetchSpeeches: fetchSpeechesStable, 
     saveSpeech, 

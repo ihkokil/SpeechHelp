@@ -24,9 +24,21 @@ const Dashboard = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const [isProcessingUser, setIsProcessingUser] = useState(true);
-  const [dashboardInitialized, setDashboardInitialized] = useState(false);
   
-  // Manually fetch speeches when component mounts to ensure data is loaded
+  // Redirect if not logged in
+  useEffect(() => {
+    // Add a small delay to ensure auth state has been checked completely
+    const redirectTimer = setTimeout(() => {
+      if (!isLoading && !user) {
+        console.log("User not authenticated, redirecting to auth page");
+        navigate('/auth');
+      }
+    }, 500);
+    
+    return () => clearTimeout(redirectTimer);
+  }, [user, isLoading, navigate]);
+  
+  // Manually fetch speeches when component mounts
   useEffect(() => {
     console.log("Dashboard mounted. Auth state:", { 
       isLoggedIn: !!user, 
@@ -35,28 +47,18 @@ const Dashboard = () => {
     });
     
     const initializeDashboard = async () => {
-      if (user && !isLoading && !dashboardInitialized) {
+      if (user && !isLoading) {
         console.log("Initializing dashboard, fetching speeches");
         try {
           await fetchSpeeches();
         } catch (error) {
           console.error("Error fetching speeches on dashboard mount:", error);
-        } finally {
-          setDashboardInitialized(true);
         }
       }
     };
     
     initializeDashboard();
-  }, [user, isLoading, speeches, fetchSpeeches, dashboardInitialized]);
-  
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!isLoading && !user) {
-      console.log("User not authenticated, redirecting to auth page");
-      navigate('/auth');
-    }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, fetchSpeeches]);
   
   // Set user information from metadata
   useEffect(() => {

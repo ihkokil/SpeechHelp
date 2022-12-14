@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Speech } from '@/types/auth';
@@ -9,11 +9,13 @@ export const useSpeeches = (user: User | null) => {
   const [speeches, setSpeeches] = useState<Speech[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { toast } = useToast();
 
   const fetchSpeeches = useCallback(async () => {
     if (!user) {
       setSpeeches([]);
+      setIsInitialized(true);
       return;
     }
     
@@ -52,8 +54,21 @@ export const useSpeeches = (user: User | null) => {
       });
     } finally {
       setIsLoading(false);
+      setIsInitialized(true);
     }
   }, [user, toast]);
+
+  // Initial fetch when user changes
+  useEffect(() => {
+    if (user) {
+      console.log("User detected in useSpeeches, triggering fetch");
+      fetchSpeeches();
+    } else if (user === null) {
+      // Clear speeches when user is explicitly null (logged out)
+      setSpeeches([]);
+      setIsInitialized(true);
+    }
+  }, [user, fetchSpeeches]);
 
   const saveSpeech = async (title: string, content: string, speechType: string) => {
     if (!user) return;
@@ -168,6 +183,7 @@ export const useSpeeches = (user: User | null) => {
     speeches,
     isLoading,
     error,
+    isInitialized,
     fetchSpeeches,
     saveSpeech,
     updateSpeech,
