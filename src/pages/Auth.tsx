@@ -26,13 +26,33 @@ const Auth = () => {
       setIsSignUp(true);
     }
 
+    // Handle social login redirects and password recovery
     if (location.hash) {
       const hashParams = new URLSearchParams(location.hash.substring(1));
       if (hashParams.get('type') === 'recovery') {
         setIsResetPassword(true);
       }
+      
+      // Check if this is a redirect after social login
+      if (hashParams.get('access_token')) {
+        toast({
+          title: "Authentication successful",
+          description: "You have successfully logged in.",
+        });
+      }
     }
-  }, [location]);
+    
+    // Handle refresh token errors
+    const errorParam = params.get('error');
+    const errorDescription = params.get('error_description');
+    if (errorParam && errorDescription) {
+      toast({
+        title: "Authentication error",
+        description: errorDescription,
+        variant: "destructive"
+      });
+    }
+  }, [location, toast]);
 
   useEffect(() => {
     if (user && !isLoading && !isResetPassword) {
