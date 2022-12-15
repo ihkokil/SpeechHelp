@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth, Speech } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useNavigate } from 'react-router-dom';
 import ViewSpeechModal from './speeches/ViewSpeechModal';
@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const PreviousSpeeches = () => {
   const { speeches, updateSpeech, deleteSpeech, isLoading, fetchSpeeches } = useAuth();
-  const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
+  const [selectedSpeech, setSelectedSpeech] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
@@ -53,7 +53,7 @@ const PreviousSpeeches = () => {
       }
     };
     
-    // Only try to fetch if we have a user and aren't already loading
+    // Only try to fetch if we're not already loading
     if (!isLoading) {
       loadSpeeches();
     }
@@ -63,12 +63,17 @@ const PreviousSpeeches = () => {
     };
   }, [fetchSpeeches, componentLoaded, isLoading, toast]);
 
-  const handleViewSpeech = (speech: Speech) => {
+  // Debug speeches data
+  useEffect(() => {
+    console.log("Speeches data in PreviousSpeeches:", speeches);
+  }, [speeches]);
+
+  const handleViewSpeech = (speech) => {
     setSelectedSpeech(speech);
     setIsViewModalOpen(true);
   };
 
-  const handleEditSpeech = (speech: Speech) => {
+  const handleEditSpeech = (speech) => {
     setSelectedSpeech(speech);
     setEditTitle(speech.title);
     setEditContent(speech.content);
@@ -95,7 +100,7 @@ const PreviousSpeeches = () => {
     }
   };
 
-  const handleDeleteSpeech = (speech: Speech) => {
+  const handleDeleteSpeech = (speech) => {
     setSelectedSpeech(speech);
     setIsDeleteAlertOpen(true);
   };
