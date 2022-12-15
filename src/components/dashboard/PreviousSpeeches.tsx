@@ -9,6 +9,7 @@ import DeleteSpeechAlert from './speeches/DeleteSpeechAlert';
 import SpeechesTable from './speeches/SpeechesTable';
 import Translate from '@/components/Translate';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 const PreviousSpeeches = () => {
   const { speeches, updateSpeech, deleteSpeech, isLoading, fetchSpeeches } = useAuth();
@@ -19,25 +20,48 @@ const PreviousSpeeches = () => {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [componentLoaded, setComponentLoaded] = useState(false);
+  const [isLoadingSpeeches, setIsLoadingSpeeches] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Make sure speeches are loaded when component mounts
   useEffect(() => {
+    let isMounted = true;
+    
     const loadSpeeches = async () => {
-      if (!componentLoaded) {
+      if (!componentLoaded && isMounted) {
         console.log("PreviousSpeeches component mounted, fetching speeches");
+        setIsLoadingSpeeches(true);
+        
         try {
           await fetchSpeeches();
         } catch (error) {
           console.error("Error fetching speeches in PreviousSpeeches:", error);
+          if (isMounted) {
+            toast({
+              title: "Error loading speeches",
+              description: "We couldn't load your speeches. Please try again.",
+              variant: "destructive"
+            });
+          }
         } finally {
-          setComponentLoaded(true);
+          if (isMounted) {
+            setIsLoadingSpeeches(false);
+            setComponentLoaded(true);
+          }
         }
       }
     };
     
-    loadSpeeches();
-  }, [fetchSpeeches, componentLoaded]);
+    // Only try to fetch if we have a user and aren't already loading
+    if (!isLoading) {
+      loadSpeeches();
+    }
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchSpeeches, componentLoaded, isLoading, toast]);
 
   const handleViewSpeech = (speech: Speech) => {
     setSelectedSpeech(speech);
@@ -57,8 +81,17 @@ const PreviousSpeeches = () => {
     try {
       await updateSpeech(selectedSpeech.id, editTitle, editContent);
       setIsEditModalOpen(false);
+      toast({
+        title: "Speech updated",
+        description: "Your speech has been successfully updated.",
+      });
     } catch (error) {
       console.error('Error updating speech:', error);
+      toast({
+        title: "Update failed",
+        description: "We couldn't update your speech. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -73,8 +106,17 @@ const PreviousSpeeches = () => {
     try {
       await deleteSpeech(selectedSpeech.id);
       setIsDeleteAlertOpen(false);
+      toast({
+        title: "Speech deleted",
+        description: "Your speech has been successfully deleted.",
+      });
     } catch (error) {
       console.error('Error deleting speech:', error);
+      toast({
+        title: "Delete failed",
+        description: "We couldn't delete your speech. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -83,7 +125,7 @@ const PreviousSpeeches = () => {
   };
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading || isLoadingSpeeches) {
       return (
         <div className="p-4">
           <Skeleton className="h-12 w-full mb-4" />

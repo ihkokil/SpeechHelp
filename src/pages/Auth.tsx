@@ -25,7 +25,12 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !isLoading && !isResetPassword) {
-      navigate('/dashboard', { replace: true });
+      // Add a small delay to ensure all auth state has been properly updated
+      const redirectTimer = setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 300);
+      
+      return () => clearTimeout(redirectTimer);
     }
   }, [user, navigate, isLoading, isResetPassword]);
 

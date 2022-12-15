@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -8,9 +8,21 @@ interface SpeechLabLayoutProps {
 }
 
 const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
+  const [isStabilized, setIsStabilized] = useState(false);
+  
+  useEffect(() => {
+    // Add a stabilization delay to prevent flashing
+    if (!isLoading && user) {
+      const timer = setTimeout(() => {
+        setIsStabilized(true);
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, user]);
 
-  if (isLoading) {
+  if (isLoading || !isStabilized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center">
