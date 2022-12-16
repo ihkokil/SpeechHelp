@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import AuthFormButton from './AuthFormButton';
-import SocialLoginButtons from './SocialLoginButtons';
 import { Mail, Lock, User } from 'lucide-react';
 
 type SignUpFormProps = {
@@ -101,8 +100,6 @@ const SignUpForm = ({ onSubmit, loading, onToggleLogin }: SignUpFormProps) => {
       </div>
 
       <AuthFormButton loading={loading} label="Sign Up" />
-      
-      <SocialLoginButtons isLoading={loading} className="mt-6" />
 
       <div className="mt-6 text-center">
         <button
