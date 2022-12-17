@@ -18,6 +18,8 @@ export const useAuthForms = () => {
     setLoading(true);
     try {
       await signIn(email, password);
+      // Toast notification is already handled in the signIn function
+      // Navigate to dashboard is handled by the Auth component's useEffect
     } catch (error: any) {
       console.error('Login error:', error);
     } finally {
@@ -38,6 +40,8 @@ export const useAuthForms = () => {
       }
       
       await signUp(email, password, firstName, lastName);
+      // Toast notification is already handled in the signUp function
+      // Navigate to dashboard is handled by the Auth component's useEffect
     } catch (error: any) {
       console.error('Signup error:', error);
     } finally {

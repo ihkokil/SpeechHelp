@@ -23,15 +23,12 @@ const Auth = () => {
     handleResetPassword
   } = useAuthForms();
 
+  // Enhanced redirection logic to ensure users get to the dashboard after authentication
   useEffect(() => {
     if (user && !isLoading && !isResetPassword) {
-      // Add a small delay to ensure all auth state has been properly updated
-      const redirectTimer = setTimeout(() => {
-        console.log("Authenticated user detected, redirecting to dashboard");
-        navigate('/dashboard', { replace: true });
-      }, 800); // Increased from 300ms to 800ms for better stability
-      
-      return () => clearTimeout(redirectTimer);
+      console.log("Authenticated user detected, redirecting to dashboard");
+      // Use immediate redirect for better user experience
+      navigate('/dashboard', { replace: true });
     }
   }, [user, navigate, isLoading, isResetPassword]);
 
