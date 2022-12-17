@@ -23,11 +23,10 @@ const Auth = () => {
     handleResetPassword
   } = useAuthForms();
 
-  // Enhanced redirection logic to ensure users get to the dashboard after authentication
+  // Simplified redirection logic 
   useEffect(() => {
     if (user && !isLoading && !isResetPassword) {
       console.log("Authenticated user detected, redirecting to dashboard");
-      // Use immediate redirect for better user experience
       navigate('/dashboard', { replace: true });
     }
   }, [user, navigate, isLoading, isResetPassword]);
