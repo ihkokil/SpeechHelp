@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AuthContextType } from '@/types/auth';
 import { useAuthentication } from '@/hooks/use-authentication';
 import { useSpeeches } from '@/hooks/use-speeches';
+import { useToast } from '@/hooks/use-toast';
 
 // Re-export Speech type from auth types
 export type { Speech } from '@/types/auth';
@@ -11,6 +12,7 @@ export type { Speech } from '@/types/auth';
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const { toast } = useToast();
   const {
     user,
     setUser,
@@ -42,9 +44,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await fetchSpeeches();
       } catch (err) {
         console.error('Failed to fetch speeches from context:', err);
+        toast({
+          title: "Error fetching speeches",
+          description: "We couldn't load your speeches. Please try refreshing the page.",
+          variant: "destructive"
+        });
       }
     }
-  }, [user, fetchSpeeches]);
+  }, [user, fetchSpeeches, toast]);
 
   useEffect(() => {
     let mounted = true;

@@ -21,19 +21,24 @@ export const useSpeechOperations = (user: User | null) => {
     
     console.log("Fetching speeches for user ID:", user.id);
     
-    const { data, error } = await supabase
-      .from('speeches')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching speeches:', error);
-      throw new Error(error.message);
+    try {
+      const { data, error } = await supabase
+        .from('speeches')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching speeches:', error);
+        throw new Error(error.message);
+      }
+      
+      console.log("Speeches fetched successfully:", data?.length || 0, "speeches found");
+      return data || [];
+    } catch (err: any) {
+      console.error('Failed to fetch speeches:', err);
+      throw new Error(err?.message || "Failed to fetch speeches");
     }
-    
-    console.log("Speeches fetched successfully:", data?.length || 0, "speeches found");
-    return data || [];
   }, [user]);
 
   const saveSpeech = useCallback(async (
