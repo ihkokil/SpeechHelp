@@ -6,28 +6,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Download, RefreshCw, Copy, Check } from 'lucide-react';
 import Translate from '@/components/Translate';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface Step4Props {
   prevStep: () => void;
   generatedSpeech: string;
   speechTitle?: string;
-  selectedSpeechType?: string;
 }
 
 const Step4EditSpeech: React.FC<Step4Props> = ({ 
   prevStep, 
   generatedSpeech, 
-  speechTitle = "My Speech",
-  selectedSpeechType = "other"
+  speechTitle = "My Speech" 
 }) => {
   const [speechContent, setSpeechContent] = useState(generatedSpeech || "Your speech will appear here once generated.");
   const [copied, setCopied] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { user, saveSpeech } = useAuth();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(speechContent);
@@ -61,37 +54,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         title: "Speech Reset",
         description: "Your speech has been reset to the original generated content",
       });
-    }
-  };
-
-  const handleSave = async () => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please login to save your speech",
-        variant: "destructive"
-      });
-      navigate('/auth');
-      return;
-    }
-
-    try {
-      setIsSaving(true);
-      await saveSpeech(speechTitle, speechContent, selectedSpeechType);
-      toast({
-        title: "Speech Saved",
-        description: "Your speech has been saved to your account"
-      });
-      navigate('/dashboard');
-    } catch (error) {
-      console.error("Error saving speech:", error);
-      toast({
-        title: "Save Failed",
-        description: "Failed to save your speech. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -137,22 +99,8 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
           <ArrowLeft className="mr-2 h-4 w-4" />
           <Translate text="speechLab.backButton" />
         </ButtonCustom>
-        <ButtonCustom 
-          variant="magenta" 
-          onClick={handleSave}
-          disabled={isSaving}
-        >
-          {isSaving ? (
-            <span className="flex items-center">
-              <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <Translate text="common.saving" fallback="Saving..." />
-            </span>
-          ) : (
-            <Translate text="speechLab.saveButton" fallback="Save Speech" />
-          )}
+        <ButtonCustom variant="magenta">
+          <Translate text="speechLab.saveButton" />
         </ButtonCustom>
       </CardFooter>
     </Card>

@@ -1,4 +1,3 @@
-
 export const es = {
   // General
   'app.name': 'SpeechHelp',
@@ -8,7 +7,6 @@ export const es = {
   'nav.home': 'Inicio',
   'nav.features': 'Características',
   'nav.howItWorks': 'Cómo funciona',
-  'nav.pricing': 'Precios',
   'nav.testimonials': 'Testimonios',
   'nav.contact': 'Contacto',
 
