@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -12,7 +11,7 @@ export const useAuthentication = () => {
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setIsLoading(false);
     
     if (error) {
@@ -28,6 +27,8 @@ export const useAuthentication = () => {
       title: "Login successful",
       description: "Welcome back!",
     });
+    
+    return data;
   };
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
