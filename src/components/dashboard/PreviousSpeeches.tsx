@@ -1,44 +1,102 @@
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
+import { useAuth, Speech } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
+import { useNavigate } from 'react-router-dom';
 import ViewSpeechModal from './speeches/ViewSpeechModal';
 import EditSpeechModal from './speeches/EditSpeechModal';
 import DeleteSpeechAlert from './speeches/DeleteSpeechAlert';
 import SpeechesTable from './speeches/SpeechesTable';
 import Translate from '@/components/Translate';
-import SpeechesLoader from './speeches/SpeechesLoader';
-import { useSpeechOperations } from './speeches/hooks/useSpeechOperations';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const PreviousSpeeches = () => {
-  const { speeches, updateSpeech, deleteSpeech, isLoading, fetchSpeeches } = useAuth();
-  const {
-    selectedSpeech,
-    isViewModalOpen,
-    setIsViewModalOpen,
-    isEditModalOpen,
-    setIsEditModalOpen,
-    isDeleteAlertOpen,
-    setIsDeleteAlertOpen,
-    editTitle,
-    setEditTitle,
-    editContent,
-    setEditContent,
-    handleViewSpeech,
-    handleEditSpeech,
-    handleSaveEdit,
-    handleDeleteSpeech,
-    confirmDelete,
-    handleCreateNewSpeech
-  } = useSpeechOperations({ updateSpeech, deleteSpeech });
+  const { speeches, updateSpeech, deleteSpeech, isLoading } = useAuth();
+  const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const navigate = useNavigate();
 
-  const renderSpeechesTable = () => (
-    <SpeechesTable 
-      speeches={speeches}
-      onView={handleViewSpeech}
-      onEdit={handleEditSpeech}
-      onDelete={handleDeleteSpeech}
-    />
-  );
+  const handleViewSpeech = (speech: Speech) => {
+    setSelectedSpeech(speech);
+    setIsViewModalOpen(true);
+  };
+
+  const handleEditSpeech = (speech: Speech) => {
+    setSelectedSpeech(speech);
+    setEditTitle(speech.title);
+    setEditContent(speech.content);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedSpeech) return;
+    
+    try {
+      await updateSpeech(selectedSpeech.id, editTitle, editContent);
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error('Error updating speech:', error);
+    }
+  };
+
+  const handleDeleteSpeech = (speech: Speech) => {
+    setSelectedSpeech(speech);
+    setIsDeleteAlertOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedSpeech) return;
+    
+    try {
+      await deleteSpeech(selectedSpeech.id);
+      setIsDeleteAlertOpen(false);
+    } catch (error) {
+      console.error('Error deleting speech:', error);
+    }
+  };
+
+  const handleCreateNewSpeech = () => {
+    navigate('/speech-lab');
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="p-4">
+          <Skeleton className="h-12 w-full mb-4" />
+          <Skeleton className="h-12 w-full mb-4" />
+          <Skeleton className="h-12 w-full mb-4" />
+        </div>
+      );
+    }
+
+    if (speeches.length === 0) {
+      return (
+        <div className="p-8 text-center">
+          <p className="text-gray-500 mb-4"><Translate text="dashboard.noSpeeches" /></p>
+          <ButtonCustom 
+            variant="outline" 
+            onClick={handleCreateNewSpeech}
+          >
+            <Translate text="dashboard.createFirstSpeech" />
+          </ButtonCustom>
+        </div>
+      );
+    }
+
+    return (
+      <SpeechesTable 
+        speeches={speeches}
+        onView={handleViewSpeech}
+        onEdit={handleEditSpeech}
+        onDelete={handleDeleteSpeech}
+      />
+    );
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border">
@@ -53,23 +111,14 @@ const PreviousSpeeches = () => {
         </ButtonCustom>
       </div>
       
-      <SpeechesLoader
-        speeches={speeches}
-        isLoading={isLoading}
-        fetchSpeeches={fetchSpeeches}
-        onCreateNewSpeech={handleCreateNewSpeech}
-        renderTable={renderSpeechesTable}
-      />
+      {renderContent()}
       
       {/* Modals */}
       <ViewSpeechModal 
         isOpen={isViewModalOpen}
         onOpenChange={setIsViewModalOpen}
         speech={selectedSpeech}
-        onEditClick={(speech) => {
-          setIsViewModalOpen(false);
-          handleEditSpeech(speech);
-        }}
+        onEditClick={handleEditSpeech}
       />
       
       <EditSpeechModal 
