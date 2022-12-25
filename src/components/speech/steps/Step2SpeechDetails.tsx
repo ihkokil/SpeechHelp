@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -11,6 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import Translate from '@/components/Translate';
 import { getSpeechTypeLabel } from '@/components/dashboard/speeches/speech-utils';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface Step2Props {
   nextStep: () => void;
@@ -928,18 +930,44 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
           )}
           
           {currentQuestion.type === 'radio' && currentQuestion.options && (
-            <RadioGroup 
-              value={localFormData[currentQuestion.question] || ''}
-              onValueChange={(value) => handleInputChange(value)}
-              className="flex flex-col space-y-2"
-            >
-              {currentQuestion.options.map((option) => (
-                <div key={option} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option} id={option.toLowerCase().replace(/ /g, '-')} />
-                  <Label htmlFor={option.toLowerCase().replace(/ /g, '-')}>{option}</Label>
-                </div>
-              ))}
-            </RadioGroup>
+            <>
+              {currentQuestion.question.toLowerCase().includes('tone') ? (
+                <ToggleGroup 
+                  type="single" 
+                  className="flex flex-wrap gap-2"
+                  value={localFormData[currentQuestion.question] || ''}
+                  onValueChange={(value) => {
+                    if (value) { // Only update if value is not empty (prevents deselection)
+                      handleInputChange(value);
+                    }
+                  }}
+                >
+                  {currentQuestion.options.map((option) => (
+                    <ToggleGroupItem 
+                      key={option} 
+                      value={option}
+                      className="border border-purple-200 px-3 py-1 rounded-full text-sm"
+                      variant="outline"
+                    >
+                      {option}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              ) : (
+                <RadioGroup 
+                  value={localFormData[currentQuestion.question] || ''}
+                  onValueChange={(value) => handleInputChange(value)}
+                  className="flex flex-col space-y-2"
+                >
+                  {currentQuestion.options.map((option) => (
+                    <div key={option} className="flex items-center space-x-2">
+                      <RadioGroupItem value={option} id={option.toLowerCase().replace(/ /g, '-')} />
+                      <Label htmlFor={option.toLowerCase().replace(/ /g, '-')}>{option}</Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
+            </>
           )}
         </div>
       </CardContent>
@@ -967,4 +995,3 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
 };
 
 export default Step2SpeechDetails;
-
