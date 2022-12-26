@@ -26,7 +26,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
   const [copied, setCopied] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-  const { saveSpeech } = useAuth();
+  const { user, saveSpeech } = useAuth();
   const navigate = useNavigate();
 
   const handleCopy = () => {
@@ -65,14 +65,31 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
   };
 
   const handleSaveSpeech = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to save speeches",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
       setIsSaving(true);
+      console.log("Saving speech:", {
+        title: speechTitle,
+        content: speechContent,
+        type: selectedSpeechType
+      });
+      
       await saveSpeech(speechTitle, speechContent, selectedSpeechType);
       setIsSaving(false);
+      
       toast({
         title: "Speech Saved",
         description: "Your speech has been saved to your account",
       });
+      
       navigate('/dashboard');
     } catch (error) {
       setIsSaving(false);
@@ -133,7 +150,10 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
           disabled={isSaving}
         >
           {isSaving ? (
-            <Translate text="common.saving" fallback="Saving..." />
+            <>
+              <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+              <Translate text="common.saving" fallback="Saving..." />
+            </>
           ) : (
             <Translate text="speechLab.saveButton" fallback="Save Speech" />
           )}
