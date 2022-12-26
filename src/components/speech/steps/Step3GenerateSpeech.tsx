@@ -3,15 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, PartyPopper, Sparkles } from 'lucide-react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import Translate from '@/components/Translate';
 import { Label } from '@/components/ui/label';
-import Confetti from 'react-confetti';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import SpeechConfetti from './components/SpeechConfetti';
+import CongratulationsDialog from './components/CongratulationsDialog';
+import SpeechSummary from './components/SpeechSummary';
 
 interface Step3Props {
   nextStep: () => void;
@@ -35,12 +35,12 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
 }) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [title, setTitle] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [showCongratulations, setShowCongratulations] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     setWindowSize({
@@ -95,44 +95,16 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
 
   return (
     <>
-      {showConfetti && (
-        <Confetti
-          width={windowSize.width}
-          height={windowSize.height}
-          recycle={false}
-          numberOfPieces={800} // Increased from 500 to 800 for more confetti
-          tweenDuration={8000} // Increased from 5000 to 8000 for longer confetti animation
-          gravity={0.1} // Reduced gravity to make confetti fall slower
-          colors={['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39']} // More colorful confetti
-        />
-      )}
+      <SpeechConfetti 
+        active={showConfetti} 
+        width={windowSize.width} 
+        height={windowSize.height} 
+      />
       
-      <Dialog open={showCongratulations} onOpenChange={setShowCongratulations}>
-        <DialogContent className="sm:max-w-md bg-gradient-to-r from-purple-100 to-pink-100 border-purple-200">
-          <DialogHeader>
-            <DialogTitle className="text-center text-2xl font-bold text-purple-800 flex items-center justify-center gap-2">
-              <PartyPopper className="h-6 w-6 text-purple-600" />
-              Congratulations - You Did It!
-              <PartyPopper className="h-6 w-6 text-purple-600" />
-            </DialogTitle>
-            <DialogDescription className="text-center text-lg text-purple-700">
-              Your speech has been successfully generated! Get ready to impress your audience.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-center py-4">
-            <Sparkles className="h-24 w-24 text-purple-500 animate-pulse" />
-          </div>
-          <div className="flex justify-center">
-            <ButtonCustom 
-              variant="magenta" 
-              className="px-8"
-              onClick={() => setShowCongratulations(false)}
-            >
-              Awesome!
-            </ButtonCustom>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CongratulationsDialog 
+        open={showCongratulations} 
+        onOpenChange={setShowCongratulations} 
+      />
       
       <Card>
         <CardHeader>
@@ -142,66 +114,26 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
           </CardTitle>
           <CardDescription><Translate text="speechLab.generateDesc" /></CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <Label htmlFor="speechTitle"><Translate text="speechLab.speechTitleLabel" /></Label>
-            <Input 
-              id="speechTitle" 
-              placeholder={t('speechLab.speechTitlePlaceholder', currentLanguage.code)} 
-              className="mt-1"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+        <CardContent>
+          <div className="space-y-6">
+            <div>
+              <Label htmlFor="speechTitle"><Translate text="speechLab.speechTitleLabel" /></Label>
+              <Input 
+                id="speechTitle" 
+                placeholder={t('speechLab.speechTitlePlaceholder', currentLanguage.code)} 
+                className="mt-1"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            
+            <SpeechSummary 
+              selectedType={selectedType}
+              formData={formData}
+              showConfetti={showConfetti}
+              showCongratulations={showCongratulations}
             />
           </div>
-          
-          <div className="p-4 bg-gray-100 rounded-md">
-            <h3 className="font-medium mb-2 flex items-center">
-              <Translate text="common.type" />: {selectedType.label || ''}
-              {selectedType.icon && <span className="ml-2">{selectedType.icon}</span>}
-            </h3>
-            <Separator className="my-4" />
-            <div className="text-sm text-gray-600 space-y-2">
-              <p><Translate text="speechLab.summaryNotice" fallback="Speech details will be used to generate your content" /></p>
-              
-              {Object.keys(formData).length > 0 && (
-                <div className="mt-4 p-3 bg-white rounded border border-gray-200">
-                  <h4 className="font-medium text-sm mb-2">
-                    <Translate text="speechLab.questionnaireSummary" fallback="Summary of your information:" />
-                  </h4>
-                  <ul className="list-disc pl-5 text-xs space-y-1">
-                    {Object.entries(formData).slice(0, 3).map(([question, answer], idx) => (
-                      <li key={idx}>
-                        <span className="font-medium">{question}:</span> {answer}
-                      </li>
-                    ))}
-                    {Object.keys(formData).length > 3 && (
-                      <li className="italic">
-                        <Translate 
-                          text="speechLab.andMoreDetails" 
-                          fallback="And more details that will be included in your speech..." 
-                        />
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {showConfetti && !showCongratulations && (
-            <div className="bg-purple-100 p-4 rounded-md border border-purple-200 text-center">
-              <PartyPopper className="h-12 w-12 text-purple-600 mx-auto mb-2" />
-              <h3 className="text-lg font-bold text-purple-800 mb-1">
-                <Translate text="speechLab.congratulations" fallback="Congratulations!" />
-              </h3>
-              <p className="text-purple-700">
-                <Translate 
-                  text="speechLab.speechGenerated" 
-                  fallback="Your speech has been successfully generated! Moving to edit screen..." 
-                />
-              </p>
-            </div>
-          )}
         </CardContent>
         <CardFooter className="flex justify-between">
           <ButtonCustom onClick={prevStep} variant="outline" disabled={isGenerating || showConfetti}>
