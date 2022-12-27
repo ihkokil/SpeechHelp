@@ -12,17 +12,13 @@ import { useToast } from '@/hooks/use-toast';
 import SpeechConfetti from './components/SpeechConfetti';
 import CongratulationsDialog from './components/CongratulationsDialog';
 import SpeechSummary from './components/SpeechSummary';
+import { SpeechType } from '../utils/speechTypes';
 
 interface Step3Props {
   nextStep: () => void;
   prevStep: () => void;
   selectedSpeechType: string;
-  speechTypes: {
-    id: string;
-    label: string;
-    image: string;
-    icon: React.ReactNode;
-  }[];
+  speechTypes: SpeechType[];
   formData?: Record<string, string>;
 }
 
@@ -82,6 +78,7 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         duration: 5000,
       });
       
+      // Add speech title to formData
       formData["speechTitle"] = title;
       
       // Increased the delay to 6000ms (6 seconds) to show congratulations longer
