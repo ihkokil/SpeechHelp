@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PartyPopper } from 'lucide-react';
+import { PartyPopper, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import Translate from '@/components/Translate';
@@ -16,22 +16,27 @@ const CongratulationsDialog: React.FC<CongratulationsDialogProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-gradient-to-r from-purple-100 to-pink-100 border-purple-200">
         <DialogHeader>
-          <DialogTitle className="text-center flex items-center justify-center">
-            <PartyPopper className="h-5 w-5 mr-2 text-yellow-500" />
+          <DialogTitle className="text-center text-2xl font-bold text-purple-800 flex items-center justify-center gap-2">
+            <PartyPopper className="h-6 w-6 text-purple-600" />
             <Translate text="speechLab.congratulationsTitle" fallback="Congratulations!" />
+            <PartyPopper className="h-6 w-6 text-purple-600" />
           </DialogTitle>
-          <DialogDescription className="text-center">
+          <DialogDescription className="text-center text-lg text-purple-700">
             <Translate text="speechLab.congratulationsDesc" fallback="Your speech has been successfully generated!" />
           </DialogDescription>
         </DialogHeader>
+        <div className="flex justify-center py-4">
+          <Sparkles className="h-24 w-24 text-pink-500 animate-pulse" />
+        </div>
         <div className="flex justify-center">
           <ButtonCustom 
-            variant="outline" 
+            variant="magenta" 
+            className="px-8"
             onClick={() => onOpenChange(false)}
           >
-            <Translate text="common.close" fallback="Close" />
+            <Translate text="common.close" fallback="Awesome!" />
           </ButtonCustom>
         </div>
       </DialogContent>
