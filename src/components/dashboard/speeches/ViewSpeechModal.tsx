@@ -39,11 +39,9 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
         <DialogHeader>
           <DialogTitle>{speech.title}</DialogTitle>
           <DialogDescription>
-            <div className="flex">
-              <Badge className={getTypeColor(speech.speech_type)}>
-                {getSpeechTypeLabel(speech.speech_type)}
-              </Badge>
-            </div>
+            <Badge className={getTypeColor(speech.speech_type)}>
+              {getSpeechTypeLabel(speech.speech_type)}
+            </Badge>
           </DialogDescription>
         </DialogHeader>
         <div className="whitespace-pre-line border rounded-md p-4 bg-gray-50 overflow-auto max-h-[50vh]">
