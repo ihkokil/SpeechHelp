@@ -10,6 +10,7 @@ import RecentActivities from '@/components/dashboard/RecentActivities';
 import PerformanceMetrics from '@/components/dashboard/PerformanceMetrics';
 import LanguageSelector from '@/components/dashboard/LanguageSelector';
 import PreviousSpeeches from '@/components/dashboard/PreviousSpeeches';
+import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton';
 import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -23,11 +24,18 @@ const Dashboard = () => {
   const [lastName, setLastName] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const [isContentReady, setIsContentReady] = useState(false);
   
   // Fetch speeches when component mounts
   useEffect(() => {
     if (user) {
-      fetchSpeeches();
+      fetchSpeeches().then(() => {
+        // Add a small delay to ensure smooth transition
+        const timer = setTimeout(() => {
+          setIsContentReady(true);
+        }, 300);
+        return () => clearTimeout(timer);
+      });
     }
   }, [user, fetchSpeeches]);
   
@@ -65,15 +73,9 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-          <p className="mt-4 text-white text-lg font-medium">{t('loading', currentLanguage.code)}...</p>
-        </div>
-      </div>
-    );
+  // Show loading skeleton if still loading auth or content isn't ready
+  if (isLoading || !isContentReady) {
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -141,8 +143,8 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              {/* Previous Speeches */}
-              <PreviousSpeeches />
+              {/* Previous Speeches with key to force fresh render */}
+              <PreviousSpeeches key={`speeches-${speeches.length}`} />
               
               {/* Performance Metrics */}
               <PerformanceMetrics />

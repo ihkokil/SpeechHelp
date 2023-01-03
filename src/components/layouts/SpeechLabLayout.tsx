@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import DashboardSkeleton from '@/components/dashboard/DashboardSkeleton';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface SpeechLabLayoutProps {
@@ -8,7 +9,8 @@ interface SpeechLabLayoutProps {
 }
 
 const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const [isContentReady, setIsContentReady] = useState(false);
   
   // Get user's name from metadata or email
   const metadata = user?.user_metadata || {};
@@ -17,6 +19,20 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
   
   // Display name preference: first name > email username
   const displayName = firstName || (user?.email ? user.email.split('@')[0] : "User");
+
+  // Add a small delay to ensure smooth transition when data is loaded
+  useEffect(() => {
+    if (!isLoading && user) {
+      const timer = setTimeout(() => {
+        setIsContentReady(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, user]);
+  
+  if (isLoading || !isContentReady) {
+    return <DashboardSkeleton />;
+  }
   
   return (
     <div className="min-h-screen flex">
