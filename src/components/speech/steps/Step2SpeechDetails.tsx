@@ -12,25 +12,18 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import Translate from '@/components/Translate';
 import { getSpeechTypeLabel } from '@/components/dashboard/speeches/speech-utils';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface Step2Props {
   nextStep: () => void;
   prevStep: () => void;
   selectedSpeechType: string;
-  setFormData: (data: Record<string, string>) => void;
 }
 
-const Step2SpeechDetails: React.FC<Step2Props> = ({ 
-  nextStep, 
-  prevStep, 
-  selectedSpeechType,
-  setFormData
-}) => {
+const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selectedSpeechType }) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [localFormData, setLocalFormData] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<Record<string, string>>({});
   const [progress, setProgress] = useState(0);
 
   // Speech type specific questions
@@ -867,7 +860,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // All questions answered, proceed to next step
-      setFormData(localFormData); // Send data back to parent component
       nextStep();
     }
   };
@@ -882,8 +874,8 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
   };
 
   const handleInputChange = (value: string) => {
-    setLocalFormData({
-      ...localFormData,
+    setFormData({
+      ...formData,
       [questions[currentQuestionIndex].question]: value
     });
   };
@@ -913,7 +905,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
           
           {currentQuestion.type === 'text' && (
             <Input 
-              value={localFormData[currentQuestion.question] || ''}
+              value={formData[currentQuestion.question] || ''}
               onChange={(e) => handleInputChange(e.target.value)}
               placeholder={currentQuestion.placeholder}
               className="w-full"
@@ -922,7 +914,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
           
           {currentQuestion.type === 'textarea' && (
             <Textarea 
-              value={localFormData[currentQuestion.question] || ''}
+              value={formData[currentQuestion.question] || ''}
               onChange={(e) => handleInputChange(e.target.value)}
               placeholder={currentQuestion.placeholder}
               className="w-full min-h-[100px]"
@@ -930,44 +922,18 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
           )}
           
           {currentQuestion.type === 'radio' && currentQuestion.options && (
-            <>
-              {currentQuestion.question.toLowerCase().includes('tone') ? (
-                <ToggleGroup 
-                  type="single" 
-                  className="flex flex-wrap gap-2"
-                  value={localFormData[currentQuestion.question] || ''}
-                  onValueChange={(value) => {
-                    if (value) { // Only update if value is not empty (prevents deselection)
-                      handleInputChange(value);
-                    }
-                  }}
-                >
-                  {currentQuestion.options.map((option) => (
-                    <ToggleGroupItem 
-                      key={option} 
-                      value={option}
-                      className="border border-purple-200 px-3 py-1 rounded-full text-sm"
-                      variant="outline"
-                    >
-                      {option}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-              ) : (
-                <RadioGroup 
-                  value={localFormData[currentQuestion.question] || ''}
-                  onValueChange={(value) => handleInputChange(value)}
-                  className="flex flex-col space-y-2"
-                >
-                  {currentQuestion.options.map((option) => (
-                    <div key={option} className="flex items-center space-x-2">
-                      <RadioGroupItem value={option} id={option.toLowerCase().replace(/ /g, '-')} />
-                      <Label htmlFor={option.toLowerCase().replace(/ /g, '-')}>{option}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              )}
-            </>
+            <RadioGroup 
+              value={formData[currentQuestion.question] || ''}
+              onValueChange={(value) => handleInputChange(value)}
+              className="flex flex-col space-y-2"
+            >
+              {currentQuestion.options.map((option) => (
+                <div key={option} className="flex items-center space-x-2">
+                  <RadioGroupItem value={option} id={option.toLowerCase().replace(/ /g, '-')} />
+                  <Label htmlFor={option.toLowerCase().replace(/ /g, '-')}>{option}</Label>
+                </div>
+              ))}
+            </RadioGroup>
           )}
         </div>
       </CardContent>

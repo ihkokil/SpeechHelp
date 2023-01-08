@@ -1,122 +1,16 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Download, RefreshCw, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Download, RefreshCw } from 'lucide-react';
 import Translate from '@/components/Translate';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 
 interface Step4Props {
   prevStep: () => void;
-  generatedSpeech: string;
-  speechTitle?: string;
-  selectedSpeechType?: string;
 }
 
-const Step4EditSpeech: React.FC<Step4Props> = ({ 
-  prevStep, 
-  generatedSpeech, 
-  speechTitle = "My Speech",
-  selectedSpeechType = "other" 
-}) => {
-  const [speechContent, setSpeechContent] = useState(generatedSpeech || "Your speech will appear here once generated.");
-  const [copied, setCopied] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(speechContent);
-    setCopied(true);
-    toast({
-      title: "Copied to clipboard",
-      description: "Speech content has been copied to your clipboard",
-    });
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleDownload = () => {
-    const element = document.createElement("a");
-    const file = new Blob([speechContent], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = `${speechTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-    
-    toast({
-      title: "Speech Downloaded",
-      description: "Your speech has been downloaded as a text file",
-    });
-  };
-
-  const handleReset = () => {
-    if (window.confirm("Are you sure you want to reset the speech content? This action cannot be undone.")) {
-      setSpeechContent(generatedSpeech);
-      toast({
-        title: "Speech Reset",
-        description: "Your speech has been reset to the original generated content",
-      });
-    }
-  };
-
-  const handleSaveSpeech = async () => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "You must be logged in to save speeches",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      setIsSaving(true);
-      console.log("Saving speech:", {
-        title: speechTitle,
-        content: speechContent,
-        type: selectedSpeechType
-      });
-      
-      // Direct insertion using Supabase client instead of using the saveSpeech method from context
-      const { error } = await supabase
-        .from('speeches')
-        .insert({
-          user_id: user.id,
-          title: speechTitle,
-          content: speechContent,
-          speech_type: selectedSpeechType
-        });
-      
-      setIsSaving(false);
-      
-      if (error) {
-        console.error('Error details from Supabase:', error);
-        throw error;
-      }
-      
-      toast({
-        title: "Speech Saved",
-        description: "Your speech has been saved to your account",
-      });
-      
-      navigate('/dashboard');
-    } catch (error) {
-      setIsSaving(false);
-      console.error('Error saving speech:', error);
-      toast({
-        title: "Save Failed",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive"
-      });
-    }
-  };
-
+const Step4EditSpeech: React.FC<Step4Props> = ({ prevStep }) => {
   return (
     <Card>
       <CardHeader>
@@ -125,32 +19,18 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <Textarea 
-          className="min-h-[400px] font-medium leading-relaxed" 
-          value={speechContent}
-          onChange={(e) => setSpeechContent(e.target.value)}
+          className="min-h-[300px]" 
+          defaultValue="[Generated speech content will appear here]" 
         />
         
         <div className="flex flex-wrap gap-2">
-          <ButtonCustom variant="outline" size="sm" onClick={handleDownload}>
+          <ButtonCustom variant="outline" size="sm">
             <Translate text="speechLab.downloadButton" />
             <Download className="ml-2 h-4 w-4" />
           </ButtonCustom>
-          <ButtonCustom variant="outline" size="sm" onClick={handleReset}>
+          <ButtonCustom variant="outline" size="sm">
             <Translate text="speechLab.resetButton" />
             <RefreshCw className="ml-2 h-4 w-4" />
-          </ButtonCustom>
-          <ButtonCustom variant="outline" size="sm" onClick={handleCopy}>
-            {copied ? (
-              <>
-                <Translate text="speechLab.copied" fallback="Copied" />
-                <Check className="ml-2 h-4 w-4" />
-              </>
-            ) : (
-              <>
-                <Translate text="speechLab.copy" fallback="Copy" />
-                <Copy className="ml-2 h-4 w-4" />
-              </>
-            )}
           </ButtonCustom>
         </div>
       </CardContent>
@@ -159,19 +39,8 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
           <ArrowLeft className="mr-2 h-4 w-4" />
           <Translate text="speechLab.backButton" />
         </ButtonCustom>
-        <ButtonCustom 
-          variant="magenta" 
-          onClick={handleSaveSpeech} 
-          disabled={isSaving}
-        >
-          {isSaving ? (
-            <>
-              <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-              <Translate text="common.saving" fallback="Saving..." />
-            </>
-          ) : (
-            <Translate text="speechLab.saveButton" fallback="Save Speech" />
-          )}
+        <ButtonCustom variant="magenta">
+          <Translate text="speechLab.saveButton" />
         </ButtonCustom>
       </CardFooter>
     </Card>
