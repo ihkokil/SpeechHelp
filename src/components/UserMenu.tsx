@@ -60,8 +60,9 @@ const UserMenu = () => {
   const firstName = metadata.first_name;
   const lastName = metadata.last_name;
   
-  // Display name preference: first name > email username
-  const displayName = firstName || user.email?.split('@')[0];
+  // Display name preference: first name + last name > email username
+  const emailUsername = user.email?.split('@')[0] || '';
+  const displayName = firstName || emailUsername;
   const fullName = firstName && lastName ? `${firstName} ${lastName}` : displayName;
 
   return (
@@ -76,7 +77,7 @@ const UserMenu = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <div className="px-2 py-1.5">
-          <p className="text-sm font-medium truncate">{fullName}</p>
+          <p className="text-sm font-bold truncate">{fullName}</p>
           <p className="text-xs text-gray-500 truncate">{user.email}</p>
         </div>
         <DropdownMenuSeparator />
