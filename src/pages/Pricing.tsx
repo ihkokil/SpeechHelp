@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Sparkle, Unlock, Clock } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -15,23 +15,37 @@ type PricingTier = {
     yearly: string;
   };
   description: string;
-  features: string[];
+  features: {
+    text: string;
+    description?: string;
+    icon?: React.ReactNode;
+  }[];
 };
 
 const pricingTiers: PricingTier[] = [
   {
-    name: 'Basic',
+    name: 'Basic / Free Trial',
     price: {
-      monthly: '$9.99',
-      yearly: '$99.99',
+      monthly: '$0.00',
+      yearly: 'Free Trial',
     },
     description: 'Perfect for individuals starting their speaking journey',
     features: [
-      'Unlimited AI Prompts',
-      'Explore Speech Tips',
-      'Save Speech',
-      'Basic Templates',
-      'Email Support'
+      {
+        text: 'One-Time Wonder: Craft a Single Speech for Any Occasion',
+        description: 'Perfect for those special moments that need the perfect words.',
+        icon: <Sparkle className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Unlock Expert Tips: Explore Our Speech Writing Secrets',
+        description: 'Access valuable insights to enhance your speech-writing skills.',
+        icon: <Unlock className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: '7-Day Access: Revisit and Refine Your Speech Anytime',
+        description: 'Enjoy a full week to access your speech file and our robust system.',
+        icon: <Clock className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      }
     ],
   },
   {
@@ -42,13 +56,34 @@ const pricingTiers: PricingTier[] = [
     },
     description: 'For serious speakers who need more power',
     features: [
-      'Unlimited AI Prompts',
-      'Explore Speech Tips',
-      'Save Speech',
-      'Premium Templates',
-      'Priority Support',
-      'Speech Analytics',
-      'Delivery Practice Tools'
+      {
+        text: 'Unlimited AI Prompts',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Explore Speech Tips',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Save Speech',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Premium Templates',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Priority Support',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Speech Analytics',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Delivery Practice Tools',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      }
     ],
   },
   {
@@ -59,15 +94,42 @@ const pricingTiers: PricingTier[] = [
     },
     description: 'Full-featured plan for professional speakers',
     features: [
-      'Unlimited AI Prompts',
-      'Explore Speech Tips',
-      'Save Speech',
-      'All Templates',
-      '24/7 Support',
-      'Advanced Analytics',
-      'AI Speech Coach',
-      'Audience Engagement Tools',
-      'Team Collaboration'
+      {
+        text: 'Unlimited AI Prompts',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Explore Speech Tips',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Save Speech',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'All Templates',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: '24/7 Support',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Advanced Analytics',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'AI Speech Coach',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Audience Engagement Tools',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      },
+      {
+        text: 'Team Collaboration',
+        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+      }
     ],
   },
 ];
@@ -125,17 +187,25 @@ const Pricing = () => {
                     <span className="text-4xl font-bold text-purple-600">
                       {pricingPeriod === 'monthly' ? tier.price.monthly : tier.price.yearly}
                     </span>
-                    <span className="text-gray-500 ml-2">
-                      /{pricingPeriod === 'monthly' ? 'month' : 'year'}
-                    </span>
+                    {pricingPeriod === 'monthly' && tier.name !== 'Basic / Free Trial' && (
+                      <span className="text-gray-500 ml-2">/month</span>
+                    )}
+                    {pricingPeriod === 'yearly' && tier.name !== 'Basic / Free Trial' && (
+                      <span className="text-gray-500 ml-2">/year</span>
+                    )}
                   </div>
                   <p className="text-center text-gray-600 mb-6">{tier.description}</p>
                   
-                  <ul className="space-y-3 mb-8">
-                    {tier.features.map((feature) => (
-                      <li key={feature} className="flex items-start">
-                        <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">{feature}</span>
+                  <ul className="space-y-4 mb-8">
+                    {tier.features.map((feature, index) => (
+                      <li key={index} className="flex flex-col">
+                        <div className="flex items-start">
+                          {feature.icon}
+                          <span className="text-gray-700 font-medium">{feature.text}</span>
+                        </div>
+                        {feature.description && (
+                          <p className="text-sm text-gray-500 ml-7 mt-1">{feature.description}</p>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -147,11 +217,13 @@ const Pricing = () => {
                         : 'bg-purple-600 hover:bg-purple-700'
                     }`}
                   >
-                    Choose Plan
+                    {tier.name === 'Basic / Free Trial' ? 'Start Free Trial' : 'Choose Plan'}
                   </Button>
                   
                   <p className="text-xs text-center text-gray-500 mt-4">
-                    Trial ends on November 29, 2024
+                    {tier.name === 'Basic / Free Trial' 
+                      ? 'No credit card required' 
+                      : 'Trial ends on November 29, 2024'}
                   </p>
                 </div>
               </Card>
