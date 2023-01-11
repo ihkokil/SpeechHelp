@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { Check, Sparkle, Unlock, Clock } from 'lucide-react';
+import { Check, Sparkle, Unlock, Clock, Mail, Edit, MessageCircle, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -49,40 +48,37 @@ const pricingTiers: PricingTier[] = [
     ],
   },
   {
-    name: 'Premium',
+    name: 'Premium Plan',
     price: {
-      monthly: '$19.99',
-      yearly: '$199.99',
+      monthly: '$9.99',
+      yearly: '$99.99',
     },
     description: 'For serious speakers who need more power',
     features: [
       {
-        text: 'Unlimited AI Prompts',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+        text: 'Craft Up to 3 Speeches per Month: Speak with Confidence',
+        description: 'Enjoy the freedom to create up to 3 speeches for any occasion each month.',
+        icon: <Star className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
       },
       {
-        text: 'Explore Speech Tips',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+        text: 'Advanced Speech Writing Insights: Elevate Your Skills',
+        description: 'Dive deeper with advanced tips and techniques to enhance your speech-writing prowess.',
+        icon: <Edit className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
       },
       {
-        text: 'Save Speech',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+        text: 'Continuous Access: Manage and Modify Speeches Anytime',
+        description: 'Keep your speeches handy with ongoing access, allowing you to update and refine whenever needed (as long as your subscription is active).',
+        icon: <Clock className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
       },
       {
-        text: 'Premium Templates',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+        text: 'Personalized Feedback: Expert Guidance at Your Fingertips',
+        description: 'Receive tailored feedback from our AI to ensure your speeches are impactful and engaging.',
+        icon: <MessageCircle className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
       },
       {
-        text: 'Priority Support',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
-      },
-      {
-        text: 'Speech Analytics',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
-      },
-      {
-        text: 'Delivery Practice Tools',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+        text: 'Priority Email Support: Get Help When You Need It',
+        description: 'Access our dedicated support team for quick assistance and guidance.',
+        icon: <Mail className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
       }
     ],
   },
@@ -151,7 +147,6 @@ const Pricing = () => {
             </p>
           </div>
 
-          {/* Pricing Toggle */}
           <div className="flex justify-center mb-12">
             <div className="inline-flex items-center bg-gray-100 rounded-lg p-1">
               <button
@@ -177,7 +172,6 @@ const Pricing = () => {
             </div>
           </div>
 
-          {/* Pricing Cards */}
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {pricingTiers.map((tier) => (
               <Card key={tier.name} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
@@ -212,7 +206,7 @@ const Pricing = () => {
                   
                   <Button 
                     className={`w-full ${
-                      tier.name === 'Premium' 
+                      tier.name === 'Premium Plan' 
                         ? 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700' 
                         : 'bg-purple-600 hover:bg-purple-700'
                     }`}
@@ -230,7 +224,6 @@ const Pricing = () => {
             ))}
           </div>
 
-          {/* Additional Info */}
           <div className="mt-16 max-w-3xl mx-auto text-center">
             <h2 className="text-2xl font-bold mb-4">Need a Custom Solution?</h2>
             <p className="text-gray-600 mb-6">
