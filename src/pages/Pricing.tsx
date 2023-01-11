@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Check, Sparkle, Unlock, Clock, Mail, Edit, MessageCircle, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -205,9 +204,7 @@ const Pricing = () => {
                   </Button>
                   
                   <p className="text-xs text-center text-gray-500 mt-4">
-                    {tier.name === 'Basic / Free Trial' 
-                      ? 'No credit card required' 
-                      : 'Trial ends on November 29, 2024'}
+                    {tier.name === 'Basic / Free Trial' ? 'No credit card required' : ''}
                   </p>
                 </div>
               </Card>
