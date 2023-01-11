@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Check, Sparkle, Unlock, Clock, Mail, Edit, MessageCircle, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -83,7 +84,7 @@ const pricingTiers: PricingTier[] = [
     ],
   },
   {
-    name: 'Pro',
+    name: 'Pro Plan',
     price: {
       monthly: '$29.99',
       yearly: '$299.99',
@@ -91,40 +92,29 @@ const pricingTiers: PricingTier[] = [
     description: 'Full-featured plan for professional speakers',
     features: [
       {
-        text: 'Unlimited AI Prompts',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+        text: 'Unlimited Speech Creations: Master Every Occasion',
+        description: 'Create an unlimited number of speeches for any event, ensuring you\'re always prepared.',
+        icon: <Star className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
       },
       {
-        text: 'Explore Speech Tips',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+        text: 'Comprehensive Speech Toolkit: Elevate Your Craft',
+        description: 'Access an extensive library of resources and templates tailored for various speech types.',
+        icon: <Edit className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
       },
       {
-        text: 'Save Speech',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+        text: 'Ongoing Access: Your Speech Vault',
+        description: 'Maintain continuous access to all your speeches and materials, allowing for updates and refinements anytime.',
+        icon: <Clock className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
       },
       {
-        text: 'All Templates',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+        text: 'Enhanced Personalized Feedback: Expert Guidance at Your Fingertips',
+        description: 'Benefit from advanced, tailored feedback from our AI to maximize the impact of your speeches.',
+        icon: <MessageCircle className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
       },
       {
-        text: '24/7 Support',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
-      },
-      {
-        text: 'Advanced Analytics',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
-      },
-      {
-        text: 'AI Speech Coach',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
-      },
-      {
-        text: 'Audience Engagement Tools',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
-      },
-      {
-        text: 'Team Collaboration',
-        icon: <Check className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
+        text: 'Fast-Track Support: Direct Assistance, Anytime',
+        description: 'Experience expedited support for immediate assistance and a seamless experience.',
+        icon: <Mail className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
       }
     ],
   },
