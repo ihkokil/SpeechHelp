@@ -22,6 +22,14 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsMenuOpen(false);
+  };
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
@@ -52,30 +60,30 @@ const Navbar = () => {
             >
               {t('nav.home', currentLanguage.code)}
             </Link>
-            <Link
-              to="#features"
+            <button
+              onClick={() => scrollToSection('features')}
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               {t('nav.features', currentLanguage.code)}
-            </Link>
-            <Link
-              to="#how-it-works"
+            </button>
+            <button
+              onClick={() => scrollToSection('how-it-works')}
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               {t('nav.howItWorks', currentLanguage.code)}
-            </Link>
+            </button>
             <Link
               to="/pricing"
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               Pricing
             </Link>
-            <Link
-              to="#contact"
+            <button
+              onClick={() => scrollToSection('contact')}
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               {t('nav.contact', currentLanguage.code)}
-            </Link>
+            </button>
 
             <UserMenu />
             <LanguageSelector />
@@ -109,20 +117,18 @@ const Navbar = () => {
               >
                 {t('nav.home', currentLanguage.code)}
               </Link>
-              <Link
-                to="#features"
-                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+              <button
+                onClick={() => scrollToSection('features')}
+                className="text-gray-700 hover:text-pink-600 font-medium transition-colors text-left"
               >
                 {t('nav.features', currentLanguage.code)}
-              </Link>
-              <Link
-                to="#how-it-works"
-                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+              </button>
+              <button
+                onClick={() => scrollToSection('how-it-works')}
+                className="text-gray-700 hover:text-pink-600 font-medium transition-colors text-left"
               >
                 {t('nav.howItWorks', currentLanguage.code)}
-              </Link>
+              </button>
               <Link
                 to="/pricing"
                 className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
@@ -130,13 +136,12 @@ const Navbar = () => {
               >
                 Pricing
               </Link>
-              <Link
-                to="#contact"
-                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+              <button
+                onClick={() => scrollToSection('contact')}
+                className="text-gray-700 hover:text-pink-600 font-medium transition-colors text-left"
               >
                 {t('nav.contact', currentLanguage.code)}
-              </Link>
+              </button>
             </div>
           </div>
         )}
