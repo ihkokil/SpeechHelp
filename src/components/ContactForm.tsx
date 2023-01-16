@@ -28,7 +28,7 @@ const ContactForm = () => {
   const { t } = useTranslation();
 
   return (
-    <section className="py-16 md:py-24 bg-gray-100">
+    <section id="contact" className="py-16 md:py-24 bg-gray-100">
       <div className="container mx-auto px-6 md:px-12">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
