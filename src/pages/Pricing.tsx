@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, Sparkle, Unlock, Clock, Mail, Edit, MessageCircle, Star } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -121,10 +120,13 @@ const pricingTiers: PricingTier[] = [
 
 const Pricing = () => {
   const [pricingPeriod, setPricingPeriod] = useState<PricingPeriod>('monthly');
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <section className="container mx-auto px-4 md:px-6 py-12 md:py-24">
           <div className="text-center max-w-3xl mx-auto mb-12">

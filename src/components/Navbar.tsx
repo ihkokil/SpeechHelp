@@ -39,6 +39,14 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
+  const handlePricingClick = () => {
+    // If already on pricing page, scroll to top
+    if (location.pathname === '/pricing') {
+      scrollToTop();
+    }
+    setIsMenuOpen(false);
+  };
+
   const handleNavigation = (sectionId: string) => {
     if (location.pathname === '/') {
       // If already on homepage, just scroll
@@ -99,6 +107,7 @@ const Navbar = () => {
                 <Link
                   to="/pricing"
                   className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+                  onClick={handlePricingClick}
                 >
                   Pricing
                 </Link>
@@ -115,6 +124,7 @@ const Navbar = () => {
                 <Link
                   to="/"
                   className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+                  onClick={scrollToTop}
                 >
                   {t('nav.home', currentLanguage.code)}
                 </Link>
@@ -133,6 +143,7 @@ const Navbar = () => {
                 <Link
                   to="/pricing"
                   className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+                  onClick={handlePricingClick}
                 >
                   Pricing
                 </Link>
@@ -194,7 +205,7 @@ const Navbar = () => {
                   <Link
                     to="/pricing"
                     className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={handlePricingClick}
                   >
                     Pricing
                   </Link>
@@ -232,7 +243,7 @@ const Navbar = () => {
                   <Link
                     to="/pricing"
                     className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={handlePricingClick}
                   >
                     Pricing
                   </Link>
