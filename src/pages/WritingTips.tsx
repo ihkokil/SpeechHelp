@@ -195,7 +195,7 @@ const WritingTips = () => {
                     <div className="border-b border-gray-200">
                       <AccordionTrigger className="px-6 py-4 hover:no-underline">
                         <div className="text-left">
-                          <h3 className="text-xl font-bold text-gray-800">{section.title}</h3>
+                          <h3 className="text-xl font-bold text-pink-600">{section.title}</h3>
                           <p className="text-gray-600 mt-1">{section.description}</p>
                         </div>
                       </AccordionTrigger>
