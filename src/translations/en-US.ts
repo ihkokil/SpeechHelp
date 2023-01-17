@@ -1,3 +1,4 @@
+
 import { TranslationSchema } from './types';
 
 export const enUS: TranslationSchema = {
@@ -30,6 +31,7 @@ export const enUS: TranslationSchema = {
     'common.titleAZ': 'Title (A-Z)',
     'common.titleZA': 'Title (Z-A)',
     'common.recentlyUpdated': 'Recently updated',
+    'common.areYouSure': 'Are you sure?',
     'dashboard.dashboard': 'Dashboard',
     'dashboard.summary': 'Summary',
     'dashboard.totalSpeeches': 'Total Speeches',
@@ -51,6 +53,7 @@ export const enUS: TranslationSchema = {
     'dashboard.noSpeechesFound': 'No speeches found',
     'dashboard.tryDifferentFilters': 'Try different search terms or filters',
     'dashboard.createFirstSpeechDesc': 'Get started by creating your first speech',
+    'dashboard.deleteWarning': 'This action cannot be undone. This will permanently delete',
     'loading': 'Loading',
     'nav.home': 'Home',
     'nav.features': 'Features',
