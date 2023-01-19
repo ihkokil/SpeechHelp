@@ -19,11 +19,23 @@ const Translate: React.FC<TranslateProps> = ({ text, fallback }) => {
     if (fallback) {
       return <>{fallback}</>;
     }
+    
+    // Extract the last part of the key and format it with first letter capitalized
     const parts = text.split('.');
-    return <>{parts[parts.length - 1].replace(/([A-Z])/g, ' $1').trim()}</>;
+    const lastPart = parts[parts.length - 1];
+    
+    // Capitalize the first letter and handle camelCase
+    const formattedText = lastPart
+      .replace(/([A-Z])/g, ' $1')
+      .trim()
+      .replace(/^\w/, (c) => c.toUpperCase());
+    
+    return <>{formattedText}</>;
   }
   
-  return <>{translation}</>;
+  // Ensure the first letter of any translation is capitalized
+  const capitalizedTranslation = translation.charAt(0).toUpperCase() + translation.slice(1);
+  return <>{capitalizedTranslation}</>;
 };
 
 export default Translate;
