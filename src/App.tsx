@@ -11,7 +11,6 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import SpeechLab from "./pages/SpeechLab";
 import WritingTips from "./pages/WritingTips";
-import MySpeeches from "./pages/MySpeeches";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Navbar from "./components/Navbar";
@@ -74,14 +73,6 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <WritingTips />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/my-speeches" 
-                element={
-                  <ProtectedRoute>
-                    <MySpeeches />
                   </ProtectedRoute>
                 } 
               />
