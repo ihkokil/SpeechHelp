@@ -34,14 +34,11 @@ const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
     ? `${firstName} ${lastName}`
     : userName;
 
-  // Get the translated greeting
-  const translatedGreeting = t(greeting, currentLanguage.code);
-
   return (
     <div className="bg-white rounded-lg shadow-sm p-8 flex justify-between">
       <div>
         <h1 className="text-3xl font-bold text-purple-600">
-          {translatedGreeting}, <span className="text-pink-600">{displayName}!</span>
+          {t(greeting, currentLanguage.code)}, <span className="text-pink-600">{displayName}!</span>
         </h1>
         <p className="text-gray-500 mt-2">{t('dashboard.niceDay', currentLanguage.code)} {dayOfWeek}.</p>
       </div>

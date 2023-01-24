@@ -3,7 +3,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
-import Translate from '@/components/Translate';
 
 const mockData = [
   { name: 'Jan', score: 65 },
@@ -27,22 +26,16 @@ const PerformanceMetrics = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm">
       <div className="border-b p-4">
-        <h2 className="text-lg font-semibold text-gray-800">
-          <Translate text="dashboard.performanceMetrics" />
-        </h2>
+        <h2 className="text-lg font-semibold text-gray-800">{t('dashboard.performanceMetrics', currentLanguage.code)}</h2>
       </div>
       <div className="p-4">
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="p-3 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-500">
-              <Translate text="dashboard.currentScore" />
-            </p>
+            <p className="text-sm text-gray-500">{t('dashboard.currentScore', currentLanguage.code)}</p>
             <p className="text-2xl font-bold text-gray-900">{latestScore}/100</p>
           </div>
           <div className="p-3 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-500">
-              <Translate text="dashboard.monthlyChange" />
-            </p>
+            <p className="text-sm text-gray-500">{t('dashboard.monthlyChange', currentLanguage.code)}</p>
             <div className="flex items-center">
               <p className={`text-2xl font-bold ${isImprovement ? 'text-green-600' : 'text-red-600'}`}>
                 {improvementPercent.toFixed(1)}%
@@ -72,7 +65,7 @@ const PerformanceMetrics = () => {
         </div>
         
         <div className="mt-4 text-sm text-gray-500 text-center">
-          <p><Translate text="dashboard.basedOn" /></p>
+          <p>{t('dashboard.basedOn', currentLanguage.code)}</p>
         </div>
       </div>
     </div>
