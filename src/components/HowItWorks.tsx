@@ -1,7 +1,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { PencilIcon, SparklesIcon, MicIcon, CheckIcon } from 'lucide-react';
-import Translate from '@/components/Translate';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/translations';
 
 interface StepProps {
   icon: JSX.Element;
@@ -10,6 +11,9 @@ interface StepProps {
 }
 
 const Step = ({ icon, stepNumber, isVisible }: StepProps) => {
+  const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
+  
   return (
     <div className={`mb-16 relative opacity-0 ${isVisible ? `animate-slide-in stagger-${stepNumber}` : ''}`}>
       <div className="flex items-start">
@@ -23,10 +27,10 @@ const Step = ({ icon, stepNumber, isVisible }: StepProps) => {
         </div>
         <div className="flex-1 pt-1">
           <h3 className="text-xl font-semibold text-pink-600 mb-2">
-            <Translate text={`howItWorks.step${stepNumber}.title`} />
+            {t(`howItWorks.step${stepNumber}.title`, currentLanguage.code)}
           </h3>
           <p className="text-gray-600 mb-6 max-w-md">
-            <Translate text={`howItWorks.step${stepNumber}.description`} />
+            {t(`howItWorks.step${stepNumber}.description`, currentLanguage.code)}
           </p>
         </div>
       </div>
@@ -37,6 +41,8 @@ const Step = ({ icon, stepNumber, isVisible }: StepProps) => {
 const HowItWorks = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -71,10 +77,10 @@ const HowItWorks = () => {
       <div className="container mx-auto px-6 md:px-12">
         <div className="text-center max-w-3xl mx-auto mb-16" ref={sectionRef}>
           <h2 className={`text-3xl md:text-4xl font-bold mb-6 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
-            <Translate text="howItWorks.title" /> <span className="text-pink-600">Works</span>
+            {t('howItWorks.title', currentLanguage.code)} <span className="text-pink-600">Works</span>
           </h2>
           <p className={`text-lg text-gray-600 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>
-            <Translate text="howItWorks.subtitle" />
+            {t('howItWorks.subtitle', currentLanguage.code)}
           </p>
         </div>
 

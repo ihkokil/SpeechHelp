@@ -3,11 +3,12 @@ import { useEffect, useState } from 'react';
 import { PlayCircle } from 'lucide-react';
 import { ButtonCustom } from './ui/button-custom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import Translate from './Translate';
+import { useTranslation } from '@/translations';
 
 const Hero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
   
   useEffect(() => {
     setIsLoaded(true);
@@ -29,12 +30,12 @@ const Hero = () => {
         <div className="max-w-5xl mx-auto text-center">
           {/* Main Headline */}
           <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
-            <Translate text="hero.headline" /> <span className="text-pink-400">creative speech?</span>
+            {t('hero.headline', currentLanguage.code).replace('creative speech?', '')} <span className="text-pink-400">creative speech?</span>
           </h1>
           
           {/* Subheadline - updated to match main heading font size */}
           <p className={`text-4xl md:text-5xl lg:text-6xl text-white/80 max-w-3xl mx-auto mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
-            <Translate text="hero.subheadline" />
+            {t('hero.subheadline', currentLanguage.code)}
           </p>
           
           {/* Play button */}
@@ -48,7 +49,7 @@ const Hero = () => {
           {/* CTA Button */}
           <div className={`flex justify-center mb-12 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
             <ButtonCustom variant="magenta" size="lg" className="group">
-              <span><Translate text="hero.cta" /></span>
+              <span>{t('hero.cta', currentLanguage.code)}</span>
             </ButtonCustom>
           </div>
           
@@ -58,19 +59,19 @@ const Hero = () => {
               <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
                 <span className="text-base font-bold">AI</span>
               </div>
-              <p className="text-gray-300 text-sm"><Translate text="hero.feature1" /></p>
+              <p className="text-gray-300 text-sm">{t('hero.feature1', currentLanguage.code)}</p>
             </div>
             <div className="text-center">
               <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
                 <span className="text-base font-bold">⌛</span>
               </div>
-              <p className="text-gray-300 text-sm"><Translate text="hero.feature2" /></p>
+              <p className="text-gray-300 text-sm">{t('hero.feature2', currentLanguage.code)}</p>
             </div>
             <div className="text-center">
               <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
                 <span className="text-base font-bold">★</span>
               </div>
-              <p className="text-gray-300 text-sm"><Translate text="hero.feature3" /></p>
+              <p className="text-gray-300 text-sm">{t('hero.feature3', currentLanguage.code)}</p>
             </div>
           </div>
         </div>
