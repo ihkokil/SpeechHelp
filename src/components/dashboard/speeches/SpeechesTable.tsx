@@ -1,5 +1,4 @@
 
-import { Speech } from '@/contexts/AuthContext';
 import { 
   Table, 
   TableBody, 
@@ -8,6 +7,7 @@ import {
   TableRow,
   TableCell
 } from '@/components/ui/table';
+import { Speech } from '@/types/auth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EditIcon, Trash2Icon, EyeIcon } from 'lucide-react';

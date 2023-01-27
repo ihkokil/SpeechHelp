@@ -1,5 +1,4 @@
 
-import { Speech } from '@/contexts/AuthContext';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -10,6 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Speech } from '@/types/auth';
 import Translate from '@/components/Translate';
 
 interface DeleteSpeechAlertProps {
