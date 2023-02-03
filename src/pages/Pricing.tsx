@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { Check, Sparkle, Unlock, Clock, Mail, Edit, MessageCircle, Star } from 'lucide-react';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
 
 type PricingPeriod = 'monthly' | 'yearly';
 
@@ -195,11 +197,21 @@ const Pricing = () => {
                     ))}
                   </ul>
                   
-                  <Button 
-                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-                  >
-                    {tier.name === 'Basic / Free Trial' ? 'Start Free Trial' : 'Choose Plan'}
-                  </Button>
+                  {tier.name === 'Basic / Free Trial' ? (
+                    <Link to="/auth?signup=true">
+                      <Button 
+                        className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                      >
+                        Start Free Trial
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button 
+                      className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                    >
+                      Choose Plan
+                    </Button>
+                  )}
                   
                   <p className="text-xs text-center text-gray-500 mt-4">
                     {tier.name === 'Basic / Free Trial' ? 'No credit card required' : ''}
