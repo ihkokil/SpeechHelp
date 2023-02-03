@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -22,12 +22,20 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const firstNameInputRef = useRef<HTMLInputElement>(null);
 
   // Check if the URL contains signup=true or if hash contains type=recovery
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('signup') === 'true') {
       setIsSignUp(true);
+      
+      // Set a small timeout to ensure the input is rendered before focusing
+      setTimeout(() => {
+        if (firstNameInputRef.current) {
+          firstNameInputRef.current.focus();
+        }
+      }, 100);
     }
 
     // Check for password reset flow
@@ -154,6 +162,7 @@ const Auth = () => {
                   id="firstName"
                   type="text"
                   required
+                  ref={firstNameInputRef}
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
