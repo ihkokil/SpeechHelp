@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import NavLinks from "./NavLinks";
 import UserMenu from "../UserMenu";
-import LanguageSelector from "../dashboard/LanguageSelector";
+import LanguageSelector from "../common/LanguageSelector";
 
 const MobileNav = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import LanguageSelector from '@/components/speech/LanguageSelector';
+import LanguageSelector from '@/components/common/LanguageSelector';
 import Translate from '@/components/Translate';
 
 const SpeechLabHeader: React.FC = () => {
