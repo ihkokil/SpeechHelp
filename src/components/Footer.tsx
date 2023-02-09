@@ -1,5 +1,5 @@
 
-import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
@@ -27,7 +27,7 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <a href="#" className="p-2 rounded-full text-gray-600 hover:text-pink-600 hover:bg-pink-50 transition-colors">
-                <Twitter className="h-5 w-5" />
+                <X className="h-5 w-5" />
               </a>
               <a href="#" className="p-2 rounded-full text-gray-600 hover:text-pink-600 hover:bg-pink-50 transition-colors">
                 <Facebook className="h-5 w-5" />
