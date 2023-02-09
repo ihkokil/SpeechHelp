@@ -1,10 +1,9 @@
 
 import { useEffect, useState } from 'react';
-import { PlayCircle } from 'lucide-react';
-import { ButtonCustom } from './ui/button-custom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
+import { ButtonCustom } from './ui/button-custom';
 
 const Hero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -49,16 +48,10 @@ const Hero = () => {
             {t('hero.subheadline', currentLanguage.code)}
           </p>
           
-          {/* Play button */}
-          <div className={`flex justify-center items-center mb-10 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
-            <div className="relative inline-block">
-              <div className="absolute inset-0 rounded-full bg-pink-500/30 animate-ping"></div>
-              <PlayCircle className="h-16 w-16 text-pink-500 relative z-10 cursor-pointer hover:text-pink-400 transition-colors" />
-            </div>
-          </div>
+          {/* Play button removed */}
           
           {/* CTA Button - Updated to link to pricing page */}
-          <div className={`flex justify-center mb-12 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
+          <div className={`flex justify-center mb-12 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
             <Link to="/pricing">
               <ButtonCustom variant="magenta" size="lg" className="group">
                 <span>{t('hero.cta', currentLanguage.code)}</span>
@@ -67,7 +60,7 @@ const Hero = () => {
           </div>
           
           {/* Features/Benefits Icons */}
-          <div className={`grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto mt-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-5' : ''}`}>
+          <div className={`grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto mt-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
             <div className="text-center">
               <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
                 <span className="text-base font-bold">AI</span>
