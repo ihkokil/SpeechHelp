@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -24,9 +23,6 @@ const Hero = () => {
           loop
           playsInline
           className="w-full h-full object-cover"
-          // Use data attributes for custom HTML attributes
-          data-playsinline="true"
-          data-webkit-playsinline="true"
         >
           <source src="/Video Montage - Speech Help App.mov" type="video/mp4" />
           {/* Fallback to image if video doesn't load */}
