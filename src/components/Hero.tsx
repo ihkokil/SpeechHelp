@@ -24,8 +24,9 @@ const Hero = () => {
           loop
           playsInline
           className="w-full h-full object-cover"
-          playsinline="true"
-          webkit-playsinline="true"
+          // Use data attributes for custom HTML attributes
+          data-playsinline="true"
+          data-webkit-playsinline="true"
         >
           <source src="/Video Montage - Speech Help App.mov" type="video/mp4" />
           {/* Fallback to image if video doesn't load */}
