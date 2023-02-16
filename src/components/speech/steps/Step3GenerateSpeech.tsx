@@ -11,6 +11,7 @@ import Translate from '@/components/Translate';
 import { Label } from '@/components/ui/label';
 import { useToast } from "@/hooks/use-toast";
 import Confetti from 'react-confetti';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Step3Props {
   nextStep: () => void;
@@ -37,6 +38,7 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [showConfetti, setShowConfetti] = useState(false);
   const [generating, setGenerating] = useState(false);
 
@@ -57,7 +59,7 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     };
   }, [showConfetti, nextStep]);
 
-  const handleGenerateSpeech = () => {
+  const handleGenerateSpeech = async () => {
     if (!speechTitle.trim()) {
       toast({
         title: "Title Required",
@@ -71,7 +73,44 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     setGenerating(true);
     setShowConfetti(true);
     
-    // The nextStep() call is now handled by the useEffect
+    // Send data to make.com webhook
+    try {
+      const webhookUrl = "https://hook.us2.make.com/i78d2sdyd3eewz2w5oytais6dpwrjh5h";
+      
+      // Get the speech type details
+      const speechTypeDetails = speechTypes.find(type => type.id === selectedSpeechType);
+      
+      // Prepare the data to send to the webhook
+      const webhookData = {
+        userId: user?.id || "anonymous",
+        userEmail: user?.email || "anonymous",
+        speechType: selectedSpeechType,
+        speechTypeLabel: speechTypeDetails?.label || selectedSpeechType,
+        speechTitle: speechTitle,
+        language: currentLanguage.code,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log("Sending data to webhook:", webhookData);
+      
+      // Send the data to the webhook
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(webhookData),
+      });
+      
+      const responseData = await response.json();
+      console.log("Webhook response:", responseData);
+      
+      // The nextStep() call is handled by the useEffect when showConfetti is set to true
+    } catch (error) {
+      console.error("Error sending data to webhook:", error);
+      // Still continue with the flow even if webhook fails
+      // The nextStep() call is handled by the useEffect
+    }
   };
 
   return (
