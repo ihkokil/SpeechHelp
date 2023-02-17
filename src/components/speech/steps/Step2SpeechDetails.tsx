@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -17,13 +16,21 @@ interface Step2Props {
   nextStep: () => void;
   prevStep: () => void;
   selectedSpeechType: string;
+  onSpeechDetailsChange?: (details: Record<string, string>) => void;
+  speechDetails?: Record<string, string>;
 }
 
-const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selectedSpeechType }) => {
+const Step2SpeechDetails: React.FC<Step2Props> = ({ 
+  nextStep, 
+  prevStep, 
+  selectedSpeechType,
+  onSpeechDetailsChange,
+  speechDetails: initialSpeechDetails = {}
+}) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<Record<string, string>>(initialSpeechDetails);
   const [progress, setProgress] = useState(0);
 
   // Speech type specific questions
@@ -860,6 +867,9 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selected
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // All questions answered, proceed to next step
+      if (onSpeechDetailsChange) {
+        onSpeechDetailsChange(formData);
+      }
       nextStep();
     }
   };
@@ -874,10 +884,16 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selected
   };
 
   const handleInputChange = (value: string) => {
-    setFormData({
+    const updatedFormData = {
       ...formData,
       [questions[currentQuestionIndex].question]: value
-    });
+    };
+    setFormData(updatedFormData);
+    
+    // Optionally update parent component with each change
+    if (onSpeechDetailsChange) {
+      onSpeechDetailsChange(updatedFormData);
+    }
   };
 
   // Current question data
