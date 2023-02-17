@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import SpeechStepIndicator from './SpeechStepIndicator';
 import SpeechLabHeader from './SpeechLabHeader';
@@ -9,6 +10,15 @@ import { Heart, GraduationCap, Cake, Briefcase, Mic, Flame, Flower, Speaker, Use
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 
+// Define the speech type with its metadata
+interface SpeechType {
+  id: string;
+  label: string;
+  description: string;
+  image: string;
+  icon: React.ReactNode;
+}
+
 const SpeechLabContent: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedSpeechType, setSelectedSpeechType] = useState('');
@@ -17,7 +27,7 @@ const SpeechLabContent: React.FC = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
-  const speechTypes = [
+  const speechTypes: SpeechType[] = [
     { 
       id: 'wedding', 
       label: "WEDDING SPEECH",
