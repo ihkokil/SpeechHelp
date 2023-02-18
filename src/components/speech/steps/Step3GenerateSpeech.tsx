@@ -64,9 +64,39 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
 
   // Get the callback URL for the Edge Function
   const getCallbackUrl = () => {
-    // Production URL format
     const projectId = "yotrueuqjxmgcwlbbyps";
     return `https://${projectId}.supabase.co/functions/v1/receive-generated-speech`;
+  };
+
+  // Add a placeholder speech to the database
+  const createPlaceholderSpeech = async () => {
+    if (!user?.id) return null;
+    
+    try {
+      const placeholderContent = `This is a sample ${selectedSpeechType} speech. The real content should arrive shortly from our AI service. If it doesn't appear within a few minutes, please try generating again.`;
+      
+      const { data, error } = await supabase
+        .from('speeches')
+        .insert({
+          user_id: user.id,
+          title: speechTitle,
+          content: placeholderContent,
+          speech_type: selectedSpeechType
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error("Error creating placeholder speech:", error);
+        return null;
+      }
+      
+      console.log("Created placeholder speech:", data);
+      return data.id;
+    } catch (error) {
+      console.error("Error in createPlaceholderSpeech:", error);
+      return null;
+    }
   };
 
   const handleGenerateSpeech = async () => {
@@ -81,10 +111,15 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     
     // Start the generation process
     setGenerating(true);
-    setShowConfetti(true);
     
-    // Send data to make.com webhook
     try {
+      // First create a placeholder speech entry
+      const speechId = await createPlaceholderSpeech();
+      
+      // Show confetti (this will also trigger the next step after a delay)
+      setShowConfetti(true);
+      
+      // Send data to make.com webhook
       const webhookUrl = "https://hook.us2.make.com/i78d2sdyd3eewz2w5oytais6dpwrjh5h";
       
       // Get the speech type details
@@ -103,7 +138,9 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         speechDetails: speechDetails,
         // Add callback URL for Make.com to send the generated speech back
         callbackUrl: getCallbackUrl(),
-        // Add the Supabase anon key for the callback to work
+        // Add the speech ID if we created a placeholder
+        speechId: speechId,
+        // Add the Supabase anon key for the callback to work (will be masked in the request)
         callbackApiKey: supabase.auth.getSession().then(({ data }) => data.session?.access_token)
       };
       
@@ -125,7 +162,9 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     } catch (error) {
       console.error("Error sending data to webhook:", error);
       // Still continue with the flow even if webhook fails
-      // The nextStep() call is handled by the useEffect
+      if (!showConfetti) {
+        setShowConfetti(true); // This will trigger nextStep() via the useEffect
+      }
     }
   };
 
