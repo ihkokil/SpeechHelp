@@ -49,6 +49,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [generatedContent, setGeneratedContent] = useState("");
   const [pollAttempts, setPollAttempts] = useState(0);
+  const [fetchedSpeechId, setFetchedSpeechId] = useState<string | null>(null);
   const MAX_POLL_ATTEMPTS = 24; // 2 minutes with 5 second intervals
   
   // Initialize form with the speech title and default content
@@ -69,6 +70,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         setIsLoading(true);
         
         // Query for the most recent speech with this title and type
+        console.log(`Fetching speech with title: "${speechTitle}" and type: "${speechType}" for user: ${user.id}`);
         const { data, error } = await supabase
           .from('speeches')
           .select('*')
@@ -92,6 +94,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
           // We found a generated speech
           const speech = data[0];
           console.log("Found existing speech:", speech);
+          setFetchedSpeechId(speech.id);
           
           // Check if this is a placeholder or a fully generated speech
           const isPlaceholder = speech.content.includes("sample") && 
@@ -99,6 +102,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
           
           if (!isPlaceholder) {
             // This is a complete speech
+            console.log("Found completed speech, displaying content");
             setGeneratedContent(speech.content);
             form.setValue('content', speech.content);
             setIsLoading(false);
@@ -117,9 +121,11 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
               description: "Your speech hasn't been generated yet. You can edit this placeholder or try generating again.",
               variant: "destructive",
             });
+            form.setValue('content', speech.content);
           }
         } else {
           // No speech found yet
+          console.log("No speech found, creating placeholder");
           const placeholderContent = `This is a sample ${speechType} speech. The real content should arrive shortly from our AI service. If it doesn't appear within a few minutes, please try generating again.`;
           setGeneratedContent(placeholderContent);
           form.setValue('content', placeholderContent);
@@ -223,7 +229,10 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         <Card>
           <CardHeader>
             <CardTitle><Translate text="speechLab.editTitle" fallback="Edit Your Speech" /></CardTitle>
-            <CardDescription><Translate text="speechLab.editDesc" fallback="Review and edit your speech before saving" /></CardDescription>
+            <CardDescription>
+              <Translate text="speechLab.editDesc" fallback="Review and edit your speech before saving" />
+              {fetchedSpeechId && <span className="text-xs text-gray-500 ml-2">(ID: {fetchedSpeechId})</span>}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <FormField
@@ -261,7 +270,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
             {isLoading && (
               <div className="text-center p-4">
                 <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-e-transparent align-[-0.125em] text-pink-600 motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-                <p className="mt-2 text-sm text-gray-500">Loading your generated speech...</p>
+                <p className="mt-2 text-sm text-gray-500">Loading your generated speech... (attempt {pollAttempts + 1}/{MAX_POLL_ATTEMPTS})</p>
               </div>
             )}
           </CardContent>

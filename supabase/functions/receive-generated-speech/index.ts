@@ -9,7 +9,7 @@ const corsHeaders = {
 
 type SpeechPayload = {
   userId: string;
-  speechId?: string;
+  speechId: string;
   speechType: string;
   speechTitle: string;
   content: string;
@@ -43,6 +43,8 @@ serve(async (req) => {
     // Check if a specific speechId was provided (for updating an existing speech)
     if (payload.speechId) {
       // Update existing speech
+      console.log(`Updating existing speech with ID: ${payload.speechId}`);
+      
       ({ data, error } = await supabase
         .from('speeches')
         .update({
@@ -58,6 +60,8 @@ serve(async (req) => {
       speechId = payload.speechId;
     } else {
       // Insert new speech
+      console.log("Creating new speech");
+      
       ({ data, error } = await supabase
         .from('speeches')
         .insert({
