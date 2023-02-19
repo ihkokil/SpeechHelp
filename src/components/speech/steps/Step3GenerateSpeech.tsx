@@ -62,14 +62,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     };
   }, [showConfetti, nextStep]);
 
-  // Get the callback URL for the Edge Function
-  const getCallbackUrl = () => {
-    const projectId = "yotrueuqjxmgcwlbbyps";
-    // Include speechId and userId as URL parameters for simpler processing
-    return (speechId: string, userId: string) => 
-      `https://${projectId}.supabase.co/functions/v1/receive-generated-speech?speechId=${speechId}&userId=${userId}`;
-  };
-
   // Add a placeholder speech to the database
   const createPlaceholderSpeech = async () => {
     if (!user?.id) return null;
@@ -125,15 +117,17 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       // Show confetti (this will also trigger the next step after a delay)
       setShowConfetti(true);
       
-      // Send data to make.com webhook
-      const webhookUrl = "https://hook.us2.make.com/i78d2sdyd3eewz2w5oytais6dpwrjh5h";
+      // Get the project ID for constructing the callback URL
+      const projectId = "yotrueuqjxmgcwlbbyps";
+      
+      // Construct the callback URL with all necessary parameters
+      const callbackUrl = `https://${projectId}.supabase.co/functions/v1/receive-generated-speech?speechId=${speechId}&userId=${user?.id || "anonymous"}&speechType=${selectedSpeechType}&speechTitle=${encodeURIComponent(speechTitle)}`;
       
       // Get the speech type details
       const speechTypeDetails = speechTypes.find(type => type.id === selectedSpeechType);
       
-      // Generate the callback URL with the speech ID
-      const callbackUrlGenerator = getCallbackUrl();
-      const callbackUrl = callbackUrlGenerator(speechId, user?.id || "anonymous");
+      // Send data to make.com webhook
+      const webhookUrl = "https://hook.us2.make.com/i78d2sdyd3eewz2w5oytais6dpwrjh5h";
       
       // Prepare the data to send to the webhook
       const webhookData = {
@@ -157,17 +151,11 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       
       // Provide clear Make.com instructions in console for debugging
       console.log("\n--- INSTRUCTIONS FOR MAKE.COM HTTP REQUEST MODULE ---");
-      console.log("1. In the final HTTP module, set the URL to the callbackUrl value");
+      console.log("1. In the final HTTP module, set the URL to the callbackUrl value exactly as received");
       console.log("2. Set the Method to POST");
       console.log("3. Set Content Type to application/json");
-      console.log("4. In the Request Content field, send a JSON object with at least: ");
-      console.log(`   {
-  "userId": "{{userId from previous step}}",
-  "speechId": "{{speechId from previous step}}",
-  "content": "{{generated speech content}}",
-  "speechType": "{{speechType from previous step}}",
-  "speechTitle": "{{speechTitle from previous step}}"
-}`);
+      console.log("4. In the Request Content field, make sure to send the CONTENT ONLY as plain text without any JSON wrapper");
+      console.log("   Just put the generated speech text directly in the body, not as JSON");
       console.log("--- END INSTRUCTIONS ---\n");
       
       // Send the data to the webhook
