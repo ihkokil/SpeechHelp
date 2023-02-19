@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4"
 
@@ -22,13 +21,76 @@ serve(async (req) => {
   }
 
   try {
-    // Get payload from Make.com
-    const payload: SpeechPayload = await req.json();
-    console.log("Received speech payload:", payload);
+    console.log("Received request to /receive-generated-speech");
+    console.log("Request method:", req.method);
+    console.log("Request headers:", Object.fromEntries(req.headers.entries()));
+
+    // Get the request body
+    let requestBody;
+    try {
+      requestBody = await req.text();
+      console.log("Raw request body:", requestBody);
+      
+      // Try to parse as JSON if it's a JSON string
+      try {
+        const payload = JSON.parse(requestBody);
+        console.log("Parsed JSON payload:", payload);
+        requestBody = payload;
+      } catch (parseError) {
+        console.log("Not a JSON string or parsing error:", parseError.message);
+        // Keep the raw text if it's not JSON
+      }
+    } catch (bodyError) {
+      console.error("Error reading request body:", bodyError);
+      throw new Error("Could not read request body");
+    }
+
+    // Normalize the payload - handle both direct JSON objects and string content
+    let payload: SpeechPayload;
+    
+    if (typeof requestBody === 'object' && requestBody !== null) {
+      // It's already a JSON object
+      payload = requestBody as SpeechPayload;
+    } else if (typeof requestBody === 'string') {
+      // It's a string, try to extract data from it
+      console.log("Trying to extract payload from string content");
+      
+      // Create a simple payload with just the content
+      // Attempt to extract speechId and userId from the URL parameters
+      const url = new URL(req.url);
+      const speechId = url.searchParams.get('speechId');
+      const userId = url.searchParams.get('userId');
+      const speechType = url.searchParams.get('speechType');
+      const speechTitle = url.searchParams.get('speechTitle');
+      
+      if (!speechId || !userId) {
+        console.error("Missing required URL parameters: speechId and userId");
+        throw new Error("Missing speechId or userId in URL parameters");
+      }
+      
+      payload = {
+        speechId,
+        userId,
+        content: requestBody,
+        speechType: speechType || 'unknown',
+        speechTitle: speechTitle || 'Untitled Speech'
+      };
+      
+      console.log("Created payload from string content:", payload);
+    } else {
+      console.error("Invalid payload format");
+      throw new Error("Invalid payload format");
+    }
 
     // Validate required fields
-    if (!payload.userId || !payload.speechType || !payload.speechTitle || !payload.content) {
-      throw new Error("Missing required fields");
+    if (!payload.userId || !payload.speechId) {
+      console.error("Missing required fields: userId or speechId");
+      throw new Error("Missing required fields: userId or speechId");
+    }
+
+    if (!payload.content) {
+      console.error("Missing speech content");
+      throw new Error("Missing speech content");
     }
 
     // Initialize Supabase client
@@ -36,58 +98,32 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    let speechId;
-    let data;
-    let error;
-
-    // Check if a specific speechId was provided (for updating an existing speech)
-    if (payload.speechId) {
-      // Update existing speech
-      console.log(`Updating existing speech with ID: ${payload.speechId}`);
-      
-      ({ data, error } = await supabase
-        .from('speeches')
-        .update({
-          title: payload.speechTitle,
-          content: payload.content,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', payload.speechId)
-        .eq('user_id', payload.userId)
-        .select()
-        .single());
-      
-      speechId = payload.speechId;
-    } else {
-      // Insert new speech
-      console.log("Creating new speech");
-      
-      ({ data, error } = await supabase
-        .from('speeches')
-        .insert({
-          user_id: payload.userId,
-          title: payload.speechTitle,
-          content: payload.content,
-          speech_type: payload.speechType
-        })
-        .select()
-        .single());
-      
-      speechId = data?.id;
-    }
-
+    console.log(`Updating speech with ID: ${payload.speechId} for user: ${payload.userId}`);
+    
+    // Update existing speech with the generated content
+    const { data, error } = await supabase
+      .from('speeches')
+      .update({
+        content: payload.content,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', payload.speechId)
+      .eq('user_id', payload.userId)
+      .select()
+      .single();
+    
     if (error) {
-      console.error("Error saving speech:", error);
+      console.error("Error updating speech:", error);
       throw error;
     }
 
-    console.log("Speech saved successfully:", speechId);
+    console.log("Speech updated successfully:", data?.id);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Speech saved successfully", 
-        speechId: speechId 
+        message: "Speech updated successfully", 
+        speechId: data?.id 
       }),
       { 
         headers: { 

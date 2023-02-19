@@ -65,7 +65,9 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
   // Get the callback URL for the Edge Function
   const getCallbackUrl = () => {
     const projectId = "yotrueuqjxmgcwlbbyps";
-    return `https://${projectId}.supabase.co/functions/v1/receive-generated-speech`;
+    // Include speechId and userId as URL parameters for simpler processing
+    return (speechId: string, userId: string) => 
+      `https://${projectId}.supabase.co/functions/v1/receive-generated-speech?speechId=${speechId}&userId=${userId}`;
   };
 
   // Add a placeholder speech to the database
@@ -129,6 +131,10 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       // Get the speech type details
       const speechTypeDetails = speechTypes.find(type => type.id === selectedSpeechType);
       
+      // Generate the callback URL with the speech ID
+      const callbackUrlGenerator = getCallbackUrl();
+      const callbackUrl = callbackUrlGenerator(speechId, user?.id || "anonymous");
+      
       // Prepare the data to send to the webhook
       const webhookData = {
         userId: user?.id || "anonymous",
@@ -141,12 +147,28 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         // Include all the speech details collected in Step 2
         speechDetails: speechDetails,
         // Add callback URL for Make.com to send the generated speech back
-        callbackUrl: getCallbackUrl(),
-        // Add the speech ID if we created a placeholder
+        callbackUrl: callbackUrl,
+        // Add the speech ID for reference
         speechId: speechId,
       };
       
       console.log("Sending data to webhook:", webhookData);
+      console.log("Callback URL:", callbackUrl);
+      
+      // Provide clear Make.com instructions in console for debugging
+      console.log("\n--- INSTRUCTIONS FOR MAKE.COM HTTP REQUEST MODULE ---");
+      console.log("1. In the final HTTP module, set the URL to the callbackUrl value");
+      console.log("2. Set the Method to POST");
+      console.log("3. Set Content Type to application/json");
+      console.log("4. In the Request Content field, send a JSON object with at least: ");
+      console.log(`   {
+  "userId": "{{userId from previous step}}",
+  "speechId": "{{speechId from previous step}}",
+  "content": "{{generated speech content}}",
+  "speechType": "{{speechType from previous step}}",
+  "speechTitle": "{{speechTitle from previous step}}"
+}`);
+      console.log("--- END INSTRUCTIONS ---\n");
       
       // Send the data to the webhook
       const response = await fetch(webhookUrl, {
