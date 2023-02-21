@@ -9,30 +9,68 @@ import Translate from '@/components/Translate';
 import { useToast } from "@/hooks/use-toast";
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSpeechService } from '@/services/speechService';
 
 interface Step4Props {
   prevStep: () => void;
   speechTitle: string;
   speechType: string;
   onTitleChange: (title: string) => void;
+  speechDetails?: Record<string, string>;
 }
 
 const Step4EditSpeech: React.FC<Step4Props> = ({ 
   prevStep, 
   speechTitle, 
   speechType,
-  onTitleChange 
+  onTitleChange,
+  speechDetails = {}
 }) => {
   const [title, setTitle] = useState(speechTitle);
-  const [content, setContent] = useState('This is your generated speech. You can edit it here to customize it to your needs.');
+  const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-  const { user, saveSpeech } = useAuth();
+  const { user } = useAuth();
+  const speechService = useSpeechService();
 
   // Update local title when prop changes
   useEffect(() => {
     setTitle(speechTitle);
   }, [speechTitle]);
+
+  // Load the generated speech from localStorage when the component mounts
+  useEffect(() => {
+    const savedSpeech = localStorage.getItem('generatedSpeech');
+    if (savedSpeech) {
+      setContent(savedSpeech);
+    } else {
+      // If no saved speech, create a placeholder that includes questionnaire data
+      const placeholderSpeech = createPlaceholderSpeech();
+      setContent(placeholderSpeech);
+    }
+  }, []);
+
+  // Create a placeholder speech using the questionnaire data
+  const createPlaceholderSpeech = () => {
+    const detailsArray = Object.entries(speechDetails || {});
+    
+    if (detailsArray.length === 0) {
+      return "This is your generated speech. You can edit it here to customize it to your needs.";
+    }
+    
+    let speech = `# ${title}\n\n`;
+    speech += "## Your Speech Details\n\n";
+    
+    // Add all questionnaire answers
+    detailsArray.forEach(([question, answer]) => {
+      if (answer && answer.trim()) {
+        speech += `**${question}**\n${answer}\n\n`;
+      }
+    });
+    
+    speech += "\n---\n\nEdit this speech to your liking before saving.";
+    return speech;
+  };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -65,8 +103,17 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
     setIsSaving(true);
 
     try {
+      // Save speech details in JSON format within the content
+      const speechWithMetadata = {
+        content: content,
+        details: speechDetails || {}
+      };
+      
+      // Convert to string for storage
+      const contentToSave = JSON.stringify(speechWithMetadata);
+
       if (user) {
-        await saveSpeech(title, content, speechType);
+        await speechService.saveSpeech(user.id, title, contentToSave, speechType);
         toast({
           title: "Speech Saved",
           description: "Your speech has been saved successfully.",
@@ -109,7 +156,13 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 
   const handleReset = () => {
     if (window.confirm("Are you sure you want to reset your speech? This will clear all your changes.")) {
-      setContent('This is your generated speech. You can edit it here to customize it to your needs.');
+      const savedSpeech = localStorage.getItem('generatedSpeech');
+      if (savedSpeech) {
+        setContent(savedSpeech);
+      } else {
+        setContent(createPlaceholderSpeech());
+      }
+      
       toast({
         title: "Speech Reset",
         description: "Your speech has been reset to the original generated content.",
