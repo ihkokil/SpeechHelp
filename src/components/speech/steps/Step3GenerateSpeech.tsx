@@ -153,9 +153,9 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       console.log("\n--- INSTRUCTIONS FOR MAKE.COM HTTP REQUEST MODULE ---");
       console.log("1. In the final HTTP module, set the URL to the callbackUrl value exactly as received");
       console.log("2. Set the Method to POST");
-      console.log("3. Set Content Type to application/json");
-      console.log("4. In the Request Content field, make sure to send the CONTENT ONLY as plain text without any JSON wrapper");
-      console.log("   Just put the generated speech text directly in the body, not as JSON");
+      console.log("3. Set Content Type to text/plain (important!)");
+      console.log("4. In the Request Content field, put the generated speech text directly as plain text");
+      console.log("   DO NOT wrap it in JSON, just send the raw text of the speech");
       console.log("--- END INSTRUCTIONS ---\n");
       
       // Send the data to the webhook
@@ -173,8 +173,14 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         throw new Error(`Webhook returned status ${response.status}`);
       }
       
-      const responseData = await response.json();
-      console.log("Webhook response:", responseData);
+      try {
+        const responseData = await response.json();
+        console.log("Webhook response:", responseData);
+      } catch (e) {
+        // Response may not be JSON
+        const textResponse = await response.text();
+        console.log("Webhook text response:", textResponse);
+      }
       
       // The nextStep() call is handled by the useEffect when showConfetti is set to true
     } catch (error) {

@@ -27,46 +27,73 @@ serve(async (req) => {
     
     console.log("URL parameters:", { speechId, userId, speechType, speechTitle });
 
-    // Get the request body
+    // Get the request body - try several approaches to get the content
     let content;
     try {
-      const requestBody = await req.text();
-      console.log("Raw request body:", requestBody);
+      // First, let's just try to get the raw body as text
+      const rawText = await req.text();
+      console.log("Raw request body length:", rawText.length);
+      console.log("Raw request body preview:", rawText.substring(0, 200) + (rawText.length > 200 ? "..." : ""));
       
-      // Check if the body is JSON
-      try {
-        const jsonBody = JSON.parse(requestBody);
-        console.log("Parsed JSON body:", jsonBody);
-        
-        // Handle different payload structures
-        if (jsonBody.content) {
-          // Direct content field
-          content = jsonBody.content;
-        } else if (typeof jsonBody === 'string') {
-          // Body is just a JSON string
-          content = jsonBody;
-        } else {
-          // Try to extract content from any available field
-          const possibleContentFields = Object.values(jsonBody);
-          const textContent = possibleContentFields.find(val => typeof val === 'string' && val.length > 100);
-          if (textContent) {
-            content = textContent;
+      if (rawText.trim() && rawText.length > 50) {
+        // If we have substantial text content, use it directly
+        content = rawText;
+        console.log("Using raw text as content");
+      } else {
+        // If raw text is empty or very short, try parsing as JSON
+        try {
+          // Try to parse original request text as JSON
+          const jsonBody = JSON.parse(rawText);
+          console.log("Parsed JSON body keys:", Object.keys(jsonBody));
+          
+          // Check various possible fields where content might be stored
+          if (jsonBody.content && typeof jsonBody.content === 'string') {
+            content = jsonBody.content;
+            console.log("Found content in json.content field");
+          } else if (jsonBody.text && typeof jsonBody.text === 'string') {
+            content = jsonBody.text;
+            console.log("Found content in json.text field");
+          } else if (jsonBody.speech && typeof jsonBody.speech === 'string') {
+            content = jsonBody.speech;
+            console.log("Found content in json.speech field");
+          } else if (jsonBody.data && typeof jsonBody.data === 'string') {
+            content = jsonBody.data;
+            console.log("Found content in json.data field");
+          } else if (typeof jsonBody === 'string') {
+            content = jsonBody;
+            console.log("JSON body is itself a string");
           } else {
-            // If all else fails, use the stringified JSON
-            content = JSON.stringify(jsonBody);
+            // Look through all string values to find one that looks like speech content
+            for (const [key, value] of Object.entries(jsonBody)) {
+              if (typeof value === 'string' && value.length > 100) {
+                content = value;
+                console.log(`Found likely content in json.${key} field`);
+                break;
+              }
+            }
+            
+            // If we still don't have content, use the stringified JSON
+            if (!content) {
+              content = JSON.stringify(jsonBody);
+              console.log("Using stringified JSON as content");
+            }
+          }
+        } catch (jsonError) {
+          console.log("Failed to parse as JSON, error:", jsonError.message);
+          // If not valid JSON and text is too short, create a fallback message
+          if (!content) {
+            content = `We were unable to generate a proper speech. The raw response was: ${rawText}`;
+            console.log("Using fallback error message as content");
           }
         }
-      } catch (jsonError) {
-        // Not JSON, use raw text
-        console.log("Body is not JSON, using as raw text");
-        content = requestBody;
       }
     } catch (bodyError) {
       console.error("Error reading request body:", bodyError);
-      throw new Error("Could not read request body");
+      content = "There was an error processing the speech generation response. Please try again.";
     }
-
-    console.log("Extracted content:", content ? content.substring(0, 100) + "..." : "No content");
+    
+    console.log("Final extracted content length:", content ? content.length : 0);
+    console.log("Content preview:", content ? content.substring(0, 100) + "..." : "No content");
 
     // Validate required parameters
     if (!speechId || !userId) {
