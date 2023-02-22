@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -170,7 +171,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
-          <Label htmlFor="speechTitle"><Translate text="speechLab.speechTitleLabel" /></Label>
+          <Label htmlFor="speechTitle" className="text-purple-700 font-medium"><Translate text="speechLab.speechTitleLabel" /></Label>
           <Input 
             id="speechTitle"
             value={title}
@@ -181,7 +182,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         </div>
         
         <div>
-          <Label htmlFor="speechContent">Speech Content</Label>
+          <Label htmlFor="speechContent" className="text-pink-600 font-medium">Speech Content</Label>
           <TextareaWithPinkScrollbar 
             id="speechContent"
             className="min-h-[300px]" 
