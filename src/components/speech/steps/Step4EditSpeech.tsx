@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { Textarea } from '@/components/ui/textarea';
+import { TextareaWithPinkScrollbar } from '@/components/ui/textarea-with-pink-scrollbar';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Download, RefreshCw, Save } from 'lucide-react';
 import Translate from '@/components/Translate';
@@ -182,7 +182,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         
         <div>
           <Label htmlFor="speechContent">Speech Content</Label>
-          <Textarea 
+          <TextareaWithPinkScrollbar 
             id="speechContent"
             className="min-h-[300px]" 
             value={content}
