@@ -211,5 +211,7 @@ export const enUS = {
   'speechLab.generatedSuccess': 'Your speech is ready!',
   'speechLab.savedSuccess': 'Speech saved successfully!',
   'speechLab.speechTitleLabel': 'Speech Title',
-  'speechLab.speechTitlePlaceholder': 'Enter a title for your speech'
+  'speechLab.speechTitlePlaceholder': 'Enter a title for your speech',
+  'speechLab.introductionQuestion': 'Will you be introduced before you speak?',
+  'speechLab.confirmDetails': 'Please confirm your speech details'
 };
