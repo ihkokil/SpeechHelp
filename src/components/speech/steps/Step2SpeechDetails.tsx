@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -642,7 +641,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         placeholder: "Describe a significant moment..." 
       },
       { 
-        question: "Qualities or achievements to highlight?", 
+        question: "Qualities or achievements to highlight.", 
         type: "textarea", 
         placeholder: "What would you like to recognize?" 
       },
@@ -883,7 +882,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         placeholder: "Describe a significant moment..." 
       },
       { 
-        question: "Qualities or achievements to highlight?", 
+        question: "Qualities or achievements to highlight.", 
         type: "textarea", 
         placeholder: "What contributions or strengths to recognize?" 
       },
