@@ -21,6 +21,7 @@ const SpeechGenerationActions: React.FC<SpeechGenerationActionsProps> = ({
         <ArrowLeft className="mr-2 h-4 w-4" />
         <Translate text="speechLab.backButton" />
       </ButtonCustom>
+      
       <ButtonCustom onClick={onGenerate} variant="magenta" disabled={isTitleEmpty}>
         <Translate text="speechLab.generateButton" />
         <ArrowRight className="ml-2 h-4 w-4" />
