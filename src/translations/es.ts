@@ -1,4 +1,3 @@
-
 export const es = {
   // General
   'app.name': 'SpeechHelp',
@@ -211,7 +210,5 @@ export const es = {
   'speechLab.generatedSuccess': '¡Tu discurso está listo!',
   'speechLab.savedSuccess': '¡Discurso guardado con éxito!',
   'speechLab.speechTitleLabel': 'Título del discurso',
-  'speechLab.speechTitlePlaceholder': 'Ingresa un título para tu discurso',
-  'speechLab.introductionQuestion': '¿Serás presentado antes de hablar?',
-  'speechLab.confirmDetails': 'Por favor confirma los detalles de tu discurso'
+  'speechLab.speechTitlePlaceholder': 'Ingresa un título para tu discurso'
 };
