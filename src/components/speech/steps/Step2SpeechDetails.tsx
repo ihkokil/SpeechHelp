@@ -35,7 +35,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
   // Introduction question to add to all questionnaires
   const introductionQuestion = { 
     question: "Will you be introduced before you speak?", 
-    type: "radio", 
+    type: "radio" as const, 
     options: ["Yes", "No", "Unsure"]
   };
 
