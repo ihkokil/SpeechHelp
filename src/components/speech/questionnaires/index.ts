@@ -1,5 +1,6 @@
 
-import { SpeechTypeQuestionnaires } from './types';
+// Export all questionnaires
+import { introductionQuestion } from './introductionQuestion';
 import { weddingQuestionnaire } from './weddingQuestionnaire';
 import { graduationQuestionnaire } from './graduationQuestionnaire';
 import { birthdayQuestionnaire } from './birthdayQuestionnaire';
@@ -17,8 +18,8 @@ import { retirementQuestionnaire } from './retirementQuestionnaire';
 import { awardQuestionnaire } from './awardQuestionnaire';
 import { otherQuestionnaire } from './otherQuestionnaire';
 
-// Combine all questionnaires into a single object
-export const questionnaires: SpeechTypeQuestionnaires = {
+// Export all questionnaire data as a single object
+export const questionnaires = {
   wedding: weddingQuestionnaire,
   graduation: graduationQuestionnaire,
   birthday: birthdayQuestionnaire,
@@ -34,7 +35,11 @@ export const questionnaires: SpeechTypeQuestionnaires = {
   entertaining: entertainingQuestionnaire,
   retirement: retirementQuestionnaire,
   award: awardQuestionnaire,
-  other: otherQuestionnaire,
+  other: otherQuestionnaire
 };
 
-export { QuestionItem, QuestionType } from './types';
+// Re-export the introduction question
+export { introductionQuestion };
+
+// Re-export types with correct syntax for isolated modules
+export type { QuestionItem, QuestionType, SpeechTypeQuestionnaires } from './types';

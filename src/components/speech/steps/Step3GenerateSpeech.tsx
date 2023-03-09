@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -11,21 +10,17 @@ import Translate from '@/components/Translate';
 import { Label } from '@/components/ui/label';
 import { useToast } from "@/hooks/use-toast";
 import Confetti from 'react-confetti';
-import { useSpeechService } from '@/services/speechService';
+import { SpeechType } from '../data/speechTypesData';
+import { SpeechDetails } from '../hooks/useSpeechLabState';
 
 interface Step3Props {
   nextStep: () => void;
   prevStep: () => void;
   selectedSpeechType: string;
-  speechTypes: {
-    id: string;
-    label: string;
-    image: string;
-    icon: React.ReactNode;
-  }[];
+  speechTypes: SpeechType[];
   speechTitle: string;
   setSpeechTitle: (title: string) => void;
-  speechDetails?: Record<string, string>;
+  speechDetails?: SpeechDetails;
 }
 
 const Step3GenerateSpeech: React.FC<Step3Props> = ({
@@ -61,9 +56,7 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     };
   }, [showConfetti, nextStep]);
 
-  // Generate a simple speech based on the questionnaire data
   const generateSpeechFromDetails = () => {
-    // Format the speech details into a coherent speech
     const detailsArray = Object.entries(speechDetails || {});
     
     if (detailsArray.length === 0) {
@@ -72,19 +65,16 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     
     let speech = `# ${speechTitle}\n\n`;
     
-    // Find relationship/role information if available
     const roleInfo = detailsArray.find(([question]) => 
       question.toLowerCase().includes('relation') || 
       question.toLowerCase().includes('role') || 
       question.toLowerCase().includes('who are you')
     );
     
-    // Find name information if available
     const nameInfo = detailsArray.find(([question]) => 
       question.toLowerCase().includes('name')
     );
     
-    // Add introduction if relevant information is available
     if (roleInfo || nameInfo) {
       speech += "## Introduction\n\n";
       
@@ -103,10 +93,8 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       speech += "## Introduction\n\nGood evening everyone. It's my honor to speak today.\n\n";
     }
     
-    // Add main content based on speech type and details
     speech += "## Main Content\n\n";
     
-    // Add stories or memories if available
     const storyInfo = detailsArray.find(([question]) => 
       question.toLowerCase().includes('story') || 
       question.toLowerCase().includes('memory') || 
@@ -117,7 +105,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       speech += `I would like to share a special memory: ${storyInfo[1]}\n\n`;
     }
     
-    // Add qualities or attributes if available
     const qualitiesInfo = detailsArray.find(([question]) => 
       question.toLowerCase().includes('qualities') || 
       question.toLowerCase().includes('admire') || 
@@ -128,7 +115,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       speech += `What stands out most is: ${qualitiesInfo[1]}\n\n`;
     }
     
-    // Add message or theme if available
     const messageInfo = detailsArray.find(([question]) => 
       question.toLowerCase().includes('message') || 
       question.toLowerCase().includes('theme') || 
@@ -139,10 +125,8 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       speech += `The main message I want to convey today is: ${messageInfo[1]}\n\n`;
     }
     
-    // Add closing remarks
     speech += "## Conclusion\n\n";
     
-    // Add closing or toast if available
     const closingInfo = detailsArray.find(([question]) => 
       question.toLowerCase().includes('closing') || 
       question.toLowerCase().includes('toast') || 
@@ -155,7 +139,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       speech += "Thank you all for your attention and for being here today. It means a great deal to me.\n\n";
     }
     
-    // Add a note for the user to edit
     speech += "---\n\nThis speech was automatically generated based on your questionnaire answers. Please edit it to better fit your style and needs.";
     
     return speech;
@@ -171,18 +154,14 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       return;
     }
     
-    // Start the generation process
     setGenerating(true);
     
     try {
-      // Generate speech from questionnaire data
       const speech = generateSpeechFromDetails();
       setGeneratedSpeech(speech);
       
-      // Show confetti and proceed
       setShowConfetti(true);
       
-      // Store the generated speech in localStorage for Step4
       localStorage.setItem('generatedSpeech', speech);
       
       toast({
@@ -199,8 +178,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       });
       setGenerating(false);
     }
-    
-    // The nextStep() call is now handled by the useEffect
   };
 
   return (
@@ -249,7 +226,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
           <div className="p-4 bg-gray-100 rounded-md">
             <h3 className="font-medium mb-2"><Translate text="common.type" />: {speechTypes.find(type => type.id === selectedSpeechType)?.label || ''}</h3>
             <Separator className="my-4" />
-            {/* Show summary of speech details here */}
             <div className="text-sm text-gray-600">
               {Object.keys(speechDetails || {}).length > 0 ? (
                 <div>
