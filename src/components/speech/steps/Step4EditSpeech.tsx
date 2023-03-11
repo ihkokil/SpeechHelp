@@ -100,7 +100,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         <CardTitle><Translate text="speechLab.editTitle" /></CardTitle>
         <CardDescription><Translate text="speechLab.editDesc" /></CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-8">
         <SpeechTitleInput 
           title={title} 
           onTitleChange={handleTitleChange} 
