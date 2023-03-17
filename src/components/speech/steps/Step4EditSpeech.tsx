@@ -113,6 +113,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         
         <SpeechActionButtons 
           content={content}
+          title={title}
           onDownload={handleDownload} 
           onReset={handleReset} 
         />
