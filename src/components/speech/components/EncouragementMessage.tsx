@@ -30,9 +30,8 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
   ];
 
   useEffect(() => {
-    // Define when to show messages - show for certain question indexes
+    // Define when to show messages - show every 2 questions or at halfway point
     const shouldShowMessage = () => {
-      // Show a message after every 2 questions or when halfway through
       return currentQuestionIndex > 0 && 
         (currentQuestionIndex % 2 === 0 || 
          currentQuestionIndex === Math.floor(totalQuestions / 2));
@@ -50,7 +49,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
       // Hide the message and confetti after delays
       const messageTimer = setTimeout(() => {
         setShowMessage(false);
-      }, 5000); // Show message for 5 seconds (increased from 4)
+      }, 5000); // Show message for 5 seconds
       
       const confettiTimer = setTimeout(() => {
         setShowConfetti(false);
@@ -84,9 +83,18 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.8 }}
               transition={{ duration: 0.5 }}
-              className="bg-gradient-to-r from-pink-500 to-purple-600 px-6 py-3 rounded-full shadow-lg max-w-md text-center"
+              className="relative bg-white px-6 py-3 rounded-3xl shadow-lg max-w-md text-center"
             >
-              <p className="text-white font-medium">{message}</p>
+              {/* Thought bubble stem/tail */}
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-6 h-6">
+                <div className="absolute bottom-0 left-0 w-3 h-3 rounded-full bg-white shadow-sm"></div>
+                <div className="absolute bottom-4 left-1 w-4 h-4 rounded-full bg-white shadow-sm"></div>
+              </div>
+              
+              {/* Message content with gradient background */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-3 rounded-2xl border border-purple-100">
+                <p className="text-purple-800 font-medium">{message}</p>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
