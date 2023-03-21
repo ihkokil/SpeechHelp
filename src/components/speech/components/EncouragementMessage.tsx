@@ -15,6 +15,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
   const [message, setMessage] = useState<string>('');
   const [showMessage, setShowMessage] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [lastShownIndex, setLastShownIndex] = useState(-1);
 
   const encouragingMessages = [
     "Your insights are the secret ingredient to a brilliant speech!",
@@ -30,17 +31,37 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
   ];
 
   useEffect(() => {
-    // Define when to show messages - show every 2 questions or at halfway point
+    // Define when to show messages - only at specific milestones (roughly 25%, 60%, 90%)
     const shouldShowMessage = () => {
-      return currentQuestionIndex > 0 && 
-        (currentQuestionIndex % 2 === 0 || 
-         currentQuestionIndex === Math.floor(totalQuestions / 2));
+      if (currentQuestionIndex <= 0) return false;
+      
+      // Don't show a message if we showed one at the last question
+      if (currentQuestionIndex === lastShownIndex + 1) return false;
+      
+      // Show messages at approximately 25%, 60% and 90% of the questionnaire
+      const showPoints = [
+        Math.floor(totalQuestions * 0.25),
+        Math.floor(totalQuestions * 0.6),
+        Math.floor(totalQuestions * 0.9)
+      ];
+      
+      return showPoints.includes(currentQuestionIndex);
     };
     
     if (shouldShowMessage()) {
-      // Pick a random message from the array
-      const randomIndex = Math.floor(Math.random() * encouragingMessages.length);
+      // Pick a random message that hasn't been shown recently
+      let usedIndices = []; // Array to track used indices
+      let randomIndex;
+      
+      do {
+        randomIndex = Math.floor(Math.random() * encouragingMessages.length);
+      } while (usedIndices.includes(randomIndex) && usedIndices.length < encouragingMessages.length);
+      
+      usedIndices.push(randomIndex);
       setMessage(encouragingMessages[randomIndex]);
+      
+      // Remember this question index to avoid showing on next question
+      setLastShownIndex(currentQuestionIndex);
       
       // Show the message and confetti
       setShowMessage(true);
@@ -60,7 +81,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
         clearTimeout(confettiTimer);
       };
     }
-  }, [currentQuestionIndex, totalQuestions, encouragingMessages]);
+  }, [currentQuestionIndex, totalQuestions, encouragingMessages, lastShownIndex]);
 
   return (
     <>
