@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'react-confetti';
 
@@ -17,6 +17,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
   const [showConfetti, setShowConfetti] = useState(false);
   const [lastShownIndex, setLastShownIndex] = useState(-1);
   const [usedMessageIndices, setUsedMessageIndices] = useState<number[]>([]);
+  const bubbleRef = useRef<HTMLDivElement>(null);
 
   const encouragingMessages = [
     "Your insights are the secret ingredient to a brilliant speech!",
@@ -94,43 +95,57 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
   if (!showMessage) return null;
 
   return (
-    <>
-      {showConfetti && (
-        <div className="absolute inset-0 pointer-events-none z-40">
-          {React.createElement(confetti, {
-            width: window.innerWidth,
-            height: window.innerHeight,
-            numberOfPieces: 50,
-            recycle: false,
-            gravity: 0.2
-          })}
-        </div>
-      )}
-      <div className="flex justify-center w-full mt-6 mb-2">
-        <AnimatePresence>
-          {showMessage && (
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.8 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.8 }}
-              transition={{ duration: 0.5 }}
-              className="relative bg-white px-6 py-3 rounded-3xl shadow-lg max-w-md text-center"
-            >
-              {/* Thought bubble stem/tail */}
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-6 h-6">
-                <div className="absolute bottom-0 left-0 w-3 h-3 rounded-full bg-white shadow-sm"></div>
-                <div className="absolute bottom-4 left-1 w-4 h-4 rounded-full bg-white shadow-sm"></div>
-              </div>
+    <div className="flex justify-center w-full mt-6 mb-2">
+      <AnimatePresence>
+        {showMessage && (
+          <motion.div
+            ref={bubbleRef}
+            initial={{ opacity: 0, y: 20, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.8 }}
+            transition={{ duration: 0.5 }}
+            className="relative w-full max-w-md"
+          >
+            {/* Cloud-shaped thought bubble */}
+            <div className="relative bg-white p-5 rounded-[50px] shadow-lg">
+              {/* Top cloud bumps */}
+              <div className="absolute -top-6 left-1/4 w-10 h-10 bg-white rounded-full shadow-sm"></div>
+              <div className="absolute -top-8 left-1/3 w-12 h-12 bg-white rounded-full shadow-sm"></div>
+              <div className="absolute -top-5 left-1/2 w-8 h-8 bg-white rounded-full shadow-sm"></div>
+              
+              {/* Thought bubble tail - small circles getting smaller */}
+              <div className="absolute -bottom-10 left-1/4 w-6 h-6 bg-white rounded-full shadow-sm"></div>
+              <div className="absolute -bottom-16 left-1/5 w-4 h-4 bg-white rounded-full shadow-sm"></div>
+              <div className="absolute -bottom-20 left-[12%] w-3 h-3 bg-white rounded-full shadow-sm"></div>
               
               {/* Message content with gradient background */}
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-3 rounded-2xl border border-purple-100">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-[35px] border border-purple-100 text-center">
                 <p className="text-purple-800 font-medium">{message}</p>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </>
+            </div>
+            
+            {/* Confetti positioned over the thought bubble */}
+            {showConfetti && bubbleRef.current && (
+              <div className="absolute top-0 left-0 right-0 pointer-events-none z-40">
+                {React.createElement(confetti, {
+                  width: bubbleRef.current.offsetWidth,
+                  height: bubbleRef.current.offsetHeight,
+                  recycle: false,
+                  numberOfPieces: 50,
+                  gravity: 0.2,
+                  confettiSource: {
+                    x: bubbleRef.current.offsetWidth / 2,
+                    y: bubbleRef.current.offsetHeight / 2,
+                    w: 0,
+                    h: 0
+                  }
+                })}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
