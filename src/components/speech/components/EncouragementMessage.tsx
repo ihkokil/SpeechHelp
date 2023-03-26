@@ -106,25 +106,25 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
             transition={{ duration: 0.5 }}
             className="relative w-full max-w-md"
           >
-            {/* Cloud-shaped thought bubble */}
-            <div className="relative bg-white p-5 rounded-[50px] shadow-lg">
-              {/* Top cloud bumps */}
-              <div className="absolute -top-6 left-1/4 w-10 h-10 bg-white rounded-full shadow-sm"></div>
-              <div className="absolute -top-8 left-1/3 w-12 h-12 bg-white rounded-full shadow-sm"></div>
-              <div className="absolute -top-5 left-1/2 w-8 h-8 bg-white rounded-full shadow-sm"></div>
+            {/* Round thought bubble */}
+            <div className="relative bg-white p-5 rounded-full shadow-lg">
+              {/* Top bubble circles */}
+              <div className="absolute -top-5 left-1/4 w-8 h-8 bg-white rounded-full shadow-sm"></div>
+              <div className="absolute -top-7 left-1/3 w-10 h-10 bg-white rounded-full shadow-sm"></div>
+              <div className="absolute -top-4 left-1/2 w-6 h-6 bg-white rounded-full shadow-sm"></div>
               
               {/* Thought bubble tail - small circles getting smaller */}
-              <div className="absolute -bottom-10 left-1/4 w-6 h-6 bg-white rounded-full shadow-sm"></div>
-              <div className="absolute -bottom-16 left-1/5 w-4 h-4 bg-white rounded-full shadow-sm"></div>
-              <div className="absolute -bottom-20 left-[12%] w-3 h-3 bg-white rounded-full shadow-sm"></div>
+              <div className="absolute -bottom-8 left-1/4 w-5 h-5 bg-white rounded-full shadow-sm"></div>
+              <div className="absolute -bottom-12 left-1/5 w-4 h-4 bg-white rounded-full shadow-sm"></div>
+              <div className="absolute -bottom-16 left-[12%] w-3 h-3 bg-white rounded-full shadow-sm"></div>
               
               {/* Message content with gradient background */}
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-[35px] border border-purple-100 text-center">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-full border border-purple-100 text-center">
                 <p className="text-purple-800 font-medium">{message}</p>
               </div>
             </div>
             
-            {/* Confetti positioned over the thought bubble */}
+            {/* Pink and purple confetti positioned over the thought bubble */}
             {showConfetti && bubbleRef.current && (
               <div className="absolute top-0 left-0 right-0 pointer-events-none z-40">
                 {React.createElement(confetti, {
@@ -133,6 +133,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
                   recycle: false,
                   numberOfPieces: 50,
                   gravity: 0.2,
+                  colors: ['#FFC0CB', '#FF69B4', '#DA70D6', '#BA55D3', '#9370DB', '#8A2BE2'], // Pink and purple shades
                   confettiSource: {
                     x: bubbleRef.current.offsetWidth / 2,
                     y: bubbleRef.current.offsetHeight / 2,
