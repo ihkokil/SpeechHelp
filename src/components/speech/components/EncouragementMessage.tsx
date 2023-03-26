@@ -17,6 +17,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
   const [showConfetti, setShowConfetti] = useState(false);
   const [lastShownIndex, setLastShownIndex] = useState(-1);
   const [usedMessageIndices, setUsedMessageIndices] = useState<number[]>([]);
+  const [appearanceCount, setAppearanceCount] = useState(0);
   const bubbleRef = useRef<HTMLDivElement>(null);
 
   const encouragingMessages = [
@@ -33,28 +34,46 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
   ];
 
   useEffect(() => {
-    // Define when to show messages - only at specific milestone questions
+    // Define when to show messages - with a cap of 3 total appearances
     const shouldShowMessage = () => {
+      // Don't show more than 3 messages total
+      if (appearanceCount >= 3) return false;
+      
+      // Don't show on the first question
       if (currentQuestionIndex <= 0) return false;
       
       // Don't show a message if we recently showed one (wait at least 3 questions)
       if (lastShownIndex >= 0 && currentQuestionIndex - lastShownIndex < 3) return false;
       
-      // Show messages at approximately 25%, 50% and 80% of the questionnaire
-      const showPoints = [
-        Math.floor(totalQuestions * 0.25),
-        Math.floor(totalQuestions * 0.5),
-        Math.floor(totalQuestions * 0.8)
-      ];
+      // Calculate progress percentage
+      const progress = currentQuestionIndex / totalQuestions;
       
-      return showPoints.includes(currentQuestionIndex);
+      // Determine potential show points based on total appearances allowed
+      let showPoints = [];
+      
+      // If we have 0 appearances so far, show around 20% through
+      if (appearanceCount === 0) {
+        showPoints = [Math.floor(totalQuestions * 0.2)];
+      } 
+      // If we have 1 appearance so far, show around 50% through
+      else if (appearanceCount === 1) {
+        showPoints = [Math.floor(totalQuestions * 0.5)];
+      } 
+      // If we have 2 appearances so far, show around 80% through
+      else if (appearanceCount === 2) {
+        showPoints = [Math.floor(totalQuestions * 0.8)];
+      }
+      
+      // Add some randomness - 20% chance of showing if we're at a good point in the progress
+      return showPoints.includes(currentQuestionIndex) || 
+             (progress > 0.3 && progress < 0.9 && Math.random() < 0.2);
     };
     
     if (shouldShowMessage()) {
       // Pick a random message that hasn't been used yet
       let randomIndex;
       
-      // If we've used all messages, reset the used indices
+      // Reset used indices if we've used all messages
       if (usedMessageIndices.length >= encouragingMessages.length) {
         setUsedMessageIndices([]);
       }
@@ -70,6 +89,9 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
       
       // Remember this question index
       setLastShownIndex(currentQuestionIndex);
+      
+      // Increment appearance count
+      setAppearanceCount(prev => prev + 1);
       
       // Show the message and confetti
       setShowMessage(true);
@@ -89,7 +111,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
         clearTimeout(confettiTimer);
       };
     }
-  }, [currentQuestionIndex, totalQuestions, encouragingMessages, lastShownIndex, usedMessageIndices]);
+  }, [currentQuestionIndex, totalQuestions, encouragingMessages, lastShownIndex, usedMessageIndices, appearanceCount]);
 
   // Only render if there's a message to show
   if (!showMessage) return null;
