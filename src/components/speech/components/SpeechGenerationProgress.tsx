@@ -22,7 +22,8 @@ const SpeechGenerationProgress: React.FC<SpeechGenerationProgressProps> = ({ vis
         <div className="mb-4">
           <PartyPopper className="h-16 w-16 text-pink-600 mb-2" />
         </div>
-        <h2 className="text-3xl font-bold text-pink-600 mb-2">Congratulations - You Did It!</h2>
+        <h2 className="text-3xl font-bold text-pink-600 mb-2">Congratulations</h2>
+        <h3 className="text-2xl font-bold text-pink-600 mb-4">You Did It!</h3>
         <p className="text-gray-700">Your speech is being generated...</p>
       </div>
     </div>
