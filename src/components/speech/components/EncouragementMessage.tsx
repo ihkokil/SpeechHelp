@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Star } from 'lucide-react';
 
 interface EncouragementMessageProps {
   currentQuestionIndex: number;
@@ -124,6 +125,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
             <div className="relative flex items-center justify-center">
               <div className="w-64 h-64 bg-gradient-to-br from-purple-100 to-indigo-50 rounded-full shadow-lg flex items-center justify-center p-8 border border-purple-200">
                 <div className="text-center">
+                  <Star className="h-6 w-6 text-purple-600 mb-1 mx-auto" fill="#E5DEFF" strokeWidth={2} />
                   <h4 className="font-bold text-purple-900 mb-2 uppercase text-sm">Speech Writing Tip</h4>
                   <p className="text-purple-800 font-medium">{message}</p>
                 </div>
