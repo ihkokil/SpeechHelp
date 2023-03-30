@@ -115,20 +115,36 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
         {showMessage && (
           <motion.div
             ref={bubbleRef}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1, 
+              y: 0,
+              rotate: [0, 5, -5, 3, -3, 0] 
+            }}
+            exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            transition={{ 
+              duration: 0.7,
+              type: "spring",
+              stiffness: 260,
+              damping: 20,
+              rotate: { duration: 1, ease: "easeInOut" }
+            }}
             className="relative w-full max-w-md"
           >
             {/* Even smaller circle bubble */}
             <div className="relative flex items-center justify-center">
               <div className="w-52 h-52 bg-gradient-to-br from-purple-100 to-indigo-50 rounded-full shadow-lg flex items-center justify-center p-4 border border-purple-200">
-                <div className="text-center">
-                  <Star className="h-6 w-6 text-purple-600 mb-1 mx-auto" fill="#E5DEFF" strokeWidth={2} />
+                <motion.div 
+                  className="text-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.5 }}
+                >
+                  <Star className="h-6 w-6 text-purple-600 mb-1 mx-auto animate-pulse-subtle" fill="#E5DEFF" strokeWidth={2} />
                   <h4 className="font-bold text-purple-900 mb-2 uppercase text-sm">Speech Writing Tip</h4>
                   <p className="text-purple-800 font-medium text-sm">{message}</p>
-                </div>
+                </motion.div>
               </div>
             </div>
           </motion.div>
