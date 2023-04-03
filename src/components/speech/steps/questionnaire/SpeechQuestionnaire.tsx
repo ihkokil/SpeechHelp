@@ -27,10 +27,21 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
   const { t } = useTranslation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [showEncouragement, setShowEncouragement] = useState(false);
 
   // Update progress when moving through questions
   useEffect(() => {
     setProgress(((currentQuestionIndex + 1) / questions.length) * 100);
+    
+    // Show encouragement message every 2nd or 3rd question (randomly)
+    const shouldShowEncouragement = Math.random() > 0.5 ? 
+      currentQuestionIndex % 2 === 0 : 
+      currentQuestionIndex % 3 === 0;
+    
+    setShowEncouragement(shouldShowEncouragement);
+    
+    // Log for debugging
+    console.log(`Current question index: ${currentQuestionIndex}, Total questions: ${questions.length}`);
   }, [currentQuestionIndex, questions.length]);
 
   const handleNextQuestion = () => {
@@ -62,6 +73,16 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
 
   // Current question data
   const currentQuestion = questions[currentQuestionIndex];
+  
+  // Safeguard against undefined currentQuestion
+  if (!currentQuestion) {
+    console.error('Current question is undefined!', { 
+      currentQuestionIndex, 
+      questionsLength: questions.length,
+      questions 
+    });
+    return <div>Loading questions...</div>;
+  }
 
   return (
     <div className="space-y-6 relative">
@@ -105,12 +126,14 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
       </div>
 
       {/* Encouraging message component - positioned below the questionnaire */}
-      <div className="mt-8 pt-6">
-        <EncouragementMessage 
-          currentQuestionIndex={currentQuestionIndex} 
-          totalQuestions={questions.length} 
-        />
-      </div>
+      {showEncouragement && (
+        <div className="mt-8 pt-6">
+          <EncouragementMessage 
+            currentQuestionIndex={currentQuestionIndex} 
+            totalQuestions={questions.length} 
+          />
+        </div>
+      )}
     </div>
   );
 };

@@ -24,6 +24,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const [formData, setFormData] = useState<Record<string, string>>({});
+  const [filteredQuestions, setFilteredQuestions] = useState<QuestionItem[]>([]);
   
   // Default to a common questionnaire if the selected type doesn't match
   const getQuestionnaire = () => {
@@ -31,33 +32,38 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
   };
 
   // Filter questions based on conditions
-  const getFilteredQuestions = () => {
-    const questions = getQuestionnaire();
-    
-    return questions.filter(question => {
-      // If the question has no condition, always show it
-      if (!question.condition) return true;
-      
-      // If the question has a condition, check if it should be shown
-      const { condition } = question;
-      return formData[condition.question] === condition.value;
-    });
-  };
-
-  // Current questions based on the selected speech type and conditions
-  const questions = getFilteredQuestions();
-
-  // Update filtered questions when form data changes
   useEffect(() => {
-    // When the introduction question is answered, re-filter the questions
-    if (formData["Will you be introduced before you speak?"]) {
-      // Notify parent component of form data changes
-      onDetailsChange(formData);
-    }
-  }, [formData, onDetailsChange]);
+    const updateFilteredQuestions = () => {
+      const allQuestions = getQuestionnaire();
+      
+      // Log for debugging
+      console.log('Starting question filtering process');
+      console.log('All questions:', allQuestions);
+      console.log('Current form data:', formData);
+      
+      const newFilteredQuestions = allQuestions.filter(question => {
+        // If the question has no condition, always show it
+        if (!question.condition) return true;
+        
+        // If the question has a condition, check if it should be shown
+        const { condition } = question;
+        const shouldShow = formData[condition.question] === condition.value;
+        
+        console.log(`Question "${question.question}" has condition "${condition.question}"="${condition.value}", shouldShow=${shouldShow}`);
+        
+        return shouldShow;
+      });
+      
+      console.log('Filtered questions:', newFilteredQuestions);
+      setFilteredQuestions(newFilteredQuestions);
+    };
+    
+    updateFilteredQuestions();
+  }, [formData, selectedSpeechType]);
 
   // Handle form data changes
   const handleFormDataChange = (newFormData: Record<string, string>) => {
+    console.log('Form data changed:', newFormData);
     setFormData(newFormData);
     onDetailsChange(newFormData);
   };
@@ -69,13 +75,19 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         <CardDescription><Translate text="speechLab.detailsDesc" /></CardDescription>
       </CardHeader>
       <CardContent>
-        <SpeechQuestionnaire
-          questions={questions}
-          formData={formData}
-          onFormDataChange={handleFormDataChange}
-          onNext={nextStep}
-          onPrev={prevStep}
-        />
+        {filteredQuestions.length > 0 ? (
+          <SpeechQuestionnaire
+            questions={filteredQuestions}
+            formData={formData}
+            onFormDataChange={handleFormDataChange}
+            onNext={nextStep}
+            onPrev={prevStep}
+          />
+        ) : (
+          <div className="flex justify-center items-center p-8">
+            <p>Loading questions...</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
