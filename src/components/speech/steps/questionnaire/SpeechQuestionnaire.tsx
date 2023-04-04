@@ -31,7 +31,13 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
 
   // Safeguard against invalid question index
   useEffect(() => {
+    if (questions.length === 0) {
+      console.warn('No questions provided to SpeechQuestionnaire');
+      return;
+    }
+    
     if (currentQuestionIndex >= questions.length) {
+      console.warn(`Current question index (${currentQuestionIndex}) is out of bounds, resetting to ${questions.length - 1}`);
       setCurrentQuestionIndex(questions.length - 1);
     }
   }, [currentQuestionIndex, questions.length]);
@@ -68,7 +74,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
 
   const handleInputChange = (value: string) => {
     if (!questions[currentQuestionIndex]) {
-      console.error('Current question is undefined');
+      console.error('Current question is undefined', { currentQuestionIndex, questionsLength: questions.length });
       return;
     }
 
@@ -84,7 +90,11 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
   const currentQuestion = questions[currentQuestionIndex];
   
   if (!currentQuestion || questions.length === 0) {
-    console.error('No questions available or current question is undefined');
+    console.error('No questions available or current question is undefined', { 
+      currentQuestionIndex, 
+      questionsLength: questions.length,
+      currentQuestion
+    });
     return <div>Loading questions...</div>;
   }
 

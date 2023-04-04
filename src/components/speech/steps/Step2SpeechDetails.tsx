@@ -76,9 +76,16 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
 
   // Initialize questions on first load
   useEffect(() => {
-    const initialQuestions = getQuestionnaire().filter(q => !q.condition);
-    setFilteredQuestions(initialQuestions);
-    setIsLoading(false);
+    try {
+      // On first load, only show questions without conditions
+      const initialQuestions = getQuestionnaire().filter(q => !q.condition);
+      console.log('Initial questions on load:', initialQuestions);
+      setFilteredQuestions(initialQuestions);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error loading initial questions:', error);
+      setIsLoading(false);
+    }
   }, [getQuestionnaire]);
 
   // Update filtered questions when form data changes
