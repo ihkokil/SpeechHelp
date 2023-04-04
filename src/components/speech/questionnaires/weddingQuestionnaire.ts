@@ -22,9 +22,10 @@ export const weddingQuestionnaire: QuestionItem[] = [
     condition: { question: "Will you be introduced before you speak?", value: "No" }
   },
   { 
-    question: "Who are you in relation to the wedding?", 
+    question: "Who are you giving this speech as?", 
     type: "radio", 
-    options: ["Best Man", "Maid of Honor", "Father of the Bride", "Mother of the Bride", "Groom", "Bride", "Other"] 
+    options: ["Best Man", "Maid of Honor", "Father of the Bride", "Mother of the Bride", "Groom", "Bride", "Other"],
+    condition: { question: "Will you be introduced before you speak?", value: "Yes" }
   },
   { 
     question: "How long should the speech be?", 
