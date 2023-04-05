@@ -12,19 +12,20 @@ export const graduationQuestionnaire: QuestionItem[] = [
   },
   { 
     question: "What is your role at this graduation?", 
-    type: "text", 
-    placeholder: "E.g., Department Chair, Valedictorian",
+    type: "radio", 
+    options: ["Valedictorian", "Guest Speaker", "Faculty Member", "Administrator", "Other"],
     condition: { question: "Will you be introduced before you speak?", value: "No" }
+  },
+  { 
+    question: "Please specify your role", 
+    type: "text", 
+    placeholder: "E.g., Alumni, Parent Representative",
+    condition: { question: "What is your role at this graduation?", value: "Other" }
   },
   { 
     question: "Who are you addressing?", 
     type: "text", 
     placeholder: "E.g., Graduates, Faculty, Parents" 
-  },
-  { 
-    question: "Your role in the event?", 
-    type: "radio", 
-    options: ["Valedictorian", "Guest Speaker", "Faculty Member", "Administrator", "Other"] 
   },
   { 
     question: "Desired length of the speech?", 
