@@ -47,8 +47,8 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
     if (questions.length > 0) {
       setProgress(((currentQuestionIndex + 1) / questions.length) * 100);
       
-      // Show encouragement message every 2 questions
-      if (currentQuestionIndex % 2 === 0 && currentQuestionIndex > 0) {
+      // Show encouragement message every 3 questions (changed from 2)
+      if ((currentQuestionIndex + 1) % 3 === 0 && currentQuestionIndex > 0) {
         setShowEncouragement(true);
       } else {
         setShowEncouragement(false);
@@ -98,12 +98,14 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
     return <div>Loading questions...</div>;
   }
 
+  const currentQuestionNumber = currentQuestionIndex + 1;
+  
   return (
     <div className="space-y-6 relative">
       {/* Progress bar */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span>Question {currentQuestionIndex + 1} of {questions.length}</span>
+          <span>Question {currentQuestionNumber} of {questions.length}</span>
           <span>{Math.round(progress)}% complete</span>
         </div>
         <Progress value={progress} className="h-2" />
@@ -139,13 +141,15 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
         </ButtonCustom>
       </div>
 
-      {/* Encouraging message component - always render the container */}
-      <div className="mt-8 pt-6">
-        {showEncouragement && <EncouragementMessage 
-          currentQuestionIndex={currentQuestionIndex} 
-          totalQuestions={questions.length} 
-        />}
-      </div>
+      {/* Encouraging message component */}
+      {showEncouragement && (
+        <div className="mt-8 pt-6">
+          <EncouragementMessage 
+            currentQuestionIndex={currentQuestionIndex} 
+            totalQuestions={questions.length} 
+          />
+        </div>
+      )}
     </div>
   );
 };
