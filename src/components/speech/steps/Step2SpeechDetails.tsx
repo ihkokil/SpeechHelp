@@ -39,10 +39,14 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
       
       console.log('Filtering questions with formData:', formData);
       
+      // Create a map to track questions by ID to prevent duplicates
+      const questionMap = new Map<string, QuestionItem>();
+      
       // First add all questions without conditions
-      let newFilteredQuestions = allQuestions.filter(question => {
-        return !question.condition;
-      });
+      allQuestions.filter(question => !question.condition)
+        .forEach(question => {
+          questionMap.set(question.question, question);
+        });
       
       // Then add questions that match their conditions
       allQuestions.forEach(question => {
@@ -51,22 +55,20 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
           const conditionValue = formData[condition.question];
           
           if (conditionValue === condition.value) {
-            // Only add if not already in the filtered list
-            if (!newFilteredQuestions.some(q => q.question === question.question)) {
-              newFilteredQuestions.push(question);
-            }
+            questionMap.set(question.question, question);
           }
         }
       });
       
-      // Sort the questions to maintain the same order as in the original array
-      newFilteredQuestions.sort((a, b) => {
-        return allQuestions.findIndex(q => q.question === a.question) - 
-               allQuestions.findIndex(q => q.question === b.question);
-      });
+      // Convert map back to array and sort to maintain original order
+      const sortedQuestions = Array.from(questionMap.values())
+        .sort((a, b) => {
+          return allQuestions.findIndex(q => q.question === a.question) - 
+                 allQuestions.findIndex(q => q.question === b.question);
+        });
       
-      console.log('Filtered questions:', newFilteredQuestions);
-      setFilteredQuestions(newFilteredQuestions);
+      console.log('Filtered questions:', sortedQuestions);
+      setFilteredQuestions(sortedQuestions);
       setIsLoading(false);
     } catch (error) {
       console.error('Error updating filtered questions:', error);
@@ -77,7 +79,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
   // Initialize questions on first load
   useEffect(() => {
     try {
-      // On first load, only show questions without conditions
       const initialQuestions = getQuestionnaire().filter(q => !q.condition);
       console.log('Initial questions on load:', initialQuestions);
       setFilteredQuestions(initialQuestions);
