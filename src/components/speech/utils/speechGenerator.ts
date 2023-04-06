@@ -85,7 +85,22 @@ export const generateSpeechFromDetails = (speechTitle: string, speechDetails: Sp
     return "This is your generated speech. Unfortunately, we couldn't find your questionnaire details. You can edit this placeholder text to create your own speech.";
   }
   
-  let speech = `# ${speechTitle}\n\n`;
+  // Create the questions and answers section
+  let questionsAnswersSection = "# Your Speech Inputs\n\n";
+  
+  detailsArray.forEach(([question, answer]) => {
+    // Skip the intro question about being introduced
+    if (question.includes("Will you be introduced")) {
+      return;
+    }
+    
+    questionsAnswersSection += `**${question}** ${answer}\n\n`;
+  });
+  
+  questionsAnswersSection += "---\n\n";
+  
+  // Start the formatted speech
+  let formattedSpeech = `# ${speechTitle}\n\n`;
   
   // Extract key information from the questionnaire
   const roleInfo = detailsArray.find(([question]) => 
@@ -100,7 +115,8 @@ export const generateSpeechFromDetails = (speechTitle: string, speechDetails: Sp
   
   const audienceInfo = detailsArray.find(([question]) => 
     question.toLowerCase().includes('audience') ||
-    question.toLowerCase().includes('guests')
+    question.toLowerCase().includes('guests') ||
+    question.toLowerCase().includes('addressing')
   );
   
   const durationInfo = detailsArray.find(([question]) => 
@@ -114,40 +130,40 @@ export const generateSpeechFromDetails = (speechTitle: string, speechDetails: Sp
   );
   
   // Introduction section
-  speech += "## Introduction\n\n";
+  formattedSpeech += "## Introduction\n\n";
   
   if (nameInfo) {
-    speech += `Good evening everyone, my name is ${nameInfo[1]}. `;
+    formattedSpeech += `Good evening everyone, my name is ${nameInfo[1]}. `;
   } else {
-    speech += "Good evening everyone. ";
+    formattedSpeech += "Good evening everyone. ";
   }
   
   if (roleInfo) {
-    speech += `As the ${roleInfo[1]}, it's my honor to speak today. `;
+    formattedSpeech += `As the ${roleInfo[1]}, it's my honor to speak today. `;
   } else {
-    speech += "It's my honor to speak today. ";
+    formattedSpeech += "It's my honor to speak today. ";
   }
   
   if (audienceInfo) {
-    speech += `I'm delighted to address ${audienceInfo[1]} on this special occasion. `;
+    formattedSpeech += `I'm delighted to address ${audienceInfo[1]} on this special occasion. `;
   }
   
   if (toneInfo) {
     // Add a tone-appropriate opening line
     const tone = toneInfo[1].toLowerCase();
     if (tone.includes('humor')) {
-      speech += "I promise to keep this light and hopefully entertaining enough that you won't be checking your watches every few minutes. ";
+      formattedSpeech += "I promise to keep this light and hopefully entertaining enough that you won't be checking your watches every few minutes. ";
     } else if (tone.includes('formal') || tone.includes('respect')) {
-      speech += "I would like to extend my sincerest gratitude for the opportunity to share these words with you today. ";
+      formattedSpeech += "I would like to extend my sincerest gratitude for the opportunity to share these words with you today. ";
     } else if (tone.includes('warm') || tone.includes('heartfelt')) {
-      speech += "My heart is full as I stand before you all today, ready to share some heartfelt thoughts. ";
+      formattedSpeech += "My heart is full as I stand before you all today, ready to share some heartfelt thoughts. ";
     }
   }
   
-  speech += "\n\n";
+  formattedSpeech += "\n\n";
   
   // Main Content section
-  speech += "## Main Content\n\n";
+  formattedSpeech += "## Main Content\n\n";
   
   // Include ALL questionnaire responses in the speech body
   detailsArray.forEach(([question, answer]) => {
@@ -180,7 +196,7 @@ export const generateSpeechFromDetails = (speechTitle: string, speechDetails: Sp
         question.toLowerCase().includes('memory') || 
         question.toLowerCase().includes('experience')
       ) {
-        speech += `I'd like to share a special memory: ${answer}\n\n`;
+        formattedSpeech += `I'd like to share a special memory: ${answer}\n\n`;
       }
       // Special handling for qualities or achievements
       else if (
@@ -188,7 +204,7 @@ export const generateSpeechFromDetails = (speechTitle: string, speechDetails: Sp
         question.toLowerCase().includes('admire') || 
         question.toLowerCase().includes('achievement')
       ) {
-        speech += `What stands out most is: ${answer}\n\n`;
+        formattedSpeech += `What stands out most is: ${answer}\n\n`;
       }
       // Special handling for messages or themes
       else if (
@@ -196,17 +212,17 @@ export const generateSpeechFromDetails = (speechTitle: string, speechDetails: Sp
         question.toLowerCase().includes('theme') || 
         question.toLowerCase().includes('takeaway')
       ) {
-        speech += `The main message I want to convey today is: ${answer}\n\n`;
+        formattedSpeech += `The main message I want to convey today is: ${answer}\n\n`;
       }
       // General handling for other questions
       else {
-        speech += `Regarding ${theme}: ${answer}\n\n`;
+        formattedSpeech += `Regarding ${theme}: ${answer}\n\n`;
       }
     }
   });
   
   // Conclusion section
-  speech += "## Conclusion\n\n";
+  formattedSpeech += "## Conclusion\n\n";
   
   const closingInfo = detailsArray.find(([question]) => 
     question.toLowerCase().includes('closing') || 
@@ -215,18 +231,19 @@ export const generateSpeechFromDetails = (speechTitle: string, speechDetails: Sp
   );
   
   if (closingInfo) {
-    speech += `${closingInfo[1]}\n\n`;
+    formattedSpeech += `${closingInfo[1]}\n\n`;
   } else {
-    speech += "Thank you all for your attention and for being here today. It means a great deal to me.\n\n";
+    formattedSpeech += "Thank you all for your attention and for being here today. It means a great deal to me.\n\n";
   }
   
-  speech += "---\n\nThis speech was generated based on your questionnaire answers. Please edit it to better fit your style and needs.";
+  // Combine the questions/answers section with the formatted speech
+  const completeSpeech = questionsAnswersSection + formattedSpeech;
   
   // Process duration if specified
   if (durationInfo && durationInfo[1]) {
     const targetDuration = parseDurationToMinutes(durationInfo[1]);
-    speech = enhanceSpeechForDuration(speech, targetDuration);
+    return enhanceSpeechForDuration(completeSpeech, targetDuration);
   }
   
-  return speech;
+  return completeSpeech;
 };
