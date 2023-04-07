@@ -18,14 +18,15 @@ const Hero = () => {
   return (
     <section className="text-white pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden relative">
       {/* Video Background */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 flex items-center justify-center">
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="w-full h-full object-cover"
+          className="w-full h-auto min-h-full object-cover"
           poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
+          style={{ transform: 'translateY(40px)' }}
         >
           <source src="/Video Montage - Speech Help App.mov" type="video/quicktime" />
           <source src="/Video Montage - Speech Help App.mov" type="video/mp4" />
