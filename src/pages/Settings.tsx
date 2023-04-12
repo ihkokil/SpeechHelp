@@ -19,26 +19,26 @@ const Settings = () => {
       <div className="p-6 md:p-8">
         <header className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">
-            {t('settings.title', currentLanguage.code, 'Account Settings')}
+            {t('settings.title', currentLanguage.code)}
           </h1>
           <p className="text-gray-500 mt-1">
-            {t('settings.subtitle', currentLanguage.code, 'Manage your account settings and preferences')}
+            {t('settings.subtitle', currentLanguage.code)}
           </p>
         </header>
 
         <Tabs defaultValue="profile" onValueChange={setActiveTab} value={activeTab} className="space-y-6">
           <TabsList className="bg-gray-100">
             <TabsTrigger value="profile">
-              {t('settings.tabs.profile', currentLanguage.code, 'Profile')}
+              {t('settings.tabs.profile', currentLanguage.code)}
             </TabsTrigger>
             <TabsTrigger value="billing">
-              {t('settings.tabs.billing', currentLanguage.code, 'Billing')}
+              {t('settings.tabs.billing', currentLanguage.code)}
             </TabsTrigger>
             <TabsTrigger value="notifications">
-              {t('settings.tabs.notifications', currentLanguage.code, 'Notifications')}
+              {t('settings.tabs.notifications', currentLanguage.code)}
             </TabsTrigger>
             <TabsTrigger value="security">
-              {t('settings.tabs.security', currentLanguage.code, 'Security')}
+              {t('settings.tabs.security', currentLanguage.code)}
             </TabsTrigger>
           </TabsList>
 
