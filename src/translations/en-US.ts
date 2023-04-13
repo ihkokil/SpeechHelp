@@ -1,4 +1,3 @@
-
 export const enUS = {
   // General
   'app.name': 'SpeechHelp',
@@ -211,5 +210,13 @@ export const enUS = {
   'speechLab.generatedSuccess': 'Your speech is ready!',
   'speechLab.savedSuccess': 'Speech saved successfully!',
   'speechLab.speechTitleLabel': 'Speech Title',
-  'speechLab.speechTitlePlaceholder': 'Enter a title for your speech'
+  'speechLab.speechTitlePlaceholder': 'Enter a title for your speech',
+
+  // Settings
+  'settings.title': 'Account Settings',
+  'settings.subtitle': 'Manage your account settings and preferences',
+  'settings.tabs.profile': 'Profile',
+  'settings.tabs.billing': 'Billing',
+  'settings.tabs.notifications': 'Notifications',
+  'settings.tabs.security': 'Security',
 };

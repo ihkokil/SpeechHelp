@@ -210,5 +210,13 @@ export const fr = {
   'speechLab.generatedSuccess': 'Votre discours est prêt!',
   'speechLab.savedSuccess': 'Discours sauvegardé avec succès!',
   'speechLab.speechTitleLabel': 'Titre du discours',
-  'speechLab.speechTitlePlaceholder': 'Entrez un titre pour votre discours'
+  'speechLab.speechTitlePlaceholder': 'Entrez un titre pour votre discours',
+
+  // Settings
+  'settings.title': 'Paramètres du Compte',
+  'settings.subtitle': 'Gérer les paramètres et préférences de votre compte',
+  'settings.tabs.profile': 'Profil',
+  'settings.tabs.billing': 'Facturation',
+  'settings.tabs.notifications': 'Notifications',
+  'settings.tabs.security': 'Sécurité',
 };
