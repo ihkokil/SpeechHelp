@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/accordion";
 import { useToast } from '@/hooks/use-toast';
 
-// First batch of tips
-const initialTipsSections = [
+// All writing tips in one array
+const allTipsSections = [
   {
     id: "how-to-write",
     title: "How to Write a Great Speech",
@@ -85,10 +85,6 @@ const initialTipsSections = [
       </>
     ),
   },
-];
-
-// Additional tips to load when clicking "Load more"
-const additionalTipsSections = [
   {
     id: "engaging-audience",
     title: "Engaging Your Audience",
@@ -142,9 +138,6 @@ const WritingTips = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [tipsSections, setTipsSections] = useState(initialTipsSections);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [allTipsLoaded, setAllTipsLoaded] = useState(false);
   
   // Redirect if not logged in
   useEffect(() => {
@@ -155,22 +148,6 @@ const WritingTips = () => {
 
   const handleClose = () => {
     navigate('/dashboard');
-  };
-
-  const handleLoadMore = () => {
-    setIsLoadingMore(true);
-    
-    // Simulate API call with timeout
-    setTimeout(() => {
-      setTipsSections([...tipsSections, ...additionalTipsSections]);
-      setIsLoadingMore(false);
-      setAllTipsLoaded(true);
-      
-      toast({
-        title: "Tips Loaded",
-        description: "All writing tips have been loaded successfully",
-      });
-    }, 1500);
   };
 
   if (isLoading) {
@@ -216,7 +193,7 @@ const WritingTips = () => {
             
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
               <Accordion type="single" collapsible className="divide-y">
-                {tipsSections.map((section) => (
+                {allTipsSections.map((section) => (
                   <AccordionItem key={section.id} value={section.id}>
                     <div className="border-b border-gray-200">
                       <AccordionTrigger className="px-6 py-4 hover:no-underline">
@@ -237,26 +214,6 @@ const WritingTips = () => {
                   </AccordionItem>
                 ))}
               </Accordion>
-              
-              {!allTipsLoaded && (
-                <div className="p-6 text-center">
-                  <Button 
-                    variant="ghost" 
-                    onClick={handleLoadMore} 
-                    disabled={isLoadingMore}
-                    className="text-purple-600 font-medium flex items-center mx-auto hover:text-purple-700 transition-colors"
-                  >
-                    <span className="mr-2">
-                      {isLoadingMore ? 'Loading more tips...' : 'Load more'}
-                    </span>
-                    {isLoadingMore && (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="animate-spin">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeDasharray="32" strokeDashoffset="10" />
-                      </svg>
-                    )}
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
         </div>
