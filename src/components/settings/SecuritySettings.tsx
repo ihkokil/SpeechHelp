@@ -183,7 +183,7 @@ const SecuritySettings = () => {
               <div className="pt-2 flex justify-end">
                 <Button 
                   type="submit" 
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white w-40"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white w-40 h-10"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Updating..." : "Update Password"}
@@ -247,13 +247,17 @@ const SecuritySettings = () => {
         </CardContent>
         <CardFooter className="flex justify-end">
           {twoFactorEnabled ? (
-            <Button variant="outline" className="w-40" onClick={() => setTwoFactorEnabled(false)}>
+            <Button 
+              variant="outline" 
+              className="w-40 h-10" 
+              onClick={() => setTwoFactorEnabled(false)}
+            >
               Disable Two-Factor
             </Button>
           ) : (
             <Button 
               onClick={setupTwoFactor} 
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white w-40"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white w-40 h-10"
             >
               Set Up Two-Factor
             </Button>
@@ -277,7 +281,7 @@ const SecuritySettings = () => {
                   Permanently delete your account and all of your content. This action cannot be undone.
                 </p>
               </div>
-              <Button variant="destructive" className="w-40 bg-red-600 hover:bg-red-700">
+              <Button variant="destructive" className="w-40 h-10 bg-red-600 hover:bg-red-700">
                 Delete Account
               </Button>
             </div>
