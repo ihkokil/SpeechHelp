@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -11,12 +11,16 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import { parsePhoneNumberFromString, AsYouType, getCountryCallingCode } from 'libphonenumber-js';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import countryData from '../../data/countries';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(2, { message: 'First name must be at least 2 characters.' }),
   lastName: z.string().min(2, { message: 'Last name must be at least 2 characters.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   phone: z.string().optional(),
+  countryCode: z.string().default('US'),
   streetAddress: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -30,6 +34,7 @@ const ProfileSettings = () => {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formattedPhone, setFormattedPhone] = useState('');
 
   // Form with default values
   const form = useForm<ProfileFormValues>({
@@ -39,13 +44,42 @@ const ProfileSettings = () => {
       lastName: user?.user_metadata?.last_name || '',
       email: user?.email || '',
       phone: user?.user_metadata?.phone || '',
+      countryCode: user?.user_metadata?.country_code || 'US',
       streetAddress: user?.user_metadata?.street_address || '',
       city: user?.user_metadata?.city || '',
       state: user?.user_metadata?.state || '',
       zipCode: user?.user_metadata?.zip_code || '',
-      country: user?.user_metadata?.country || '',
+      country: user?.user_metadata?.country || 'United States',
     },
   });
+
+  // Get values and methods from form
+  const { watch, setValue } = form;
+  const currentPhone = watch('phone');
+  const countryCode = watch('countryCode');
+  
+  // Format phone number when country or phone changes
+  useEffect(() => {
+    if (currentPhone) {
+      try {
+        const formatter = new AsYouType(countryCode);
+        const formatted = formatter.input(currentPhone);
+        setFormattedPhone(formatted);
+      } catch (error) {
+        console.error('Error formatting phone number:', error);
+        setFormattedPhone(currentPhone);
+      }
+    } else {
+      setFormattedPhone('');
+    }
+  }, [currentPhone, countryCode]);
+
+  // Handle phone input changes
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Remove non-numeric characters for storage
+    const numericValue = e.target.value.replace(/\D/g, '');
+    setValue('phone', numericValue);
+  };
 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsSubmitting(true);
@@ -151,22 +185,57 @@ const ProfileSettings = () => {
                 )}
               />
               
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <div className="flex items-center">
-                        <Phone className="h-4 w-4 text-gray-500 mr-2" />
-                        <Input placeholder="+1 (555) 123-4567" {...field} />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="countryCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Country for Phone Number</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select country" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-white">
+                          {countryData.map((country) => (
+                            <SelectItem key={country.code} value={country.code}>
+                              {country.name} (+{country.dialCode})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center">
+                          <Phone className="h-4 w-4 text-gray-500 mr-2" />
+                          <Input 
+                            placeholder="Phone number" 
+                            value={formattedPhone}
+                            onChange={handlePhoneChange}
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <div className="border-t pt-6 mt-6">
                 <h3 className="font-medium text-gray-900 mb-4 flex items-center">
