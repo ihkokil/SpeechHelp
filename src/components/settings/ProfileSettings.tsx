@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +15,7 @@ import { parsePhoneNumberFromString, AsYouType } from 'libphonenumber-js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import countryData from '../../data/countries';
 import statesProvinces from '../../data/statesProvinces';
+import type { CountryCode } from 'libphonenumber-js/types';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(2, { message: 'First name must be at least 2 characters.' }),
@@ -36,6 +38,7 @@ const ProfileSettings = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formattedPhone, setFormattedPhone] = useState('');
   const [availableStates, setAvailableStates] = useState<typeof statesProvinces['US']>([]);
+  const [selectedDialCode, setSelectedDialCode] = useState('1'); // Default to US dial code
 
   // Form with default values
   const form = useForm<ProfileFormValues>({
@@ -87,11 +90,20 @@ const ProfileSettings = () => {
     }
   }, [countryCode, form]);
   
+  // Update dial code when country code changes
+  useEffect(() => {
+    const countryEntry = countryData.find(c => c.code === countryCode);
+    if (countryEntry) {
+      setSelectedDialCode(countryEntry.dialCode);
+    }
+  }, [countryCode]);
+
   // Format phone number when country or phone changes
   useEffect(() => {
     if (currentPhone) {
       try {
-        const formatter = new AsYouType(countryCode);
+        // Use the countryCode (e.g., 'US') as a CountryCode type
+        const formatter = new AsYouType(countryCode as CountryCode);
         const formatted = formatter.input(currentPhone);
         setFormattedPhone(formatted);
       } catch (error) {
@@ -108,6 +120,18 @@ const ProfileSettings = () => {
     // Remove non-numeric characters for storage
     const numericValue = e.target.value.replace(/\D/g, '');
     setValue('phone', numericValue);
+  };
+
+  // Handle country code selection change
+  const handleCountryCodeChange = (code: string) => {
+    // Update country code
+    setValue('countryCode', code);
+    
+    // Find the country with this code
+    const countryEntry = countryData.find(c => c.code === code);
+    if (countryEntry) {
+      setSelectedDialCode(countryEntry.dialCode);
+    }
   };
 
   // Handle country selection change
@@ -230,21 +254,21 @@ const ProfileSettings = () => {
                   name="countryCode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Country for Phone Number</FormLabel>
+                      <FormLabel>Country Code</FormLabel>
                       <Select 
-                        onValueChange={handleCountryChange}
+                        onValueChange={handleCountryCodeChange}
                         defaultValue={field.value}
                         value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select country" />
+                            <SelectValue placeholder="Select country code" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-white">
                           {countryData.map((country) => (
-                            <SelectItem key={country.code} value={country.name}>
-                              {country.name}
+                            <SelectItem key={country.code} value={country.code}>
+                              +{country.dialCode} ({country.name})
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -263,12 +287,18 @@ const ProfileSettings = () => {
                       <FormControl>
                         <div className="flex items-center">
                           <Phone className="h-4 w-4 text-gray-500 mr-2" />
-                          <Input 
-                            placeholder="Phone number" 
-                            value={formattedPhone}
-                            onChange={handlePhoneChange}
-                            {...field}
-                          />
+                          <div className="flex items-center gap-2 w-full">
+                            <div className="flex-shrink-0 w-16 text-right text-gray-500 font-medium">
+                              +{selectedDialCode}
+                            </div>
+                            <Input 
+                              placeholder="Phone number" 
+                              value={formattedPhone}
+                              onChange={handlePhoneChange}
+                              className="flex-grow"
+                              {...field}
+                            />
+                          </div>
                         </div>
                       </FormControl>
                       <FormMessage />
