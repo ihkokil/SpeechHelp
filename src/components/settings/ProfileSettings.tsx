@@ -310,37 +310,6 @@ const ProfileSettings = () => {
                     
                     <FormField
                       control={form.control}
-                      name="country"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Country</FormLabel>
-                          <Select 
-                            onValueChange={handleCountryChange}
-                            defaultValue={field.value}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger tabIndex={8}>
-                                <SelectValue placeholder="Select country" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-white">
-                              {countryData.map((country) => (
-                                <SelectItem key={country.code} value={country.name}>
-                                  {country.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
                       name="state"
                       render={({ field }) => (
                         <FormItem>
@@ -351,7 +320,7 @@ const ProfileSettings = () => {
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger tabIndex={9}>
+                              <SelectTrigger tabIndex={8}>
                                 <SelectValue placeholder="Select state/province" />
                               </SelectTrigger>
                             </FormControl>
@@ -365,6 +334,37 @@ const ProfileSettings = () => {
                               ) : (
                                 <SelectItem value="N/A">No states/provinces available</SelectItem>
                               )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="country"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Country</FormLabel>
+                          <Select 
+                            onValueChange={handleCountryChange}
+                            defaultValue={field.value}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger tabIndex={9}>
+                                <SelectValue placeholder="Select country" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white">
+                              {countryData.map((country) => (
+                                <SelectItem key={country.code} value={country.name}>
+                                  {country.name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
