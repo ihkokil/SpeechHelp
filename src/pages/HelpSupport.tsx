@@ -11,6 +11,8 @@ import { HelpCircle, BookOpen, MessageSquare, Mail, Phone, ExternalLink, FileTex
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useTranslation } from '@/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { speechTypesData } from '@/components/speech/data/speechTypesData';
+import { questionnaires } from '@/components/speech/questionnaires';
 
 const HelpSupport = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,12 +38,39 @@ const HelpSupport = () => {
     toast({
       title: "Message sent",
       description: "Our support team will get back to you soon.",
-      variant: "success",
+      variant: "default",
     });
     // Reset form
     setContactName('');
     setContactEmail('');
     setContactMessage('');
+  };
+
+  const handleTemplateDownload = (speechType: string) => {
+    // Create a JSON representation of the questionnaire
+    const questionnaire = questionnaires[speechType as keyof typeof questionnaires];
+    if (!questionnaire) return;
+    
+    // Convert to JSON string
+    const jsonData = JSON.stringify(questionnaire, null, 2);
+    
+    // Create a blob and download link
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${speechType}-questionnaire.json`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    toast({
+      title: "Template Downloaded",
+      description: `The ${speechType} template has been downloaded.`,
+    });
   };
 
   const faqs = [
@@ -296,27 +325,20 @@ const HelpSupport = () => {
                         <CardDescription>Download templates for different types of speeches</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Wedding Speech Template</span>
-                          <Button variant="ghost" size="sm" className="flex gap-1 items-center">
-                            <FileText className="h-4 w-4" />
-                            Download
-                          </Button>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Graduation Speech Template</span>
-                          <Button variant="ghost" size="sm" className="flex gap-1 items-center">
-                            <FileText className="h-4 w-4" />
-                            Download
-                          </Button>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Business Presentation Template</span>
-                          <Button variant="ghost" size="sm" className="flex gap-1 items-center">
-                            <FileText className="h-4 w-4" />
-                            Download
-                          </Button>
-                        </div>
+                        {speechTypesData.map((speechType) => (
+                          <div key={speechType.id} className="flex justify-between items-center">
+                            <span className="text-sm">{speechType.label}</span>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="flex gap-1 items-center"
+                              onClick={() => handleTemplateDownload(speechType.id)}
+                            >
+                              <FileText className="h-4 w-4" />
+                              Download
+                            </Button>
+                          </div>
+                        ))}
                       </CardContent>
                     </Card>
 
