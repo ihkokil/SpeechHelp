@@ -13,6 +13,7 @@ import SpeechLab from "./pages/SpeechLab";
 import WritingTips from "./pages/WritingTips";
 import MySpeeches from "./pages/MySpeeches";
 import Settings from "./pages/Settings";
+import HelpSupport from "./pages/HelpSupport";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Navbar from "./components/Navbar";
@@ -91,6 +92,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Settings />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/help" 
+                element={
+                  <ProtectedRoute>
+                    <HelpSupport />
                   </ProtectedRoute>
                 } 
               />
