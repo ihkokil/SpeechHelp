@@ -90,7 +90,7 @@ const DashboardSidebar = () => {
       {/* Logo - Updated to match homepage logo with link to home */}
       <div className="p-6">
         <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <img src="/Speech Help - Logo.svg" alt="Speech Help" className="h-10" />
+          <img src="/lovable-uploads/86a1c678-6b74-4f3a-854b-ebec3571e33b.png" alt="Speech Help" className="h-10" />
         </Link>
       </div>
 
