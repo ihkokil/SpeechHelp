@@ -15,7 +15,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <a href="#" className="inline-block mb-4">
               <img 
-                src="/Speech Help - Logo.svg" 
+                src="/lovable-uploads/2bc86a4e-3de5-46de-a8f2-25a3629aa5db.png" 
                 alt="SpeechHelp Logo" 
                 className="h-14" 
                 style={{ display: 'block' }}
