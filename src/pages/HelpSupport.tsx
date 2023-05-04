@@ -1,77 +1,20 @@
 
 import { useState } from 'react';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
-import { HelpCircle, BookOpen, MessageSquare, Mail, Phone, ExternalLink, FileText, Video } from 'lucide-react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { HelpCircle, BookOpen, MessageSquare, FileText } from 'lucide-react';
 import { useTranslation } from '@/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { speechTypesData } from '@/components/speech/data/speechTypesData';
-import { questionnaires } from '@/components/speech/questionnaires';
+import SearchBar from '@/components/help/SearchBar';
+import FAQsTab from '@/components/help/FAQsTab';
+import GuidesTab from '@/components/help/GuidesTab';
+import ContactTab from '@/components/help/ContactTab';
+import ResourcesTab from '@/components/help/ResourcesTab';
 
 const HelpSupport = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactMessage, setContactMessage] = useState('');
-  const { toast } = useToast();
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, this would search the help database
-    toast({
-      title: "Search initiated",
-      description: `Searching for: ${searchQuery}`,
-    });
-  };
-
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, this would send the contact form
-    toast({
-      title: "Message sent",
-      description: "Our support team will get back to you soon.",
-      variant: "default",
-    });
-    // Reset form
-    setContactName('');
-    setContactEmail('');
-    setContactMessage('');
-  };
-
-  const handleTemplateDownload = (speechType: string) => {
-    // Create a JSON representation of the questionnaire
-    const questionnaire = questionnaires[speechType as keyof typeof questionnaires];
-    if (!questionnaire) return;
-    
-    // Convert to JSON string
-    const jsonData = JSON.stringify(questionnaire, null, 2);
-    
-    // Create a blob and download link
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${speechType}-questionnaire.json`;
-    document.body.appendChild(a);
-    a.click();
-    
-    // Clean up
-    URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-    
-    toast({
-      title: "Template Downloaded",
-      description: `The ${speechType} template has been downloaded.`,
-    });
-  };
 
   const faqs = [
     {
@@ -108,15 +51,7 @@ const HelpSupport = () => {
           </div>
 
           <div className="mb-8">
-            <form onSubmit={handleSearch} className="flex gap-2">
-              <Input
-                placeholder="Search for help topics..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1"
-              />
-              <Button type="submit">Search</Button>
-            </form>
+            <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
           </div>
 
           <Tabs defaultValue="faq" className="space-y-6">
@@ -140,240 +75,19 @@ const HelpSupport = () => {
             </TabsList>
 
             <TabsContent value="faq" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Frequently Asked Questions</CardTitle>
-                  <CardDescription>Find answers to our most commonly asked questions</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Accordion type="single" collapsible className="w-full">
-                    {faqs.map((faq, index) => (
-                      <AccordionItem key={index} value={`item-${index}`}>
-                        <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
-                        <AccordionContent>{faq.answer}</AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </CardContent>
-              </Card>
+              <FAQsTab faqs={faqs} />
             </TabsContent>
 
             <TabsContent value="guides" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>User Guides & Tutorials</CardTitle>
-                  <CardDescription>Step-by-step guides to help you get the most out of Speech Help</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Getting Started Guide</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-600 mb-4">Learn the basics of creating your first speech</p>
-                        <Button variant="outline" className="w-full flex items-center gap-2">
-                          <BookOpen className="h-4 w-4" />
-                          Read Guide
-                        </Button>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Speech Writing Tips</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-600 mb-4">Professional tips to enhance your speech writing</p>
-                        <Button variant="outline" className="w-full flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          View Tips
-                        </Button>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Video Tutorials</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-600 mb-4">Watch helpful videos explaining our features</p>
-                        <Button variant="outline" className="w-full flex items-center gap-2">
-                          <Video className="h-4 w-4" />
-                          Watch Videos
-                        </Button>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Account Management</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-600 mb-4">Learn how to manage your account settings</p>
-                        <Button variant="outline" className="w-full flex items-center gap-2">
-                          <BookOpen className="h-4 w-4" />
-                          Read Guide
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CardContent>
-              </Card>
+              <GuidesTab />
             </TabsContent>
 
             <TabsContent value="contact" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Contact Our Support Team</CardTitle>
-                  <CardDescription>We're here to help with any questions or issues</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Mail className="h-5 w-5 text-pink-600" />
-                          Email Support
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-600">support@speechhelp.com</p>
-                        <p className="text-xs text-gray-500 mt-1">Response within 24 hours</p>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Phone className="h-5 w-5 text-pink-600" />
-                          Phone Support
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-600">+1 (800) 123-4567</p>
-                        <p className="text-xs text-gray-500 mt-1">Mon-Fri, 9am-5pm EST</p>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <MessageSquare className="h-5 w-5 text-pink-600" />
-                          Live Chat
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-600">Available in your dashboard</p>
-                        <p className="text-xs text-gray-500 mt-1">Premium subscribers only</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  <form onSubmit={handleContactSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label htmlFor="name" className="text-sm font-medium">Name</label>
-                        <Input 
-                          id="name" 
-                          value={contactName} 
-                          onChange={(e) => setContactName(e.target.value)} 
-                          placeholder="Your name" 
-                          required 
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="email" className="text-sm font-medium">Email</label>
-                        <Input 
-                          id="email" 
-                          type="email" 
-                          value={contactEmail} 
-                          onChange={(e) => setContactEmail(e.target.value)} 
-                          placeholder="Your email" 
-                          required 
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="message" className="text-sm font-medium">Message</label>
-                      <Textarea 
-                        id="message" 
-                        value={contactMessage} 
-                        onChange={(e) => setContactMessage(e.target.value)} 
-                        placeholder="How can we help you?" 
-                        rows={5} 
-                        required 
-                      />
-                    </div>
-                    <Button type="submit" className="w-full md:w-auto">Send Message</Button>
-                  </form>
-                </CardContent>
-              </Card>
+              <ContactTab />
             </TabsContent>
 
             <TabsContent value="resources" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Additional Resources</CardTitle>
-                  <CardDescription>Helpful resources to improve your speech writing and delivery</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Speech Writing Templates</CardTitle>
-                        <CardDescription>Download templates for different types of speeches</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {speechTypesData.map((speechType) => (
-                          <div key={speechType.id} className="flex justify-between items-center">
-                            <span className="text-sm">{speechType.label}</span>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="flex gap-1 items-center"
-                              onClick={() => handleTemplateDownload(speechType.id)}
-                            >
-                              <FileText className="h-4 w-4" />
-                              Download
-                            </Button>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">External Resources</CardTitle>
-                        <CardDescription>Valuable resources from around the web</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Public Speaking Tips</span>
-                          <Button variant="ghost" size="sm" className="flex gap-1 items-center">
-                            <ExternalLink className="h-4 w-4" />
-                            Visit
-                          </Button>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Voice Training Exercises</span>
-                          <Button variant="ghost" size="sm" className="flex gap-1 items-center">
-                            <ExternalLink className="h-4 w-4" />
-                            Visit
-                          </Button>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Body Language Guide</span>
-                          <Button variant="ghost" size="sm" className="flex gap-1 items-center">
-                            <ExternalLink className="h-4 w-4" />
-                            Visit
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CardContent>
-              </Card>
+              <ResourcesTab />
             </TabsContent>
           </Tabs>
         </div>
