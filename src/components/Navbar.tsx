@@ -23,7 +23,7 @@ const Navbar = () => {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <img 
-              src="/lovable-uploads/86a1c678-6b74-4f3a-854b-ebec3571e33b.png" 
+              src="/Speech Help - Logo.svg" 
               alt="SpeechHelp Logo" 
               className="h-10" 
               style={{ display: 'block' }}
