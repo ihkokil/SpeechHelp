@@ -15,7 +15,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <a href="#" className="inline-block mb-4">
               <img 
-                src="/Speech Help - Logo.svg" 
+                src="Speech Help - Logo.svg" 
                 alt="SpeechHelp Logo" 
                 className="h-14" 
               />
