@@ -26,7 +26,6 @@ const Navbar = () => {
               src="/Speech Help - Logo.svg" 
               alt="SpeechHelp Logo" 
               className="h-10" 
-              style={{ display: 'block' }}
             />
           </Link>
 

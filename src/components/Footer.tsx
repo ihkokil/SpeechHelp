@@ -18,7 +18,6 @@ const Footer = () => {
                 src="/Speech Help - Logo.svg" 
                 alt="SpeechHelp Logo" 
                 className="h-14" 
-                style={{ display: 'block' }}
               />
             </a>
             <p className="text-gray-600 mb-6 max-w-md">
