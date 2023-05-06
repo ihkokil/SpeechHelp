@@ -1,3 +1,4 @@
+
 import { Facebook, Instagram, Linkedin, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -15,7 +16,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <a href="#" className="inline-block mb-4">
               <img 
-                src="Speech Help - Logo.svg" 
+                src={`${import.meta.env.BASE_URL}Speech Help - Logo.svg`}
                 alt="SpeechHelp Logo" 
                 className="h-14" 
               />
