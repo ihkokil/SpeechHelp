@@ -2,6 +2,7 @@ import { Facebook, Instagram, Linkedin, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
+import speechHelpLogo from "/Speech Help - Logo.svg";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -15,7 +16,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <a href="#" className="inline-block mb-4">
               <img 
-                src="/Speech Help - Logo.svg"
+                src={speechHelpLogo}
                 alt="SpeechHelp Logo" 
                 className="h-14" 
               />

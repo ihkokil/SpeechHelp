@@ -20,8 +20,14 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  base: '',
+  base: '', // Empty base path for relative asset URLs
   build: {
     assetsDir: 'assets',
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
   }
 }));
