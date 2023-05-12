@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  base: './', // Using relative path for published assets
+  base: '/', // Using absolute path for published assets
   build: {
     assetsDir: 'assets',
     outDir: 'dist',

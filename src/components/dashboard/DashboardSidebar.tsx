@@ -26,8 +26,8 @@ const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   
-  // Get the correct logo path that works in both development and production
-  const logoPath = new URL('/Speech Help - Logo.svg', import.meta.url).href;
+  // Use the new logo
+  const logoPath = "/speech-help-new-logo.svg";
   
   // Get current path for highlighting active item
   const currentPath = window.location.pathname;
@@ -91,10 +91,10 @@ const DashboardSidebar = () => {
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
-      {/* Logo - Updated to match homepage logo with link to home */}
+      {/* Logo - Updated to use new logo */}
       <div className="p-6">
         <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <img src={logoPath} alt="Speech Help" className="h-10" />
+          <img src={logoPath} alt="Speech Help" className="h-8" />
         </Link>
       </div>
 
