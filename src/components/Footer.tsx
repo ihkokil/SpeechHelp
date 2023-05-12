@@ -2,12 +2,14 @@ import { Facebook, Instagram, Linkedin, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
-import speechHelpLogo from "/Speech Help - Logo.svg";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  
+  // Get the correct logo path that works in both development and production
+  const logoPath = new URL('/Speech Help - Logo.svg', import.meta.url).href;
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
@@ -16,7 +18,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <a href="#" className="inline-block mb-4">
               <img 
-                src={speechHelpLogo}
+                src={logoPath}
                 alt="SpeechHelp Logo" 
                 className="h-14" 
               />

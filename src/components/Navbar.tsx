@@ -3,11 +3,12 @@ import { Link } from "react-router-dom";
 import { useScrollDetection } from "@/hooks/useScrollDetection";
 import DesktopNav from "./navigation/DesktopNav";
 import MobileNav from "./navigation/MobileNav";
-// Import the logo directly
-import speechHelpLogo from "/Speech Help - Logo.svg";
 
 const Navbar = () => {
   const isScrolled = useScrollDetection();
+  
+  // Get the correct logo path that works in both development and production
+  const logoPath = new URL('/Speech Help - Logo.svg', import.meta.url).href;
 
   return (
     <nav
@@ -25,7 +26,7 @@ const Navbar = () => {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <img 
-              src={speechHelpLogo} 
+              src={logoPath}
               alt="SpeechHelp Logo" 
               className="h-10" 
             />
