@@ -8,8 +8,8 @@ const Footer = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
-  // Use the new logo
-  const logoPath = "/speech-help-new-logo.svg";
+  // Get the correct logo path that works in both development and production
+  const logoPath = new URL('/Speech Help - Logo.svg', import.meta.url).href;
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
@@ -20,7 +20,7 @@ const Footer = () => {
               <img 
                 src={logoPath}
                 alt="SpeechHelp Logo" 
-                className="h-10" 
+                className="h-14" 
               />
             </a>
             <p className="text-gray-600 mb-6 max-w-md">

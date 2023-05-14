@@ -7,8 +7,8 @@ import MobileNav from "./navigation/MobileNav";
 const Navbar = () => {
   const isScrolled = useScrollDetection();
   
-  // Use the new logo
-  const logoPath = "/speech-help-new-logo.svg";
+  // Get the correct logo path that works in both development and production
+  const logoPath = new URL('/Speech Help - Logo.svg', import.meta.url).href;
 
   return (
     <nav
@@ -28,7 +28,7 @@ const Navbar = () => {
             <img 
               src={logoPath}
               alt="SpeechHelp Logo" 
-              className="h-8" 
+              className="h-10" 
             />
           </Link>
 
