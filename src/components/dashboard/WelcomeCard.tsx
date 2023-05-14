@@ -14,6 +14,9 @@ const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
+  // Get the correct logo path that works in both development and production
+  const logoPath = new URL('/Speech Help - Logo.svg', import.meta.url).href;
+  
   useEffect(() => {
     // Set greeting based on time of day
     const hour = new Date().getHours();
@@ -45,8 +48,8 @@ const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
       
       <div className="hidden md:block">
         <img 
-          src="/placeholder.svg" 
-          alt="Desk Illustration" 
+          src={logoPath} 
+          alt="Speech Help Logo" 
           className="h-32 w-auto"
         />
       </div>
