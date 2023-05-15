@@ -14,9 +14,6 @@ const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
-  // Get the correct logo path that works in both development and production
-  const logoPath = new URL('/Speech Help - Logo.svg', import.meta.url).href;
-  
   useEffect(() => {
     // Set greeting based on time of day
     const hour = new Date().getHours();
@@ -38,20 +35,12 @@ const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
     : userName;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-8 flex justify-between">
+    <div className="bg-white rounded-lg shadow-sm p-8">
       <div>
         <h1 className="text-3xl font-bold text-purple-600">
           {t(greeting, currentLanguage.code)}, <span className="text-pink-600">{displayName}!</span>
         </h1>
         <p className="text-gray-500 mt-2">{t('dashboard.niceDay', currentLanguage.code)} {dayOfWeek}.</p>
-      </div>
-      
-      <div className="hidden md:block">
-        <img 
-          src={logoPath} 
-          alt="Speech Help Logo" 
-          className="h-32 w-auto"
-        />
       </div>
     </div>
   );
