@@ -29,5 +29,7 @@ export default defineConfig(({ mode }) => ({
         manualChunks: undefined,
       },
     },
+    // Ensure SVG files are copied to the output directory
+    copyPublicDir: true,
   }
 }));
