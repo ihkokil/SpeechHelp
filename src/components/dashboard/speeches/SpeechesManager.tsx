@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Speech } from '@/types/auth';
@@ -46,11 +45,9 @@ const SpeechesManager = ({ speeches }: SpeechesManagerProps) => {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
 
-  // Filter and sort speeches based on user selections
   const filteredSpeeches = useMemo(() => {
     let result = [...speeches];
     
-    // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(speech => 
@@ -58,12 +55,10 @@ const SpeechesManager = ({ speeches }: SpeechesManagerProps) => {
       );
     }
     
-    // Filter by speech type
     if (filterType !== 'all') {
       result = result.filter(speech => speech.speech_type === filterType);
     }
     
-    // Sort speeches
     switch (sortBy) {
       case 'newest':
         return result.sort((a, b) => 
@@ -125,14 +120,13 @@ const SpeechesManager = ({ speeches }: SpeechesManagerProps) => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Speech Library</CardTitle>
+          <CardTitle className="text-purple-600">Speech Library</CardTitle>
           <CardDescription>
             Search, filter, and manage your speeches
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {/* Search */}
             <div>
               <Label htmlFor="search-speeches" className="mb-1 block text-sm">Search Speeches</Label>
               <div className="relative">
@@ -147,7 +141,6 @@ const SpeechesManager = ({ speeches }: SpeechesManagerProps) => {
               </div>
             </div>
             
-            {/* Filter by Type */}
             <div>
               <Label htmlFor="filter-type" className="mb-1 block text-sm">Filter by Type</Label>
               <Select
@@ -168,7 +161,6 @@ const SpeechesManager = ({ speeches }: SpeechesManagerProps) => {
               </Select>
             </div>
             
-            {/* Sort By */}
             <div>
               <Label htmlFor="sort-by" className="mb-1 block text-sm">Sort By</Label>
               <Select
@@ -187,12 +179,10 @@ const SpeechesManager = ({ speeches }: SpeechesManagerProps) => {
             </div>
           </div>
           
-          {/* Results count */}
           <div className="text-sm text-gray-500 mb-4">
             Found {filteredSpeeches.length} speeches
           </div>
           
-          {/* Speeches Table */}
           {filteredSpeeches.length > 0 ? (
             <SpeechesTable 
               speeches={filteredSpeeches}
@@ -218,7 +208,6 @@ const SpeechesManager = ({ speeches }: SpeechesManagerProps) => {
         </CardContent>
       </Card>
       
-      {/* Modals */}
       <ViewSpeechModal 
         isOpen={isViewModalOpen}
         onOpenChange={setIsViewModalOpen}
