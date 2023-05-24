@@ -18,6 +18,7 @@ import Translate from '@/components/Translate';
 import SpeechPreview from '@/components/speech/components/SpeechPreview';
 import { Download, Printer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import html2pdf from 'html2pdf.js';
 
 interface ViewSpeechModalProps {
   isOpen: boolean;
@@ -50,23 +51,81 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
     return content;
   };
 
-  // Download speech as a text file
+  // Download speech as PDF
   const handleDownload = () => {
-    const processedContent = extractContentForExport(speech.content);
-    const blob = new Blob([processedContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${speech.title.trim() || 'speech'}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    toast({
-      title: "Download Started",
-      description: "Your speech is being downloaded as a text file.",
-    });
+    const speechTitle = speech.title.trim() || 'speech';
+    
+    // Create a temporary div to hold the formatted content
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    
+    // Create styled content for the PDF
+    container.innerHTML = `
+      <div style="font-family: Arial, sans-serif; margin: 20px; line-height: 1.6;">
+        <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px; color: #6b21a8;">
+          ${speechTitle}
+        </div>
+        <div style="font-size: 14px; color: #666; margin-bottom: 16px;">
+          ${getSpeechTypeLabel(speech.speech_type)}
+        </div>
+        <hr style="border: 1px solid #e5e7eb; margin: 16px 0;" />
+        <div id="speech-content"></div>
+      </div>
+    `;
+    
+    // Get the speech content element
+    const speechContentElement = container.querySelector('#speech-content');
+    if (speechContentElement) {
+      // Create a temporary SpeechPreview instance
+      const tempDiv = document.createElement('div');
+      tempDiv.style.display = 'none';
+      document.body.appendChild(tempDiv);
+      
+      // Create a temporary instance of SpeechPreview
+      const speechPreviewRoot = document.createElement('div');
+      tempDiv.appendChild(speechPreviewRoot);
+      
+      // Clone the current speech preview content
+      const currentPreviewContent = document.querySelector('.speech-preview-content');
+      if (currentPreviewContent) {
+        speechContentElement.innerHTML = currentPreviewContent.innerHTML;
+      } else {
+        // Fallback: Add formatted content
+        const processedContent = extractContentForExport(speech.content);
+        speechContentElement.innerHTML = processedContent.replace(/\n/g, '<br>');
+      }
+      
+      // Configure PDF options
+      const options = {
+        margin: [15, 15, 15, 15],
+        filename: `${speechTitle}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      
+      // Generate PDF
+      html2pdf().from(container).set(options).save().then(() => {
+        // Clean up
+        document.body.removeChild(container);
+        document.body.removeChild(tempDiv);
+        
+        toast({
+          title: "Download Started",
+          description: "Your speech is being downloaded as a PDF file.",
+        });
+      }).catch(error => {
+        console.error("PDF generation error:", error);
+        document.body.removeChild(container);
+        document.body.removeChild(tempDiv);
+        
+        toast({
+          title: "Error",
+          description: "There was an error downloading your speech. Please try again.",
+          variant: "destructive"
+        });
+      });
+    }
   };
 
   // Print the speech content
@@ -160,7 +219,7 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
             onClick={handleDownload}
           >
             <Download className="h-4 w-4 mr-2" />
-            <Translate text="common.download" fallback="Download" />
+            <Translate text="common.download" fallback="Download as PDF" />
           </ButtonCustom>
           <ButtonCustom 
             variant="outline" 
