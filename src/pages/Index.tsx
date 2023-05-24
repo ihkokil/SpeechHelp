@@ -32,7 +32,7 @@ const Index = () => {
         if (element) {
           element.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 500); // Small delay to ensure the page is fully loaded
+      }, 600); // Small delay to ensure the page is fully loaded
     }
   }, []);
 

@@ -1,3 +1,4 @@
+
 import { Facebook, Instagram, Linkedin, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -76,10 +77,10 @@ const Footer = () => {
                 <a href="tel:+18005551234" className="text-gray-600 hover:text-pink-600 transition-colors">+1 (800) 555-1234</a>
               </li>
               <li>
-                <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.support', currentLanguage.code)}</a>
+                <a href="#contact" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.support', currentLanguage.code)}</a>
               </li>
               <li>
-                <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.community', currentLanguage.code)}</a>
+                <a href="#contact" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.community', currentLanguage.code)}</a>
               </li>
             </ul>
           </div>
