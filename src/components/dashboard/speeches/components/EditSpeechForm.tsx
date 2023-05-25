@@ -52,6 +52,7 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
         <SpeechContentEditor 
           content={editContent}
           onContentChange={handleContentChange}
+          preserveHtml={true}
         />
       </div>
       <SpeechExportButtons 
