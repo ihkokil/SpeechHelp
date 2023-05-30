@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -10,6 +9,7 @@ import SpeechContentEditor from '../components/SpeechContentEditor';
 import SpeechActionButtons from '../components/SpeechActionButtons';
 import { useSpeechSave } from '../hooks/useSpeechSave';
 import { createPlaceholderSpeech } from '../utils/speechContentUtils';
+import html2pdf from 'html2pdf.js';
 
 interface Step4Props {
   prevStep: () => void;
@@ -30,7 +30,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
   const [content, setContent] = useState('');
   const { toast } = useToast();
 
-  // Setup save functionality hook
   const { isSaving, handleSave } = useSpeechSave({
     title,
     content,
@@ -61,7 +60,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
     setContent(e.target.value);
   };
 
-  // Extract the proper content from speech
   const extractContentForExport = (content: string): string => {
     if (content.includes('{"content"')) {
       try {
@@ -74,15 +72,12 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
     return content;
   };
 
-  // Download speech as PDF
   const handleDownload = () => {
     const speechTitle = title.trim() || 'speech';
     
-    // Create a temporary div to hold the formatted content
     const container = document.createElement('div');
     document.body.appendChild(container);
     
-    // Create styled content for the PDF
     container.innerHTML = `
       <div style="font-family: Arial, sans-serif; margin: 20px; line-height: 1.6;">
         <div style="font-size: 24px; font-weight: bold; margin-bottom: 8px; color: #6b21a8;">
@@ -96,19 +91,15 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
       </div>
     `;
     
-    // Get the speech content element
     const speechContentElement = container.querySelector('#speech-content');
     if (speechContentElement) {
-      // Get the formatted content
       const processedContent = extractContentForExport(content);
       
-      // Format content with the same formatting function as SpeechPreview
       const formatSpeechContent = (text: string): string => {
         if (!text) return '';
         
         let formattedText = text;
         
-        // Remove the raw JSON if it appears in the content
         if (formattedText.includes('{"content"')) {
           try {
             const jsonContent = JSON.parse(formattedText);
@@ -118,24 +109,18 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
           }
         }
         
-        // Handle headings with improved styling
         formattedText = formattedText.replace(/^# (.+)$/gm, '<h1 style="font-size: 24px; font-weight: bold; margin-bottom: 16px; color: #6b21a8;">$1</h1>');
         formattedText = formattedText.replace(/^## (.+)$/gm, '<h2 style="font-size: 20px; font-weight: bold; margin-top: 24px; margin-bottom: 12px; color: #6b21a8;">$1</h2>');
         formattedText = formattedText.replace(/^### (.+)$/gm, '<h3 style="font-size: 18px; font-weight: bold; margin-top: 20px; margin-bottom: 8px; color: #6b21a8;">$1</h3>');
         
-        // Handle bold text
         formattedText = formattedText.replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight: bold;">$1</strong>');
         
-        // Handle italic text
         formattedText = formattedText.replace(/\*(.+?)\*/g, '<em style="font-style: italic;">$1</em>');
         
-        // Handle horizontal rule with a more prominent styling
         formattedText = formattedText.replace(/^---$/gm, '<hr style="border: 1px solid #e5e7eb; margin: 16px 0;" />');
         
-        // Add spacing between paragraphs
         formattedText = formattedText.replace(/\n\n/g, '</p><p style="margin-bottom: 16px;">');
         
-        // Handle "Your Speech Inputs" section
         if (formattedText.includes('Your Speech Inputs')) {
           formattedText = formattedText.replace(
             /(Your Speech Inputs.*?)---/s, 
@@ -143,16 +128,13 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
           );
         }
         
-        // Make question-answer pairs in the input section more readable
         formattedText = formattedText.replace(
           /<strong style="font-weight: bold;">(.+?)<\/strong> (.+?)(?=<\/p>|<strong|$)/g, 
           '<div style="margin-bottom: 8px;"><span style="font-weight: 500; color: #7e22ce;">$1:</span> <span style="color: #1f2937;">$2</span></div>'
         );
         
-        // Wrap the content in a paragraph tag with proper spacing
         formattedText = `<p style="margin-bottom: 16px;">${formattedText}</p>`;
         
-        // Fix any double wrapping of paragraph tags
         formattedText = formattedText.replace(/<p style="margin-bottom: 16px;"><p style="margin-bottom: 16px;">/g, '<p style="margin-bottom: 16px;">');
         formattedText = formattedText.replace(/<\/p><\/p>/g, '</p>');
         
@@ -161,7 +143,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 
       speechContentElement.innerHTML = formatSpeechContent(processedContent);
       
-      // Configure PDF options
       const options = {
         margin: [15, 15, 15, 15],
         filename: `${speechTitle}.pdf`,
@@ -170,9 +151,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       
-      // Generate PDF
       html2pdf().from(container).set(options).save().then(() => {
-        // Clean up
         document.body.removeChild(container);
         
         toast({
