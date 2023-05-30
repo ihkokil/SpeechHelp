@@ -10,7 +10,6 @@ import SpeechContentEditor from '../components/SpeechContentEditor';
 import SpeechActionButtons from '../components/SpeechActionButtons';
 import { useSpeechSave } from '../hooks/useSpeechSave';
 import { createPlaceholderSpeech } from '../utils/speechContentUtils';
-import html2pdf from 'html2pdf.js';
 
 interface Step4Props {
   prevStep: () => void;
@@ -223,7 +222,8 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         
         <SpeechContentEditor 
           content={content} 
-          onContentChange={handleContentChange} 
+          onContentChange={handleContentChange}
+          preserveHtml={true}
         />
         
         <SpeechActionButtons 

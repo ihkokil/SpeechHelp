@@ -5,6 +5,7 @@ import SpeechContentEditor from '@/components/speech/components/SpeechContentEdi
 import SpeechExportButtons from './SpeechExportButtons';
 import { Speech } from '@/types/auth';
 import Translate from '@/components/Translate';
+import SpeechPreview from '@/components/speech/components/SpeechPreview';
 
 interface EditSpeechFormProps {
   speech: Speech | null;
@@ -21,13 +22,8 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
   setEditTitle,
   setEditContent
 }) => {
-  const [processedContent, setProcessedContent] = useState(editContent);
+  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   
-  // Process content initially and when editContent changes
-  useEffect(() => {
-    setProcessedContent(editContent);
-  }, [editContent]);
-
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
     setEditContent(newContent);
@@ -49,11 +45,30 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
         />
       </div>
       <div>
-        <SpeechContentEditor 
-          content={editContent}
-          onContentChange={handleContentChange}
-          preserveHtml={true}
-        />
+        {viewMode === 'edit' ? (
+          <SpeechContentEditor 
+            content={editContent}
+            onContentChange={handleContentChange}
+            preserveHtml={true}
+            forceEditMode={true}
+          />
+        ) : (
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-pink-600 font-medium uppercase">
+                <Translate text="speechLab.content" fallback="Speech Content" />
+              </label>
+              <button 
+                onClick={() => setViewMode('edit')}
+                className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                <Translate text="speechLab.edit" fallback="Edit" />
+              </button>
+            </div>
+            <SpeechPreview content={editContent} />
+          </div>
+        )}
       </div>
       <SpeechExportButtons 
         speech={speech}
