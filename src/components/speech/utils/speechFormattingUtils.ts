@@ -1,4 +1,3 @@
-
 /**
  * Formats speech content for display with HTML formatting
  * @param text Raw speech content text
@@ -97,4 +96,63 @@ export const getEditableContent = (
   }
   
   return content;
+};
+
+/**
+ * Creates a formatted questions and answers section from speech details
+ * @param speechDetails Object containing question-answer pairs
+ * @returns Formatted markdown string with questions and answers
+ */
+export const createQuestionsAnswersSection = (speechDetails: Record<string, string>): string => {
+  if (!speechDetails || Object.keys(speechDetails).length === 0) {
+    return '';
+  }
+
+  let output = '# Your Speech Inputs\n\n';
+  
+  Object.entries(speechDetails).forEach(([question, answer]) => {
+    if (answer && answer.trim()) {
+      output += `**${question}** ${answer}\n\n`;
+    }
+  });
+  
+  output += '---\n\n';
+  
+  return output;
+};
+
+/**
+ * Extracts key information from speech details for generating content
+ * @param speechDetails Object containing question-answer pairs
+ * @returns Object with extracted key information
+ */
+export const extractKeyInformation = (speechDetails: Record<string, string>) => {
+  const name = speechDetails['What is your name?'] || 'Speaker';
+  const role = speechDetails['What is your role at this graduation?'] || 
+               speechDetails['What is your role?'] || 
+               speechDetails['Your role or position?'] || 
+               'Speaker';
+  const audience = speechDetails['Who are you addressing?'] || 'Everyone';
+  const duration = speechDetails['Desired length of the speech?'] || '5 minutes';
+  const tone = speechDetails['Tone of the speech?'] || 'Formal';
+  const theme = speechDetails['Key message or theme?'] || '';
+  const story = speechDetails['Share a personal story or experience.'] || '';
+  const quote = speechDetails['Include a famous quote or saying?'] || '';
+  const achievements = speechDetails['Specific achievements or milestones to mention?'] || '';
+  const callToAction = speechDetails['Is there a call to action or advice?'] || '';
+  const closing = speechDetails['Closing remarks or statement?'] || '';
+  
+  return {
+    name,
+    role,
+    audience,
+    duration,
+    tone,
+    theme,
+    story,
+    quote,
+    achievements,
+    callToAction,
+    closing
+  };
 };
