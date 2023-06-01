@@ -5,36 +5,43 @@ import { Button } from '@/components/ui/button';
 import { FileText, ExternalLink } from 'lucide-react';
 import { speechTypesData } from '@/components/speech/data/speechTypesData';
 import { questionnaires } from '@/components/speech/questionnaires';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { createPdfFromContent } from '@/components/speech/utils/pdfGenerator';
+import { createFormattedSpeech } from '@/components/speech/utils/speechContentCreator';
 
 const ResourcesTab = () => {
   const { toast } = useToast();
 
   const handleTemplateDownload = (speechType: string) => {
-    // Create a JSON representation of the questionnaire
+    // Get the speech type label
+    const speechTypeLabel = speechTypesData.find(type => type.id === speechType)?.label || speechType;
+    
+    // Create a sample title for the template
+    const templateTitle = `${speechTypeLabel} Speech Template`;
+    
+    // Get the questionnaire for this speech type
     const questionnaire = questionnaires[speechType as keyof typeof questionnaires];
     if (!questionnaire) return;
     
-    // Convert to JSON string
-    const jsonData = JSON.stringify(questionnaire, null, 2);
+    // Create a formatted speech template
+    const emptyDetails = {};
     
-    // Create a blob and download link
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${speechType}-questionnaire.json`;
-    document.body.appendChild(a);
-    a.click();
+    // Create a formatted speech content with placeholder text
+    const formattedContent = `# ${templateTitle}\n\n` +
+      `## About This Template\n\n` +
+      `This is a template for creating a ${speechTypeLabel.toLowerCase()} speech. Use our Speech Lab tool to fill in the questionnaire and generate a complete speech tailored to your needs.\n\n` +
+      `## Questionnaire Structure\n\n` +
+      `${questionnaire.map(q => `### ${q.question}\n${q.type === 'radio' ? `Options: ${q.options?.join(', ')}` : 'Enter your response here...'}\n\n`).join('')}` +
+      `## Sample Speech Structure\n\n` +
+      `${createFormattedSpeech(templateTitle, emptyDetails)}`;
     
-    // Clean up
-    URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-    
-    toast({
-      title: "Template Downloaded",
-      description: `The ${speechType} template has been downloaded.`,
-    });
+    // Generate and download the PDF
+    createPdfFromContent(
+      templateTitle,
+      formattedContent,
+      `${speechTypeLabel} Template`,
+      toast
+    );
   };
 
   return (
