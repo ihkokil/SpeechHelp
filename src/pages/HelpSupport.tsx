@@ -10,6 +10,7 @@ import FAQsTab from '@/components/help/FAQsTab';
 import GuidesTab from '@/components/help/GuidesTab';
 import ContactTab from '@/components/help/ContactTab';
 import ResourcesTab from '@/components/help/ResourcesTab';
+import { ButtonCustom } from '@/components/ui/button-custom';
 
 const HelpSupport = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -55,20 +56,32 @@ const HelpSupport = () => {
           </div>
 
           <Tabs defaultValue="faq" className="space-y-6">
-            <TabsList className="grid grid-cols-4 w-full max-w-2xl">
-              <TabsTrigger value="faq" className="flex flex-col items-center gap-1 py-2">
+            <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-gradient-to-r from-pink-500 via-pink-500 to-purple-600 p-1 rounded-lg">
+              <TabsTrigger 
+                value="faq" 
+                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+              >
                 <HelpCircle className="h-5 w-5" />
                 <span>FAQs</span>
               </TabsTrigger>
-              <TabsTrigger value="guides" className="flex flex-col items-center gap-1 py-2">
+              <TabsTrigger 
+                value="guides" 
+                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+              >
                 <BookOpen className="h-5 w-5" />
                 <span>Guides</span>
               </TabsTrigger>
-              <TabsTrigger value="contact" className="flex flex-col items-center gap-1 py-2">
+              <TabsTrigger 
+                value="contact" 
+                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+              >
                 <MessageSquare className="h-5 w-5" />
                 <span>Contact Us</span>
               </TabsTrigger>
-              <TabsTrigger value="resources" className="flex flex-col items-center gap-1 py-2">
+              <TabsTrigger 
+                value="resources" 
+                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+              >
                 <FileText className="h-5 w-5" />
                 <span>Resources</span>
               </TabsTrigger>
