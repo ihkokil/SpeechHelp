@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -25,8 +26,8 @@ const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   
-  // Using a relative path that works in both development and production
-  const logoPath = "/Speech Help - Logo.svg";
+  // Updated to use the correct logo path
+  const logoPath = "/speech-help-new-logo.svg";
   
   // Get current path for highlighting active item
   const currentPath = window.location.pathname;
