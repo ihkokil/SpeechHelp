@@ -7,9 +7,6 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  
-  // Using the correct SVG file path
-  const logoPath = "/Speech Help - Logo.svg";
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
@@ -18,7 +15,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <a href="#" className="inline-block mb-4">
               <img 
-                src={logoPath}
+                src="/Speech Help - Logo.svg"
                 alt="SpeechHelp Logo" 
                 className="h-14" 
               />
