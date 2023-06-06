@@ -55,6 +55,13 @@ const NavLinks: React.FC<NavLinksProps> = ({ isMobile = false, onItemClick }) =>
       >
         SVG Uploader
       </Link>
+      <Link
+        to="/logo-manager"
+        className={linkClasses}
+        onClick={onItemClick}
+      >
+        Logo Manager
+      </Link>
     </div>
   );
 };

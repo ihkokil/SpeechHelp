@@ -1,11 +1,21 @@
 
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useScrollDetection } from "@/hooks/useScrollDetection";
 import DesktopNav from "./navigation/DesktopNav";
 import MobileNav from "./navigation/MobileNav";
 
 const Navbar = () => {
   const isScrolled = useScrollDetection();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // Check if we have a stored custom logo
+    const savedLogo = localStorage.getItem('site_logo_url');
+    if (savedLogo) {
+      setLogoUrl(savedLogo);
+    }
+  }, []);
   
   return (
     <nav
@@ -22,11 +32,19 @@ const Navbar = () => {
             className="flex items-center space-x-2"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            <img 
-              src="/Speech Help - Logo.svg"
-              alt="SpeechHelp Logo" 
-              className="h-10" 
-            />
+            {logoUrl ? (
+              <img 
+                src={logoUrl}
+                alt="Custom Logo" 
+                className="h-10" 
+              />
+            ) : (
+              <img 
+                src="/speech-help-new-logo.svg"
+                alt="SpeechHelp Logo" 
+                className="h-10" 
+              />
+            )}
           </Link>
 
           {/* Desktop Navigation */}
