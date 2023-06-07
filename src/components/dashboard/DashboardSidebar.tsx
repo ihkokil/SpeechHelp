@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -24,6 +25,9 @@ type NavItem = {
 const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
+  
+  // Updated to use the correct logo path
+  const logoPath = "/speech-help-new-logo.svg";
   
   // Get current path for highlighting active item
   const currentPath = window.location.pathname;
@@ -90,7 +94,7 @@ const DashboardSidebar = () => {
       {/* Logo - Updated to match homepage logo with link to home */}
       <div className="p-6">
         <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <img src="/Speech Help - Logo.svg" alt="Speech Help" className="h-10" />
+          <img src={logoPath} alt="Speech Help" className="h-10" />
         </Link>
       </div>
 

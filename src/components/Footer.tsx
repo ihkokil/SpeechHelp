@@ -2,25 +2,27 @@ import { Facebook, Instagram, Linkedin, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
-import logoSvg from "../assets/logo.svg";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  
+  // Updated to use the correct logo path
+  const logoPath = "/speech-help-new-logo.svg";
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
       <div className="container mx-auto px-6 md:px-12 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-1 md:col-span-2">
-            <Link to="/" className="inline-block mb-4" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <a href="#" className="inline-block mb-4">
               <img 
-                src={logoSvg}
+                src={logoPath}
                 alt="SpeechHelp Logo" 
                 className="h-14" 
               />
-            </Link>
+            </a>
             <p className="text-gray-600 mb-6 max-w-md">
               {t('footer.description', currentLanguage.code)}
             </p>
