@@ -5,7 +5,7 @@ import DesktopNav from "./navigation/DesktopNav";
 import MobileNav from "./navigation/MobileNav";
 
 // Import the logo directly to ensure it's properly bundled with the application
-import logoSvg from "/Speech Help - Logo.svg";
+import logoSvg from "../assets/logo.svg";
 
 const Navbar = () => {
   const isScrolled = useScrollDetection();

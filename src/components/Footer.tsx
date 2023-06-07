@@ -1,9 +1,8 @@
-
 import { Facebook, Instagram, Linkedin, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
-import logoSvg from "/Speech Help - Logo.svg";
+import logoSvg from "../assets/logo.svg";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
