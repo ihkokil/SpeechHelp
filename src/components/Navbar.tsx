@@ -28,7 +28,7 @@ const Navbar = () => {
             <img 
               src={logoPath}
               alt="SpeechHelp Logo" 
-              className="h-10" 
+              className="h-12" // Increased from h-10 to h-12 (20% increase)
             />
           </Link>
 
