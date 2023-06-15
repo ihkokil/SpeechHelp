@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -21,15 +20,14 @@ const Hero = () => {
   return (
     <section className="text-white pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden relative">
       {/* Video Background */}
-      <div className="absolute inset-0 z-0 flex items-center justify-center">
+      <div className="absolute inset-0 z-0 flex items-center justify-center overflow-hidden">
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="w-full h-auto min-h-full object-cover"
+          className="absolute min-w-full min-h-full w-auto h-auto object-cover"
           poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
-          style={{ transform: 'translateY(70px)' }}
         >
           <source src={videoUrl} type="video/quicktime" />
           <source src={videoUrl} type="video/mp4" />
