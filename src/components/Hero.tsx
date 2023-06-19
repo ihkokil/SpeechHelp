@@ -19,15 +19,15 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="text-white pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden relative">
-      {/* Video Background */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
+    <section className="text-white pt-24 pb-24 md:pt-28 md:pb-32 overflow-hidden relative">
+      {/* Video Background - Positioned to align with navbar */}
+      <div className="absolute top-0 left-0 right-0 bottom-0 z-0 overflow-hidden">
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="absolute w-full h-full object-cover"
+          className="absolute w-full h-full object-cover object-center"
           poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
         >
           <source src={videoUrl} type="video/quicktime" />
