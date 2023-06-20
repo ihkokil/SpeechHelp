@@ -5,17 +5,24 @@ import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
 import { ButtonCustom } from './ui/button-custom';
 import { AspectRatio } from './ui/aspect-ratio';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Hero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   
   // Video hosted on Supabase
   const videoUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/sign/videofiles/Video%20Montage%20-%20Speech%20Help%20App.mov?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ2aWRlb2ZpbGVzL1ZpZGVvIE1vbnRhZ2UgLSBTcGVlY2ggSGVscCBBcHAubW92IiwiaWF0IjoxNzQzMDk4MTg0LCJleHAiOjE3NzQ2MzQxODR9.wLJRfrryzMvSYVz8ZeCt6YPHJvBheaX4JZ2MAeEt1R4";
   
   useEffect(() => {
     setIsLoaded(true);
+    
+    // Prevent auto-scrolling on page load
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
   }, []);
 
   // Get the navbar height for positioning
@@ -31,7 +38,7 @@ const Hero = () => {
         className="absolute inset-0 z-0 overflow-hidden" 
         style={{ 
           top: navbarHeight,
-          height: `calc(100% - ${navbarHeight}px + 15vh)` // Add a bit more height to show bottom of video
+          height: `calc(100% - ${navbarHeight}px + ${isMobile ? '10vh' : '20vh'})` // Adjusted for mobile
         }}
       >
         <video
