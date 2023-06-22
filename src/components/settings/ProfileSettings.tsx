@@ -46,6 +46,7 @@ const ProfileSettings = () => {
   useEffect(() => {
     if (user) {
       const metadata = user.user_metadata || {};
+      console.log('Loading user data into form:', metadata);
       form.reset({
         firstName: metadata.first_name || '',
         lastName: metadata.last_name || '',
