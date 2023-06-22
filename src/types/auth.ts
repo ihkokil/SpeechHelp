@@ -1,13 +1,14 @@
 
-import { Session, User } from '@supabase/supabase-js';
+import { Session, User } from "@supabase/supabase-js";
 
 export type Speech = {
   id: string;
+  user_id: string;
   title: string;
   content: string;
-  speech_type: string;
   created_at: string;
   updated_at: string;
+  speech_type: string;
 };
 
 export type AuthContextType = {
@@ -16,6 +17,7 @@ export type AuthContextType = {
   isLoading: boolean;
   speeches: Speech[];
   fetchSpeeches: () => Promise<void>;
+  refreshUserData: () => Promise<void>;
   saveSpeech: (title: string, content: string, speechType: string) => Promise<void>;
   updateSpeech: (id: string, title: string, content: string) => Promise<void>;
   deleteSpeech: (id: string) => Promise<void>;

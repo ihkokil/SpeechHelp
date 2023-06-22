@@ -18,28 +18,48 @@ import ProfileFormSkeleton from './profile/ProfileFormSkeleton';
 import { supabase } from '@/integrations/supabase/client';
 
 const ProfileSettings = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, refreshUserData } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formattedPhone, setFormattedPhone] = useState('');
   const [availableStates, setAvailableStates] = useState<typeof statesProvinces['US']>([]);
   const [selectedDialCode, setSelectedDialCode] = useState('1');
 
+  // Initialize form with user metadata if available
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      firstName: user?.user_metadata?.first_name || '',
-      lastName: user?.user_metadata?.last_name || '',
-      email: user?.email || '',
-      phone: user?.user_metadata?.phone || '',
-      countryCode: user?.user_metadata?.country_code || 'US',
-      streetAddress: user?.user_metadata?.street_address || '',
-      city: user?.user_metadata?.city || '',
-      state: user?.user_metadata?.state || '',
-      zipCode: user?.user_metadata?.zip_code || '',
-      country: user?.user_metadata?.country || 'United States',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      countryCode: 'US',
+      streetAddress: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'United States',
     },
   });
+
+  // Update form with user data when user is loaded
+  useEffect(() => {
+    if (user) {
+      const metadata = user.user_metadata || {};
+      form.reset({
+        firstName: metadata.first_name || '',
+        lastName: metadata.last_name || '',
+        email: user.email || '',
+        phone: metadata.phone || '',
+        countryCode: metadata.country_code || 'US',
+        streetAddress: metadata.street_address || '',
+        city: metadata.city || '',
+        state: metadata.state || '',
+        zipCode: metadata.zip_code || '',
+        country: metadata.country || 'United States',
+      });
+    }
+  }, [user, form]);
 
   const { watch, setValue } = form;
   const currentPhone = watch('phone');
@@ -127,13 +147,18 @@ const ProfileSettings = () => {
       };
       
       // Update the user's metadata in Supabase
-      const { error } = await supabase.auth.updateUser({
+      const { data: userData, error } = await supabase.auth.updateUser({
         data: metadata
       });
       
       if (error) {
         console.error('Error updating profile:', error);
         throw error;
+      }
+      
+      // Refresh the user data in AuthContext
+      if (refreshUserData) {
+        await refreshUserData();
       }
       
       toast({
