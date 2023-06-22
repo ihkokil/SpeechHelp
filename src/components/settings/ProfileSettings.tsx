@@ -15,6 +15,7 @@ import { profileFormSchema, ProfileFormValues } from './profile/types';
 import PersonalInfoForm from './profile/PersonalInfoForm';
 import AddressForm from './profile/AddressForm';
 import ProfileFormSkeleton from './profile/ProfileFormSkeleton';
+import { supabase } from '@/integrations/supabase/client';
 
 const ProfileSettings = () => {
   const { user, isLoading } = useAuth();
@@ -99,13 +100,45 @@ const ProfileSettings = () => {
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
+    if (!user) {
+      toast({
+        title: "Authentication error",
+        description: "You must be logged in to update your profile.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      console.log('Updated profile data:', data);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Updating profile data:', data);
+      
+      // Prepare metadata update object
+      const metadata = {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        phone: data.phone,
+        country_code: data.countryCode,
+        street_address: data.streetAddress,
+        city: data.city,
+        state: data.state,
+        zip_code: data.zipCode,
+        country: data.country,
+      };
+      
+      // Update the user's metadata in Supabase
+      const { error } = await supabase.auth.updateUser({
+        data: metadata
+      });
+      
+      if (error) {
+        console.error('Error updating profile:', error);
+        throw error;
+      }
+      
       toast({
         title: "Profile updated",
-        description: "Your profile information has been updated successfully.",
+        description: "Your profile information has been saved successfully.",
       });
     } catch (error) {
       console.error('Error updating profile:', error);
