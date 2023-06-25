@@ -6,7 +6,6 @@ import { StateProvince } from '../../../data/statesProvinces';
 import CountrySelector from './components/CountrySelector';
 import StreetAddressField from './components/StreetAddressField';
 import LocationFields from './components/LocationFields';
-import ZipCodeField from './components/ZipCodeField';
 
 interface AddressFormProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -34,8 +33,6 @@ const AddressForm = ({ form, availableStates, handleCountryChange }: AddressForm
           form={form} 
           availableStates={availableStates} 
         />
-        
-        <ZipCodeField form={form} />
       </div>
     </div>
   );
