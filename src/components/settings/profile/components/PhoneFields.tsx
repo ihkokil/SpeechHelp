@@ -31,9 +31,13 @@ const PhoneFields = ({
           <FormItem>
             <FormLabel>Phone Country Code</FormLabel>
             <Select 
-              onValueChange={handleCountryCodeChange}
-              defaultValue={field.value}
-              value={field.value}
+              onValueChange={(value) => {
+                console.log('Country code changed to:', value);
+                handleCountryCodeChange(value);
+                field.onChange(value);
+              }}
+              value={field.value || 'US'}
+              defaultValue={field.value || 'US'}
             >
               <FormControl>
                 <SelectTrigger tabIndex={4}>

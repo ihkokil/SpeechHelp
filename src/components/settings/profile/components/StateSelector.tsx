@@ -24,8 +24,8 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
               <MapPin className="h-4 w-4 text-gray-500 mr-2" />
               <Select 
                 onValueChange={field.onChange}
-                defaultValue={field.value}
-                value={field.value}
+                value={field.value || ''}
+                defaultValue={field.value || ''}
               >
                 <SelectTrigger className="w-full" tabIndex={9}>
                   <SelectValue placeholder="Select state/province" />

@@ -24,11 +24,12 @@ const CountrySelector = ({ form, handleCountryChange }: CountrySelectorProps) =>
               <Globe className="h-4 w-4 text-gray-500 mr-2" />
               <Select 
                 onValueChange={(value) => {
+                  console.log('Country changed to:', value);
                   handleCountryChange(value);
                   field.onChange(value);
                 }}
-                defaultValue={field.value}
-                value={field.value}
+                value={field.value || ''}
+                defaultValue={field.value || ''}
               >
                 <SelectTrigger className="w-full" tabIndex={6}>
                   <SelectValue placeholder="Select country" />
