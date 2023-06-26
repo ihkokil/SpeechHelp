@@ -23,7 +23,10 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
             <div className="flex items-center">
               <MapPin className="h-4 w-4 text-gray-500 mr-2" />
               <Select 
-                onValueChange={field.onChange}
+                onValueChange={(value) => {
+                  console.log('State changed to:', value);
+                  field.onChange(value);
+                }}
                 value={field.value || ''}
                 defaultValue={field.value || ''}
               >
