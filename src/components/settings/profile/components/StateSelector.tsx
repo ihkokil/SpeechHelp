@@ -28,7 +28,6 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
                   field.onChange(value);
                 }}
                 value={field.value || ''}
-                defaultValue={field.value || ''}
               >
                 <SelectTrigger className="w-full" tabIndex={9}>
                   <SelectValue placeholder="Select state/province" />
