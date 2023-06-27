@@ -32,7 +32,7 @@ const CountrySelector = ({ form, handleCountryChange }: CountrySelectorProps) =>
                 defaultValue={field.value || ''}
               >
                 <SelectTrigger className="w-full" tabIndex={6}>
-                  <SelectValue placeholder="Select country" />
+                  <SelectValue placeholder="Select Country of Residence" />
                 </SelectTrigger>
                 <SelectContent className="bg-white max-h-60">
                   {countryData.map((country) => (
