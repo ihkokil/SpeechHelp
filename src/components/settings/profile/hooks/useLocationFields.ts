@@ -12,13 +12,6 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
   const selectedCountry = watch('country');
   const selectedState = watch('state');
   
-  // For debugging
-  useEffect(() => {
-    if (selectedState) {
-      console.log('Selected state changed in form:', selectedState);
-    }
-  }, [selectedState]);
-  
   // Update available states when country changes
   useEffect(() => {
     const countryEntry = getCountryByName(selectedCountry);
@@ -29,21 +22,26 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
       // Clear state if it's invalid for the new country and there are states available
       const currentState = getValues('state');
       if (currentState && !isStateValidForCountry(currentState, states) && states.length > 0) {
-        setValue('state', '');
+        setValue('state', '', { shouldDirty: true, shouldTouch: true });
       }
     } else {
       setAvailableStates([]);
     }
   }, [selectedCountry, setValue, getValues]);
   
+  // Debug selected state changes
+  useEffect(() => {
+    console.log('Current state value in form:', selectedState);
+  }, [selectedState]);
+  
   const handleCountryChange = (countryName: string) => {
     console.log('Setting country to:', countryName);
-    setValue('country', countryName);
+    setValue('country', countryName, { shouldDirty: true, shouldTouch: true });
     
     // Update country code to match the selected country
     const countryEntry = getCountryByName(countryName);
     if (countryEntry) {
-      setValue('countryCode', countryEntry.code);
+      setValue('countryCode', countryEntry.code, { shouldDirty: true, shouldTouch: true });
       
       // Update available states
       const states = getStatesForCountry(countryEntry.code);
@@ -52,7 +50,7 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
       // Clear state if it's invalid for the new country
       const currentState = getValues('state');
       if (currentState && !isStateValidForCountry(currentState, states) && states.length > 0) {
-        setValue('state', '');
+        setValue('state', '', { shouldDirty: true, shouldTouch: true });
       }
     }
   };
