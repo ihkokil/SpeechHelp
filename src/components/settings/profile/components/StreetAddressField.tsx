@@ -20,7 +20,7 @@ const StreetAddressField = ({ form }: StreetAddressFieldProps) => {
           <FormControl>
             <div className="flex items-start">
               <Home className="h-4 w-4 text-gray-500 mr-2 mt-2.5" />
-              <Textarea placeholder="123 Main St, Apt 4B" {...field} tabIndex={7} />
+              <Textarea placeholder="123 Main St, Apt 4B" {...field} tabIndex={7} className="w-full" />
             </div>
           </FormControl>
           <FormMessage />

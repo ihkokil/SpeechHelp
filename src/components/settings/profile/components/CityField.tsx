@@ -20,7 +20,7 @@ const CityField = ({ form }: CityFieldProps) => {
           <FormControl>
             <div className="flex items-center">
               <Building2 className="h-4 w-4 text-gray-500 mr-2" />
-              <Input placeholder="San Francisco" {...field} tabIndex={8} />
+              <Input placeholder="San Francisco" {...field} tabIndex={8} className="w-full" />
             </div>
           </FormControl>
           <FormMessage />
