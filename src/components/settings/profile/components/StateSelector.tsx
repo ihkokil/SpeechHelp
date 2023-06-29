@@ -20,13 +20,15 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
         <FormItem>
           <FormLabel>State / Province</FormLabel>
           <FormControl>
-            <div className="flex items-center">
-              <MapPin className="h-4 w-4 text-gray-500 mr-2" />
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
+                <MapPin className="h-4 w-4 text-gray-500" />
+              </div>
               <Select 
                 onValueChange={field.onChange}
                 value={field.value || ''}
               >
-                <SelectTrigger className="w-full" tabIndex={9}>
+                <SelectTrigger className="w-full pl-10" tabIndex={9}>
                   <SelectValue placeholder="Select State / Province" />
                 </SelectTrigger>
                 <SelectContent className="bg-white max-h-60 z-[150]">

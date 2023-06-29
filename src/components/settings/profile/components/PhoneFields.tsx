@@ -40,9 +40,14 @@ const PhoneFields = ({
               defaultValue={field.value || 'US'}
             >
               <FormControl>
-                <SelectTrigger className="w-full" tabIndex={4}>
-                  <SelectValue placeholder="Select Country / Associated Phone Code" />
-                </SelectTrigger>
+                <div className="relative">
+                  <SelectTrigger className="w-full pl-10" tabIndex={4}>
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
+                      <Phone className="h-4 w-4 text-gray-500" />
+                    </div>
+                    <SelectValue placeholder="Select Country / Associated Phone Code" />
+                  </SelectTrigger>
+                </div>
               </FormControl>
               <SelectContent className="bg-white">
                 {countryData.map((country) => (
@@ -64,17 +69,19 @@ const PhoneFields = ({
           <FormItem>
             <FormLabel>Phone Number</FormLabel>
             <FormControl>
-              <div className="flex items-center">
-                <Phone className="h-4 w-4 text-gray-500 mr-2" />
-                <div className="flex items-center gap-2 w-full">
-                  <div className="flex-shrink-0 w-16 text-right text-gray-500 font-medium">
+              <div className="relative flex items-center">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                  <Phone className="h-4 w-4 text-gray-500" />
+                </div>
+                <div className="flex items-center w-full">
+                  <div className="pl-10 pr-2 py-2 border rounded-l-md bg-gray-50 text-gray-500 font-medium min-w-[60px] text-center">
                     +{selectedDialCode}
                   </div>
                   <Input 
                     placeholder="Phone number" 
                     value={formattedPhone}
                     onChange={handlePhoneChange}
-                    className="flex-grow"
+                    className="flex-grow rounded-l-none"
                     tabIndex={5}
                     {...field}
                   />

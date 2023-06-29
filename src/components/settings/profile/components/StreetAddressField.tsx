@@ -18,9 +18,11 @@ const StreetAddressField = ({ form }: StreetAddressFieldProps) => {
         <FormItem>
           <FormLabel>Street Address</FormLabel>
           <FormControl>
-            <div className="flex items-start">
-              <Home className="h-4 w-4 text-gray-500 mr-2 mt-2.5" />
-              <Textarea placeholder="123 Main St, Apt 4B" {...field} tabIndex={7} className="w-full" />
+            <div className="relative">
+              <div className="absolute left-3 top-3">
+                <Home className="h-4 w-4 text-gray-500" />
+              </div>
+              <Textarea placeholder="123 Main St, Apt 4B" {...field} tabIndex={7} className="w-full pl-10" />
             </div>
           </FormControl>
           <FormMessage />

@@ -18,9 +18,11 @@ const EmailField = ({ form }: EmailFieldProps) => {
         <FormItem>
           <FormLabel>Email</FormLabel>
           <FormControl>
-            <div className="flex items-center">
-              <Mail className="h-4 w-4 text-gray-500 mr-2" />
-              <Input placeholder="name@example.com" {...field} tabIndex={3} className="w-full" />
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                <Mail className="h-4 w-4 text-gray-500" />
+              </div>
+              <Input placeholder="name@example.com" {...field} tabIndex={3} className="w-full pl-10" />
             </div>
           </FormControl>
           <FormDescription>
