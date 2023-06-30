@@ -12,6 +12,10 @@ interface StateSelectorProps {
 }
 
 const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
+  // Add debug logging to see what value is being passed to the component
+  console.log("StateSelector rendering with value:", form.watch('state'));
+  console.log("Available states:", availableStates);
+  
   return (
     <FormField
       control={form.control}

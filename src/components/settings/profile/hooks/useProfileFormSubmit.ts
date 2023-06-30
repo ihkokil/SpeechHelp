@@ -24,7 +24,7 @@ export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
     try {
       console.log('Submitting profile data:', data);
       
-      // Prepare metadata update object
+      // Ensure state is properly included in metadata
       const metadata = {
         first_name: data.firstName,
         last_name: data.lastName,
@@ -32,7 +32,7 @@ export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
         country_code: data.countryCode,
         street_address: data.streetAddress,
         city: data.city,
-        state: data.state,
+        state: data.state, // Ensure state is included
         zip_code: data.zipCode,
         country: data.country,
       };

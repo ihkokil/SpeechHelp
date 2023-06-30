@@ -19,10 +19,16 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
       const states = getStatesForCountry(countryEntry.code);
       setAvailableStates(states);
       
-      // Clear state if it's invalid for the new country and there are states available
+      // Preserve the current state if valid for new country, otherwise clear it
       const currentState = getValues('state');
-      if (currentState && !isStateValidForCountry(currentState, states) && states.length > 0) {
-        setValue('state', '', { shouldDirty: true, shouldTouch: true });
+      if (currentState) {
+        const isValid = isStateValidForCountry(currentState, states);
+        if (!isValid && states.length > 0) {
+          console.log('Clearing invalid state:', currentState);
+          setValue('state', '', { shouldDirty: true, shouldTouch: true });
+        } else {
+          console.log('Keeping valid state:', currentState);
+        }
       }
     } else {
       setAvailableStates([]);
@@ -50,6 +56,7 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
       // Clear state if it's invalid for the new country
       const currentState = getValues('state');
       if (currentState && !isStateValidForCountry(currentState, states) && states.length > 0) {
+        console.log('Clearing invalid state after country change:', currentState);
         setValue('state', '', { shouldDirty: true, shouldTouch: true });
       }
     }
