@@ -4,16 +4,24 @@ import { parseDurationToMinutes } from './durationUtils';
 import { enhanceSpeechForDuration } from './speechEnhancer';
 import { createQuestionsAnswersSection } from './speechFormattingUtils';
 import { createFormattedSpeech } from './speechContentCreator';
+import { generateAIPrompt } from './aiPromptGenerator';
 
 /**
  * Generates a speech based on questionnaire answers
  */
-export const generateSpeechFromDetails = (speechTitle: string, speechDetails: SpeechDetails = {}): string => {
+export const generateSpeechFromDetails = (speechTitle: string, speechDetails: SpeechDetails = {}, speechType: string = ''): string => {
   const detailsArray = Object.entries(speechDetails || {});
   
   if (detailsArray.length === 0) {
     return "This is your generated speech. Unfortunately, we couldn't find your questionnaire details. You can edit this placeholder text to create your own speech.";
   }
+  
+  // Generate the optimized AI prompt that would be sent to the third-party AI
+  const aiPrompt = generateAIPrompt(speechTitle, speechType, speechDetails);
+  
+  // In a real implementation, this is where you would send the prompt to the third-party AI
+  // and receive the generated speech. For now, we'll continue with the existing logic.
+  console.log('Generated AI Prompt for third-party service:', aiPrompt);
   
   // Create the questions and answers section
   const questionsAnswersSection = createQuestionsAnswersSection(speechDetails);
