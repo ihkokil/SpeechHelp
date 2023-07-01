@@ -60,7 +60,6 @@ const ProfileSettings = () => {
                   type="submit" 
                   className="bg-gradient-to-r from-purple-600 to-pink-600 text-white" 
                   disabled={isSubmitting}
-                  tabIndex={9}
                 >
                   {isSubmitting ? "Saving..." : "Save Changes"}
                 </Button>

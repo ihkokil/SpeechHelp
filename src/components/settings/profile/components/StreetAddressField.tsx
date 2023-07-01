@@ -26,7 +26,6 @@ const StreetAddressField = ({ form }: StreetAddressFieldProps) => {
                 {...field} 
                 placeholder="Street Address"
                 className="pl-10"
-                tabIndex={4}
               />
             </div>
           </FormControl>

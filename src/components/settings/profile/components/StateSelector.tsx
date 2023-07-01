@@ -33,7 +33,7 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
                 value={field.value || ''}
                 defaultValue={field.value || ''}
               >
-                <SelectTrigger className="w-full pl-10" tabIndex={7}>
+                <SelectTrigger className="w-full pl-10">
                   <SelectValue placeholder="Select State / Province" />
                 </SelectTrigger>
                 <SelectContent className="bg-white max-h-60 z-[150]">
