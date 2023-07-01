@@ -24,7 +24,41 @@ export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
     try {
       console.log('Submitting profile data:', data);
       
-      // Ensure state is properly included in metadata
+      // Check if email is being changed
+      const isEmailChanged = data.email !== user.email;
+      
+      // If email is changed, verify password first
+      if (isEmailChanged) {
+        if (!data.password) {
+          throw new Error("Password is required to change email address");
+        }
+        
+        // Verify the password before changing email
+        const { error: verifyError } = await supabase.auth.signInWithPassword({
+          email: user.email!,
+          password: data.password,
+        });
+        
+        if (verifyError) {
+          throw new Error("Incorrect password. Please try again.");
+        }
+        
+        // Update email
+        const { error: updateEmailError } = await supabase.auth.updateUser({
+          email: data.email,
+        });
+        
+        if (updateEmailError) {
+          throw updateEmailError;
+        }
+        
+        toast({
+          title: "Email verification sent",
+          description: "Please check your new email address for a verification link.",
+        });
+      }
+      
+      // Update user metadata
       const metadata = {
         first_name: data.firstName,
         last_name: data.lastName,
@@ -32,7 +66,7 @@ export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
         country_code: data.countryCode,
         street_address: data.streetAddress,
         city: data.city,
-        state: data.state, // Ensure state is included
+        state: data.state,
         zip_code: data.zipCode,
         country: data.country,
       };
@@ -60,11 +94,11 @@ export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
         title: "Profile updated",
         description: "Your profile information has been saved successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
       toast({
         title: "Update failed",
-        description: "There was a problem updating your profile. Please try again.",
+        description: error.message || "There was a problem updating your profile. Please try again.",
         variant: "destructive",
       });
     } finally {
