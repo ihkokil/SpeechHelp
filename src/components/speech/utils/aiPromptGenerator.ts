@@ -1,89 +1,101 @@
 
-/**
- * Generates an optimized prompt for the third-party AI system based on user inputs
- * This creates a detailed, context-rich prompt that helps the AI create unique, 
- * high-quality speeches tailored to the specific occasion and user requirements
- */
 import { SpeechDetails } from '../hooks/useSpeechLabState';
-import { speechTypesData } from '../data/speechTypesData';
+import { v4 as uuidv4 } from 'uuid';
 
-export const generateAIPrompt = (
-  speechTitle: string, 
-  speechType: string, 
-  speechDetails: SpeechDetails = {}
-): string => {
-  // Get the selected speech type label
-  const speechTypeLabel = speechTypesData.find(type => type.id === speechType)?.label || speechType;
+/**
+ * Generates a detailed AI prompt for third-party speech generation services,
+ * taking into account all user-provided details from questionnaires
+ */
+export const generateAIPrompt = (speechTitle: string, speechType: string, speechDetails: SpeechDetails = {}): string => {
+  // Create a unique identifier for this speech to ensure uniqueness
+  const uniqueId = uuidv4().substring(0, 8);
   
-  // Create a formatted version of user inputs for the AI
-  const formattedUserInputs = Object.entries(speechDetails)
-    .filter(([_, value]) => value && value.trim())
-    .map(([question, answer]) => `- ${question.replace(/\?$/, '')}: ${answer}`)
-    .join('\n');
-
-  // Generate a unique identifier for this speech to ensure it's one-of-a-kind
-  const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+  // Extract important preference information from the details
+  const emotionalImpact = getDetailsByKeyword(speechDetails, "emotional impact");
+  const humorLevel = getDetailsByKeyword(speechDetails, "humor");
+  const speechStructure = getDetailsByKeyword(speechDetails, "structure");
+  const languageStyle = getDetailsByKeyword(speechDetails, "language");
+  const culturalElements = getDetailsByKeyword(speechDetails, "cultural");
   
-  return `
-# EXPERT SPEECH WRITER INSTRUCTIONS
+  // Construct a comprehensive AI prompt
+  let prompt = `
+# Speech Generation Request [ID: ${uniqueId}]
 
-## SPEECH CREATION TASK (Unique ID: ${uniqueId})
-You are an expert speech writer with decades of experience crafting powerful, memorable, and emotionally resonant speeches for all occasions. Your task is to create a completely original ${speechTypeLabel.toLowerCase()} that feels authentic, personalized, and tailored specifically to the speaker and their audience.
+## CORE INFORMATION
+- Speech Title: "${speechTitle}"
+- Speech Type: ${speechType}
+- Unique Identifier: ${uniqueId}
 
-## SPEECH TITLE
-"${speechTitle}"
+## SPEECH PREFERENCES
+- Emotional Impact: ${emotionalImpact || "Balanced"}
+- Humor Level: ${humorLevel || "As appropriate for the occasion"}
+- Structure Preference: ${speechStructure || "Standard (introduction, body, conclusion)"}
+- Language Style: ${languageStyle || "Natural and conversational"}
+- Cultural Elements: ${culturalElements ? `Include ${culturalElements}` : "Standard approach"}
 
-## SPEECH TYPE
-${speechTypeLabel}
-
-## USER REQUIREMENTS
-The following information has been provided by the speaker:
-
-${formattedUserInputs}
-
-## DETAILED GUIDELINES
-
-### TONE AND STYLE
-- Analyze the user's desired tone carefully and maintain it consistently throughout
-- Use natural, conversational language that sounds like the speaker's authentic voice
-- Ensure the speech flows organically with smooth transitions between topics
-- Match vocabulary and formality level to the occasion, audience, and speaker's role
-
-### STRUCTURE AND CONTENT
-- Create a captivating introduction that grabs attention immediately
-- Develop a clear organizational framework with logical progression
-- Include personal stories, anecdotes, and examples provided by the user
-- Incorporate appropriate emotional moments, humor, or poignant reflections based on the occasion
-- Craft a memorable conclusion that leaves a lasting impression
-
-### AUTHENTICITY AND ORIGINALITY
-- This speech MUST be completely unique and tailored to this specific occasion
-- Avoid generic platitudes, clichés, and overused speech formulas
-- Transform user input into something better than they could write themselves, while preserving their intent
-- Pay special attention to personal details, relationships, and specific memories mentioned
-
-### CUSTOMIZATION REQUIREMENTS
-- Adjust speech length to match the user's specified duration
-- For cultural/religious occasions, respectfully incorporate relevant traditions or references
-- For technical/professional speeches, balance expertise with accessibility
-- For emotional occasions (weddings, funerals, etc.), strike the right emotional tone without being overly sentimental
-
-## ADVANCED SPEECH TECHNIQUES
-- Use rhetorical devices like metaphor, anecdote, rule of three, and contrast where appropriate
-- Create "quotable moments" - memorable lines that could be remembered and shared
-- Employ varied sentence structure and rhythm to maintain engagement
-- Consider including a call-to-action or reflection question if appropriate to the occasion
-
-## FINAL CHECKS
-- Ensure the speech is completely original and tailored to this specific occasion
-- Maintain consistency in tone, style, and voice throughout
-- Verify the speech addresses all key points from the user's input
-- Confirm the speech feels authentic to the speaker and appropriate for the audience
-- Make necessary adjustments to match the requested duration
-
-## FORMAT
-Structure the speech with clear sections but don't label them as "Introduction," "Body," etc. The speech should flow naturally as it would be delivered verbally. Use natural pauses and transitions between ideas.
-
-Now, using all of this information, create an exceptional, unique ${speechTypeLabel.toLowerCase()} that exceeds expectations and feels personally crafted for this specific occasion.
+## USER-PROVIDED DETAILS
 `;
+
+  // Add all user-provided questionnaire answers
+  Object.entries(speechDetails).forEach(([question, answer]) => {
+    if (answer && answer.trim()) {
+      prompt += `- ${question}: ${answer}\n`;
+    }
+  });
+
+  // Add detailed instructions for the AI
+  prompt += `
+## INSTRUCTIONS FOR AI SPEECH GENERATION
+
+1. CREATE A COMPLETELY UNIQUE SPEECH:
+   - This must be entirely original content, different from any other speech
+   - Incorporate the unique identifier ${uniqueId} subtly into the speech content
+   - Avoid generic templates or common speech patterns
+
+2. HONOR THE SPECIFIED TONE AND STYLE:
+   - Match the requested emotional impact and humor level exactly
+   - Follow the requested speech structure preference
+   - Use language at the requested sophistication level
+   - Incorporate cultural elements as specified
+
+3. AUDIENCE ADAPTATION:
+   - Analyze the audience information to tailor content appropriately
+   - Consider knowledge level, interests, and context of the listeners
+   - Adjust technical terms and references based on audience familiarity
+
+4. INCORPORATE PERSONAL ELEMENTS:
+   - Weave in the provided stories, anecdotes, and personal details naturally
+   - Give prominence to meaningful experiences and relationships mentioned
+   - Maintain the authentic voice of the speaker
+
+5. APPROPRIATE LENGTH:
+   - Generate content that would take approximately the requested speech duration to deliver
+   - Adjust word count based on speaking rate (approximately 130-150 words per minute)
+   - Ensure adequate coverage of all important points without unnecessary padding
+
+6. ENSURE AUTHENTICITY AND EMOTIONAL RESONANCE:
+   - Write in a natural, conversational style that sounds like a real person speaking
+   - Include appropriate emotional moments, pauses, or emphasis
+   - Create content that feels genuine and heartfelt, not artificial
+
+7. STRUCTURE FOR MAXIMUM IMPACT:
+   - Create a compelling opening that grabs attention
+   - Develop a coherent flow between ideas and sections
+   - Craft a memorable conclusion that reinforces the key message
+
+Please generate a complete, ready-to-deliver speech based on these specifications.
+`;
+
+  return prompt;
+};
+
+/**
+ * Helper function to extract details containing specific keywords
+ */
+const getDetailsByKeyword = (details: SpeechDetails, keyword: string): string | null => {
+  const matchingEntry = Object.entries(details).find(([question, answer]) => 
+    question.toLowerCase().includes(keyword.toLowerCase()) && answer && answer.trim()
+  );
+  
+  return matchingEntry ? matchingEntry[1] : null;
 };

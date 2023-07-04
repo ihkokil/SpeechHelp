@@ -1,6 +1,14 @@
 
 import { QuestionItem } from './types';
-import { introductionQuestion } from './introductionQuestion';
+import { 
+  introductionQuestion,
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
+  culturalElementsQuestion,
+  culturalDetailsQuestion
+} from './introductionQuestion';
 
 export const businessQuestionnaire: QuestionItem[] = [
   introductionQuestion,
@@ -19,12 +27,22 @@ export const businessQuestionnaire: QuestionItem[] = [
   { 
     question: "Purpose of the speech?", 
     type: "radio", 
-    options: ["Product Launch", "Team Meeting", "Corporate Training", "Sales Pitch", "Company Announcement"] 
+    options: ["Product Launch", "Team Meeting", "Corporate Training", "Sales Pitch", "Company Announcement", "Industry Conference"] 
   },
   { 
     question: "Audience type and size?", 
     type: "text", 
     placeholder: "E.g., 50 clients, Executive team of 8" 
+  },
+  { 
+    question: "What is the current market or industry context?", 
+    type: "textarea", 
+    placeholder: "Describe relevant market trends or challenges..." 
+  },
+  { 
+    question: "Who are the key competitors to reference?", 
+    type: "textarea", 
+    placeholder: "List relevant competitors if applicable..." 
   },
   { 
     question: "Desired speech length?", 
@@ -36,6 +54,10 @@ export const businessQuestionnaire: QuestionItem[] = [
     type: "radio", 
     options: ["Motivational", "Informative", "Persuasive", "Professional", "Conversational"] 
   },
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
   { 
     question: "Key message or objective?", 
     type: "textarea", 
@@ -51,6 +73,13 @@ export const businessQuestionnaire: QuestionItem[] = [
     type: "textarea", 
     placeholder: "Share relevant examples..." 
   },
+  { 
+    question: "What challenges or objections should be addressed?", 
+    type: "textarea", 
+    placeholder: "List potential concerns from the audience..." 
+  },
+  culturalElementsQuestion,
+  culturalDetailsQuestion,
   { 
     question: "Is there a call to action?", 
     type: "textarea", 

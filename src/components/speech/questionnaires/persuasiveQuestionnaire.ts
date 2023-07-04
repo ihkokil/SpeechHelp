@@ -1,6 +1,14 @@
 
 import { QuestionItem } from './types';
-import { introductionQuestion } from './introductionQuestion';
+import { 
+  introductionQuestion,
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
+  culturalElementsQuestion,
+  culturalDetailsQuestion
+} from './introductionQuestion';
 
 export const persuasiveQuestionnaire: QuestionItem[] = [
   introductionQuestion,
@@ -22,9 +30,24 @@ export const persuasiveQuestionnaire: QuestionItem[] = [
     placeholder: "What are you advocating for or against?" 
   },
   { 
+    question: "Why are you passionate about this issue?", 
+    type: "textarea", 
+    placeholder: "Share your personal connection or motivation..." 
+  },
+  { 
+    question: "What is at stake if no action is taken?", 
+    type: "textarea", 
+    placeholder: "Describe potential consequences or missed opportunities..." 
+  },
+  { 
     question: "Audience type and size?", 
     type: "text", 
     placeholder: "E.g., City Council, Voter Group of 200" 
+  },
+  { 
+    question: "What does the audience currently believe about this topic?", 
+    type: "textarea", 
+    placeholder: "Describe existing opinions or misconceptions..." 
   },
   { 
     question: "Desired length of the speech?", 
@@ -36,6 +59,10 @@ export const persuasiveQuestionnaire: QuestionItem[] = [
     type: "radio", 
     options: ["Convincing", "Passionate", "Logical", "Urgent", "Balanced"] 
   },
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
   { 
     question: "Main argument or point of view?", 
     type: "textarea", 
@@ -47,9 +74,21 @@ export const persuasiveQuestionnaire: QuestionItem[] = [
     placeholder: "Any facts or research to include?" 
   },
   { 
+    question: "What are the benefits of your proposal?", 
+    type: "textarea", 
+    placeholder: "List the advantages or positive outcomes..." 
+  },
+  culturalElementsQuestion,
+  culturalDetailsQuestion,
+  { 
     question: "Any counterarguments to address?", 
     type: "textarea", 
     placeholder: "What opposing views will you respond to?" 
+  },
+  { 
+    question: "How will you address skepticism?", 
+    type: "textarea", 
+    placeholder: "Strategies for convincing doubtful audience members..." 
   },
   { 
     question: "Is there a call to action?", 

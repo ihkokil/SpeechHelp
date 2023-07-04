@@ -1,6 +1,14 @@
 
 // Export all questionnaires
-import { introductionQuestion } from './introductionQuestion';
+import { 
+  introductionQuestion,
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
+  culturalElementsQuestion,
+  culturalDetailsQuestion
+} from './introductionQuestion';
 import { weddingQuestionnaire } from './weddingQuestionnaire';
 import { graduationQuestionnaire } from './graduationQuestionnaire';
 import { birthdayQuestionnaire } from './birthdayQuestionnaire';
@@ -38,8 +46,16 @@ export const questionnaires = {
   other: otherQuestionnaire
 };
 
-// Re-export the introduction question
-export { introductionQuestion };
+// Re-export all common questions
+export { 
+  introductionQuestion,
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
+  culturalElementsQuestion,
+  culturalDetailsQuestion
+};
 
 // Re-export types with correct syntax for isolated modules
 export type { QuestionItem, QuestionType, SpeechTypeQuestionnaires } from './types';

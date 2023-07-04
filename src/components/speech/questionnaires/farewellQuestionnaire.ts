@@ -1,6 +1,14 @@
 
 import { QuestionItem } from './types';
-import { introductionQuestion } from './introductionQuestion';
+import { 
+  introductionQuestion,
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
+  culturalElementsQuestion,
+  culturalDetailsQuestion
+} from './introductionQuestion';
 
 export const farewellQuestionnaire: QuestionItem[] = [
   introductionQuestion,
@@ -22,6 +30,16 @@ export const farewellQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., Colleagues, Classmates, Friends" 
   },
   { 
+    question: "How long were you with this group or organization?", 
+    type: "text", 
+    placeholder: "E.g., 5 years, 3 semesters" 
+  },
+  { 
+    question: "What are your future plans?", 
+    type: "textarea", 
+    placeholder: "Share what's next in your journey..." 
+  },
+  { 
     question: "Desired length of the speech?", 
     type: "text", 
     placeholder: "E.g., 5 minutes" 
@@ -31,20 +49,36 @@ export const farewellQuestionnaire: QuestionItem[] = [
     type: "radio", 
     options: ["Nostalgic", "Grateful", "Hopeful", "Reflective", "Upbeat"] 
   },
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
   { 
     question: "Share a meaningful experience or memory.", 
     type: "textarea", 
     placeholder: "Describe a significant moment..." 
   },
   { 
+    question: "What growth or change occurred during your time here?", 
+    type: "textarea", 
+    placeholder: "Describe how you or the organization evolved..." 
+  },
+  { 
     question: "Qualities or achievements to highlight?", 
     type: "textarea", 
     placeholder: "What would you like to recognize?" 
   },
+  culturalElementsQuestion,
+  culturalDetailsQuestion,
   { 
     question: "Any specific thank yous or acknowledgments?", 
     type: "textarea", 
     placeholder: "Who would you like to mention?" 
+  },
+  { 
+    question: "What lessons or values will you take with you?", 
+    type: "textarea", 
+    placeholder: "Share what you've learned or valued most..." 
   },
   { 
     question: "Is there a message or theme?", 
