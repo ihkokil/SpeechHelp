@@ -1,4 +1,3 @@
-
 import { QuestionItem } from './types';
 import { 
   introductionQuestion,
@@ -42,13 +41,13 @@ export const awardQuestionnaire: QuestionItem[] = [
   { 
     question: "If presenting, who is the recipient?", 
     type: "text", 
-    placeholder: "Name and position of the recipient",
+    placeholder: "Full name and position of the recipient",
     condition: { question: "Are you presenting or accepting the award?", value: "Presenting the award" }
   },
   { 
     question: "If accepting, who is presenting the award?", 
     type: "text", 
-    placeholder: "Name and role of the presenter",
+    placeholder: "Full name and role of the presenter",
     condition: { question: "Are you presenting or accepting the award?", value: "Accepting the award" }
   },
   { 

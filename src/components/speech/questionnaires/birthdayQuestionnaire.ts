@@ -25,9 +25,9 @@ export const birthdayQuestionnaire: QuestionItem[] = [
     condition: { question: "Will you be introduced before you speak?", value: "No" }
   },
   { 
-    question: "Who is the celebration for?", 
+    question: "What is the full name of the person celebrating?", 
     type: "text", 
-    placeholder: "E.g., Friend, Parent, Child" 
+    placeholder: "E.g., David Johnson" 
   },
   { 
     question: "Which birthday or anniversary is being celebrated?", 

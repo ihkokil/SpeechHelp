@@ -24,9 +24,9 @@ export const funeralQuestionnaire: QuestionItem[] = [
     condition: { question: "Will you be introduced before you speak?", value: "No" }
   },
   { 
-    question: "Who is the speech for?", 
+    question: "What is the full name of the deceased?", 
     type: "text", 
-    placeholder: "Name and relation of the deceased" 
+    placeholder: "E.g., Robert James Smith" 
   },
   { 
     question: "How long did you know the deceased?", 

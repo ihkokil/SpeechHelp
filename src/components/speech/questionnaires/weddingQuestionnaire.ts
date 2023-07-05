@@ -31,6 +31,11 @@ export const weddingQuestionnaire: QuestionItem[] = [
     condition: { question: "Will you be introduced before you speak?", value: "Yes" }
   },
   { 
+    question: "What are the names of the couple getting married?", 
+    type: "text", 
+    placeholder: "E.g., Sarah and Michael" 
+  },
+  { 
     question: "How long have you known the couple?", 
     type: "text", 
     placeholder: "E.g., 15 years, Since childhood" 
