@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -123,7 +124,7 @@ const Hero = () => {
         </div>
       </section>
       
-      {/* New Welcome Section */}
+      {/* Welcome Section */}
       <section className="bg-gradient-to-r from-purple-50 to-pink-50 py-16">
         <div className="container mx-auto px-6 md:px-12">
           <div className="max-w-4xl mx-auto text-center">
