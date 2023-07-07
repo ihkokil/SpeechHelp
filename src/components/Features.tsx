@@ -12,8 +12,11 @@ const Features = () => {
       <div className="container mx-auto px-6 md:px-12">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">{t('features.title', currentLanguage.code)}</h2>
+          <p className="text-lg text-gray-700 leading-relaxed mb-4">
+            Ever stared at a blank page and felt it judging you? Whether you're giving a wedding toast, rallying a team, or delivering a conference keynote, Speech Help is here to rescue you from idea paralysis and blank-page syndrome.
+          </p>
           <p className="text-lg text-gray-700 leading-relaxed">
-            Ever stared at a blank page and felt it judging you? Whether you're giving a wedding toast, rallying a team, or delivering a conference keynote, Speech Help is here to rescue you from idea paralysis and blank-page syndrome. Our step-by-step conversational style wizard will effortlessly guide you through a series of simple, thoughtful questions that unlock your unique perspective and voice. No writing expertise needed - just answer naturally as if chatting with a friend, and we'll help shape those responses into a polished speech that sounds exactly like you, only better.
+            Our step-by-step conversational style wizard will effortlessly guide you through a series of simple, thoughtful questions that unlock your unique perspective and voice. No writing expertise needed - just answer naturally as if chatting with a friend, and we'll help shape those responses into a polished speech that sounds exactly like you, only better.
           </p>
         </div>
 
