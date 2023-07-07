@@ -16,7 +16,7 @@ const Features = () => {
             Ever stared at a blank page and felt it judging you? Whether you're giving a wedding toast, rallying a team, or delivering a conference keynote, Speech Help is here to rescue you from idea paralysis and blank-page syndrome.
           </p>
           <p className="text-lg text-gray-700 leading-relaxed">
-            Our step-by-step conversational style wizard will effortlessly guide you through a series of simple, thoughtful questions that unlock your unique perspective and voice. No writing expertise needed - just answer naturally as if chatting with a friend, and we'll help shape those responses into a polished speech that sounds exactly like you, only better.
+            Our step-by-step conversational style wizard will effortlessly guide you through a series of simple and thoughtful questions that unlock your unique perspective and voice. No writing expertise needed - just answer naturally as if chatting with a friend, and we'll help shape those responses into a polished speech that sounds exactly like you, only better.
           </p>
         </div>
 
