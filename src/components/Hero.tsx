@@ -123,18 +123,6 @@ const Hero = () => {
           </div>
         </div>
       </section>
-      
-      {/* Welcome Section */}
-      <section className="bg-gradient-to-r from-purple-50 to-pink-50 py-16">
-        <div className="container mx-auto px-6 md:px-12">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Welcome to Speech Help!</h2>
-            <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-              Ever stared at a blank page and felt stuck? Speech Help guides you through simple, thoughtful questions that unlock your unique voice. No writing expertise needed—just answer naturally as if chatting with a friend, and we'll shape those responses into a polished speech that sounds exactly like you, only better.
-            </p>
-          </div>
-        </div>
-      </section>
     </>
   );
 };
