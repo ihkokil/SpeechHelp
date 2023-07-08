@@ -141,7 +141,7 @@ const SpeechGallery = () => {
       <div className="container mx-auto px-6 md:px-12" ref={galleryRef}>
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h2 className={`text-3xl md:text-4xl font-bold mb-6 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
-            Speech for <span className="text-pink-600">Every Occasion</span>
+            Speech for <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Every Occasion</span>
           </h2>
           <p className={`text-lg text-gray-600 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>We offer speech templates and easy-to-use "prompt wizard" questionnaires for all types of events and occasions
         </p>
