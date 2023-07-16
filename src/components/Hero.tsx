@@ -51,7 +51,7 @@ const Hero = () => {
 
   // Split the headline to apply different styling
   const headline = t('hero.headline', currentLanguage.code);
-  const needA = "need a ";
+  const needA = "Need a ";
   const creativeSpeech = "creative speech?";
   
   return (
