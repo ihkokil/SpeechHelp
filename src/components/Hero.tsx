@@ -107,10 +107,17 @@ const Hero = () => {
               </span>
             </h1>
             
-            {/* Subheadline - updated to match main heading font size */}
-            <p className={`text-4xl md:text-5xl lg:text-6xl text-white/80 max-w-3xl mx-auto mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
-              {t('hero.subheadline', currentLanguage.code)}
-            </p>
+            {/* Subheadline - updated to match main heading font weight and style */}
+            <h2 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
+              <span 
+                className="text-white" 
+                style={{ 
+                  filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))'
+                }}
+              >
+                {t('hero.subheadline', currentLanguage.code)}
+              </span>
+            </h2>
             
             {/* CTA Button - Updated to link to pricing page */}
             <div className={`flex justify-center mb-12 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
