@@ -49,11 +49,6 @@ const Hero = () => {
   // Get the navbar height for positioning
   const navbarHeight = 76; // Height of the navbar in pixels
 
-  // Split the headline to apply different styling
-  const headline = t('hero.headline', currentLanguage.code);
-  const needA = "Need a ";
-  const creativeSpeech = "creative speech?";
-  
   return (
     <>
       <section 
@@ -87,7 +82,7 @@ const Hero = () => {
           <div className="max-w-5xl mx-auto text-center">
             {/* Main Headline */}
             <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
-              {headline}
+              Need a <span className="text-pink-500">creative speech?</span>
             </h1>
             
             {/* Subheadline - Increased size */}
