@@ -85,8 +85,8 @@ const Hero = () => {
               Need a <span className="text-pink-500">creative speech?</span>
             </h1>
             
-            {/* Subheadline - Increased size */}
-            <h2 className={`text-2xl md:text-3xl lg:text-4xl font-medium leading-tight md:leading-tight lg:leading-tight mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
+            {/* Subheadline - Making it approximately 60% larger */}
+            <h2 className={`text-3xl md:text-4xl lg:text-5xl font-medium leading-tight md:leading-tight lg:leading-tight mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
               {t('hero.subheadline', currentLanguage.code)}
             </h2>
             
