@@ -90,8 +90,8 @@ const Hero = () => {
               {t('hero.subheadline', currentLanguage.code)}
             </h2>
             
-            {/* CTA Button - Updated to link to pricing page */}
-            <div className={`flex justify-center mb-12 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
+            {/* Added more spacing before the CTA button */}
+            <div className={`flex justify-center mb-16 mt-14 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
               <Link to="/pricing">
                 <ButtonCustom variant="magenta" size="lg" className="group">
                   <span>{t('hero.cta', currentLanguage.code)}</span>
@@ -99,8 +99,8 @@ const Hero = () => {
               </Link>
             </div>
             
-            {/* Features/Benefits Icons */}
-            <div className={`grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto mt-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
+            {/* Features/Benefits Icons - Moved lower with increased top margin */}
+            <div className={`grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto mt-16 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
               <div className="text-center">
                 <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
                   <span className="text-base font-bold">AI</span>
