@@ -19,7 +19,15 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
     if (location.pathname === '/') {
       const element = document.getElementById(sectionId);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        // Adding offset to account for the navbar height plus extra padding
+        const navbarHeight = 76; // Height of the navbar in pixels
+        const extraPadding = 40; // Extra padding for better visual spacing
+        const offsetPosition = element.getBoundingClientRect().top + window.scrollY - navbarHeight - extraPadding;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
       }
     }
     if (onItemClick) onItemClick();
