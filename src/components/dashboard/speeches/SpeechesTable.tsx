@@ -43,7 +43,10 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
           <TableRow key={speech.id}>
             <TableCell className="font-medium">{speech.title}</TableCell>
             <TableCell className="text-center">
-              <Badge className={`${getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center`}>
+              <Badge 
+                className={`${getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center w-24 h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
+                title={getSpeechTypeLabel(speech.speech_type)}
+              >
                 {getSpeechTypeLabel(speech.speech_type)}
               </Badge>
             </TableCell>
