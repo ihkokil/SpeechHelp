@@ -1,25 +1,24 @@
-
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 
 export const getSpeechTypeLabel = (type: string) => {
   const typeMap: Record<string, string> = {
-    'wedding': 'Wedding Speech',
-    'graduation': 'Graduation Speech',
-    'birthday': 'Birthday Speech',
-    'business': 'Business Speech',
+    'wedding': 'Wedding',
+    'graduation': 'Graduation',
+    'birthday': 'Birthday',
+    'business': 'Business',
     'tedtalk': 'TED Talk',
-    'motivational': 'Motivational Speech',
-    'funeral': 'Funeral Speech',
+    'motivational': 'Motivational',
+    'funeral': 'Funeral',
     'keynote': 'Keynote Address',
-    'social': 'Social Speech',
-    'farewell': 'Farewell Speech',
-    'informative': 'Informative Speech',
-    'persuasive': 'Persuasive Speech',
-    'entertaining': 'Entertaining Speech',
-    'retirement': 'Retirement Speech',
-    'award': 'Award Ceremony Speech',
-    'other': 'Other Speech'
+    'social': 'Social',
+    'farewell': 'Farewell',
+    'informative': 'Informative',
+    'persuasive': 'Persuasive',
+    'entertaining': 'Entertaining',
+    'retirement': 'Retirement',
+    'award': 'Award Ceremony',
+    'other': 'Other'
   };
   
   return typeMap[type] || type;
@@ -48,7 +47,6 @@ export const getTypeColor = (type: string) => {
   return colorMap[type] || 'bg-gray-100 text-gray-800';
 };
 
-// Helper hook to get translated speech type
 export const useTranslatedSpeechType = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
@@ -57,7 +55,6 @@ export const useTranslatedSpeechType = () => {
     const key = `speechTypes.${type}`;
     const translated = t(key, currentLanguage.code);
     
-    // If translation doesn't exist, fall back to the original function
     if (translated === key) {
       return getSpeechTypeLabel(type);
     }
