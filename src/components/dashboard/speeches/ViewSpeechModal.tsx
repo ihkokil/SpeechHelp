@@ -1,4 +1,3 @@
-
 import { 
   Dialog, 
   DialogContent, 
@@ -10,7 +9,7 @@ import {
 import { Speech } from '@/types/auth';
 import { Badge } from '@/components/ui/badge';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { getSpeechTypeLabel, getTypeColor } from './speech-utils';
 import { useTranslation } from '@/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -30,7 +29,8 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
   const { t } = useTranslation();
 
   const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'MMM d, yyyy h:mm a');
+    const date = parseISO(dateString);
+    return format(date, 'MMM d, yyyy h:mm a');
   };
 
   if (!speech) return null;
