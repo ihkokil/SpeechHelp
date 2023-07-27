@@ -2,6 +2,7 @@
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 import * as React from "react"
+import { type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 import { sheetVariants } from "./sheet-variants"
 
@@ -30,7 +31,7 @@ SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
 
 interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
-  React.VariantProps<typeof sheetVariants> { }
+  VariantProps<typeof sheetVariants> {}
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
