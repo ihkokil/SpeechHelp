@@ -17,6 +17,7 @@ import HelpSupport from "./pages/HelpSupport";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Navbar from "./components/Navbar";
+import { SidebarProvider } from "./components/ui/sidebar";
 
 const queryClient = new QueryClient();
 
@@ -36,10 +37,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 // Layout component for pages that need navbar
 const NavbarLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <>
-      <Navbar />
-      {children}
-    </>
+    <SidebarProvider defaultOpen={false}>
+      <div className="min-h-screen w-full">
+        <Navbar />
+        {children}
+      </div>
+    </SidebarProvider>
   );
 };
 
