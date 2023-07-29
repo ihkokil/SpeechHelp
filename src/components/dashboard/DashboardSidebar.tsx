@@ -12,7 +12,6 @@ import {
   LogOutIcon 
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Sidebar,
   SidebarContent,
@@ -34,7 +33,6 @@ type NavItem = {
 const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
-  const isMobile = useIsMobile();
   
   // Using Supabase hosted SVG file or local SVG backup
   const logoPath = "/Speech Help - Logo.svg";
