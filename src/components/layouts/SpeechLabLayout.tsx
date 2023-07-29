@@ -18,7 +18,7 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
         <DashboardSidebar />
         
         {/* Main Content */}
-        <div className="flex-1 bg-gray-50 overflow-auto">
+        <div className="flex-1 bg-gray-50 overflow-auto w-full">
           {isMobile && (
             <div className="p-4">
               <SidebarTrigger />

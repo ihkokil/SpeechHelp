@@ -35,7 +35,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   // For mobile view, display speeches as cards
   if (isMobile) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 w-full">
         {speeches.map((speech) => (
           <div 
             key={speech.id} 
@@ -87,7 +87,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
 
   // Desktop view with table
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto w-full">
       <Table>
         <TableHeader>
           <TableRow>
