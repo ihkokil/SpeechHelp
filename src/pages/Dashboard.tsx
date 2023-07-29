@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -9,7 +10,7 @@ import RecentActivities from '@/components/dashboard/RecentActivities';
 import PerformanceMetrics from '@/components/dashboard/PerformanceMetrics';
 import LanguageSelector from '@/components/common/LanguageSelector';
 import PreviousSpeeches from '@/components/dashboard/PreviousSpeeches';
-import { CalendarIcon, FileTextIcon, Menu, ShieldIcon, TrendingUpIcon } from 'lucide-react';
+import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -105,10 +106,10 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen flex flex-col md:flex-row">
+      <div className="min-h-screen flex flex-col md:flex-row w-full">
         <DashboardSidebar />
         
-        <div className="flex-1 bg-gray-50 overflow-auto">
+        <main className="flex-1 bg-gray-50 overflow-auto w-full">
           <header className="flex justify-between items-center p-4 md:p-6 sticky top-0 bg-gray-50 z-10">
             <div className="flex items-center gap-2">
               {isMobile && <SidebarTrigger />}
@@ -120,7 +121,7 @@ const Dashboard = () => {
             <LanguageSelector />
           </header>
 
-          <main className="px-4 md:px-6 pb-12">
+          <div className="px-4 md:px-6 pb-12">
             <WelcomeCard 
               userName={userName} 
               firstName={firstName} 
@@ -170,8 +171,8 @@ const Dashboard = () => {
                 <RecentActivities />
               </div>
             </div>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
     </SidebarProvider>
   );
