@@ -100,7 +100,7 @@ const DashboardSidebar = () => {
   const fullName = firstName && lastName ? `${firstName} ${lastName}` : displayName;
 
   return (
-    <Sidebar className="border-r border-gray-200 bg-white h-screen">
+    <Sidebar className="border-r border-gray-200 bg-white">
       {/* Logo - Updated to match homepage logo with link to home */}
       <SidebarHeader className="p-4 border-b border-gray-100">
         <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>

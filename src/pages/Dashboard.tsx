@@ -106,10 +106,10 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen flex flex-col md:flex-row w-full">
+      <div className="flex min-h-screen w-full">
         <DashboardSidebar />
         
-        <main className="flex-1 bg-gray-50 overflow-auto w-full">
+        <main className="flex-1 bg-gray-50 overflow-auto">
           <header className="flex justify-between items-center p-4 md:p-6 sticky top-0 bg-gray-50 z-10">
             <div className="flex items-center gap-2">
               {isMobile && <SidebarTrigger />}
