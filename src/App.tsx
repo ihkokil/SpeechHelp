@@ -44,6 +44,17 @@ const NavbarLayout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// Dashboard layout with SidebarProvider
+const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+  const isMobile = window.innerWidth < 768;
+  
+  return (
+    <SidebarProvider defaultOpen={!isMobile}>
+      {children}
+    </SidebarProvider>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -60,7 +71,9 @@ const App = () => (
                 path="/dashboard" 
                 element={
                   <ProtectedRoute>
-                    <Dashboard />
+                    <DashboardLayout>
+                      <Dashboard />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -68,7 +81,9 @@ const App = () => (
                 path="/speech-lab" 
                 element={
                   <ProtectedRoute>
-                    <SpeechLab />
+                    <DashboardLayout>
+                      <SpeechLab />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -76,7 +91,9 @@ const App = () => (
                 path="/writing-tips" 
                 element={
                   <ProtectedRoute>
-                    <WritingTips />
+                    <DashboardLayout>
+                      <WritingTips />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -84,7 +101,9 @@ const App = () => (
                 path="/my-speeches" 
                 element={
                   <ProtectedRoute>
-                    <MySpeeches />
+                    <DashboardLayout>
+                      <MySpeeches />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -92,7 +111,9 @@ const App = () => (
                 path="/settings" 
                 element={
                   <ProtectedRoute>
-                    <Settings />
+                    <DashboardLayout>
+                      <Settings />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -100,7 +121,9 @@ const App = () => (
                 path="/help" 
                 element={
                   <ProtectedRoute>
-                    <HelpSupport />
+                    <DashboardLayout>
+                      <HelpSupport />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
