@@ -106,7 +106,7 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen">
         <DashboardSidebar />
         
         <main className="flex-1 bg-gray-50 overflow-auto">
