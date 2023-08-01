@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import WelcomeCard from '@/components/dashboard/WelcomeCard';
 import SpeechSummaryCard from '@/components/dashboard/SpeechSummaryCard';
 import UpcomingSpeeches from '@/components/dashboard/UpcomingSpeeches';
@@ -13,9 +14,6 @@ import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-r
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 
 const Dashboard = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -25,7 +23,6 @@ const Dashboard = () => {
   const [lastName, setLastName] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  const isMobile = useIsMobile();
   
   useEffect(() => {
     if (user) {
@@ -61,9 +58,12 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  // Calculate relevant metrics from speeches
   const dashboardMetrics = useMemo(() => {
+    // Total number of speeches
     const totalSpeeches = speeches.length;
     
+    // Current month speeches (in progress)
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
@@ -74,6 +74,7 @@ const Dashboard = () => {
              speechDate.getFullYear() === currentYear;
     });
     
+    // Speeches in last 30 days (to measure improvement)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
@@ -101,70 +102,73 @@ const Dashboard = () => {
   }
 
   return (
-    <SpeechLabLayout>
-      <header className="flex justify-between items-center p-4 md:p-6 sticky top-0 bg-gray-50 z-10">
-        <div className="flex items-center gap-2">
-          {isMobile && <SidebarTrigger />}
-          <div className="bg-purple-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md flex items-center text-sm md:text-base">
-            <CalendarIcon className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
-            <span>{format(new Date(), 'MMM dd, yyyy')}</span>
+    <div className="min-h-screen flex">
+      <DashboardSidebar />
+      
+      <div className="flex-1 bg-gray-50 overflow-auto">
+        <header className="flex justify-between items-center p-6 sticky top-0 bg-gray-50 z-10">
+          <div className="flex items-center">
+            <div className="bg-purple-600 text-white px-4 py-2 rounded-md flex items-center">
+              <CalendarIcon className="mr-2 h-5 w-5" />
+              <span>{format(new Date(), 'MMM dd, yyyy')}</span>
+            </div>
           </div>
-        </div>
-        <LanguageSelector />
-      </header>
+          <LanguageSelector />
+        </header>
 
-      <div className="px-4 md:px-6 pb-12">
-        <WelcomeCard 
-          userName={userName} 
-          firstName={firstName} 
-          lastName={lastName}
-        />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-4 md:mt-8">
-          <div className="lg:col-span-2 space-y-4 md:space-y-6">
-            <div>
-              <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4">{t('dashboard.summary', currentLanguage.code)}</h2>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-                <SpeechSummaryCard 
-                  icon={<FileTextIcon className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />}
-                  count={dashboardMetrics.totalSpeeches}
-                  label="dashboard.totalSpeeches"
-                  period="dashboard.allTime"
-                  bgColor="bg-gray-100"
-                />
+        <main className="px-6 pb-12">
+          <WelcomeCard 
+            userName={userName} 
+            firstName={firstName} 
+            lastName={lastName}
+          />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800 mb-4">{t('dashboard.summary', currentLanguage.code)}</h2>
                 
-                <SpeechSummaryCard 
-                  icon={<ShieldIcon className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />}
-                  count={dashboardMetrics.inProgressCount}
-                  label="dashboard.inProgress"
-                  period="dashboard.thisMonth"
-                  bgColor="bg-red-50"
-                />
-                
-                <SpeechSummaryCard 
-                  icon={<TrendingUpIcon className="h-5 w-5 md:h-6 md:w-6 text-gray-600" />}
-                  count={dashboardMetrics.recentImprovementCount}
-                  label="dashboard.improvement"
-                  period="dashboard.last30Days"
-                  bgColor="bg-green-50"
-                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <SpeechSummaryCard 
+                    icon={<FileTextIcon className="h-6 w-6 text-gray-600" />}
+                    count={dashboardMetrics.totalSpeeches}
+                    label="dashboard.totalSpeeches"
+                    period="dashboard.allTime"
+                    bgColor="bg-gray-100"
+                  />
+                  
+                  <SpeechSummaryCard 
+                    icon={<ShieldIcon className="h-6 w-6 text-gray-600" />}
+                    count={dashboardMetrics.inProgressCount}
+                    label="dashboard.inProgress"
+                    period="dashboard.thisMonth"
+                    bgColor="bg-red-50"
+                  />
+                  
+                  <SpeechSummaryCard 
+                    icon={<TrendingUpIcon className="h-6 w-6 text-gray-600" />}
+                    count={dashboardMetrics.recentImprovementCount}
+                    label="dashboard.improvement"
+                    period="dashboard.last30Days"
+                    bgColor="bg-green-50"
+                  />
+                </div>
               </div>
+              
+              <PreviousSpeeches />
+              
+              <PerformanceMetrics />
             </div>
             
-            <PreviousSpeeches />
-            
-            <PerformanceMetrics />
+            <div className="space-y-6">
+              <UpcomingSpeeches />
+              
+              <RecentActivities />
+            </div>
           </div>
-          
-          <div className="space-y-4 md:space-y-6">
-            <UpcomingSpeeches />
-            
-            <RecentActivities />
-          </div>
-        </div>
+        </main>
       </div>
-    </SpeechLabLayout>
+    </div>
   );
 };
 

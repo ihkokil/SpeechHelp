@@ -17,7 +17,6 @@ import HelpSupport from "./pages/HelpSupport";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Navbar from "./components/Navbar";
-import { SidebarProvider } from "./components/ui/sidebar";
 
 const queryClient = new QueryClient();
 
@@ -44,17 +43,6 @@ const NavbarLayout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Dashboard layout with SidebarProvider
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
-  const isMobile = window.innerWidth < 768;
-  
-  return (
-    <SidebarProvider defaultOpen={!isMobile}>
-      {children}
-    </SidebarProvider>
-  );
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -71,9 +59,7 @@ const App = () => (
                 path="/dashboard" 
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout>
-                      <Dashboard />
-                    </DashboardLayout>
+                    <Dashboard />
                   </ProtectedRoute>
                 } 
               />
@@ -81,9 +67,7 @@ const App = () => (
                 path="/speech-lab" 
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout>
-                      <SpeechLab />
-                    </DashboardLayout>
+                    <SpeechLab />
                   </ProtectedRoute>
                 } 
               />
@@ -91,9 +75,7 @@ const App = () => (
                 path="/writing-tips" 
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout>
-                      <WritingTips />
-                    </DashboardLayout>
+                    <WritingTips />
                   </ProtectedRoute>
                 } 
               />
@@ -101,9 +83,7 @@ const App = () => (
                 path="/my-speeches" 
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout>
-                      <MySpeeches />
-                    </DashboardLayout>
+                    <MySpeeches />
                   </ProtectedRoute>
                 } 
               />
@@ -111,9 +91,7 @@ const App = () => (
                 path="/settings" 
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout>
-                      <Settings />
-                    </DashboardLayout>
+                    <Settings />
                   </ProtectedRoute>
                 } 
               />
@@ -121,9 +99,7 @@ const App = () => (
                 path="/help" 
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout>
-                      <HelpSupport />
-                    </DashboardLayout>
+                    <HelpSupport />
                   </ProtectedRoute>
                 } 
               />
