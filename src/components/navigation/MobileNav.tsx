@@ -16,18 +16,19 @@ const MobileNav = () => {
   const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
 
   return (
-    <div className="md:hidden w-full">
-      <div className="flex items-center justify-between py-2 px-4 border-b border-gray-200">
+    <div className="w-full">
+      <div className="flex items-center justify-between py-2 px-4 border-b border-gray-200 bg-white">
         <Link to="/" className="flex-shrink-0">
-          <img src={logoPath} alt="Speech Help" className="h-10" />
+          <img src={logoPath} alt="Speech Help" className="h-8" />
         </Link>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
           <UserMenu />
           <LanguageSelector />
           <button
             onClick={toggleMenu}
-            className="text-gray-700 p-2 focus:outline-none"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            className="p-2 text-gray-700 focus:outline-none"
           >
             {isMenuOpen ? (
               <X className="h-6 w-6" />
@@ -40,7 +41,7 @@ const MobileNav = () => {
 
       {/* Mobile Navigation Menu */}
       {isMenuOpen && (
-        <div className="bg-white shadow-lg p-4">
+        <div className="absolute z-50 w-full bg-white shadow-lg p-4">
           <div className="flex flex-col space-y-4">
             <NavLinks isMobile onItemClick={closeMenu} />
           </div>

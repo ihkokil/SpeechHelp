@@ -5,10 +5,10 @@ import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileNav from '@/components/navigation/MobileNav';
+import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 
 const MySpeeches = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
-  const isMobile = useIsMobile();
   
   // Fetch speeches when component mounts
   useEffect(() => {
@@ -29,40 +29,18 @@ const MySpeeches = () => {
     );
   }
 
+  // Using SpeechLabLayout for consistent layout across pages
   return (
-    <div className="min-h-screen flex flex-col">
-      {isMobile ? (
-        <MobileNav />
-      ) : (
-        <div className="flex flex-1 min-h-0">
-          <DashboardSidebar />
-          
-          <div className="flex-1 bg-gray-50 overflow-auto">
-            <main className="p-6">
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">My Speeches</h1>
-                <p className="text-gray-600">Manage, edit and organize your speeches</p>
-              </div>
-              
-              <SpeechesManager speeches={speeches} />
-            </main>
-          </div>
+    <SpeechLabLayout>
+      <main className="p-4 md:p-6">
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Speeches</h1>
+          <p className="text-sm md:text-base text-gray-600">Manage, edit and organize your speeches</p>
         </div>
-      )}
-      
-      {isMobile && (
-        <div className="flex-1 bg-gray-50 overflow-auto">
-          <main className="p-4">
-            <div className="mb-4">
-              <h1 className="text-xl font-bold text-gray-900">My Speeches</h1>
-              <p className="text-sm text-gray-600">Manage, edit and organize your speeches</p>
-            </div>
-            
-            <SpeechesManager speeches={speeches} />
-          </main>
-        </div>
-      )}
-    </div>
+        
+        <SpeechesManager speeches={speeches} />
+      </main>
+    </SpeechLabLayout>
   );
 };
 

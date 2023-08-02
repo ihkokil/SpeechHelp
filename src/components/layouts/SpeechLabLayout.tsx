@@ -23,7 +23,9 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
         
         {/* Main Content */}
         <div className="flex-1 bg-gray-50 overflow-auto">
-          {children}
+          <div className="max-w-full">
+            {children}
+          </div>
         </div>
       </div>
     </div>
