@@ -1,44 +1,33 @@
 
 import * as React from "react"
 
-const MOBILE_BREAKPOINT = 768
+const MOBILE_BREAKPOINT = 768 // Matches with Tailwind's md breakpoint
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  const [isMobile, setIsMobile] = React.useState<boolean>(
+    typeof window !== 'undefined' ? window.innerWidth < MOBILE_BREAKPOINT : false
+  )
 
   React.useEffect(() => {
-    // Initial check
-    const checkMobile = () => {
+    // Handler to call on window resize
+    const handleResize = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
     
-    // Run the check right away
-    checkMobile()
+    // Initial check
+    handleResize()
     
-    // Set up the listener for window resize
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      checkMobile()
-    }
+    // Add event listener
+    window.addEventListener("resize", handleResize)
     
-    // Modern approach to event listener
-    if (mql.addEventListener) {
-      mql.addEventListener("change", onChange)
-    } else {
-      // Fallback for older browsers
-      window.addEventListener("resize", onChange)
-    }
-    
-    // Cleanup function
-    return () => {
-      if (mql.removeEventListener) {
-        mql.removeEventListener("change", onChange)
-      } else {
-        window.removeEventListener("resize", onChange)
-      }
-    }
+    // Clean up
+    return () => window.removeEventListener("resize", handleResize)
   }, [])
 
-  // Return false if undefined (server-side rendering fallback)
-  return isMobile ?? false
+  // For debugging
+  React.useEffect(() => {
+    console.log("Is mobile view:", isMobile)
+  }, [isMobile])
+
+  return isMobile
 }
