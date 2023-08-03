@@ -1,8 +1,8 @@
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
-import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 
 const MySpeeches = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -10,7 +10,6 @@ const MySpeeches = () => {
   // Fetch speeches when component mounts
   useEffect(() => {
     if (user) {
-      console.log("Fetching speeches for MySpeeches page");
       fetchSpeeches();
     }
   }, [user, fetchSpeeches]);
@@ -26,18 +25,23 @@ const MySpeeches = () => {
     );
   }
 
-  // Using SpeechLabLayout for consistent layout across pages
   return (
-    <SpeechLabLayout>
-      <main className="p-4 md:p-6">
-        <div className="mb-4 md:mb-6">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">My Speeches</h1>
-          <p className="text-sm md:text-base text-gray-600">Manage, edit and organize your speeches</p>
-        </div>
-        
-        <SpeechesManager speeches={speeches} />
-      </main>
-    </SpeechLabLayout>
+    <div className="min-h-screen flex">
+      {/* Sidebar */}
+      <DashboardSidebar />
+      
+      {/* Main Content */}
+      <div className="flex-1 bg-gray-50 overflow-auto">
+        <main className="p-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">My Speeches</h1>
+            <p className="text-gray-600">Manage, edit and organize your speeches</p>
+          </div>
+          
+          <SpeechesManager speeches={speeches} />
+        </main>
+      </div>
+    </div>
   );
 };
 
