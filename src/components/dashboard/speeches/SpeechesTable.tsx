@@ -15,6 +15,7 @@ import { format, parseISO } from 'date-fns';
 import { getSpeechTypeLabel, getTypeColor } from './speech-utils';
 import Translate from '@/components/Translate';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface SpeechesTableProps {
   speeches: Speech[];
@@ -24,7 +25,7 @@ interface SpeechesTableProps {
 }
 
 const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProps) => {
-  const isMobile = useIsMobile();
+  const { isMobile } = useIsMobile();
   
   const formatDate = (dateString: string) => {
     // Ensure we're parsing the ISO string correctly before formatting
@@ -33,8 +34,8 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   };
 
   return (
-    <div className="overflow-x-auto -mx-4 sm:mx-0">
-      <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+    <ScrollArea className="w-full">
+      <div className="w-full">
         <Table>
           <TableHeader>
             <TableRow>
@@ -53,7 +54,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge 
-                    className={`${getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center w-24 sm:w-32 h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
+                    className={`${getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
                     title={getSpeechTypeLabel(speech.speech_type)}
                   >
                     {getSpeechTypeLabel(speech.speech_type)}
@@ -94,7 +95,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
           </TableBody>
         </Table>
       </div>
-    </div>
+    </ScrollArea>
   );
 };
 

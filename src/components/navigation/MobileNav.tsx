@@ -13,7 +13,7 @@ const MobileNav = () => {
   const closeMenu = () => setIsMenuOpen(false);
 
   // Logo path
-  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
+  const logoPath = "/Speech Help - Logo.svg";
 
   return (
     <div className="w-full">

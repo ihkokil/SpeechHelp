@@ -1,10 +1,7 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
-import { useIsMobile } from '@/hooks/use-mobile';
-import MobileNav from '@/components/navigation/MobileNav';
 import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 
 const MySpeeches = () => {
