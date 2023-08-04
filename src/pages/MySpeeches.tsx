@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
 
 const MySpeeches = () => {
@@ -26,22 +26,16 @@ const MySpeeches = () => {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Sidebar */}
-      <DashboardSidebar />
-      
-      {/* Main Content */}
-      <div className="flex-1 bg-gray-50 overflow-auto">
-        <main className="p-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">My Speeches</h1>
-            <p className="text-gray-600">Manage, edit and organize your speeches</p>
-          </div>
-          
-          <SpeechesManager speeches={speeches} />
-        </main>
-      </div>
-    </div>
+    <SpeechLabLayout>
+      <main className="p-4 md:p-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">My Speeches</h1>
+          <p className="text-gray-600">Manage, edit and organize your speeches</p>
+        </div>
+        
+        <SpeechesManager speeches={speeches} />
+      </main>
+    </SpeechLabLayout>
   );
 };
 
