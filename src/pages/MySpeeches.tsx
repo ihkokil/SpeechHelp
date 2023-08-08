@@ -27,7 +27,7 @@ const MySpeeches = () => {
 
   return (
     <SpeechLabLayout>
-      <main className="p-4 md:p-6">
+      <main className="p-4 md:p-6 w-full max-w-full overflow-hidden">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">My Speeches</h1>
           <p className="text-gray-600">Manage, edit and organize your speeches</p>

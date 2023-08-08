@@ -87,12 +87,14 @@ const PreviousSpeeches = () => {
           </ButtonCustom>
         </div>
       ) : (
-        <SpeechesTable 
-          speeches={speeches}
-          onView={handleViewSpeech}
-          onEdit={handleEditSpeech}
-          onDelete={handleDeleteSpeech}
-        />
+        <div className="overflow-auto">
+          <SpeechesTable 
+            speeches={speeches}
+            onView={handleViewSpeech}
+            onEdit={handleEditSpeech}
+            onDelete={handleDeleteSpeech}
+          />
+        </div>
       )}
       
       {/* Modals */}
