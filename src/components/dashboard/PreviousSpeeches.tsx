@@ -64,7 +64,7 @@ const PreviousSpeeches = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border">
+    <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
       <div className="p-4 flex justify-between items-center border-b">
         <h2 className="text-lg font-semibold text-gray-800"><Translate text="dashboard.previousSpeeches" /></h2>
         <ButtonCustom 
@@ -87,7 +87,7 @@ const PreviousSpeeches = () => {
           </ButtonCustom>
         </div>
       ) : (
-        <div className="overflow-auto">
+        <div className="p-2">
           <SpeechesTable 
             speeches={speeches}
             onView={handleViewSpeech}

@@ -17,9 +17,11 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
         <DashboardSidebar />
       </div>
       
-      {/* Main Content - full width on mobile */}
-      <div className="flex-1 bg-gray-50 overflow-x-hidden">
-        {children}
+      {/* Main Content */}
+      <div className="flex-1 bg-gray-50">
+        <div className="max-w-full overflow-x-hidden">
+          {children}
+        </div>
       </div>
     </div>
   );

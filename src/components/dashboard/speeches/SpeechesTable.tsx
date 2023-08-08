@@ -34,68 +34,77 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   };
 
   return (
-    <div className="w-full overflow-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[25%] min-w-[120px]"><Translate text="common.title" /></TableHead>
-            <TableHead className="text-center w-[15%] min-w-[100px]"><Translate text="common.type" /></TableHead>
-            <TableHead className="w-[20%] min-w-[130px]"><Translate text="dashboard.created" /></TableHead>
-            <TableHead className="w-[20%] min-w-[130px]"><Translate text="dashboard.lastUpdated" /></TableHead>
-            <TableHead className="text-right w-[20%] min-w-[120px]"><Translate text="common.actions" /></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {speeches.map((speech) => (
-            <TableRow key={speech.id}>
-              <TableCell className="font-medium truncate max-w-[150px] md:max-w-none">
-                {speech.title}
-              </TableCell>
-              <TableCell className="text-center">
-                <Badge 
-                  className={`${getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center w-full max-w-[100px] h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
-                  title={getSpeechTypeLabel(speech.speech_type)}
-                >
-                  {getSpeechTypeLabel(speech.speech_type)}
-                </Badge>
-              </TableCell>
-              <TableCell className="whitespace-nowrap">{formatDate(speech.created_at)}</TableCell>
-              <TableCell className="whitespace-nowrap">{formatDate(speech.updated_at)}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-1 md:gap-2">
-                  <Button 
-                    variant="outline" 
-                    size={isMobile ? "icon" : "sm"}
-                    onClick={() => onView(speech)}
-                    title="View"
-                  >
-                    <EyeIcon className="h-4 w-4" />
-                    {!isMobile && <span className="sr-only md:not-sr-only md:ml-2">View</span>}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size={isMobile ? "icon" : "sm"}
-                    onClick={() => onEdit(speech)}
-                    title="Edit"
-                  >
-                    <EditIcon className="h-4 w-4" />
-                    {!isMobile && <span className="sr-only md:not-sr-only md:ml-2">Edit</span>}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size={isMobile ? "icon" : "sm"} 
-                    onClick={() => onDelete(speech)}
-                    title="Delete"
-                  >
-                    <Trash2Icon className="h-4 w-4" />
-                    {!isMobile && <span className="sr-only md:not-sr-only md:ml-2">Delete</span>}
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="w-full">
+      <ScrollArea className="w-full">
+        <div className="min-w-[800px]">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[25%]"><Translate text="common.title" /></TableHead>
+                <TableHead className="text-center w-[15%]"><Translate text="common.type" /></TableHead>
+                <TableHead className="w-[20%]"><Translate text="dashboard.created" /></TableHead>
+                <TableHead className="w-[20%]"><Translate text="dashboard.lastUpdated" /></TableHead>
+                <TableHead className="text-right w-[20%]"><Translate text="common.actions" /></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {speeches.map((speech) => (
+                <TableRow key={speech.id}>
+                  <TableCell className="font-medium">
+                    <div className="truncate max-w-[200px]" title={speech.title}>
+                      {speech.title}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge 
+                      className={`${getTypeColor(speech.speech_type)} whitespace-nowrap px-2 py-1`}
+                      title={getSpeechTypeLabel(speech.speech_type)}
+                    >
+                      {getSpeechTypeLabel(speech.speech_type)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">{formatDate(speech.created_at)}</TableCell>
+                  <TableCell className="whitespace-nowrap">{formatDate(speech.updated_at)}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => onView(speech)}
+                        title="View"
+                        className="whitespace-nowrap"
+                      >
+                        <EyeIcon className="h-4 w-4 mr-1" />
+                        <span>View</span>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => onEdit(speech)}
+                        title="Edit"
+                        className="whitespace-nowrap"
+                      >
+                        <EditIcon className="h-4 w-4 mr-1" />
+                        <span>Edit</span>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => onDelete(speech)}
+                        title="Delete"
+                        className="whitespace-nowrap"
+                      >
+                        <Trash2Icon className="h-4 w-4 mr-1" />
+                        <span>Delete</span>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </ScrollArea>
     </div>
   );
 };
