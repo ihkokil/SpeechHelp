@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
@@ -19,34 +20,43 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle navigation with hash - improved to work better with direct links
+  // Handle navigation with hash - improved to handle direct links better
   useEffect(() => {
-    // Check if there's a hash in the URL
-    if (window.location.hash) {
-      // Remove the # character
-      const id = window.location.hash.substring(1);
-      
-      // Find element and scroll to it with a delay to ensure page is loaded
-      const scrollTimer = setTimeout(() => {
-        const element = document.getElementById(id);
-        if (element) {
-          // Scroll to the element with an offset for the navbar
-          const navbarHeight = 80; // Approximate navbar height
-          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-          const offsetPosition = elementPosition - navbarHeight;
-          
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
-        }
-      }, 800); // Delay to ensure the page is fully rendered
-      
-      return () => clearTimeout(scrollTimer);
-    } else {
-      // If no hash, scroll to top
-      window.scrollTo(0, 0);
-    }
+    const handleHashNavigation = () => {
+      // Check if there's a hash in the URL
+      if (window.location.hash) {
+        // Remove the # character
+        const id = window.location.hash.substring(1);
+        
+        // Find element and scroll to it with a delay to ensure page is loaded
+        const scrollTimer = setTimeout(() => {
+          const element = document.getElementById(id);
+          if (element) {
+            // Scroll to the element with an offset for the navbar
+            const navbarHeight = 80; // Approximate navbar height
+            const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+            const offsetPosition = elementPosition - navbarHeight;
+            
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
+        }, 300); // A shorter delay should be sufficient
+        
+        return () => clearTimeout(scrollTimer);
+      }
+    };
+
+    // Initial check when component mounts
+    handleHashNavigation();
+
+    // Also listen for hashchange events (for when user clicks navigation within the same page)
+    window.addEventListener('hashchange', handleHashNavigation);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashNavigation);
+    };
   }, []);
 
   if (isLoading) {
