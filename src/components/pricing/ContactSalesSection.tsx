@@ -15,22 +15,6 @@ const ContactSalesSection: React.FC = () => {
         <Button 
           variant="outline" 
           className="border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white transition-colors"
-          onClick={() => {
-            // Force a slight delay to ensure navigation completes first
-            setTimeout(() => {
-              const contactSection = document.getElementById('contact');
-              if (contactSection) {
-                const navbarHeight = 80; // Approximate navbar height
-                const elementPosition = contactSection.getBoundingClientRect().top + window.scrollY;
-                const offsetPosition = elementPosition - navbarHeight;
-                
-                window.scrollTo({
-                  top: offsetPosition,
-                  behavior: 'smooth'
-                });
-              }
-            }, 100);
-          }}
         >
           Contact Sales
         </Button>
