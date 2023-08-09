@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
@@ -17,32 +16,36 @@ const Index = () => {
       setIsLoading(false);
     }, 500);
 
-    // Reset scroll position on page load - more aggressive approach
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-    }, 100);
-
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle direct navigation with hash - modified to prevent auto-scrolling issues
+  // Handle navigation with hash - improved to work better with direct links
   useEffect(() => {
-    // First ensure we're at the top
-    window.scrollTo(0, 0);
-    
     // Check if there's a hash in the URL
     if (window.location.hash) {
       // Remove the # character
       const id = window.location.hash.substring(1);
-      // Find element and scroll to it with a delay
+      
+      // Find element and scroll to it with a delay to ensure page is loaded
       const scrollTimer = setTimeout(() => {
         const element = document.getElementById(id);
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+          // Scroll to the element with an offset for the navbar
+          const navbarHeight = 80; // Approximate navbar height
+          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+          const offsetPosition = elementPosition - navbarHeight;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
         }
-      }, 1500); // Further increased delay to ensure page is fully loaded
+      }, 800); // Delay to ensure the page is fully rendered
       
       return () => clearTimeout(scrollTimer);
+    } else {
+      // If no hash, scroll to top
+      window.scrollTo(0, 0);
     }
   }, []);
 
