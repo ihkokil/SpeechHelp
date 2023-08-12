@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
@@ -59,29 +58,40 @@ const Index = () => {
     };
   }, []);
 
-  // Additional effect to handle navigations from other pages (like Pricing)
+  // Handle navigation from other pages using sessionStorage
   useEffect(() => {
-    // This will run on component mount and ensure hash navigation works when coming from other pages
-    if (window.location.hash) {
-      // Use a slightly longer timeout to ensure the page is fully rendered
-      const timer = setTimeout(() => {
-        const id = window.location.hash.substring(1);
-        const element = document.getElementById(id);
-        if (element) {
-          const navbarHeight = 80;
-          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-          const offsetPosition = elementPosition - navbarHeight;
-          
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
-        }
-      }, 800); // Longer delay for navigation from other pages
-      
-      return () => clearTimeout(timer);
+    const checkSessionStorageTarget = () => {
+      const scrollTarget = sessionStorage.getItem('scrollTarget');
+      if (scrollTarget) {
+        // Clear the target immediately to prevent repeated scrolling
+        sessionStorage.removeItem('scrollTarget');
+        
+        // Use a slightly longer timeout to ensure the page is fully rendered
+        const timer = setTimeout(() => {
+          const element = document.getElementById(scrollTarget);
+          if (element) {
+            const navbarHeight = 80;
+            const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+            const offsetPosition = elementPosition - navbarHeight;
+            
+            console.log(`Scrolling to ${scrollTarget} at position ${offsetPosition}`);
+            
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
+        }, 1000); // Longer delay for navigation from other pages
+        
+        return () => clearTimeout(timer);
+      }
+    };
+    
+    // Run this effect when component mounts and is no longer loading
+    if (!isLoading) {
+      checkSessionStorageTarget();
     }
-  }, []);
+  }, [isLoading]);
 
   if (isLoading) {
     return (
