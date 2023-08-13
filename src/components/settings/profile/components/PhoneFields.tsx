@@ -44,7 +44,6 @@ const PhoneFields = ({
                   <SelectTrigger 
                     className="w-full pl-10" 
                     data-focus-visible="true"
-                    tabIndex={0}
                   >
                     <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
                       <Phone className="h-4 w-4 text-gray-500" />
