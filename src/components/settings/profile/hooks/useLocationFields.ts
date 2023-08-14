@@ -12,6 +12,11 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
   const selectedCountry = watch('country');
   const selectedState = watch('state');
   
+  // Debugging state changes
+  useEffect(() => {
+    console.log('State changed in form:', selectedState);
+  }, [selectedState]);
+  
   // Update available states when country changes
   useEffect(() => {
     const countryEntry = getCountryByName(selectedCountry);
@@ -22,8 +27,9 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
       
       // Check if current state is valid for the selected country
       const currentState = getValues('state');
+      console.log('Current state value when country changes:', currentState);
+      
       if (currentState) {
-        console.log('Current state value:', currentState);
         const isValid = isStateValidForCountry(currentState, states);
         
         // Only clear state if it's invalid AND there are states available for this country
@@ -38,11 +44,6 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
       setAvailableStates([]);
     }
   }, [selectedCountry, setValue, getValues]);
-  
-  // Debug selected state changes
-  useEffect(() => {
-    console.log('Current state value in form:', selectedState);
-  }, [selectedState]);
   
   const handleCountryChange = (countryName: string) => {
     console.log('Setting country to:', countryName);
@@ -63,7 +64,7 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
       const states = getStatesForCountry(countryEntry.code);
       setAvailableStates(states);
       
-      // Only clear state if it's invalid AND there are states available
+      // Clear state only if it's invalid AND there are states available
       const currentState = getValues('state');
       if (currentState && !isStateValidForCountry(currentState, states) && states.length > 0) {
         console.log('Clearing invalid state after country change:', currentState);
