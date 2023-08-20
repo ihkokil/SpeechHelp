@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,8 @@ const BillingSettings = () => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
+  const [showUpdatePaymentDialog, setShowUpdatePaymentDialog] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
   const accountCreatedAt = user ? new Date(user.created_at || Date.now()) : new Date();
   
@@ -62,6 +65,17 @@ const BillingSettings = () => {
   ]);
 
   const form = useForm<z.infer<typeof paymentMethodSchema>>({
+    resolver: zodResolver(paymentMethodSchema),
+    defaultValues: {
+      cardNumber: '',
+      cardHolder: '',
+      expiryMonth: '',
+      expiryYear: '',
+      cvv: '',
+    },
+  });
+
+  const updateForm = useForm<z.infer<typeof paymentMethodSchema>>({
     resolver: zodResolver(paymentMethodSchema),
     defaultValues: {
       cardNumber: '',
@@ -151,6 +165,51 @@ const BillingSettings = () => {
       form.reset();
       setIsProcessing(false);
     }, 1500);
+  };
+
+  const handleUpdatePaymentMethod = (data: z.infer<typeof paymentMethodSchema>) => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      const last4 = data.cardNumber.slice(-4);
+      const updatedPaymentMethod = {
+        type: 'Credit Card',
+        last4,
+        expiryMonth: parseInt(data.expiryMonth),
+        expiryYear: parseInt(data.expiryYear),
+        brand: determineCardBrand(data.cardNumber),
+      };
+      
+      setPaymentMethods(prev => 
+        prev.map((method, idx) => 
+          idx === selectedPaymentMethod ? updatedPaymentMethod : method
+        )
+      );
+      
+      toast({
+        title: "Payment method updated",
+        description: `Your ${updatedPaymentMethod.brand} card ending in ${last4} has been updated.`,
+      });
+      
+      setShowUpdatePaymentDialog(false);
+      updateForm.reset();
+      setIsProcessing(false);
+    }, 1500);
+  };
+
+  const openUpdatePaymentDialog = (index: number) => {
+    setSelectedPaymentMethod(index);
+    const method = paymentMethods[index];
+    
+    // Prefill the form with placeholder data since we don't store full card numbers
+    updateForm.reset({
+      cardNumber: `•••• •••• •••• ${method.last4}`,
+      cardHolder: 'Current Cardholder',
+      expiryMonth: method.expiryMonth.toString(),
+      expiryYear: method.expiryYear.toString(),
+      cvv: '',
+    });
+    
+    setShowUpdatePaymentDialog(true);
   };
 
   const determineCardBrand = (cardNumber: string) => {
@@ -284,7 +343,13 @@ const BillingSettings = () => {
                   {index === 0 && (
                     <Badge className="bg-pink-100 text-pink-800 border-pink-200 mr-2">Default</Badge>
                   )}
-                  <Button variant="outline" size="sm">Update</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => openUpdatePaymentDialog(index)}
+                  >
+                    Update
+                  </Button>
                 </div>
               </div>
             ))}
@@ -421,6 +486,143 @@ const BillingSettings = () => {
                     </Button>
                     <Button type="submit" disabled={isProcessing}>
                       {isProcessing ? "Processing..." : "Add Payment Method"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+          
+          {/* Update Payment Method Dialog */}
+          <Dialog open={showUpdatePaymentDialog} onOpenChange={setShowUpdatePaymentDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Update Payment Method</DialogTitle>
+                <DialogDescription>
+                  Update your card details below.
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...updateForm}>
+                <form onSubmit={updateForm.handleSubmit(handleUpdatePaymentMethod)} className="space-y-6">
+                  <FormField
+                    control={updateForm.control}
+                    name="cardHolder"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cardholder Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={updateForm.control}
+                    name="cardNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Card Number</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="1234 5678 9012 3456" 
+                            value={field.value}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\s/g, '');
+                              if (/^[\d•]*$/.test(value) && value.length <= 16) {
+                                // Allow dots for masked values
+                                e.target.value = formatCardNumber(value);
+                                field.onChange(value);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    <FormField
+                      control={updateForm.control}
+                      name="expiryMonth"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Month</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="MM" 
+                              maxLength={2}
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^\d*$/.test(value) && parseInt(value || '0') <= 12) {
+                                  field.onChange(value);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={updateForm.control}
+                      name="expiryYear"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Year</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="YY" 
+                              maxLength={4}
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^\d*$/.test(value)) {
+                                  field.onChange(value);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={updateForm.control}
+                      name="cvv"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>CVV</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="123" 
+                              maxLength={4}
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^\d*$/.test(value)) {
+                                  field.onChange(value);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <DialogFooter className="pt-4">
+                    <Button type="button" variant="outline" onClick={() => setShowUpdatePaymentDialog(false)} disabled={isProcessing}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={isProcessing}>
+                      {isProcessing ? "Processing..." : "Update Payment Method"}
                     </Button>
                   </DialogFooter>
                 </form>
