@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { CreditCard, Calendar, AlertTriangle } from 'lucide-react';
+import { CreditCard, Calendar, AlertTriangle, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Dialog, 
@@ -17,6 +17,20 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { format, addMonths, addYears } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useForm } from 'react-hook-form';
+
+const paymentMethodSchema = z.object({
+  cardNumber: z.string().min(16, "Card number must be at least 16 digits").max(19, "Card number is too long"),
+  cardHolder: z.string().min(2, "Card holder name is required"),
+  expiryMonth: z.string().min(1, "Expiry month is required").max(2, "Invalid month"),
+  expiryYear: z.string().min(2, "Expiry year is required").max(4, "Invalid year"),
+  cvv: z.string().min(3, "CVV must be at least 3 digits").max(4, "CVV is too long"),
+});
 
 const BillingSettings = () => {
   const { toast } = useToast();
@@ -24,6 +38,7 @@ const BillingSettings = () => {
   const [autoRenew, setAutoRenew] = useState(true);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
 
   // Get account creation date from user metadata or use a default
   const accountCreatedAt = user ? new Date(user.created_at || Date.now()) : new Date();
@@ -43,6 +58,23 @@ const BillingSettings = () => {
       expiryYear: 2026,
       brand: 'Visa'
     }
+  });
+
+  // State for storing payment methods
+  const [paymentMethods, setPaymentMethods] = useState([
+    subscriptionData.paymentMethod
+  ]);
+
+  // Form for adding new payment method
+  const form = useForm<z.infer<typeof paymentMethodSchema>>({
+    resolver: zodResolver(paymentMethodSchema),
+    defaultValues: {
+      cardNumber: '',
+      cardHolder: '',
+      expiryMonth: '',
+      expiryYear: '',
+      cvv: '',
+    },
   });
 
   // Update end date when billing period changes
@@ -103,6 +135,49 @@ const BillingSettings = () => {
       billingPeriod: prev.billingPeriod === 'monthly' ? 'yearly' : 'monthly',
       price: prev.billingPeriod === 'monthly' ? '$299.99' : '$29.99',
     }));
+  };
+
+  const handleAddPaymentMethod = (data: z.infer<typeof paymentMethodSchema>) => {
+    setIsProcessing(true);
+    // In a real app, this would send payment details to your payment processor
+    setTimeout(() => {
+      // Process complete - add the new payment method
+      const last4 = data.cardNumber.slice(-4);
+      const newPaymentMethod = {
+        type: 'Credit Card',
+        last4,
+        expiryMonth: parseInt(data.expiryMonth),
+        expiryYear: parseInt(data.expiryYear),
+        brand: determineCardBrand(data.cardNumber),
+      };
+      
+      setPaymentMethods(prev => [...prev, newPaymentMethod]);
+      
+      toast({
+        title: "Payment method added",
+        description: `Your ${newPaymentMethod.brand} card ending in ${last4} has been added.`,
+      });
+      
+      setShowAddPaymentDialog(false);
+      form.reset();
+      setIsProcessing(false);
+    }, 1500);
+  };
+
+  // Helper function to determine card brand based on first digits
+  const determineCardBrand = (cardNumber: string) => {
+    // Very simplified version - in production use a more robust solution
+    const firstDigit = cardNumber.charAt(0);
+    if (firstDigit === '4') return 'Visa';
+    if (firstDigit === '5') return 'Mastercard';
+    if (firstDigit === '3') return 'Amex';
+    if (firstDigit === '6') return 'Discover';
+    return 'Card';
+  };
+
+  // Function to format card number with spaces for display
+  const formatCardNumber = (value: string) => {
+    return value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
   };
 
   return (
@@ -199,33 +274,176 @@ const BillingSettings = () => {
         <CardHeader>
           <CardTitle className="flex items-center">
             <CreditCard className="h-5 w-5 mr-2 text-pink-600" />
-            Payment Method
+            Payment Methods
           </CardTitle>
           <CardDescription>
             Manage your payment methods and billing information
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between p-4 border rounded-md">
-            <div className="flex items-center">
-              <div className="h-10 w-14 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md flex items-center justify-center text-white font-bold mr-3">
-                {subscriptionData.paymentMethod.brand === 'Visa' ? 'VISA' : subscriptionData.paymentMethod.brand}
+          <div className="space-y-4">
+            {paymentMethods.map((method, index) => (
+              <div key={index} className="flex items-center justify-between p-4 border rounded-md">
+                <div className="flex items-center">
+                  <div className="h-10 w-14 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md flex items-center justify-center text-white font-bold mr-3">
+                    {method.brand === 'Visa' ? 'VISA' : method.brand}
+                  </div>
+                  <div>
+                    <p className="font-medium">•••• •••• •••• {method.last4}</p>
+                    <p className="text-sm text-gray-500">
+                      Expires {method.expiryMonth}/{method.expiryYear}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  {index === 0 && (
+                    <Badge className="bg-pink-100 text-pink-800 border-pink-200 mr-2">Default</Badge>
+                  )}
+                  <Button variant="outline" size="sm">Update</Button>
+                </div>
               </div>
-              <div>
-                <p className="font-medium">•••• •••• •••• {subscriptionData.paymentMethod.last4}</p>
-                <p className="text-sm text-gray-500">
-                  Expires {subscriptionData.paymentMethod.expiryMonth}/{subscriptionData.paymentMethod.expiryYear}
-                </p>
-              </div>
-            </div>
-            <Button variant="outline" size="sm">Update</Button>
+            ))}
           </div>
         </CardContent>
         <CardFooter>
-          <Button variant="outline" className="w-full">
-            <CreditCard className="h-4 w-4 mr-2" />
-            Add Payment Method
-          </Button>
+          <Dialog open={showAddPaymentDialog} onOpenChange={setShowAddPaymentDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="w-full">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Add Payment Method
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add Payment Method</DialogTitle>
+                <DialogDescription>
+                  Enter your card details below to add a new payment method.
+                </DialogDescription>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleAddPaymentMethod)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="cardHolder"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cardholder Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="cardNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Card Number</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="1234 5678 9012 3456" 
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\s/g, '');
+                              if (/^\d*$/.test(value) && value.length <= 16) {
+                                e.target.value = formatCardNumber(value);
+                                field.onChange(value);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="flex space-x-4">
+                    <div className="flex space-x-2 flex-1">
+                      <FormField
+                        control={form.control}
+                        name="expiryMonth"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>Expiry Month</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="MM" 
+                                maxLength={2}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (/^\d*$/.test(value) && parseInt(value || '0') <= 12) {
+                                    field.onChange(value);
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="expiryYear"
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>Expiry Year</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="YY" 
+                                maxLength={4}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (/^\d*$/.test(value)) {
+                                    field.onChange(value);
+                                  }
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="cvv"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormLabel>CVV</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="123" 
+                              maxLength={4}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^\d*$/.test(value)) {
+                                  field.onChange(value);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <DialogFooter className="mt-6">
+                    <Button type="button" variant="outline" onClick={() => setShowAddPaymentDialog(false)} disabled={isProcessing}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={isProcessing}>
+                      {isProcessing ? "Processing..." : "Add Payment Method"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
         </CardFooter>
       </Card>
     </div>
