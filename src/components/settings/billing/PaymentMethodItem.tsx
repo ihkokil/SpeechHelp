@@ -21,7 +21,7 @@ const PaymentMethodItem = ({ method, onUpdateClick }: PaymentMethodItemProps) =>
     <div className="flex items-center justify-between p-4 border rounded-md">
       <div className="flex items-center">
         <div className="h-10 w-14 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md flex items-center justify-center text-white font-bold mr-3">
-          {method.brand === 'Visa' ? 'VISA' : method.brand}
+          {method.brand}
         </div>
         <div>
           <p className="font-medium">•••• •••• •••• {method.last4}</p>

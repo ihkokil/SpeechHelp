@@ -7,6 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { paymentMethodSchema, PaymentFormValues } from './AddPaymentDialog';
+import { useState, useEffect } from 'react';
 
 interface UpdatePaymentDialogProps {
   open: boolean;
@@ -27,6 +28,35 @@ const UpdatePaymentDialog = ({
     resolver: zodResolver(paymentMethodSchema),
     defaultValues,
   });
+
+  const [cardNumber, setCardNumber] = useState(defaultValues.cardNumber || '');
+
+  useEffect(() => {
+    if (open) {
+      form.reset(defaultValues);
+      setCardNumber(defaultValues.cardNumber || '');
+    }
+  }, [open, defaultValues, form]);
+
+  const detectCardType = (cardNumber: string): string => {
+    const amex = /^3[47]/;
+    const visa = /^4/;
+    const mastercard = /^5[1-5]/;
+    const discover = /^6(?:011|5)/;
+    
+    if (amex.test(cardNumber)) return 'amex';
+    if (visa.test(cardNumber)) return 'visa';
+    if (mastercard.test(cardNumber)) return 'mastercard';
+    if (discover.test(cardNumber)) return 'discover';
+    return 'unknown';
+  };
+
+  const getCvvLength = (cardType: string): number => {
+    return cardType === 'amex' ? 4 : 3;
+  };
+
+  const cardType = detectCardType(cardNumber);
+  const cvvLength = getCvvLength(cardType);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -65,8 +95,9 @@ const UpdatePaymentDialog = ({
                       value={field.value}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\s/g, '');
-                        if (/^[\d•]*$/.test(value) && value.length <= 16) {
+                        if (/^[\d•]*$/.test(value) && value.length <= 19) {
                           field.onChange(value);
+                          setCardNumber(value);
                         }
                       }}
                     />
@@ -133,12 +164,12 @@ const UpdatePaymentDialog = ({
                     <FormLabel>CVV</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="123" 
-                        maxLength={4}
+                        placeholder={cardType === 'amex' ? "4 digits" : "3 digits"}
+                        maxLength={cvvLength}
                         {...field}
                         onChange={(e) => {
                           const value = e.target.value;
-                          if (/^\d*$/.test(value)) {
+                          if (/^\d*$/.test(value) && value.length <= cvvLength) {
                             field.onChange(value);
                           }
                         }}
