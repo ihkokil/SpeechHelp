@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { CreditCard, Calendar, AlertTriangle, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -30,6 +30,7 @@ const paymentMethodSchema = z.object({
   expiryMonth: z.string().min(1, "Expiry month is required").max(2, "Invalid month"),
   expiryYear: z.string().min(2, "Expiry year is required").max(4, "Invalid year"),
   cvv: z.string().min(3, "CVV must be at least 3 digits").max(4, "CVV is too long"),
+  isDefault: z.boolean().default(false),
 });
 
 const BillingSettings = () => {
@@ -72,6 +73,7 @@ const BillingSettings = () => {
       expiryMonth: '',
       expiryYear: '',
       cvv: '',
+      isDefault: false,
     },
   });
 
@@ -83,6 +85,7 @@ const BillingSettings = () => {
       expiryMonth: '',
       expiryYear: '',
       cvv: '',
+      isDefault: false,
     },
   });
 
@@ -152,7 +155,12 @@ const BillingSettings = () => {
         expiryMonth: parseInt(data.expiryMonth),
         expiryYear: parseInt(data.expiryYear),
         brand: determineCardBrand(data.cardNumber),
+        isDefault: data.isDefault,
       };
+      
+      if (data.isDefault) {
+        setPaymentMethods(prev => prev.map(method => ({...method, isDefault: false})));
+      }
       
       setPaymentMethods(prev => [...prev, newPaymentMethod]);
       
@@ -177,17 +185,22 @@ const BillingSettings = () => {
         expiryMonth: parseInt(data.expiryMonth),
         expiryYear: parseInt(data.expiryYear),
         brand: determineCardBrand(data.cardNumber),
+        isDefault: data.isDefault,
       };
       
-      setPaymentMethods(prev => 
-        prev.map((method, idx) => 
-          idx === selectedPaymentMethod ? updatedPaymentMethod : method
-        )
-      );
+      let updatedMethods = [...paymentMethods];
+      
+      if (data.isDefault) {
+        updatedMethods = updatedMethods.map(method => ({...method, isDefault: false}));
+      }
+      
+      updatedMethods[selectedPaymentMethod] = updatedPaymentMethod;
+      
+      setPaymentMethods(updatedMethods);
       
       toast({
         title: "Payment method updated",
-        description: `Your ${updatedPaymentMethod.brand} card ending in ${last4} has been updated.`,
+        description: `Your ${updatedPaymentMethod.brand} card ending in ${last4} has been updated.${data.isDefault ? ' It is now your default payment method.' : ''}`,
       });
       
       setShowUpdatePaymentDialog(false);
@@ -200,13 +213,13 @@ const BillingSettings = () => {
     setSelectedPaymentMethod(index);
     const method = paymentMethods[index];
     
-    // Prefill the form with placeholder data since we don't store full card numbers
     updateForm.reset({
       cardNumber: `•••• •••• •••• ${method.last4}`,
       cardHolder: 'Current Cardholder',
       expiryMonth: method.expiryMonth.toString(),
       expiryYear: method.expiryYear.toString(),
       cvv: '',
+      isDefault: method.isDefault || false,
     });
     
     setShowUpdatePaymentDialog(true);
@@ -340,7 +353,7 @@ const BillingSettings = () => {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  {index === 0 && (
+                  {method.isDefault && (
                     <Badge className="bg-pink-100 text-pink-800 border-pink-200 mr-2">Default</Badge>
                   )}
                   <Button 
@@ -480,6 +493,24 @@ const BillingSettings = () => {
                     />
                   </div>
                   
+                  <FormField
+                    control={form.control}
+                    name="isDefault"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-2 border rounded-md">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Make this my default payment method</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
                   <DialogFooter className="pt-4">
                     <Button type="button" variant="outline" onClick={() => setShowAddPaymentDialog(false)} disabled={isProcessing}>
                       Cancel
@@ -493,7 +524,6 @@ const BillingSettings = () => {
             </DialogContent>
           </Dialog>
           
-          {/* Update Payment Method Dialog */}
           <Dialog open={showUpdatePaymentDialog} onOpenChange={setShowUpdatePaymentDialog}>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
@@ -531,7 +561,6 @@ const BillingSettings = () => {
                             onChange={(e) => {
                               const value = e.target.value.replace(/\s/g, '');
                               if (/^[\d•]*$/.test(value) && value.length <= 16) {
-                                // Allow dots for masked values
                                 e.target.value = formatCardNumber(value);
                                 field.onChange(value);
                               }
@@ -616,6 +645,24 @@ const BillingSettings = () => {
                       )}
                     />
                   </div>
+                  
+                  <FormField
+                    control={updateForm.control}
+                    name="isDefault"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-2 border rounded-md">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Make this my default payment method</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                   
                   <DialogFooter className="pt-4">
                     <Button type="button" variant="outline" onClick={() => setShowUpdatePaymentDialog(false)} disabled={isProcessing}>
