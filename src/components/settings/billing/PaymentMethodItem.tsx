@@ -1,6 +1,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
 
 interface PaymentMethod {
   type: string;
@@ -14,9 +15,16 @@ interface PaymentMethod {
 interface PaymentMethodItemProps {
   method: PaymentMethod;
   onUpdateClick: () => void;
+  onDeleteClick?: () => void;
+  showDeleteButton?: boolean;
 }
 
-const PaymentMethodItem = ({ method, onUpdateClick }: PaymentMethodItemProps) => {
+const PaymentMethodItem = ({ 
+  method, 
+  onUpdateClick, 
+  onDeleteClick, 
+  showDeleteButton = true 
+}: PaymentMethodItemProps) => {
   return (
     <div className="flex items-center justify-between p-4 border rounded-md">
       <div className="flex items-center">
@@ -41,6 +49,16 @@ const PaymentMethodItem = ({ method, onUpdateClick }: PaymentMethodItemProps) =>
         >
           Update
         </Button>
+        {showDeleteButton && !method.isDefault && onDeleteClick && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={onDeleteClick}
+            className="text-red-500 hover:bg-red-50 hover:text-red-600"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );
