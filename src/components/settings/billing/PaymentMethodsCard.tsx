@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,14 @@ interface PaymentMethod {
   expiryYear: number;
   brand: string;
   isDefault?: boolean;
+  cardHolder: string;
+  billingAddress: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
 }
 
 const PaymentMethodsCard = () => {
@@ -31,7 +40,15 @@ const PaymentMethodsCard = () => {
       expiryMonth: 12,
       expiryYear: 2026,
       brand: 'Visa',
-      isDefault: true
+      isDefault: true,
+      cardHolder: 'John Doe',
+      billingAddress: {
+        street: '123 Main St',
+        city: 'San Francisco',
+        state: 'CA',
+        zipCode: '94105',
+        country: 'United States'
+      }
     }
   ]);
 
@@ -49,19 +66,30 @@ const PaymentMethodsCard = () => {
     setTimeout(() => {
       const last4 = data.cardNumber.slice(-4);
       const newPaymentMethod: PaymentMethod = {
-        type: 'Credit Card',
+        type: data.cardType,
         last4,
         expiryMonth: parseInt(data.expiryMonth),
         expiryYear: parseInt(data.expiryYear),
-        brand: determineCardBrand(data.cardNumber),
+        brand: data.cardType === 'Select card type' ? determineCardBrand(data.cardNumber) : data.cardType,
         isDefault: data.isDefault,
+        cardHolder: data.cardHolder,
+        billingAddress: {
+          street: data.billingStreet,
+          city: data.billingCity,
+          state: data.billingState,
+          zipCode: data.billingZip,
+          country: data.billingCountry
+        }
       };
       
+      // If it's default, update all other cards to not be default
+      let updatedMethods = [...paymentMethods];
       if (data.isDefault) {
-        setPaymentMethods(prev => prev.map(method => ({...method, isDefault: false})));
+        updatedMethods = updatedMethods.map(method => ({...method, isDefault: false}));
       }
       
-      setPaymentMethods(prev => [...prev, newPaymentMethod]);
+      // Add the new payment method to the collection
+      setPaymentMethods([...updatedMethods, newPaymentMethod]);
       
       toast({
         title: "Payment method added",
@@ -80,20 +108,30 @@ const PaymentMethodsCard = () => {
     setTimeout(() => {
       const last4 = data.cardNumber.slice(-4);
       const updatedPaymentMethod: PaymentMethod = {
-        type: 'Credit Card',
+        type: data.cardType,
         last4,
         expiryMonth: parseInt(data.expiryMonth),
         expiryYear: parseInt(data.expiryYear),
-        brand: determineCardBrand(data.cardNumber),
+        brand: data.cardType === 'Select card type' ? determineCardBrand(data.cardNumber) : data.cardType,
         isDefault: data.isDefault,
+        cardHolder: data.cardHolder,
+        billingAddress: {
+          street: data.billingStreet,
+          city: data.billingCity,
+          state: data.billingState,
+          zipCode: data.billingZip,
+          country: data.billingCountry
+        }
       };
       
       let updatedMethods = [...paymentMethods];
       
+      // If setting this card as default, update all others to not be default
       if (data.isDefault) {
         updatedMethods = updatedMethods.map(method => ({...method, isDefault: false}));
       }
       
+      // Update the selected payment method with new data
       updatedMethods[selectedPaymentMethod] = updatedPaymentMethod;
       
       setPaymentMethods(updatedMethods);
@@ -115,11 +153,17 @@ const PaymentMethodsCard = () => {
     
     const defaultValues: PaymentFormValues = {
       cardNumber: `•••• •••• •••• ${method.last4}`,
-      cardHolder: 'Current Cardholder',
+      cardHolder: method.cardHolder,
       expiryMonth: method.expiryMonth.toString(),
       expiryYear: method.expiryYear.toString(),
       cvv: '',
       isDefault: method.isDefault || false,
+      cardType: method.brand,
+      billingStreet: method.billingAddress.street,
+      billingCity: method.billingAddress.city,
+      billingState: method.billingAddress.state,
+      billingZip: method.billingAddress.zipCode,
+      billingCountry: method.billingAddress.country
     };
     
     setShowUpdatePaymentDialog(true);
@@ -196,11 +240,17 @@ const PaymentMethodsCard = () => {
           isProcessing={isProcessing}
           defaultValues={{
             cardNumber: `•••• •••• •••• ${paymentMethods[selectedPaymentMethod].last4}`,
-            cardHolder: 'Current Cardholder',
+            cardHolder: paymentMethods[selectedPaymentMethod].cardHolder,
             expiryMonth: paymentMethods[selectedPaymentMethod].expiryMonth.toString(),
             expiryYear: paymentMethods[selectedPaymentMethod].expiryYear.toString(),
             cvv: '',
             isDefault: paymentMethods[selectedPaymentMethod].isDefault || false,
+            cardType: paymentMethods[selectedPaymentMethod].brand,
+            billingStreet: paymentMethods[selectedPaymentMethod].billingAddress.street,
+            billingCity: paymentMethods[selectedPaymentMethod].billingAddress.city,
+            billingState: paymentMethods[selectedPaymentMethod].billingAddress.state,
+            billingZip: paymentMethods[selectedPaymentMethod].billingAddress.zipCode,
+            billingCountry: paymentMethods[selectedPaymentMethod].billingAddress.country
           }}
         />
       )}
