@@ -1,110 +1,236 @@
 
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CreditCard, PlusCircle } from 'lucide-react';
-import PaymentMethodItem from './PaymentMethodItem';
+import { Plus, CreditCard } from 'lucide-react';
 import AddPaymentDialog from './AddPaymentDialog';
 import UpdatePaymentDialog from './UpdatePaymentDialog';
 import DeletePaymentDialog from './DeletePaymentDialog';
-import { usePaymentMethods } from './hooks/usePaymentMethods';
+import { PaymentMethod, PaymentFormValues } from './types';
+import PaymentMethodItem from './PaymentMethodItem';
+import { useToast } from '@/hooks/use-toast';
 import { determineCardBrand } from './utils/paymentMethodUtils';
 
-const PaymentMethodsCard = () => {
-  const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
-  const [showUpdatePaymentDialog, setShowUpdatePaymentDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  
-  const {
-    paymentMethods,
-    isProcessing,
-    selectedPaymentMethod,
-    setSelectedPaymentMethod,
-    handleAddPaymentMethod,
-    handleUpdatePaymentMethod,
-    handleDeletePaymentMethod
-  } = usePaymentMethods();
+interface PaymentMethodsCardProps {
+  paymentMethods: PaymentMethod[];
+  onAddPaymentMethod: (method: PaymentMethod) => void;
+  onUpdatePaymentMethod: (index: number, method: PaymentMethod) => void;
+  onDeletePaymentMethod: (index: number) => void;
+}
 
-  const openUpdatePaymentDialog = (index: number) => {
-    setSelectedPaymentMethod(index);
-    setShowUpdatePaymentDialog(true);
+const PaymentMethodsCard = ({ 
+  paymentMethods, 
+  onAddPaymentMethod, 
+  onUpdatePaymentMethod, 
+  onDeletePaymentMethod 
+}: PaymentMethodsCardProps) => {
+  const { toast } = useToast();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleAddPaymentMethod = (data: PaymentFormValues) => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      const last4 = data.cardNumber.slice(-4);
+      const newPaymentMethod: PaymentMethod = {
+        type: data.cardType,
+        last4,
+        expiryMonth: parseInt(data.expiryMonth),
+        expiryYear: parseInt(data.expiryYear),
+        brand: data.cardType === 'Select card type' ? determineCardBrand(data.cardNumber) : data.cardType,
+        isDefault: data.isDefault,
+        cardHolder: data.cardHolder,
+        billingAddress: {
+          street: data.billingStreet,
+          city: data.billingCity,
+          state: data.billingState,
+          zipCode: data.billingZip,
+          country: data.billingCountry
+        }
+      };
+      
+      onAddPaymentMethod(newPaymentMethod);
+      
+      toast({
+        title: "Payment method added",
+        description: `Your ${newPaymentMethod.brand} card ending in ${last4} has been added.`,
+      });
+      
+      setIsProcessing(false);
+      setIsAddDialogOpen(false);
+    }, 1500);
   };
 
-  const openDeleteDialog = (index: number) => {
-    setSelectedPaymentMethod(index);
-    setShowDeleteDialog(true);
+  const handleUpdatePaymentMethod = (data: PaymentFormValues) => {
+    if (selectedPaymentMethod === null) return;
+    
+    setIsProcessing(true);
+    setTimeout(() => {
+      const last4 = data.cardNumber.slice(-4);
+      const updatedPaymentMethod: PaymentMethod = {
+        type: data.cardType,
+        last4,
+        expiryMonth: parseInt(data.expiryMonth),
+        expiryYear: parseInt(data.expiryYear),
+        brand: data.cardType === 'Select card type' ? determineCardBrand(data.cardNumber) : data.cardType,
+        isDefault: data.isDefault,
+        cardHolder: data.cardHolder,
+        billingAddress: {
+          street: data.billingStreet,
+          city: data.billingCity,
+          state: data.billingState,
+          zipCode: data.billingZip,
+          country: data.billingCountry
+        }
+      };
+      
+      onUpdatePaymentMethod(selectedPaymentMethod, updatedPaymentMethod);
+      
+      toast({
+        title: "Payment method updated",
+        description: `Your ${updatedPaymentMethod.brand} card ending in ${last4} has been updated.${data.isDefault ? ' It is now your default payment method.' : ''}`,
+      });
+      
+      setSelectedPaymentMethod(null);
+      setIsProcessing(false);
+      setIsUpdateDialogOpen(false);
+    }, 1500);
+  };
+
+  const handleDeletePaymentMethod = () => {
+    if (selectedPaymentMethod === null) return;
+    
+    setIsProcessing(true);
+    setTimeout(() => {
+      const deletedMethod = paymentMethods[selectedPaymentMethod];
+      
+      onDeletePaymentMethod(selectedPaymentMethod);
+      
+      toast({
+        title: "Payment method deleted",
+        description: `Your ${deletedMethod.brand} card ending in ${deletedMethod.last4} has been removed.`,
+      });
+      
+      setSelectedPaymentMethod(null);
+      setIsProcessing(false);
+      setIsDeleteDialogOpen(false);
+    }, 1000);
+  };
+
+  const getUpdateFormDefaultValues = (): PaymentFormValues => {
+    if (selectedPaymentMethod === null) {
+      return {
+        cardType: '',
+        cardNumber: '',
+        cardHolder: '',
+        expiryMonth: '',
+        expiryYear: '',
+        cvv: '',
+        isDefault: false,
+        billingStreet: '',
+        billingCity: '',
+        billingState: '',
+        billingZip: '',
+        billingCountry: '',
+      };
+    }
+    
+    const method = paymentMethods[selectedPaymentMethod];
+    return {
+      cardType: method.brand,
+      cardNumber: `${method.last4.padStart(16, '0')}`,  // Normally we wouldn't store full card numbers
+      cardHolder: method.cardHolder,
+      expiryMonth: method.expiryMonth.toString(),
+      expiryYear: method.expiryYear.toString(),
+      cvv: '',
+      isDefault: method.isDefault || false,
+      billingStreet: method.billingAddress.street,
+      billingCity: method.billingAddress.city,
+      billingState: method.billingAddress.state,
+      billingZip: method.billingAddress.zipCode,
+      billingCountry: method.billingAddress.country,
+    };
   };
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <CreditCard className="h-5 w-5 mr-2 text-pink-600" />
-          Payment Methods
-        </CardTitle>
-        <CardDescription>
-          Manage your payment methods and billing information
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {paymentMethods.map((method, index) => (
-            <PaymentMethodItem
-              key={index}
-              method={method}
-              onUpdateClick={() => openUpdatePaymentDialog(index)}
-              onDeleteClick={() => openDeleteDialog(index)}
-              showDeleteButton={paymentMethods.length > 1}
-            />
-          ))}
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Payment Methods</CardTitle>
+          <CardDescription>
+            Manage your payment methods and billing information.
+          </CardDescription>
         </div>
-      </CardContent>
-      <CardFooter>
-        <Button variant="outline" className="w-full" onClick={() => setShowAddPaymentDialog(true)}>
-          <PlusCircle className="h-4 w-4 mr-2" />
+        <Button 
+          onClick={() => setIsAddDialogOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <Plus size={16} />
           Add Payment Method
         </Button>
-      </CardFooter>
-
-      <AddPaymentDialog
-        open={showAddPaymentDialog}
-        onOpenChange={setShowAddPaymentDialog}
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {paymentMethods.length === 0 ? (
+          <div className="text-center py-8 border rounded-lg border-dashed">
+            <CreditCard className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
+            <h3 className="mt-4 text-lg font-semibold">No payment methods</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              You haven't added any payment methods yet.
+            </p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => setIsAddDialogOpen(true)}
+            >
+              Add a payment method
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {paymentMethods.map((method, index) => (
+              <PaymentMethodItem 
+                key={`${method.brand}-${method.last4}-${index}`}
+                paymentMethod={method}
+                onEdit={() => {
+                  setSelectedPaymentMethod(index);
+                  setIsUpdateDialogOpen(true);
+                }}
+                onDelete={() => {
+                  setSelectedPaymentMethod(index);
+                  setIsDeleteDialogOpen(true);
+                }}
+                canDelete={!method.isDefault && paymentMethods.length > 1}
+              />
+            ))}
+          </div>
+        )}
+      </CardContent>
+      
+      <AddPaymentDialog 
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
         onSubmit={handleAddPaymentMethod}
         isProcessing={isProcessing}
       />
-
-      {selectedPaymentMethod !== null && (
-        <>
-          <UpdatePaymentDialog
-            open={showUpdatePaymentDialog}
-            onOpenChange={setShowUpdatePaymentDialog}
-            onSubmit={handleUpdatePaymentMethod}
-            isProcessing={isProcessing}
-            defaultValues={{
-              cardNumber: `•••• •••• •••• ${paymentMethods[selectedPaymentMethod].last4}`,
-              cardHolder: paymentMethods[selectedPaymentMethod].cardHolder,
-              expiryMonth: paymentMethods[selectedPaymentMethod].expiryMonth.toString(),
-              expiryYear: paymentMethods[selectedPaymentMethod].expiryYear.toString(),
-              cvv: '',
-              isDefault: paymentMethods[selectedPaymentMethod].isDefault || false,
-              cardType: paymentMethods[selectedPaymentMethod].brand,
-              billingStreet: paymentMethods[selectedPaymentMethod].billingAddress.street,
-              billingCity: paymentMethods[selectedPaymentMethod].billingAddress.city,
-              billingState: paymentMethods[selectedPaymentMethod].billingAddress.state,
-              billingZip: paymentMethods[selectedPaymentMethod].billingAddress.zipCode,
-              billingCountry: paymentMethods[selectedPaymentMethod].billingAddress.country
-            }}
-          />
-
-          <DeletePaymentDialog
-            open={showDeleteDialog}
-            onOpenChange={setShowDeleteDialog}
-            onDelete={handleDeletePaymentMethod}
-            isProcessing={isProcessing}
-            paymentMethod={paymentMethods[selectedPaymentMethod]}
-          />
-        </>
-      )}
+      
+      <UpdatePaymentDialog 
+        open={isUpdateDialogOpen}
+        onOpenChange={setIsUpdateDialogOpen}
+        onSubmit={handleUpdatePaymentMethod}
+        isProcessing={isProcessing}
+        defaultValues={getUpdateFormDefaultValues()}
+      />
+      
+      <DeletePaymentDialog 
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onDelete={handleDeletePaymentMethod}
+        isProcessing={isProcessing}
+        paymentMethod={selectedPaymentMethod !== null ? paymentMethods[selectedPaymentMethod] : undefined}
+      />
     </Card>
   );
 };
