@@ -103,39 +103,10 @@ const PaymentMethodsCard = ({
     }, 1000);
   };
 
-  const getUpdateFormDefaultValues = (): PaymentFormValues => {
-    if (selectedPaymentMethod === null) {
-      return {
-        cardType: '',
-        cardNumber: '',
-        cardHolder: '',
-        expiryMonth: '',
-        expiryYear: '',
-        cvv: '',
-        isDefault: false,
-        billingStreet: '',
-        billingCity: '',
-        billingState: '',
-        billingZip: '',
-        billingCountry: '',
-      };
-    }
-    
-    const method = paymentMethods[selectedPaymentMethod];
-    return {
-      cardType: method.brand,
-      cardNumber: `${method.last4.padStart(16, '0')}`,  // Normally we wouldn't store full card numbers
-      cardHolder: method.cardHolder,
-      expiryMonth: method.expiryMonth.toString(),
-      expiryYear: method.expiryYear.toString(),
-      cvv: '',
-      isDefault: method.isDefault || false,
-      billingStreet: method.billingAddress.street,
-      billingCity: method.billingAddress.city,
-      billingState: method.billingAddress.state,
-      billingZip: method.billingAddress.zipCode,
-      billingCountry: method.billingAddress.country,
-    };
+  // Use the currently selected payment method
+  const getSelectedPaymentMethod = (): PaymentMethod | null => {
+    if (selectedPaymentMethod === null) return null;
+    return paymentMethods[selectedPaymentMethod];
   };
 
   return (
@@ -204,7 +175,7 @@ const PaymentMethodsCard = ({
         onOpenChange={setIsUpdateDialogOpen}
         onSubmit={handleUpdatePaymentMethod}
         isProcessing={isProcessing}
-        defaultValues={getUpdateFormDefaultValues()}
+        paymentMethod={getSelectedPaymentMethod()}
       />
       
       <DeletePaymentDialog 
