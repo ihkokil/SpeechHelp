@@ -54,13 +54,8 @@ const PaymentMethodsCard = ({
       
       onAddPaymentMethod(newPaymentMethod);
       
-      toast({
-        title: "Payment method added",
-        description: `Your ${newPaymentMethod.brand} card ending in ${last4} has been added.`,
-      });
-      
       setIsProcessing(false);
-      setIsAddDialogOpen(false);
+      setIsAddDialogOpen(false);  // Close the dialog after successful submission
     }, 1500);
   };
 
@@ -89,14 +84,9 @@ const PaymentMethodsCard = ({
       
       onUpdatePaymentMethod(selectedPaymentMethod, updatedPaymentMethod);
       
-      toast({
-        title: "Payment method updated",
-        description: `Your ${updatedPaymentMethod.brand} card ending in ${last4} has been updated.${data.isDefault ? ' It is now your default payment method.' : ''}`,
-      });
-      
       setSelectedPaymentMethod(null);
       setIsProcessing(false);
-      setIsUpdateDialogOpen(false);
+      setIsUpdateDialogOpen(false);  // Close the dialog after successful submission
     }, 1500);
   };
 
@@ -105,18 +95,11 @@ const PaymentMethodsCard = ({
     
     setIsProcessing(true);
     setTimeout(() => {
-      const deletedMethod = paymentMethods[selectedPaymentMethod];
-      
       onDeletePaymentMethod(selectedPaymentMethod);
-      
-      toast({
-        title: "Payment method deleted",
-        description: `Your ${deletedMethod.brand} card ending in ${deletedMethod.last4} has been removed.`,
-      });
       
       setSelectedPaymentMethod(null);
       setIsProcessing(false);
-      setIsDeleteDialogOpen(false);
+      setIsDeleteDialogOpen(false);  // Close the dialog after successful deletion
     }, 1000);
   };
 
@@ -202,7 +185,7 @@ const PaymentMethodsCard = ({
                   setSelectedPaymentMethod(index);
                   setIsDeleteDialogOpen(true);
                 }}
-                canDelete={!method.isDefault && paymentMethods.length > 1}
+                canDelete={!method.isDefault || paymentMethods.length > 1}
               />
             ))}
           </div>

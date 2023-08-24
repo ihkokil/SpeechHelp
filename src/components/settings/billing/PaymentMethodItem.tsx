@@ -1,74 +1,66 @@
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { CreditCard, MoreVertical, Check, Pencil, Trash } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { PaymentMethod } from './types';
 
-interface PaymentMethod {
-  type: string;
-  last4: string;
-  expiryMonth: number;
-  expiryYear: number;
-  brand: string;
-  isDefault?: boolean;
-  cardHolder: string;
-  billingAddress?: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
+export interface PaymentMethodItemProps {
+  paymentMethod: PaymentMethod;
+  onEdit: () => void;
+  onDelete: () => void;
+  canDelete: boolean;
+}
+
+const PaymentMethodItem = ({ paymentMethod, onEdit, onDelete, canDelete }: PaymentMethodItemProps) => {
+  const getBrandIcon = (brand: string) => {
+    return <CreditCard className="h-5 w-5 text-gray-500" />;
   };
-}
 
-interface PaymentMethodItemProps {
-  method: PaymentMethod;
-  onUpdateClick: () => void;
-  onDeleteClick?: () => void;
-  showDeleteButton?: boolean;
-}
-
-const PaymentMethodItem = ({ 
-  method, 
-  onUpdateClick, 
-  onDeleteClick, 
-  showDeleteButton = true 
-}: PaymentMethodItemProps) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-md">
-      <div className="flex items-center mb-3 md:mb-0">
-        <div className="h-10 w-14 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md flex items-center justify-center text-white font-bold mr-3">
-          {method.brand}
+    <div className="flex items-center justify-between border rounded-lg p-4">
+      <div className="flex items-center space-x-4">
+        <div className="bg-gray-100 p-2 rounded-full">
+          {getBrandIcon(paymentMethod.brand)}
         </div>
         <div>
-          <p className="font-medium">•••• •••• •••• {method.last4}</p>
-          <p className="text-sm text-gray-700">{method.cardHolder}</p>
-          <p className="text-sm text-gray-500">
-            Expires {method.expiryMonth}/{method.expiryYear}
-          </p>
+          <div className="flex items-center">
+            <span className="font-medium">{paymentMethod.brand} •••• {paymentMethod.last4}</span>
+            {paymentMethod.isDefault && (
+              <div className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <Check className="mr-1 h-3 w-3" />
+                Default
+              </div>
+            )}
+          </div>
+          <div className="text-sm text-gray-500">
+            Expires {paymentMethod.expiryMonth}/{paymentMethod.expiryYear}
+          </div>
+          <div className="text-xs text-gray-400">
+            {paymentMethod.cardHolder}
+          </div>
         </div>
       </div>
-      <div className="flex space-x-2 mt-2 md:mt-0">
-        {method.isDefault && (
-          <Badge className="bg-pink-100 text-pink-800 border-pink-200 mr-2">Default</Badge>
-        )}
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={onUpdateClick}
-        >
-          Update
-        </Button>
-        {showDeleteButton && !method.isDefault && onDeleteClick && (
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={onDeleteClick}
-            className="text-red-500 hover:bg-red-50 hover:text-red-600"
+      
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="p-2 hover:bg-gray-100 rounded-full">
+            <MoreVertical className="h-4 w-4 text-gray-500" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="bg-white">
+          <DropdownMenuItem className="cursor-pointer" onClick={onEdit}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+            onClick={onDelete}
+            disabled={!canDelete}
           >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
+            <Trash className="mr-2 h-4 w-4" />
+            Remove
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };

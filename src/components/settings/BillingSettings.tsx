@@ -5,8 +5,10 @@ import { format, addMonths, addYears } from 'date-fns';
 import SubscriptionCard from './billing/SubscriptionCard';
 import PaymentMethodsCard from './billing/PaymentMethodsCard';
 import { PaymentMethod } from './billing/types';
+import { useToast } from '@/hooks/use-toast';
 
 const BillingSettings = () => {
+  const { toast } = useToast();
   const { user } = useAuth();
   const [autoRenew, setAutoRenew] = useState(true);
   
@@ -66,7 +68,14 @@ const BillingSettings = () => {
   useEffect(() => {
     const savedPaymentMethods = localStorage.getItem('paymentMethods');
     if (savedPaymentMethods) {
-      setPaymentMethods(JSON.parse(savedPaymentMethods));
+      try {
+        const parsed = JSON.parse(savedPaymentMethods);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setPaymentMethods(parsed);
+        }
+      } catch (error) {
+        console.error('Error parsing payment methods from localStorage:', error);
+      }
     }
   }, []);
 
@@ -95,7 +104,16 @@ const BillingSettings = () => {
     }
     
     // Add the new payment method to the collection
-    setPaymentMethods([...updatedMethods, newPaymentMethod]);
+    const updatedPaymentMethods = [...updatedMethods, newPaymentMethod];
+    setPaymentMethods(updatedPaymentMethods);
+    
+    // Save to localStorage immediately
+    localStorage.setItem('paymentMethods', JSON.stringify(updatedPaymentMethods));
+    
+    toast({
+      title: "Payment method added",
+      description: `Your ${newPaymentMethod.brand} card ending in ${newPaymentMethod.last4} has been saved.`,
+    });
   };
 
   const handleUpdatePaymentMethod = (index: number, updatedMethod: PaymentMethod) => {
@@ -110,17 +128,34 @@ const BillingSettings = () => {
     updatedMethods[index] = updatedMethod;
     
     setPaymentMethods(updatedMethods);
+    
+    // Save to localStorage immediately
+    localStorage.setItem('paymentMethods', JSON.stringify(updatedMethods));
+    
+    toast({
+      title: "Payment method updated",
+      description: `Your ${updatedMethod.brand} card ending in ${updatedMethod.last4} has been updated.`,
+    });
   };
 
   const handleDeletePaymentMethod = (index: number) => {
+    const deletedMethod = paymentMethods[index];
     const newMethods = paymentMethods.filter((_, i) => i !== index);
     
     // If we deleted the default method and there are other methods, make the first one default
-    if (paymentMethods[index].isDefault && newMethods.length > 0) {
+    if (deletedMethod.isDefault && newMethods.length > 0) {
       newMethods[0].isDefault = true;
     }
     
     setPaymentMethods(newMethods);
+    
+    // Save to localStorage immediately
+    localStorage.setItem('paymentMethods', JSON.stringify(newMethods));
+    
+    toast({
+      title: "Payment method removed",
+      description: `Your ${deletedMethod.brand} card ending in ${deletedMethod.last4} has been removed.`,
+    });
   };
 
   return (
