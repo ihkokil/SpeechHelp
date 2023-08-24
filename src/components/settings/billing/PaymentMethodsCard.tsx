@@ -1,15 +1,14 @@
 
-import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, CreditCard } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import AddPaymentDialog from './AddPaymentDialog';
 import UpdatePaymentDialog from './UpdatePaymentDialog';
 import DeletePaymentDialog from './DeletePaymentDialog';
 import { PaymentMethod, PaymentFormValues } from './types';
 import PaymentMethodItem from './PaymentMethodItem';
-import { useToast } from '@/hooks/use-toast';
-import { determineCardBrand } from './utils/paymentMethodUtils';
+import EmptyPaymentMethods from './components/EmptyPaymentMethods';
+import { usePaymentMethodActions } from './hooks/usePaymentMethodActions';
 
 interface PaymentMethodsCardProps {
   paymentMethods: PaymentMethod[];
@@ -24,90 +23,25 @@ const PaymentMethodsCard = ({
   onUpdatePaymentMethod, 
   onDeletePaymentMethod 
 }: PaymentMethodsCardProps) => {
-  const { toast } = useToast();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const handleAddPaymentMethod = (data: PaymentFormValues) => {
-    setIsProcessing(true);
-    setTimeout(() => {
-      const last4 = data.cardNumber.slice(-4);
-      const newPaymentMethod: PaymentMethod = {
-        type: data.cardType,
-        last4,
-        expiryMonth: parseInt(data.expiryMonth),
-        expiryYear: parseInt(data.expiryYear),
-        brand: data.cardType === 'Select card type' ? determineCardBrand(data.cardNumber) : data.cardType,
-        isDefault: data.isDefault,
-        cardHolder: data.cardHolder,
-        billingAddress: {
-          street: data.billingStreet,
-          city: data.billingCity,
-          state: data.billingState,
-          zipCode: data.billingZip,
-          country: data.billingCountry
-        }
-      };
-      
-      onAddPaymentMethod(newPaymentMethod);
-      
-      setIsProcessing(false);
-      setIsAddDialogOpen(false);  // Close the dialog after successful submission
-    }, 1500);
-  };
-
-  const handleUpdatePaymentMethod = (data: PaymentFormValues) => {
-    if (selectedPaymentMethod === null) return;
-    
-    setIsProcessing(true);
-    setTimeout(() => {
-      const last4 = data.cardNumber.slice(-4);
-      const updatedPaymentMethod: PaymentMethod = {
-        type: data.cardType,
-        last4,
-        expiryMonth: parseInt(data.expiryMonth),
-        expiryYear: parseInt(data.expiryYear),
-        brand: data.cardType === 'Select card type' ? determineCardBrand(data.cardNumber) : data.cardType,
-        isDefault: data.isDefault,
-        cardHolder: data.cardHolder,
-        billingAddress: {
-          street: data.billingStreet,
-          city: data.billingCity,
-          state: data.billingState,
-          zipCode: data.billingZip,
-          country: data.billingCountry
-        }
-      };
-      
-      onUpdatePaymentMethod(selectedPaymentMethod, updatedPaymentMethod);
-      
-      setSelectedPaymentMethod(null);
-      setIsProcessing(false);
-      setIsUpdateDialogOpen(false);  // Close the dialog after successful submission
-    }, 1500);
-  };
-
-  const handleDeletePaymentMethod = () => {
-    if (selectedPaymentMethod === null) return;
-    
-    setIsProcessing(true);
-    setTimeout(() => {
-      onDeletePaymentMethod(selectedPaymentMethod);
-      
-      setSelectedPaymentMethod(null);
-      setIsProcessing(false);
-      setIsDeleteDialogOpen(false);  // Close the dialog after successful deletion
-    }, 1000);
-  };
-
-  // Use the currently selected payment method
-  const getSelectedPaymentMethod = (): PaymentMethod | null => {
-    if (selectedPaymentMethod === null) return null;
-    return paymentMethods[selectedPaymentMethod];
-  };
+  const {
+    isAddDialogOpen,
+    setIsAddDialogOpen,
+    isUpdateDialogOpen,
+    setIsUpdateDialogOpen,
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    setSelectedPaymentMethod,
+    isProcessing,
+    handleAddPaymentMethod,
+    handleUpdatePaymentMethod,
+    handleDeletePaymentMethod,
+    getSelectedPaymentMethod
+  } = usePaymentMethodActions({
+    paymentMethods,
+    onAddPaymentMethod,
+    onUpdatePaymentMethod,
+    onDeletePaymentMethod
+  });
 
   return (
     <Card>
@@ -128,20 +62,7 @@ const PaymentMethodsCard = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {paymentMethods.length === 0 ? (
-          <div className="text-center py-8 border rounded-lg border-dashed">
-            <CreditCard className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
-            <h3 className="mt-4 text-lg font-semibold">No payment methods</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              You haven't added any payment methods yet.
-            </p>
-            <Button 
-              variant="outline" 
-              className="mt-4"
-              onClick={() => setIsAddDialogOpen(true)}
-            >
-              Add a payment method
-            </Button>
-          </div>
+          <EmptyPaymentMethods onAddClick={() => setIsAddDialogOpen(true)} />
         ) : (
           <div className="space-y-4">
             {paymentMethods.map((method, index) => (
@@ -183,7 +104,7 @@ const PaymentMethodsCard = ({
         onOpenChange={setIsDeleteDialogOpen}
         onDelete={handleDeletePaymentMethod}
         isProcessing={isProcessing}
-        paymentMethod={selectedPaymentMethod !== null ? paymentMethods[selectedPaymentMethod] : undefined}
+        paymentMethod={getSelectedPaymentMethod()}
       />
     </Card>
   );
