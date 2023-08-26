@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
@@ -9,7 +8,6 @@ import { paymentMethodSchema, PaymentFormValues } from './payment-form/PaymentFo
 import CardInformationFields from './payment-form/CardInformationFields';
 import BillingAddressFields from './payment-form/BillingAddressFields';
 import DefaultPaymentCheckbox from './payment-form/DefaultPaymentCheckbox';
-import { formatCardNumber, detectCardType, getCvvLength } from './payment-form/cardUtils';
 
 interface AddPaymentDialogProps {
   open: boolean;
@@ -37,7 +35,6 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
     },
   });
 
-  // Reset the form when dialog opens
   useEffect(() => {
     if (open) {
       form.reset({
@@ -72,12 +69,7 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmitForm} className="space-y-6">
-            <CardInformationFields 
-              form={form} 
-              formatCardNumber={formatCardNumber}
-              detectCardType={detectCardType}
-              getCvvLength={getCvvLength}
-            />
+            <CardInformationFields form={form} />
             
             <BillingAddressFields form={form} />
             
