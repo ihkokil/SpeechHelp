@@ -27,20 +27,19 @@ serve(async (req) => {
     const path = url.pathname.split("/").pop();
 
     // Handle different authentication endpoints
-    switch (path) {
-      case "verify-password":
-        return handleVerifyPassword(req);
-      case "setup-2fa":
-        return handleSetup2FA(req);
-      case "verify-2fa":
-        return handleVerify2FA(req);
-      case "reset-password":
-        return handleResetPassword(req);
-      default:
-        return new Response(JSON.stringify({ error: "Invalid endpoint" }), {
-          status: 404,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
+    if (url.pathname.includes("verify-password")) {
+      return handleVerifyPassword(req);
+    } else if (url.pathname.includes("setup-2fa")) {
+      return handleSetup2FA(req);
+    } else if (url.pathname.includes("verify-2fa")) {
+      return handleVerify2FA(req);
+    } else if (url.pathname.includes("reset-password")) {
+      return handleResetPassword(req);
+    } else {
+      return new Response(JSON.stringify({ error: "Invalid endpoint" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
   } catch (error) {
     console.error("Error in admin-auth function:", error);
