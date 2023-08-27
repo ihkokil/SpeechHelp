@@ -54,11 +54,15 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
           // Check if session is still valid (24 hour expiry)
           if (session.expiresAt && session.expiresAt > now) {
             setAdminUser(session.user);
+            console.log("Found valid admin session", session.user);
           } else {
             // Clear expired session
+            console.log("Clearing expired admin session");
             sessionStorage.removeItem('adminSession');
             localStorage.removeItem('adminSession');
           }
+        } else {
+          console.log("No admin session found");
         }
       } catch (error) {
         console.error('Error checking admin session:', error);
@@ -77,7 +81,9 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
     setIsLoading(true);
     
     try {
+      console.log(`Attempting sign in for username: ${username}`);
       const result = await adminAuthService.signIn({ username, password });
+      console.log("Sign in result:", result);
       
       if (result.success && !result.requires2FA) {
         // Set admin session
@@ -98,6 +104,11 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
       } else if (result.success && result.requires2FA) {
         // Set pending user for 2FA verification
         setPendingUserId(result.user?.id || null);
+        
+        // Store user data temporarily for after 2FA verification
+        if (result.user) {
+          sessionStorage.setItem('tempAdminUser', JSON.stringify(result.user));
+        }
       }
       
       setIsLoading(false);
@@ -123,6 +134,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
     setIsLoading(true);
     
     try {
+      console.log(`Verifying 2FA code for user ID: ${pendingUserId}`);
       const result = await adminAuthService.verify2FA(pendingUserId, code);
       
       if (result.success) {
