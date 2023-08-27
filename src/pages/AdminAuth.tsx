@@ -13,7 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { toast } from '@/hooks/use-toast';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, LockKeyhole, Shield } from 'lucide-react';
+import { CheckCircle, LockKeyhole, Shield, Settings } from 'lucide-react';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -33,10 +33,11 @@ type TwoFactorFormValues = z.infer<typeof twoFactorSchema>;
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 const AdminAuth = () => {
-  const { isAuthenticated, isLoading, signIn, verify2FA, requestPasswordReset } = useAdminAuth();
+  const { isAuthenticated, isLoading, signIn, verify2FA, requestPasswordReset, createDefaultAdmin } = useAdminAuth();
   const [needs2FA, setNeeds2FA] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formTab, setFormTab] = useState<'login' | 'forgot-password'>('login');
+  const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -68,12 +69,6 @@ const AdminAuth = () => {
       
       if (result.requires2FA) {
         setNeeds2FA(true);
-      } else if (!result.success) {
-        toast({
-          title: "Login failed",
-          description: result.error || "Invalid credentials. Please try again.",
-          variant: "destructive",
-        });
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -91,15 +86,7 @@ const AdminAuth = () => {
     setIsSubmitting(true);
     
     try {
-      const result = await verify2FA(data.code);
-      
-      if (!result.success) {
-        toast({
-          title: "Verification failed",
-          description: result.error || "Invalid verification code. Please try again.",
-          variant: "destructive",
-        });
-      }
+      await verify2FA(data.code);
     } catch (error) {
       console.error('Two-factor verification error:', error);
       toast({
@@ -135,6 +122,40 @@ const AdminAuth = () => {
     }
     
     setIsSubmitting(false);
+  };
+
+  const handleCreateDefaultAdmin = async () => {
+    setIsCreatingAdmin(true);
+    
+    try {
+      const result = await createDefaultAdmin();
+      
+      if (result.success) {
+        toast({
+          title: "Setup complete",
+          description: "Default admin account created. You can now login with username 'speechhelpmaster' and password 'Admin@123'.",
+        });
+        
+        // Pre-fill the login form
+        loginForm.setValue('username', 'speechhelpmaster');
+        loginForm.setValue('password', 'Admin@123');
+      } else {
+        toast({
+          title: "Setup failed",
+          description: result.error || "Failed to create default admin account. The account may already exist.",
+          variant: result.error?.includes("already exists") ? "default" : "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Create default admin error:', error);
+      toast({
+        title: "Setup failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+    
+    setIsCreatingAdmin(false);
   };
 
   // Redirect if already authenticated
@@ -284,6 +305,27 @@ const AdminAuth = () => {
                 </Form>
               </TabsContent>
             </Tabs>
+          )}
+
+          {/* First-time setup section */}
+          {!needs2FA && (
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-center mb-3">
+                <Settings className="h-5 w-5 text-gray-500 mr-2" />
+                <span className="text-sm font-medium text-gray-500">First-time Setup</span>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleCreateDefaultAdmin}
+                disabled={isCreatingAdmin}
+              >
+                {isCreatingAdmin ? "Setting up..." : "Create Default Admin Account"}
+              </Button>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Use this option only for the initial setup of your admin portal.
+              </p>
+            </div>
           )}
         </CardContent>
         

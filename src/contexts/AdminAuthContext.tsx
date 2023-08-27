@@ -30,6 +30,10 @@ interface AdminAuthContextType {
     success: boolean;
     error?: string;
   }>;
+  createDefaultAdmin: () => Promise<{
+    success: boolean;
+    error?: string;
+  }>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
@@ -77,6 +81,10 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
     checkSession();
   }, []);
 
+  const createDefaultAdmin = async () => {
+    return await adminAuthService.createDefaultAdmin();
+  };
+
   const signIn = async (username: string, password: string) => {
     setIsLoading(true);
     
@@ -109,6 +117,12 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
         if (result.user) {
           sessionStorage.setItem('tempAdminUser', JSON.stringify(result.user));
         }
+      } else if (!result.success) {
+        toast({
+          title: "Login failed",
+          description: result.error || "Invalid credentials. Please try again.",
+          variant: "destructive",
+        });
       }
       
       setIsLoading(false);
@@ -163,6 +177,12 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
         toast({
           title: "Verification successful",
           description: `Welcome back, ${user?.username}!`,
+        });
+      } else {
+        toast({
+          title: "Verification failed",
+          description: result.error || "Invalid verification code. Please try again.",
+          variant: "destructive",
         });
       }
       
@@ -236,7 +256,8 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
         signIn,
         verify2FA,
         signOut,
-        requestPasswordReset
+        requestPasswordReset,
+        createDefaultAdmin
       }}
     >
       {children}

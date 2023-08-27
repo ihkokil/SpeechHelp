@@ -31,7 +31,10 @@ serve(async (req) => {
     console.log(`Request body keys: ${Object.keys(body).join(', ')}`);
 
     // Handle different authentication endpoints based on request body
-    if (body.username && body.password) {
+    if (body.action === "create_admin") {
+      // This is a create admin user request
+      return handleCreateAdmin(body);
+    } else if (body.username && body.password) {
       // This is a verify password request
       return handleVerifyPassword(body);
     } else if (body.adminId && body.code) {
@@ -58,6 +61,74 @@ serve(async (req) => {
   }
 });
 
+// Create an admin user (for first-time setup)
+async function handleCreateAdmin(data: { username: string; password: string; email: string; is_super_admin?: boolean }) {
+  const { username, password, email, is_super_admin = false } = data;
+
+  try {
+    console.log(`Creating admin user: ${username}`);
+    
+    // Check if admin with this username already exists
+    const { data: existingAdmin, error: checkError } = await supabaseClient
+      .from("admin_users")
+      .select("id")
+      .eq("username", username)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error("Error checking for existing admin:", checkError);
+      throw checkError;
+    }
+
+    if (existingAdmin) {
+      return new Response(JSON.stringify({ success: false, error: "Admin user already exists" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password);
+
+    // Create admin user
+    const { data: newAdmin, error: createError } = await supabaseClient
+      .from("admin_users")
+      .insert({
+        username,
+        email,
+        hashed_password: hashedPassword,
+        is_super_admin
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      console.error("Error creating admin user:", createError);
+      throw createError;
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      user: {
+        id: newAdmin.id,
+        username: newAdmin.username,
+        email: newAdmin.email,
+        is_active: newAdmin.is_active,
+        is_super_admin: newAdmin.is_super_admin
+      }
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  } catch (error) {
+    console.error("Error creating admin user:", error);
+    return new Response(JSON.stringify({ error: "Failed to create admin user" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }
+}
+
 // Verify admin password
 async function handleVerifyPassword(data: { username: string; password: string }) {
   const { username, password } = data;
@@ -65,16 +136,35 @@ async function handleVerifyPassword(data: { username: string; password: string }
   try {
     console.log(`Verifying password for username: ${username}`);
     
-    // Get hashed password from database
+    // Get admin user from database
     const { data: admin, error } = await supabaseClient
       .from("admin_users")
-      .select("id, hashed_password")
+      .select("*")
       .eq("username", username)
-      .single();
+      .maybeSingle();
 
-    if (error || !admin) {
+    if (error) {
+      console.error("Error fetching admin user:", error);
+      throw error;
+    }
+
+    if (!admin) {
       console.log(`Admin user not found for username: ${username}`);
-      return new Response(JSON.stringify({ success: false }), {
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: "Invalid credentials or account is inactive."
+      }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    if (!admin.is_active) {
+      console.log(`Admin account is inactive: ${username}`);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: "Invalid credentials or account is inactive."
+      }), {
         status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
@@ -84,7 +174,36 @@ async function handleVerifyPassword(data: { username: string; password: string }
     const passwordMatch = await bcrypt.compare(password, admin.hashed_password);
     console.log(`Password verification result: ${passwordMatch}`);
 
-    return new Response(JSON.stringify({ success: passwordMatch }), {
+    if (!passwordMatch) {
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: "Invalid credentials."
+      }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Check if 2FA is enabled for this admin
+    const { data: twoFactorData } = await supabaseClient
+      .from("admin_2fa")
+      .select("is_enabled")
+      .eq("admin_user_id", admin.id)
+      .maybeSingle();
+
+    // Return user info
+    return new Response(JSON.stringify({ 
+      success: true,
+      requires2FA: twoFactorData?.is_enabled || false,
+      user: {
+        id: admin.id,
+        username: admin.username,
+        email: admin.email,
+        is_active: admin.is_active,
+        is_super_admin: admin.is_super_admin,
+        last_login: admin.last_login
+      }
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
