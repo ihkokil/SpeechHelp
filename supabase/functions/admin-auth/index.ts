@@ -23,29 +23,39 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const body = await req.json();
+    // Parse the request body
+    let body;
+    try {
+      body = await req.json();
+      console.log("Received request body:", JSON.stringify(body));
+    } catch (error) {
+      console.error("Error parsing request body:", error);
+      return new Response(JSON.stringify({ error: "Invalid request body format" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
     
     // Log incoming request for debugging
-    console.log(`Admin auth request to: ${url.pathname}`);
+    console.log(`Admin auth request with action: ${body.action}`);
     console.log(`Request body keys: ${Object.keys(body).join(', ')}`);
 
     // Handle different authentication endpoints based on request body
     if (body.action === "create_admin") {
       // This is a create admin user request
-      return handleCreateAdmin(body);
+      return await handleCreateAdmin(body);
     } else if (body.username && body.password) {
       // This is a verify password request
-      return handleVerifyPassword(body);
+      return await handleVerifyPassword(body);
     } else if (body.adminId && body.code) {
       // This is a verify 2FA request
-      return handleVerify2FA(body);
+      return await handleVerify2FA(body);
     } else if (body.adminId && !body.code) {
       // This is a setup 2FA request
-      return handleSetup2FA(body);
+      return await handleSetup2FA(body);
     } else if (body.token && body.newPassword) {
       // This is a reset password request
-      return handleResetPassword(body);
+      return await handleResetPassword(body);
     } else {
       return new Response(JSON.stringify({ error: "Invalid request parameters" }), {
         status: 400,
@@ -54,7 +64,7 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error("Error in admin-auth function:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
+    return new Response(JSON.stringify({ error: "Internal server error", details: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
@@ -62,11 +72,11 @@ serve(async (req) => {
 });
 
 // Create an admin user (for first-time setup)
-async function handleCreateAdmin(data: { username: string; password: string; email: string; is_super_admin?: boolean }) {
+async function handleCreateAdmin(data) {
   const { username, password, email, is_super_admin = false } = data;
 
   try {
-    console.log(`Creating admin user: ${username}`);
+    console.log(`Creating admin user: ${username}, email: ${email}`);
     
     // Check if admin with this username already exists
     const { data: existingAdmin, error: checkError } = await supabaseClient
@@ -89,6 +99,7 @@ async function handleCreateAdmin(data: { username: string; password: string; ema
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password);
+    console.log("Password hashed successfully");
 
     // Create admin user
     const { data: newAdmin, error: createError } = await supabaseClient
@@ -107,6 +118,7 @@ async function handleCreateAdmin(data: { username: string; password: string; ema
       throw createError;
     }
 
+    console.log("Admin user created successfully:", newAdmin.id);
     return new Response(JSON.stringify({ 
       success: true, 
       user: {
@@ -122,7 +134,7 @@ async function handleCreateAdmin(data: { username: string; password: string; ema
     });
   } catch (error) {
     console.error("Error creating admin user:", error);
-    return new Response(JSON.stringify({ error: "Failed to create admin user" }), {
+    return new Response(JSON.stringify({ success: false, error: "Failed to create admin user", details: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
@@ -130,7 +142,7 @@ async function handleCreateAdmin(data: { username: string; password: string; ema
 }
 
 // Verify admin password
-async function handleVerifyPassword(data: { username: string; password: string }) {
+async function handleVerifyPassword(data) {
   const { username, password } = data;
 
   try {
@@ -209,7 +221,7 @@ async function handleVerifyPassword(data: { username: string; password: string }
     });
   } catch (error) {
     console.error("Error verifying password:", error);
-    return new Response(JSON.stringify({ error: "Password verification failed" }), {
+    return new Response(JSON.stringify({ error: "Password verification failed", details: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
@@ -217,7 +229,7 @@ async function handleVerifyPassword(data: { username: string; password: string }
 }
 
 // Set up two-factor authentication
-async function handleSetup2FA(data: { adminId: string }) {
+async function handleSetup2FA(data) {
   const { adminId } = data;
 
   try {
@@ -260,7 +272,7 @@ async function handleSetup2FA(data: { adminId: string }) {
     );
   } catch (error) {
     console.error("Error setting up 2FA:", error);
-    return new Response(JSON.stringify({ error: "Failed to set up 2FA" }), {
+    return new Response(JSON.stringify({ error: "Failed to set up 2FA", details: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
@@ -268,7 +280,7 @@ async function handleSetup2FA(data: { adminId: string }) {
 }
 
 // Verify two-factor authentication code
-async function handleVerify2FA(data: { adminId: string; code: string }) {
+async function handleVerify2FA(data) {
   const { adminId, code } = data;
 
   try {
@@ -313,7 +325,7 @@ async function handleVerify2FA(data: { adminId: string; code: string }) {
     });
   } catch (error) {
     console.error("Error verifying 2FA code:", error);
-    return new Response(JSON.stringify({ error: "2FA verification failed" }), {
+    return new Response(JSON.stringify({ error: "2FA verification failed", details: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
@@ -321,7 +333,7 @@ async function handleVerify2FA(data: { adminId: string; code: string }) {
 }
 
 // Handle password reset
-async function handleResetPassword(data: { token: string; newPassword: string }) {
+async function handleResetPassword(data) {
   const { token, newPassword } = data;
 
   try {
@@ -375,7 +387,7 @@ async function handleResetPassword(data: { token: string; newPassword: string })
     });
   } catch (error) {
     console.error("Error resetting password:", error);
-    return new Response(JSON.stringify({ error: "Password reset failed" }), {
+    return new Response(JSON.stringify({ error: "Password reset failed", details: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
