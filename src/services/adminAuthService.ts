@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -34,7 +35,7 @@ export const adminAuthService = {
     try {
       console.log('Attempting to create default admin user');
       
-      const { error, data } = await supabase.functions.invoke('admin-auth', {
+      const response = await supabase.functions.invoke('admin-auth', {
         body: { 
           action: 'create_admin',
           username: 'speechhelpmaster', 
@@ -43,14 +44,31 @@ export const adminAuthService = {
           is_super_admin: true
         },
       });
-
-      if (error) {
-        console.error('Error creating default admin:', error);
-        return { success: false, error: error.message };
+      
+      console.log('Response from admin-auth function:', response);
+      
+      if (response.error) {
+        console.error('Error creating default admin:', response.error);
+        return { 
+          success: false, 
+          error: response.error.message || 'Failed to connect to authentication service' 
+        };
       }
       
-      if (data && !data.success) {
-        return { success: false, error: data.error || 'Failed to create admin' };
+      if (!response.data) {
+        console.error('No data returned from admin-auth function');
+        return { 
+          success: false, 
+          error: 'No response from authentication service' 
+        };
+      }
+      
+      if (!response.data.success) {
+        console.log('Admin creation failed with error:', response.data.error);
+        return { 
+          success: false, 
+          error: response.data.error || 'Failed to create admin' 
+        };
       }
 
       console.log('Default admin user created successfully');

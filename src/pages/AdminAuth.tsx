@@ -13,7 +13,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { toast } from '@/hooks/use-toast';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, LockKeyhole, Shield, Settings } from 'lucide-react';
+import { AlertCircle, CheckCircle, LockKeyhole, Shield, Settings } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -38,6 +39,8 @@ const AdminAuth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formTab, setFormTab] = useState<'login' | 'forgot-password'>('login');
   const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
+  const [setupSuccess, setSetupSuccess] = useState(false);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -126,11 +129,14 @@ const AdminAuth = () => {
 
   const handleCreateDefaultAdmin = async () => {
     setIsCreatingAdmin(true);
+    setSetupError(null);
+    setSetupSuccess(false);
     
     try {
       const result = await createDefaultAdmin();
       
       if (result.success) {
+        setSetupSuccess(true);
         toast({
           title: "Setup complete",
           description: "Default admin account created. You can now login with username 'speechhelpmaster' and password 'Admin@123'.",
@@ -140,14 +146,28 @@ const AdminAuth = () => {
         loginForm.setValue('username', 'speechhelpmaster');
         loginForm.setValue('password', 'Admin@123');
       } else {
-        toast({
-          title: "Setup failed",
-          description: result.error || "Failed to create default admin account. The account may already exist.",
-          variant: result.error?.includes("already exists") ? "default" : "destructive",
-        });
+        if (result.error?.includes("already exists")) {
+          setSetupSuccess(true);
+          toast({
+            title: "Admin already exists",
+            description: "The default admin account already exists. You can login with username 'speechhelpmaster' and password 'Admin@123'.",
+          });
+          
+          // Pre-fill the login form
+          loginForm.setValue('username', 'speechhelpmaster');
+          loginForm.setValue('password', 'Admin@123');
+        } else {
+          setSetupError(result.error || "Failed to create default admin account.");
+          toast({
+            title: "Setup failed",
+            description: result.error || "Failed to create default admin account.",
+            variant: "destructive",
+          });
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Create default admin error:', error);
+      setSetupError(error.message || "An unexpected error occurred. Please try again.");
       toast({
         title: "Setup failed",
         description: "An unexpected error occurred. Please try again.",
@@ -314,6 +334,25 @@ const AdminAuth = () => {
                 <Settings className="h-5 w-5 text-gray-500 mr-2" />
                 <span className="text-sm font-medium text-gray-500">First-time Setup</span>
               </div>
+              
+              {setupSuccess && (
+                <Alert className="mb-3 bg-green-50 border-green-200">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-700">
+                    Default admin account is ready. Use username: <strong>speechhelpmaster</strong> and password: <strong>Admin@123</strong> to log in.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {setupError && (
+                <Alert className="mb-3 bg-red-50 border-red-200">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-700">
+                    {setupError}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               <Button 
                 variant="outline" 
                 className="w-full" 

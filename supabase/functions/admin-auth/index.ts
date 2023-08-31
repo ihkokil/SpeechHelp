@@ -17,54 +17,104 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log(`Request method: ${req.method}, URL: ${req.url}`);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log("Handling CORS preflight request");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     // Parse the request body
     let body;
+    let requestType = "";
+    
     try {
-      body = await req.json();
-      console.log("Received request body:", JSON.stringify(body));
+      const contentType = req.headers.get("content-type") || "";
+      console.log(`Content-Type: ${contentType}`);
+      
+      if (contentType.includes("application/json")) {
+        const text = await req.text();
+        console.log(`Request body text: ${text}`);
+        
+        if (text) {
+          body = JSON.parse(text);
+          console.log("Parsed JSON body:", JSON.stringify(body));
+        } else {
+          body = {};
+          console.log("Empty request body");
+        }
+      } else {
+        // For non-JSON content types
+        body = await req.json().catch(() => ({}));
+        console.log("Parsed body using req.json():", JSON.stringify(body));
+      }
     } catch (error) {
       console.error("Error parsing request body:", error);
-      return new Response(JSON.stringify({ error: "Invalid request body format" }), {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Invalid request body format", 
+        details: error.message 
+      }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
     
-    // Log incoming request for debugging
-    console.log(`Admin auth request with action: ${body.action}`);
-    console.log(`Request body keys: ${Object.keys(body).join(', ')}`);
-
-    // Handle different authentication endpoints based on request body
+    // Determine the request type based on body parameters
     if (body.action === "create_admin") {
-      // This is a create admin user request
-      return await handleCreateAdmin(body);
+      requestType = "create_admin";
+      console.log("Identified request type: create_admin");
     } else if (body.username && body.password) {
-      // This is a verify password request
-      return await handleVerifyPassword(body);
+      requestType = "verify_password";
+      console.log("Identified request type: verify_password");
     } else if (body.adminId && body.code) {
-      // This is a verify 2FA request
-      return await handleVerify2FA(body);
+      requestType = "verify_2fa";
+      console.log("Identified request type: verify_2fa");
     } else if (body.adminId && !body.code) {
-      // This is a setup 2FA request
-      return await handleSetup2FA(body);
+      requestType = "setup_2fa";
+      console.log("Identified request type: setup_2fa");
     } else if (body.token && body.newPassword) {
-      // This is a reset password request
-      return await handleResetPassword(body);
+      requestType = "reset_password";
+      console.log("Identified request type: reset_password");
     } else {
-      return new Response(JSON.stringify({ error: "Invalid request parameters" }), {
+      console.log("Unknown request type with body keys:", Object.keys(body).join(", "));
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Invalid request parameters", 
+        requestReceived: body 
+      }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
+    
+    // Handle different authentication endpoints based on identified request type
+    switch (requestType) {
+      case "create_admin":
+        return await handleCreateAdmin(body);
+      case "verify_password":
+        return await handleVerifyPassword(body);
+      case "verify_2fa":
+        return await handleVerify2FA(body);
+      case "setup_2fa":
+        return await handleSetup2FA(body);
+      case "reset_password":
+        return await handleResetPassword(body);
+      default:
+        return new Response(JSON.stringify({ error: "Invalid request type" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+    }
   } catch (error) {
     console.error("Error in admin-auth function:", error);
-    return new Response(JSON.stringify({ error: "Internal server error", details: error.message }), {
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: "Internal server error", 
+      details: error.message 
+    }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
@@ -91,8 +141,12 @@ async function handleCreateAdmin(data) {
     }
 
     if (existingAdmin) {
-      return new Response(JSON.stringify({ success: false, error: "Admin user already exists" }), {
-        status: 400,
+      console.log("Admin user already exists, returning friendly message");
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Admin user already exists" 
+      }), {
+        status: 200, // Return 200 status even for "already exists" to prevent edge function errors
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -134,8 +188,12 @@ async function handleCreateAdmin(data) {
     });
   } catch (error) {
     console.error("Error creating admin user:", error);
-    return new Response(JSON.stringify({ success: false, error: "Failed to create admin user", details: error.message }), {
-      status: 500,
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: "Failed to create admin user", 
+      details: error.message 
+    }), {
+      status: 200, // Return 200 status even for errors to prevent edge function errors
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
