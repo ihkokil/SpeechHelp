@@ -41,6 +41,7 @@ const AdminAuth = () => {
   const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
   const [setupSuccess, setSetupSuccess] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -66,15 +67,26 @@ const AdminAuth = () => {
 
   const onSubmitLogin = async (data: LoginFormValues) => {
     setIsSubmitting(true);
+    setLoginError(null);
     
     try {
+      console.log(`Attempting to sign in with username: ${data.username}`);
       const result = await signIn(data.username, data.password);
+      console.log('Sign in result:', result);
       
-      if (result.requires2FA) {
+      if (result.success && result.requires2FA) {
         setNeeds2FA(true);
+      } else if (!result.success) {
+        setLoginError(result.error || 'Invalid credentials');
+        toast({
+          title: "Login failed",
+          description: result.error || "Invalid credentials. Please try again.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error('Login error:', error);
+      setLoginError('An unexpected error occurred');
       toast({
         title: "Login failed",
         description: "An unexpected error occurred. Please try again.",
@@ -133,7 +145,9 @@ const AdminAuth = () => {
     setSetupSuccess(false);
     
     try {
+      console.log('Attempting to create default admin user');
       const result = await createDefaultAdmin();
+      console.log('Default admin creation result:', result);
       
       if (result.success) {
         setSetupSuccess(true);
@@ -254,6 +268,15 @@ const AdminAuth = () => {
               <TabsContent value="login">
                 <Form {...loginForm}>
                   <form onSubmit={loginForm.handleSubmit(onSubmitLogin)} className="space-y-4">
+                    {loginError && (
+                      <Alert className="bg-red-50 border-red-200 mb-4">
+                        <AlertCircle className="h-4 w-4 text-red-600" />
+                        <AlertDescription className="text-red-700">
+                          {loginError}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
                     <FormField
                       control={loginForm.control}
                       name="username"

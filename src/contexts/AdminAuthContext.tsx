@@ -82,6 +82,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
   }, []);
 
   const createDefaultAdmin = async () => {
+    console.log('Creating default admin user from context');
     return await adminAuthService.createDefaultAdmin();
   };
 

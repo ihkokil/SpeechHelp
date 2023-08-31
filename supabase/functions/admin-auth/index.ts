@@ -28,7 +28,6 @@ serve(async (req) => {
   try {
     // Parse the request body
     let body;
-    let requestType = "";
     
     try {
       const contentType = req.headers.get("content-type") || "";
@@ -40,7 +39,7 @@ serve(async (req) => {
         
         if (text) {
           body = JSON.parse(text);
-          console.log("Parsed JSON body:", JSON.stringify(body));
+          console.log("Parsed JSON body:", body);
         } else {
           body = {};
           console.log("Empty request body");
@@ -48,7 +47,7 @@ serve(async (req) => {
       } else {
         // For non-JSON content types
         body = await req.json().catch(() => ({}));
-        console.log("Parsed body using req.json():", JSON.stringify(body));
+        console.log("Parsed body using req.json():", body);
       }
     } catch (error) {
       console.error("Error parsing request body:", error);
@@ -57,12 +56,14 @@ serve(async (req) => {
         error: "Invalid request body format", 
         details: error.message 
       }), {
-        status: 400,
+        status: 200, // Use 200 even for errors to prevent edge function errors
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
     
     // Determine the request type based on body parameters
+    let requestType = "";
+    
     if (body.action === "create_admin") {
       requestType = "create_admin";
       console.log("Identified request type: create_admin");
@@ -82,32 +83,42 @@ serve(async (req) => {
       console.log("Unknown request type with body keys:", Object.keys(body).join(", "));
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "Invalid request parameters", 
-        requestReceived: body 
+        error: "Invalid request parameters"
       }), {
-        status: 400,
+        status: 200, // Use 200 even for errors to prevent edge function errors
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
     
     // Handle different authentication endpoints based on identified request type
+    let response;
     switch (requestType) {
       case "create_admin":
-        return await handleCreateAdmin(body);
+        response = await handleCreateAdmin(body);
+        break;
       case "verify_password":
-        return await handleVerifyPassword(body);
+        response = await handleVerifyPassword(body);
+        break;
       case "verify_2fa":
-        return await handleVerify2FA(body);
+        response = await handleVerify2FA(body);
+        break;
       case "setup_2fa":
-        return await handleSetup2FA(body);
+        response = await handleSetup2FA(body);
+        break;
       case "reset_password":
-        return await handleResetPassword(body);
+        response = await handleResetPassword(body);
+        break;
       default:
-        return new Response(JSON.stringify({ error: "Invalid request type" }), {
-          status: 400,
+        response = new Response(JSON.stringify({ 
+          success: false, 
+          error: "Invalid request type" 
+        }), {
+          status: 200, // Use 200 even for errors to prevent edge function errors
           headers: { "Content-Type": "application/json", ...corsHeaders },
         });
     }
+    
+    return response;
   } catch (error) {
     console.error("Error in admin-auth function:", error);
     return new Response(JSON.stringify({ 
@@ -115,7 +126,7 @@ serve(async (req) => {
       error: "Internal server error", 
       details: error.message 
     }), {
-      status: 500,
+      status: 200, // Use 200 even for errors to prevent edge function errors
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
@@ -146,7 +157,7 @@ async function handleCreateAdmin(data) {
         success: false, 
         error: "Admin user already exists" 
       }), {
-        status: 200, // Return 200 status even for "already exists" to prevent edge function errors
+        status: 200, // Use 200 even for existing admin to prevent edge function errors
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -193,7 +204,7 @@ async function handleCreateAdmin(data) {
       error: "Failed to create admin user", 
       details: error.message 
     }), {
-      status: 200, // Return 200 status even for errors to prevent edge function errors
+      status: 200, // Use 200 even for errors to prevent edge function errors
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
@@ -215,7 +226,13 @@ async function handleVerifyPassword(data) {
 
     if (error) {
       console.error("Error fetching admin user:", error);
-      throw error;
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: "Failed to verify credentials"
+      }), {
+        status: 200, // Use 200 even for errors to prevent edge function errors
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     if (!admin) {
@@ -224,7 +241,7 @@ async function handleVerifyPassword(data) {
         success: false,
         error: "Invalid credentials or account is inactive."
       }), {
-        status: 401,
+        status: 200, // Use 200 even for errors to prevent edge function errors
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -235,7 +252,7 @@ async function handleVerifyPassword(data) {
         success: false,
         error: "Invalid credentials or account is inactive."
       }), {
-        status: 401,
+        status: 200, // Use 200 even for errors to prevent edge function errors
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -249,7 +266,7 @@ async function handleVerifyPassword(data) {
         success: false,
         error: "Invalid credentials."
       }), {
-        status: 401,
+        status: 200, // Use 200 even for errors to prevent edge function errors
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -279,8 +296,12 @@ async function handleVerifyPassword(data) {
     });
   } catch (error) {
     console.error("Error verifying password:", error);
-    return new Response(JSON.stringify({ error: "Password verification failed", details: error.message }), {
-      status: 500,
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: "Password verification failed", 
+      details: error.message 
+    }), {
+      status: 200, // Use 200 even for errors to prevent edge function errors
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
@@ -330,8 +351,12 @@ async function handleSetup2FA(data) {
     );
   } catch (error) {
     console.error("Error setting up 2FA:", error);
-    return new Response(JSON.stringify({ error: "Failed to set up 2FA", details: error.message }), {
-      status: 500,
+    return new Response(JSON.stringify({ 
+      success: false,
+      error: "Failed to set up 2FA", 
+      details: error.message 
+    }), {
+      status: 200, // Use 200 even for errors to prevent edge function errors
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
@@ -353,8 +378,11 @@ async function handleVerify2FA(data) {
 
     if (error || !twoFactorData) {
       console.error("2FA data not found:", error);
-      return new Response(JSON.stringify({ success: false, error: "2FA not set up" }), {
-        status: 400,
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "2FA not set up" 
+      }), {
+        status: 200, // Use 200 even for errors to prevent edge function errors
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -383,8 +411,12 @@ async function handleVerify2FA(data) {
     });
   } catch (error) {
     console.error("Error verifying 2FA code:", error);
-    return new Response(JSON.stringify({ error: "2FA verification failed", details: error.message }), {
-      status: 500,
+    return new Response(JSON.stringify({ 
+      success: false,
+      error: "2FA verification failed", 
+      details: error.message 
+    }), {
+      status: 200, // Use 200 even for errors to prevent edge function errors
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
@@ -405,16 +437,22 @@ async function handleResetPassword(data) {
       .single();
 
     if (resetError || !resetData) {
-      return new Response(JSON.stringify({ success: false, error: "Invalid or expired token" }), {
-        status: 400,
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Invalid or expired token" 
+      }), {
+        status: 200, // Use 200 even for errors to prevent edge function errors
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
     // Check if token is expired
     if (new Date(resetData.expires_at) < new Date()) {
-      return new Response(JSON.stringify({ success: false, error: "Token expired" }), {
-        status: 400,
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Token expired" 
+      }), {
+        status: 200, // Use 200 even for errors to prevent edge function errors
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -445,8 +483,12 @@ async function handleResetPassword(data) {
     });
   } catch (error) {
     console.error("Error resetting password:", error);
-    return new Response(JSON.stringify({ error: "Password reset failed", details: error.message }), {
-      status: 500,
+    return new Response(JSON.stringify({ 
+      success: false,
+      error: "Password reset failed", 
+      details: error.message 
+    }), {
+      status: 200, // Use 200 even for errors to prevent edge function errors
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
