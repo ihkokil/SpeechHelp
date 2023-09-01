@@ -76,9 +76,10 @@ const AdminAuth = () => {
       if (result.success && result.requires2FA) {
         setNeeds2FA(true);
       } else if (result.success) {
+        const username = result.user?.username || data.username;
         toast({
           title: "Login successful",
-          description: `Welcome back, ${result.user?.username}!`,
+          description: `Welcome back, ${username}!`,
         });
       } else if (!result.success) {
         setLoginError(result.error || 'Invalid credentials');
@@ -160,7 +161,6 @@ const AdminAuth = () => {
           description: "Default admin account created. You can now login with username 'speechhelpmaster' and password 'Admin@123'.",
         });
         
-        // Pre-fill the login form
         loginForm.setValue('username', 'speechhelpmaster');
         loginForm.setValue('password', 'Admin@123');
       } else {

@@ -20,6 +20,7 @@ interface AdminAuthContextType {
     success: boolean;
     requires2FA?: boolean;
     error?: string;
+    user?: AdminUser;  // Add user to the return type
   }>;
   verify2FA: (code: string) => Promise<{
     success: boolean;
@@ -94,7 +95,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
       const result = await adminAuthService.signIn({ username, password });
       console.log("Sign in result:", result);
       
-      if (result.success && !result.requires2FA) {
+      if (result.success && !result.requires2FA && result.user) {
         // Set admin session
         const expiresAt = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 hours
         const sessionData = {
@@ -110,7 +111,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
           title: "Login successful",
           description: `Welcome back, ${result.user?.username}!`,
         });
-      } else if (result.success && result.requires2FA) {
+      } else if (result.success && result.requires2FA && result.user) {
         // Set pending user for 2FA verification
         setPendingUserId(result.user?.id || null);
         
