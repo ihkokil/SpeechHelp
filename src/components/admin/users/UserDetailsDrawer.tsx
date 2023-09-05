@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, PieChart, CreditCard, ScrollText, Clock } from 'lucide-react';
+import { User, PieChart, CreditCard, ScrollText, Clock, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { UserHeader } from './details/UserHeader';
 import { UserProfile } from './details/UserProfile';
@@ -11,6 +11,7 @@ import { UserBilling } from './details/UserBilling';
 import { UserStatistics } from './details/UserStatistics';
 import { UserActivity } from './details/UserActivity';
 import { User as UserType, Speech } from './types';
+import { Button } from '@/components/ui/button';
 
 interface UserDetailsDrawerProps {
   user: UserType | null;
@@ -73,7 +74,12 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
     <Sheet open={open} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto">
         <SheetHeader className="pb-4">
-          <SheetTitle>User Details</SheetTitle>
+          <div className="flex justify-between items-center">
+            <SheetTitle>User Details</SheetTitle>
+            <SheetClose asChild>
+              <Button variant="ghost" size="sm">Close</Button>
+            </SheetClose>
+          </div>
           <SheetDescription>
             Detailed information about {user.user_metadata?.full_name || user.email}
           </SheetDescription>
@@ -83,7 +89,7 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
           <UserHeader user={user} />
           
           <Tabs defaultValue="profile">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="profile">
                 <User className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">Profile</span>
@@ -103,6 +109,10 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
               <TabsTrigger value="activity">
                 <Clock className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">Activity</span>
+              </TabsTrigger>
+              <TabsTrigger value="permissions">
+                <Shield className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Permissions</span>
               </TabsTrigger>
             </TabsList>
             
@@ -133,6 +143,50 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
                 userJoinedDays={userJoinedDays}
                 totalActivityTime={totalActivityTime}
               />
+            </TabsContent>
+            
+            <TabsContent value="permissions" className="pt-4">
+              <div className="space-y-4">
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-md">
+                  <h3 className="font-medium flex items-center text-amber-800">
+                    <Shield className="h-4 w-4 mr-2" />
+                    Admin Permissions
+                  </h3>
+                  <p className="text-sm text-amber-700 mt-1">
+                    Manage this user's administrative permissions from the user management page.
+                  </p>
+                </div>
+                
+                {user.is_admin ? (
+                  <div className="space-y-4">
+                    <div className="border rounded-md p-4">
+                      <h3 className="font-medium mb-2">Current Admin Role</h3>
+                      <div className="flex items-center">
+                        <div className="h-3 w-3 rounded-full bg-purple-500 mr-2"></div>
+                        <span>{user.admin_role || 'No specific role'}</span>
+                      </div>
+                    </div>
+                    
+                    {user.permissions && user.permissions.length > 0 && (
+                      <div className="border rounded-md p-4">
+                        <h3 className="font-medium mb-2">Permissions</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {user.permissions.map(permission => (
+                            <div key={permission} className="flex items-center text-sm">
+                              <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
+                              <span>{permission}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="border rounded-md p-4 text-center text-muted-foreground">
+                    This user does not have any administrative permissions.
+                  </div>
+                )}
+              </div>
             </TabsContent>
           </Tabs>
         </div>

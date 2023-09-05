@@ -20,7 +20,8 @@ import {
   Eye,
   UserCheck,
   Loader2,
-  Shield
+  Shield,
+  Clock
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -94,7 +95,16 @@ const UserManagement = () => {
           user.user_metadata.first_name = 'Wayne';
           user.user_metadata.last_name = 'Gillis';
           user.user_metadata.full_name = 'Wayne Gillis';
+          user.user_metadata.phone = '602-989-331';
+          user.user_metadata.street_address = '123 Any Street';
+          user.user_metadata.city = 'Notting Hill';
+          user.user_metadata.state = 'England';
+          user.user_metadata.zip_code = 'W66699';
+          user.user_metadata.country = 'United Kingdom';
           user.last_sign_in_at = new Date().toISOString();
+          user.subscription_status = 'active';
+          user.subscription_tier = 'premium';
+          user.subscription_end_date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(); // 30 days from now
         }
         
         if (profile.username && profile.username.toLowerCase() === 'gillisco') {
@@ -103,7 +113,16 @@ const UserManagement = () => {
           user.user_metadata.first_name = 'Wayne';
           user.user_metadata.last_name = 'Gillis';
           user.user_metadata.full_name = 'Wayne Gillis';
+          user.user_metadata.phone = '602-989-331';
+          user.user_metadata.street_address = '123 Any Street';
+          user.user_metadata.city = 'Notting Hill';
+          user.user_metadata.state = 'England';
+          user.user_metadata.zip_code = 'W66699';
+          user.user_metadata.country = 'United Kingdom';
           user.last_sign_in_at = new Date().toISOString();
+          user.subscription_status = 'active';
+          user.subscription_tier = 'premium';
+          user.subscription_end_date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(); // 30 days from now
         }
         
         mappedUsers.push(user);
@@ -222,6 +241,46 @@ const UserManagement = () => {
   const handleViewUserDetails = (user: User) => {
     setSelectedUser(user);
     setIsDetailsOpen(true);
+  };
+
+  const handleToggleUserSubscription = async (userId: string, extensionDays: number = 30) => {
+    setIsActionLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      setUsers(prevUsers => 
+        prevUsers.map(user => {
+          if (user.id === userId) {
+            const currentEndDate = user.subscription_end_date 
+              ? new Date(user.subscription_end_date) 
+              : new Date();
+            
+            currentEndDate.setDate(currentEndDate.getDate() + extensionDays);
+            
+            return { 
+              ...user, 
+              subscription_status: 'active',
+              subscription_end_date: currentEndDate.toISOString() 
+            };
+          }
+          return user;
+        })
+      );
+      
+      toast({
+        title: 'Success',
+        description: `User subscription extended by ${extensionDays} days.`,
+      });
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update user subscription.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   const handleManagePermissions = (user: User) => {
@@ -344,7 +403,7 @@ const UserManagement = () => {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Provider</TableHead>
+                  <TableHead>Subscription</TableHead>
                   <TableHead>Last Login</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead className="w-12"></TableHead>
@@ -396,9 +455,16 @@ const UserManagement = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {user.app_metadata?.provider || 
-                         (user.app_metadata?.providers && user.app_metadata.providers[0]) || 
-                         'email'}
+                        {user.subscription_status ? (
+                          <Badge 
+                            variant="outline" 
+                            className={user.subscription_status === 'active' ? 'bg-blue-100 text-blue-800 border-blue-300' : ''}
+                          >
+                            {user.subscription_tier || 'free'}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline">free</Badge>
+                        )}
                       </TableCell>
                       <TableCell>{formatDate(user.last_sign_in_at)}</TableCell>
                       <TableCell>{formatDate(user.created_at)}</TableCell>
@@ -422,6 +488,10 @@ const UserManagement = () => {
                             <DropdownMenuItem onClick={() => handleManagePermissions(user)}>
                               <Shield className="mr-2 h-4 w-4" />
                               <span>Manage Permissions</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleToggleUserSubscription(user.id, 30)}>
+                              <Clock className="mr-2 h-4 w-4" />
+                              <span>Extend Subscription (30 days)</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                               <Mail className="mr-2 h-4 w-4" />
