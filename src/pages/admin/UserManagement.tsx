@@ -243,6 +243,13 @@ const UserManagement = () => {
     setIsDetailsOpen(true);
   };
 
+  const handleCloseUserDetails = () => {
+    setIsDetailsOpen(false);
+    setTimeout(() => {
+      setSelectedUser(null);
+    }, 300);
+  };
+
   const handleToggleUserSubscription = async (userId: string, extensionDays: number = 30) => {
     setIsActionLoading(true);
     try {
@@ -578,7 +585,7 @@ const UserManagement = () => {
       <UserDetailsDrawer 
         user={selectedUser} 
         open={isDetailsOpen} 
-        onClose={() => setIsDetailsOpen(false)} 
+        onClose={handleCloseUserDetails} 
       />
       
       <AddUserDialog 
