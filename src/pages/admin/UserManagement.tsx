@@ -240,10 +240,14 @@ const UserManagement = () => {
 
   const handleViewUserDetails = (user: User) => {
     console.log('UserManagement: Opening details for user:', user.id);
-    setSelectedUser(user);
+    setIsDetailsOpen(false);
+    
     setTimeout(() => {
-      setIsDetailsOpen(true);
-    }, 0);
+      setSelectedUser(user);
+      setTimeout(() => {
+        setIsDetailsOpen(true);
+      }, 50);
+    }, 200);
   };
 
   const handleCloseUserDetails = () => {
@@ -252,7 +256,7 @@ const UserManagement = () => {
     setTimeout(() => {
       console.log('UserManagement: Resetting selected user to null');
       setSelectedUser(null);
-    }, 100);
+    }, 200);
   };
 
   const handleToggleUserSubscription = async (userId: string, extensionDays: number = 30) => {
@@ -418,7 +422,7 @@ const UserManagement = () => {
                   <TableHead>Subscription</TableHead>
                   <TableHead>Last Login</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead className="w-12"></TableHead>
+                  <TableHead className="w-12 text-right pr-2">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -480,15 +484,15 @@ const UserManagement = () => {
                       </TableCell>
                       <TableCell>{formatDate(user.last_sign_in_at)}</TableCell>
                       <TableCell>{formatDate(user.created_at)}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
                               <MoreVertical className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
+                              <span className="sr-only">Open menu</span>
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" className="w-[200px]">
                             <DropdownMenuItem onClick={() => handleViewUserDetails(user)}>
                               <Eye className="mr-2 h-4 w-4" />
                               <span>View Details</span>
@@ -503,7 +507,7 @@ const UserManagement = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleToggleUserSubscription(user.id, 30)}>
                               <Clock className="mr-2 h-4 w-4" />
-                              <span>Extend Subscription (30 days)</span>
+                              <span>Extend Subscription</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                               <Mail className="mr-2 h-4 w-4" />
@@ -523,7 +527,7 @@ const UserManagement = () => {
                             )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
-                              className="text-red-600"
+                              className="text-red-600 focus:text-red-700 focus:bg-red-50"
                               onClick={() => {
                                 setSelectedUsers([user.id]);
                                 setIsDeleteDialogOpen(true);
@@ -587,11 +591,14 @@ const UserManagement = () => {
         </DialogContent>
       </Dialog>
       
-      <UserDetailsDrawer 
-        user={selectedUser} 
-        open={isDetailsOpen} 
-        onClose={handleCloseUserDetails} 
-      />
+      {selectedUser && (
+        <UserDetailsDrawer 
+          key={`user-drawer-${selectedUser.id}-${isDetailsOpen}`}
+          user={selectedUser} 
+          open={isDetailsOpen} 
+          onClose={handleCloseUserDetails} 
+        />
+      )}
       
       <AddUserDialog 
         open={isAddUserDialogOpen} 

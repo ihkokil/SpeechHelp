@@ -96,9 +96,11 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
         <SheetHeader className="pb-4">
           <div className="flex justify-between items-center">
             <SheetTitle>User Details</SheetTitle>
-            <Button variant="ghost" size="sm" onClick={handleCloseClick}>
-              Close
-            </Button>
+            <SheetClose asChild>
+              <Button variant="ghost" size="sm" onClick={handleCloseClick}>
+                Close
+              </Button>
+            </SheetClose>
           </div>
           <SheetDescription>
             Detailed information about {user.user_metadata?.full_name || user.email}
