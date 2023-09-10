@@ -38,7 +38,7 @@ export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
           </Button>
           <Button 
             variant="destructive" 
-            onClick={onConfirm}
+            onClick={() => onConfirm()}
             disabled={isLoading}
           >
             {isLoading ? (
