@@ -50,7 +50,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
         <Button 
           variant="outline" 
           size="icon" 
-          onClick={() => fetchUsers()}
+          onClick={fetchUsers}
           disabled={isLoading}
         >
           {isLoading ? (
