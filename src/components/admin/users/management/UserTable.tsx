@@ -74,7 +74,7 @@ export const UserTable: React.FC<UserTableProps> = ({
             <TableHead className="w-12">
               <Checkbox 
                 checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0} 
-                onCheckedChange={() => toggleAllUsers()}
+                onCheckedChange={toggleAllUsers}
                 disabled={isLoading}
               />
             </TableHead>
