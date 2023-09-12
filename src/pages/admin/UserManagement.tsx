@@ -42,13 +42,9 @@ const UserManagement = () => {
   
   const { toast } = useToast();
   
-  // Only fetch users on initial mount, preventing re-renders
+  // Only fetch users on initial mount
   useEffect(() => {
-    const loadUsers = async () => {
-      await fetchUsers();
-    };
-    loadUsers();
-    // Remove fetchUsers from the dependency array to prevent re-renders
+    fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -102,7 +98,7 @@ const UserManagement = () => {
       
       {selectedUser && (
         <UserDetailsDrawer 
-          key={`user-drawer-${selectedUser.id}`}
+          key={selectedUser.id} 
           user={selectedUser} 
           open={isDetailsOpen} 
           onClose={handleCloseUserDetails} 
