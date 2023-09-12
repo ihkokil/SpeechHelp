@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,14 +15,18 @@ export const useUserManagement = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState(0);
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
   
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
+    // Prevent rapid re-fetching
+    const now = Date.now();
+    if (now - lastFetchTime < 1000) {
+      return; // Debounce fetch requests
+    }
+    
+    setLastFetchTime(now);
     setIsLoading(true);
     try {
       const { data: profilesData, error: profilesError } = await supabase
@@ -135,7 +138,7 @@ export const useUserManagement = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [adminUser, toast, lastFetchTime]);
 
   const toggleUserSelection = (userId: string) => {
     setSelectedUsers(prev => 
@@ -213,26 +216,19 @@ export const useUserManagement = () => {
     }
   };
 
-  const handleViewUserDetails = (user: User) => {
+  const handleViewUserDetails = useCallback((user: User) => {
     console.log('UserManagement: Opening details for user:', user.id);
-    setIsDetailsOpen(false);
-    
-    setTimeout(() => {
-      setSelectedUser(user);
-      setTimeout(() => {
-        setIsDetailsOpen(true);
-      }, 50);
-    }, 200);
-  };
+    setSelectedUser(user);
+    setIsDetailsOpen(true);
+  }, []);
 
-  const handleCloseUserDetails = () => {
+  const handleCloseUserDetails = useCallback(() => {
     console.log('UserManagement: Closing user details drawer');
     setIsDetailsOpen(false);
     setTimeout(() => {
-      console.log('UserManagement: Resetting selected user to null');
       setSelectedUser(null);
-    }, 200);
-  };
+    }, 300);
+  }, []);
 
   const handleToggleUserSubscription = async (userId: string, extensionDays: number = 30) => {
     setIsActionLoading(true);

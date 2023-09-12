@@ -42,10 +42,15 @@ const UserManagement = () => {
   
   const { toast } = useToast();
   
-  // Fetch users on component mount
+  // Only fetch users on initial mount, preventing re-renders
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    const loadUsers = async () => {
+      await fetchUsers();
+    };
+    loadUsers();
+    // Remove fetchUsers from the dependency array to prevent re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -97,7 +102,7 @@ const UserManagement = () => {
       
       {selectedUser && (
         <UserDetailsDrawer 
-          key={`user-drawer-${selectedUser.id}-${isDetailsOpen}`}
+          key={`user-drawer-${selectedUser.id}`}
           user={selectedUser} 
           open={isDetailsOpen} 
           onClose={handleCloseUserDetails} 
@@ -117,12 +122,14 @@ const UserManagement = () => {
         }}
       />
 
-      <AdminPermissionsDialog
-        user={selectedUser}
-        open={isPermissionsDialogOpen}
-        onOpenChange={setIsPermissionsDialogOpen}
-        onPermissionsUpdated={handlePermissionsUpdated}
-      />
+      {selectedUser && (
+        <AdminPermissionsDialog
+          user={selectedUser}
+          open={isPermissionsDialogOpen}
+          onOpenChange={setIsPermissionsDialogOpen}
+          onPermissionsUpdated={handlePermissionsUpdated}
+        />
+      )}
     </div>
   );
 };
