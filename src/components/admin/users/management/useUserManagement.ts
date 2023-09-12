@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +16,7 @@ export const useUserManagement = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   const [lastFetchTime, setLastFetchTime] = useState(0);
+  const isInitialMount = useRef(true);
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
   
@@ -226,8 +226,6 @@ export const useUserManagement = () => {
   const handleCloseUserDetails = useCallback(() => {
     console.log('UserManagement: Closing user details drawer');
     setIsDetailsOpen(false);
-    // Don't clear the selected user immediately to avoid UI flickering
-    // The drawer needs the user data during the closing animation
   }, []);
 
   const handleToggleUserSubscription = async (userId: string, extensionDays: number = 30) => {
@@ -288,12 +286,10 @@ export const useUserManagement = () => {
     });
   };
 
-  // Clean up selectedUser when drawer is closed
   useEffect(() => {
     if (!isDetailsOpen && !isPermissionsDialogOpen) {
-      // Only clear selected user when both drawers are closed
-      // and after a short delay to allow animations to complete
       const timer = setTimeout(() => {
+        console.log('Clearing selected user after drawer closed');
         setSelectedUser(null);
       }, 300);
       

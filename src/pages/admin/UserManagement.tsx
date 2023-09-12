@@ -44,6 +44,7 @@ const UserManagement = () => {
   
   // Only fetch users on initial mount
   useEffect(() => {
+    console.log('UserManagement: Fetching users on mount');
     fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -98,7 +99,7 @@ const UserManagement = () => {
       
       {selectedUser && (
         <UserDetailsDrawer 
-          key={selectedUser.id} 
+          key={`drawer-${selectedUser.id}`}
           user={selectedUser} 
           open={isDetailsOpen} 
           onClose={handleCloseUserDetails} 

@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -55,17 +55,29 @@ export const UserTable: React.FC<UserTableProps> = ({
     (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
   ), [users, searchTerm]);
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = useCallback((dateString: string | null) => {
     if (!dateString) return 'Never';
     return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
-  };
+  }, []);
 
-  const getUserName = (user: User) => {
+  const getUserName = useCallback((user: User) => {
     return user.user_metadata?.full_name || 
            user.user_metadata?.name || 
            user.email?.split('@')[0] || 
            'Unknown';
-  };
+  }, []);
+
+  const handleViewDetailsClick = useCallback((e: React.MouseEvent, user: User) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleViewUserDetails(user);
+  }, [handleViewUserDetails]);
+
+  const handleManagePermissionsClick = useCallback((e: React.MouseEvent, user: User) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleManagePermissions(user);
+  }, [handleManagePermissions]);
 
   return (
     <div className="rounded-md border">
@@ -155,7 +167,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
-                      <DropdownMenuItem onClick={() => handleViewUserDetails(user)}>
+                      <DropdownMenuItem onClick={(e) => handleViewDetailsClick(e, user)}>
                         <Eye className="mr-2 h-4 w-4" />
                         <span>View Details</span>
                       </DropdownMenuItem>
@@ -163,7 +175,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                         <UserCog className="mr-2 h-4 w-4" />
                         <span>Edit User</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleManagePermissions(user)}>
+                      <DropdownMenuItem onClick={(e) => handleManagePermissionsClick(e, user)}>
                         <Shield className="mr-2 h-4 w-4" />
                         <span>Manage Permissions</span>
                       </DropdownMenuItem>

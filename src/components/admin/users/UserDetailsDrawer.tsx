@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, PieChart, CreditCard, ScrollText, Clock, Shield } from 'lucide-react';
+import { User, CreditCard, ScrollText, Clock, Shield, PieChart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { UserHeader } from './details/UserHeader';
 import { UserProfile } from './details/UserProfile';
