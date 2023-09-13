@@ -24,11 +24,14 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
   const [isLoadingSpeeches, setIsLoadingSpeeches] = useState(false);
   const [userJoinedDays, setUserJoinedDays] = useState<number>(0);
   const [totalActivityTime, setTotalActivityTime] = useState<number>(0);
+  const [isOpen, setIsOpen] = useState(open);
   
   // Reset states and fetch data when the drawer opens with a user
   useEffect(() => {
+    console.log('UserDetailsDrawer: drawer mount/update', { user: user?.id, open });
+    
     if (user && open) {
-      console.log('UserDetailsDrawer: drawer opened for user', user.id);
+      setIsOpen(true);
       setSpeeches([]);
       setIsLoadingSpeeches(false);
       setUserJoinedDays(0);
@@ -77,21 +80,27 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
   // Handle closing the drawer
   const handleCloseClick = () => {
     console.log('UserDetailsDrawer: close button clicked');
-    onClose();
+    setIsOpen(false);
+    setTimeout(() => {
+      onClose();
+    }, 300); // Wait for animation to complete
   };
   
   // This gets called when the Sheet component changes its own open state
   const handleSheetOpenChange = (isOpen: boolean) => {
     console.log('UserDetailsDrawer: Sheet open state changed to', isOpen);
+    setIsOpen(isOpen);
     if (!isOpen) {
-      onClose();
+      setTimeout(() => {
+        onClose();
+      }, 300); // Wait for animation to complete
     }
   };
   
   if (!user) return null;
 
   return (
-    <Sheet open={open} onOpenChange={handleSheetOpenChange}>
+    <Sheet open={isOpen} onOpenChange={handleSheetOpenChange}>
       <SheetContent className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto">
         <SheetHeader className="pb-4">
           <div className="flex justify-between items-center">
