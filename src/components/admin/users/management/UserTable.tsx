@@ -1,4 +1,3 @@
-
 import React, { useMemo, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -49,7 +48,6 @@ export const UserTable: React.FC<UserTableProps> = ({
   setIsDeleteDialogOpen,
   searchTerm
 }) => {
-  // Use useMemo to prevent unnecessary recalculations on every render
   const filteredUsers = useMemo(() => users.filter(user => 
     (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
     (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -71,11 +69,24 @@ export const UserTable: React.FC<UserTableProps> = ({
   const getUserPhone = useCallback((user: User) => {
     const phone = user.user_metadata?.phone;
     if (!phone) return '—';
+    
     const countryCode = user.user_metadata?.country_code || 'US';
-    return formatPhoneNumber(phone, countryCode);
+    
+    let dialCode = '1';
+    
+    const formattedNumber = formatPhoneNumber(phone, countryCode);
+    
+    if (countryCode && countryCode !== 'US') {
+      const countries = require('@/data/countries').default;
+      const country = countries.find((c: any) => c.code === countryCode);
+      if (country) {
+        dialCode = country.dialCode;
+      }
+    }
+    
+    return `+${dialCode} ${formattedNumber}`;
   }, []);
 
-  // Create a stable function reference that doesn't change on re-renders
   const viewUserDetails = useCallback((e: React.MouseEvent, user: User) => {
     e.preventDefault();
     e.stopPropagation();
