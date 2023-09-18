@@ -179,15 +179,15 @@ export const UserTable: React.FC<UserTableProps> = ({
                 </TableCell>
                 <TableCell className="font-medium">
                   <div className="flex items-center">
-                    <span>{getUserName(user)}</span>
                     {user.user_metadata?.country_code && (
                       <img 
                         src={getCountryFlagUrl(user.user_metadata.country_code)}
                         alt={user.user_metadata.country || user.user_metadata.country_code}
-                        className="h-4 w-auto ml-2"
+                        className="h-4 w-auto mr-2"
                         title={user.user_metadata.country || user.user_metadata.country_code}
                       />
                     )}
+                    <span>{getUserName(user)}</span>
                     {user.is_admin && (
                       <Badge variant="outline" className="ml-2 bg-purple-100 text-purple-800 border-purple-300">
                         Admin
