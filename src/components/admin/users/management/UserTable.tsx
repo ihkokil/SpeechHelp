@@ -18,6 +18,7 @@ import {
 import { format } from 'date-fns';
 import { User } from '../types';
 import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
+import countries from '@/data/countries';
 
 interface UserTableProps {
   users: User[];
@@ -77,7 +78,6 @@ export const UserTable: React.FC<UserTableProps> = ({
     const formattedNumber = formatPhoneNumber(phone, countryCode);
     
     if (countryCode && countryCode !== 'US') {
-      const countries = require('@/data/countries').default;
       const country = countries.find((c: any) => c.code === countryCode);
       if (country) {
         dialCode = country.dialCode;
