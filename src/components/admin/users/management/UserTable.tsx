@@ -89,6 +89,8 @@ export const UserTable: React.FC<UserTableProps> = ({
   }, []);
 
   const getCountryFlagUrl = useCallback((countryCode: string) => {
+    if (!countryCode) return '';
+    // Use lowercase for the URL as required by flagcdn.com
     return `https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`;
   }, []);
 
