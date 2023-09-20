@@ -19,6 +19,7 @@ import {
 import { format } from 'date-fns';
 import { User } from '../types';
 import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
+// Import countries directly without using require (which isn't available in the browser environment)
 import countries from '@/data/countries';
 
 interface UserTableProps {

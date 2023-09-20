@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -36,6 +37,11 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
       fetchUserSpeeches(user.id);
       calculateUserStats(user);
     }
+    
+    // Cleanup function
+    return () => {
+      console.log('UserDetailsDrawer: cleaning up');
+    };
   }, [user, open]);
   
   const fetchUserSpeeches = async (userId: string) => {
@@ -74,7 +80,7 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
     setTotalActivityTime(5 * speeches.length);
   };
   
-  // Handle closing the drawer - now uses direct approach without setTimeout
+  // Handle closing the drawer - uses direct approach without setTimeout
   const handleCloseClick = () => {
     console.log('UserDetailsDrawer: close button clicked');
     onClose();
