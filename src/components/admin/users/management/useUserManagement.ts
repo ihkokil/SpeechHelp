@@ -223,10 +223,10 @@ export const useUserManagement = () => {
   const handleViewUserDetails = useCallback((user: User) => {
     console.log('UserManagement: Opening details for user:', user.id);
     setIsDetailsOpen(false);
-    setTimeout(() => {
-      setSelectedUser(user);
+    setSelectedUser(user);
+    requestAnimationFrame(() => {
       setIsDetailsOpen(true);
-    }, 50);
+    });
   }, []);
 
   const handleCloseUserDetails = useCallback(() => {
@@ -277,10 +277,10 @@ export const useUserManagement = () => {
   const handleManagePermissions = useCallback((user: User) => {
     console.log('UserManagement: Opening permissions dialog for user:', user.id);
     setIsPermissionsDialogOpen(false);
-    setTimeout(() => {
-      setSelectedUser(user);
+    setSelectedUser(user);
+    requestAnimationFrame(() => {
       setIsPermissionsDialogOpen(true);
-    }, 50);
+    });
   }, []);
 
   const handlePermissionsUpdated = useCallback((updatedUser: User) => {

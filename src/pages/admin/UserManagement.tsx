@@ -97,10 +97,9 @@ const UserManagement = () => {
         selectedCount={selectedUsers.length}
       />
       
-      {/* Using conditional rendering with unique keys to force remount */}
+      {/* Simplified conditional rendering approach */}
       {isDetailsOpen && selectedUser && (
         <UserDetailsDrawer 
-          key={`details-drawer-${selectedUser.id}-${Date.now()}`}
           user={selectedUser} 
           open={isDetailsOpen} 
           onClose={handleCloseUserDetails} 
@@ -122,7 +121,6 @@ const UserManagement = () => {
 
       {isPermissionsDialogOpen && selectedUser && (
         <AdminPermissionsDialog
-          key={`permissions-dialog-${selectedUser.id}-${Date.now()}`}
           user={selectedUser}
           open={isPermissionsDialogOpen}
           onOpenChange={setIsPermissionsDialogOpen}
