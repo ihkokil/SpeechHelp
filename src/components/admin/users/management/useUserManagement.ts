@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
@@ -23,12 +24,14 @@ export const useUserManagement = () => {
   const fetchUsers = useCallback(async () => {
     const now = Date.now();
     if (now - lastFetchTime < 1000) {
+      console.log('Debouncing fetch request');
       return; // Debounce fetch requests
     }
     
     setLastFetchTime(now);
     setIsLoading(true);
     try {
+      console.log('Fetching profiles from Supabase');
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
@@ -143,6 +146,7 @@ export const useUserManagement = () => {
   }, [adminUser, toast, lastFetchTime]);
 
   const toggleUserSelection = useCallback((userId: string) => {
+    console.log('Toggling user selection:', userId);
     setSelectedUsers(prev => 
       prev.includes(userId) 
         ? prev.filter(id => id !== userId) 
@@ -151,24 +155,24 @@ export const useUserManagement = () => {
   }, []);
 
   const toggleAllUsers = useCallback(() => {
+    console.log('Toggling all users selection');
     setSelectedUsers(prev => {
-      if (prev.length === users.filter(user => 
+      const filteredUsers = users.filter(user => 
         (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
         (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
-      ).length) {
+      );
+      
+      if (prev.length === filteredUsers.length) {
         return [];
       } else {
-        return users.filter(user => 
-          (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
-          (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
-        ).map(user => user.id);
+        return filteredUsers.map(user => user.id);
       }
     });
   }, [users, searchTerm]);
 
   const handleDeleteUsers = useCallback(async () => {
+    console.log('Deleting users:', selectedUsers);
     setIsActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -194,6 +198,7 @@ export const useUserManagement = () => {
   }, [selectedUsers, toast]);
 
   const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean) => {
+    console.log('Toggling user status:', userId, isActive);
     setIsActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -222,24 +227,36 @@ export const useUserManagement = () => {
 
   const handleViewUserDetails = useCallback((user: User) => {
     console.log('UserManagement: Opening details for user:', user.id);
+    
+    // First close the drawer completely
     setIsDetailsOpen(false);
-    requestAnimationFrame(() => {
-      setSelectedUser(user);
-      requestAnimationFrame(() => {
-        setIsDetailsOpen(true);
-      });
-    });
+    
+    // Then set the selected user
+    setSelectedUser(user);
+    
+    // Then open the drawer after a short delay to ensure state updates are processed
+    setTimeout(() => {
+      setIsDetailsOpen(true);
+      console.log('UserManagement: Details drawer should now be open');
+    }, 50);
+    
   }, []);
 
   const handleCloseUserDetails = useCallback(() => {
     console.log('UserManagement: Closing user details drawer');
+    
+    // Close the drawer first
     setIsDetailsOpen(false);
-    requestAnimationFrame(() => {
+    
+    // Clear the selected user after a short delay
+    setTimeout(() => {
       setSelectedUser(null);
-    });
+      console.log('UserManagement: Selected user cleared');
+    }, 100);
   }, []);
 
   const handleToggleUserSubscription = useCallback(async (userId: string, extensionDays: number = 30) => {
+    console.log('Extending subscription for user:', userId, 'by', extensionDays, 'days');
     setIsActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -281,16 +298,22 @@ export const useUserManagement = () => {
 
   const handleManagePermissions = useCallback((user: User) => {
     console.log('UserManagement: Opening permissions dialog for user:', user.id);
+    
+    // Close the permissions dialog first
     setIsPermissionsDialogOpen(false);
-    requestAnimationFrame(() => {
-      setSelectedUser(user);
-      requestAnimationFrame(() => {
-        setIsPermissionsDialogOpen(true);
-      });
-    });
+    
+    // Set the selected user
+    setSelectedUser(user);
+    
+    // Open the permissions dialog after a short delay
+    setTimeout(() => {
+      setIsPermissionsDialogOpen(true);
+      console.log('UserManagement: Permissions dialog should now be open');
+    }, 50);
   }, []);
 
   const handlePermissionsUpdated = useCallback((updatedUser: User) => {
+    console.log('Permissions updated for user:', updatedUser.id);
     setUsers(prevUsers => 
       prevUsers.map(user => 
         user.id === updatedUser.id ? updatedUser : user
@@ -303,8 +326,10 @@ export const useUserManagement = () => {
     });
   }, [toast]);
 
+  // Clear selected data when component unmounts
   useEffect(() => {
     return () => {
+      console.log('useUserManagement cleanup');
       setSelectedUsers([]);
       setSelectedUser(null);
       setIsDetailsOpen(false);

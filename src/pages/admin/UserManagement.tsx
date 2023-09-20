@@ -49,6 +49,13 @@ const UserManagement = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  console.log('UserManagement rendering with state:', { 
+    selectedUsersCount: selectedUsers.length,
+    isDetailsOpen,
+    selectedUser: selectedUser?.id,
+    usersCount: users.length
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
@@ -96,15 +103,12 @@ const UserManagement = () => {
         isLoading={isActionLoading}
         selectedCount={selectedUsers.length}
       />
-      
-      {/* Render user details drawer */}
-      {isDetailsOpen && selectedUser && (
-        <UserDetailsDrawer 
-          user={selectedUser} 
-          open={isDetailsOpen} 
-          onClose={handleCloseUserDetails} 
-        />
-      )}
+
+      <UserDetailsDrawer 
+        user={selectedUser} 
+        open={isDetailsOpen} 
+        onClose={handleCloseUserDetails} 
+      />
       
       <AddUserDialog 
         open={isAddUserDialogOpen} 
@@ -119,7 +123,6 @@ const UserManagement = () => {
         }}
       />
 
-      {/* Render permissions dialog */}
       {isPermissionsDialogOpen && selectedUser && (
         <AdminPermissionsDialog
           user={selectedUser}
