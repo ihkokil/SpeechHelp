@@ -1,3 +1,4 @@
+
 import React, { useMemo, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -194,15 +195,15 @@ export const UserTable: React.FC<UserTableProps> = ({
                 </TableCell>
                 <TableCell className="font-medium">
                   <div className="flex items-center">
+                    <span>{getUserName(user)}</span>
                     {getCountryCode(user) && (
                       <img 
                         src={getCountryFlagUrl(getCountryCode(user))}
                         alt={user.user_metadata?.country || getCountryCode(user)}
-                        className="h-4 w-auto mr-2"
+                        className="h-4 w-4 ml-2 object-cover rounded-sm"
                         title={user.user_metadata?.country || getCountryCode(user)}
                       />
                     )}
-                    <span>{getUserName(user)}</span>
                     {user.is_admin && (
                       <Badge variant="outline" className="ml-2 bg-purple-100 text-purple-800 border-purple-300">
                         Admin
