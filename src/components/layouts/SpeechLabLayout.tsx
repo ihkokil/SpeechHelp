@@ -1,6 +1,7 @@
 
 import React from 'react';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SpeechLabLayoutProps {
@@ -16,7 +17,12 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
       <DashboardSidebar />
       
       {/* Main Content */}
-      <div className={`flex-1 bg-gray-50 ${isMobile ? 'w-full' : 'overflow-auto'}`}>
+      <div className="flex-1 bg-gray-50 overflow-auto">
+        {isMobile && (
+          <div className="p-4">
+            <SidebarTrigger />
+          </div>
+        )}
         {children}
       </div>
     </div>

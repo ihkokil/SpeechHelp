@@ -13,6 +13,18 @@ import {
   LogOutIcon 
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider,
+  SidebarTrigger
+} from '@/components/ui/sidebar';
 
 // Navigation item type
 type NavItem = {
@@ -25,9 +37,10 @@ type NavItem = {
 const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
+  const isMobile = useIsMobile();
   
-  // Using Supabase hosted SVG file
-  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
+  // Using Supabase hosted SVG file or local SVG backup
+  const logoPath = "/Speech Help - Logo.svg";
   
   // Get current path for highlighting active item
   const currentPath = window.location.pathname;
@@ -89,92 +102,96 @@ const DashboardSidebar = () => {
   const displayName = firstName || emailUsername;
   const fullName = firstName && lastName ? `${firstName} ${lastName}` : displayName;
 
-  return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+  const sidebarContent = (
+    <>
       {/* Logo - Updated to match homepage logo with link to home */}
-      <div className="p-6">
+      <SidebarHeader className="p-4">
         <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <img src={logoPath} alt="Speech Help" className="h-10" />
         </Link>
-      </div>
-
-      {/* User Info */}
-      <div className="px-6 mb-6">
-        <div className="flex items-center">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-medium">
-            {user?.email ? user.email[0].toUpperCase() : '?'}
-          </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium text-gray-900 truncate">
-              {fullName}
-            </p>
-            <p className="text-xs text-gray-500 truncate">
-              {user?.email}
-            </p>
+        
+        {/* User Info */}
+        <div className="mt-4">
+          <div className="flex items-center">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-medium">
+              {user?.email ? user.email[0].toUpperCase() : '?'}
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {fullName}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user?.email}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </SidebarHeader>
 
       {/* Primary Navigation */}
-      <nav className="flex-1 overflow-y-auto">
-        <div className="px-3">
-          <div className="space-y-1">
-            {primaryNavItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className={cn(
-                  "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                  currentPath === item.href 
-                    ? "bg-purple-50 text-purple-700" 
-                    : "text-gray-700 hover:bg-gray-100"
-                )}
+      <SidebarContent>
+        <SidebarMenu>
+          {primaryNavItems.map((item) => (
+            <SidebarMenuItem key={item.label}>
+              <SidebarMenuButton 
+                asChild 
+                tooltip={item.label}
+                isActive={currentPath === item.href}
               >
-                <span className="mr-3">{item.icon}</span>
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="h-px bg-gray-200 my-6 mx-3"></div>
+                <Link to={item.href}>
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
 
         {/* Secondary Navigation */}
-        <div className="px-3">
-          <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-            Settings
-          </p>
-          <div className="space-y-1">
-            {secondaryNavItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className={cn(
-                  "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                  currentPath === item.href 
-                    ? "bg-purple-50 text-purple-700" 
-                    : "text-gray-700 hover:bg-gray-100"
-                )}
+        <SidebarMenu className="mt-6">
+          {secondaryNavItems.map((item) => (
+            <SidebarMenuItem key={item.label}>
+              <SidebarMenuButton 
+                asChild 
+                tooltip={item.label}
+                isActive={currentPath === item.href}
               >
-                <span className="mr-3">{item.icon}</span>
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </nav>
+                <Link to={item.href}>
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarContent>
 
       {/* Logout Button */}
-      <div className="p-4 border-t border-gray-200">
-        <button
+      <SidebarFooter>
+        <SidebarMenuButton 
           onClick={handleSignOut}
-          className="flex items-center w-full px-3 py-2 text-sm font-medium text-red-600 rounded-md hover:bg-red-50 transition-colors"
+          className="text-red-600 hover:text-red-700 hover:bg-red-50"
         >
-          <LogOutIcon className="h-5 w-5 mr-3" />
-          Logout
-        </button>
-      </div>
+          <LogOutIcon className="h-5 w-5" />
+          <span>Logout</span>
+        </SidebarMenuButton>
+      </SidebarFooter>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <SidebarProvider defaultOpen={false}>
+        <Sidebar>
+          {sidebarContent}
+        </Sidebar>
+      </SidebarProvider>
+    );
+  }
+
+  return (
+    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+      {sidebarContent}
     </aside>
   );
 };
