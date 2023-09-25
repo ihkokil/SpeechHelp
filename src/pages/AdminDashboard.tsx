@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +14,7 @@ import { useAdmin } from '@/contexts/AdminContext';
 import { supabase } from '@/integrations/supabase/client';
 
 const AdminDashboard = () => {
-  const { adminUser } = useAdmin();
+  const { adminUser, session } = useAdmin();
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalSpeeches: 0,
@@ -54,7 +53,7 @@ const AdminDashboard = () => {
         totalUsers: userCount || 0,
         totalSpeeches: speechCount || 0,
         activeUsers: Math.floor(Math.random() * (userCount || 0)), // Mock data
-        lastLogin: adminUser?.session?.created_at || new Date().toISOString()
+        lastLogin: session?.created_at || new Date().toISOString()
       });
       
       setRecentActivity(activityData || []);

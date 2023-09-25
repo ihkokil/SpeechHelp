@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -40,9 +39,19 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
+interface UserData {
+  id: string;
+  email?: string;
+  username?: string;
+  banned?: boolean;
+  confirmed_at?: string;
+  created_at: string;
+  last_sign_in_at?: string;
+}
+
 const AdminUserManagement = () => {
-  const [users, setUsers] = useState<any[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -89,8 +98,8 @@ const AdminUserManagement = () => {
         };
       });
       
-      setUsers(combinedUsers);
-      setFilteredUsers(combinedUsers);
+      setUsers(combinedUsers as UserData[]);
+      setFilteredUsers(combinedUsers as UserData[]);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
@@ -110,8 +119,8 @@ const AdminUserManagement = () => {
       
       if (error) throw error;
       
-      // Update local state
-      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+      // Update local state by refetching users
+      await fetchUsers();
       
       toast({
         title: "Success",
