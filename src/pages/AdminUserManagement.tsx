@@ -100,7 +100,13 @@ const AdminUserManagement = () => {
       const typedProfiles = profiles as Profile[];
       
       const combinedUsers = authUsers.users.map(authUser => {
-        const profile = typedProfiles.find(p => p.id === authUser.id) || { id: authUser.id };
+        // Create a fallback profile object that matches the Profile interface structure
+        const profile = typedProfiles.find(p => p.id === authUser.id) || { 
+          id: authUser.id,
+          username: undefined,
+          avatar_url: undefined
+        };
+        
         return {
           ...authUser,
           ...profile,
