@@ -53,6 +53,7 @@ interface UserData {
 interface Profile {
   id: string;
   username?: string;
+  avatar_url?: string;
   [key: string]: any;
 }
 
@@ -95,9 +96,11 @@ const AdminUserManagement = () => {
       
       if (profilesError) throw profilesError;
       
-      // Combine data
+      // Combine data - explicitly type profiles as Profile[]
+      const typedProfiles = profiles as Profile[];
+      
       const combinedUsers = authUsers.users.map(authUser => {
-        const profile = profiles?.find((p: Profile) => p.id === authUser.id) || {};
+        const profile = typedProfiles.find(p => p.id === authUser.id) || { id: authUser.id };
         return {
           ...authUser,
           ...profile,
