@@ -42,10 +42,17 @@ const FirstAdminSetup = ({ onSetupComplete }: FirstAdminSetupProps) => {
       return;
     }
 
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setErrorMessage('Please enter a valid email address');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      // Create a hash for the password (this is done server-side in the function)
+      // Create the first admin account
       const response = await supabase.functions.invoke('admin-auth', {
         body: { 
           method: 'create_first_admin', 
