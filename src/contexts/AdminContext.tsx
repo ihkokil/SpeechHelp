@@ -17,7 +17,7 @@ export interface AdminContextType {
   isLoading: boolean;
   adminUser: AdminUser | null;
   session: Session | null;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<{ requires2FA?: boolean } | void>;
   logout: () => Promise<void>;
   verify2FA: (token: string) => Promise<boolean>;
   hasPermission: (permission: string) => boolean;
@@ -32,6 +32,7 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [requires2FA, setRequires2FA] = useState(false);
+  const [pendingAdminData, setPendingAdminData] = useState<any>(null);
   const { toast } = useToast();
 
   // Check for existing session on load
@@ -103,23 +104,25 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       if (response.error) {
-        throw new Error(response.error.message);
+        console.error("Login invoke error:", response.error);
+        throw new Error(response.error.message || 'Authentication failed');
       }
       
       const data = response.data;
       
       if (!data.success) {
-        throw new Error(data.message);
+        throw new Error(data.message || 'Authentication failed');
       }
       
       // If 2FA is required, set state and wait for verification
       if (data.requires2FA) {
         setRequires2FA(true);
+        setPendingAdminData(data.admin);
         toast({
           title: "2FA Required",
           description: "Please enter your 2FA code",
         });
-        return;
+        return { requires2FA: true };
       }
       
       // Otherwise, set the admin user immediately
@@ -130,10 +133,11 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
         title: "Login successful",
         description: `Welcome back, ${data.admin.username}!`,
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
-        description: error.message,
+        description: error.message || 'Authentication failed',
         variant: "destructive"
       });
       throw error;
@@ -147,12 +151,12 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setIsLoading(true);
       
-      if (!adminUser) {
-        throw new Error("Admin user not found");
+      if (!pendingAdminData) {
+        throw new Error("Admin user data not found");
       }
       
       const response = await supabase.functions.invoke('admin-auth', {
-        body: { method: 'check-2fa', adminId: adminUser.id, token }
+        body: { method: 'check-2fa', adminId: pendingAdminData.id, token }
       });
       
       if (response.error) {
@@ -171,6 +175,8 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       setRequires2FA(false);
+      setAdminUser(pendingAdminData);
+      setPendingAdminData(null);
       
       toast({
         title: "2FA Verified",
@@ -178,7 +184,7 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
       });
       
       return true;
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "2FA Verification Failed",
         description: error.message,
@@ -208,12 +214,13 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
       setAdminUser(null);
       setSession(null);
       setRequires2FA(false);
+      setPendingAdminData(null);
       
       toast({
         title: "Logged out",
         description: "You have been logged out successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Logout Failed",
         description: error.message,
