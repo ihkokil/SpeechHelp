@@ -116,7 +116,7 @@ const LoginForm = ({ onTwoFactorRequired, onError }: LoginFormProps) => {
           className="w-full bg-gradient-to-r from-purple-600 to-pink-600"
           disabled={isLoading}
         >
-          {isLoading ? 'Logging in...' : 'Log In'}
+          {isLoading ? 'Signing In...' : 'Sign In'}
         </Button>
       </form>
     </>
