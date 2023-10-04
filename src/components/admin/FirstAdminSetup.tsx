@@ -5,10 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import speechHelpLogo from '/public/lovable-uploads/1bd4b0c7-938e-4528-a6b1-ebdfd0ced505.png';
 
 interface FirstAdminSetupProps {
   onSetupComplete: () => void;
@@ -96,7 +95,7 @@ const FirstAdminSetup = ({ onSetupComplete }: FirstAdminSetupProps) => {
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
         <div className="flex justify-center mb-4">
-          <img src={speechHelpLogo} alt="SpeechHelp Logo" className="h-12" />
+          <Shield className="h-12 w-12 text-white" />
         </div>
         <h1 className="text-3xl font-bold text-white">Admin Portal</h1>
         <p className="text-white/80">First-time Setup</p>
