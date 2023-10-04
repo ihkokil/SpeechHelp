@@ -38,7 +38,17 @@ const AdminAuth = () => {
         return;
       }
       
-      setNeedsFirstTimeSetup(!data.adminsExist);
+      if (data && typeof data.adminsExist === 'boolean') {
+        setNeedsFirstTimeSetup(!data.adminsExist);
+      } else {
+        // Handle unexpected response format
+        console.error('Unexpected response format:', data);
+        toast({
+          title: "Error",
+          description: "Received an invalid response from the server. Please try again.",
+          variant: "destructive"
+        });
+      }
     } catch (error: any) {
       console.error('Error checking admin status:', error);
       toast({
