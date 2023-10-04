@@ -13,11 +13,16 @@ export interface AdminUser {
   permissions: string[];
 }
 
+export interface LoginResult {
+  requires2FA?: boolean;
+  success: boolean;
+}
+
 export interface AdminContextType {
   isLoading: boolean;
   adminUser: AdminUser | null;
   session: Session | null;
-  login: (username: string, password: string) => Promise<{ requires2FA?: boolean } | void>;
+  login: (username: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
   verify2FA: (token: string) => Promise<boolean>;
   hasPermission: (permission: string) => boolean;
@@ -91,7 +96,7 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   // Login function
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string): Promise<LoginResult> => {
     try {
       setIsLoading(true);
       
@@ -122,7 +127,7 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
           title: "2FA Required",
           description: "Please enter your 2FA code",
         });
-        return { requires2FA: true };
+        return { requires2FA: true, success: true };
       }
       
       // Otherwise, set the admin user immediately
@@ -133,6 +138,8 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
         title: "Login successful",
         description: `Welcome back, ${data.admin.username}!`,
       });
+      
+      return { success: true };
     } catch (error: any) {
       console.error("Login error:", error);
       toast({
