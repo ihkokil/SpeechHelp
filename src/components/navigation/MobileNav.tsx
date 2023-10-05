@@ -4,7 +4,7 @@ import { Menu, X } from "lucide-react";
 import NavLinks from "./NavLinks";
 import UserMenu from "../UserMenu";
 import LanguageSelector from "../common/LanguageSelector";
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 
 const MobileNav = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,7 +17,9 @@ const MobileNav = () => {
       <div className="flex items-center space-x-4">
         <UserMenu />
         <LanguageSelector />
-        <SidebarTrigger className="mr-2" />
+        <SidebarProvider>
+          <SidebarTrigger className="mr-2" />
+        </SidebarProvider>
         <button
           onClick={toggleMenu}
           className="text-gray-700"
