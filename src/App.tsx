@@ -45,12 +45,12 @@ const NavbarLayout = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <LanguageProvider>
-          <Toaster />
-          <Sonner />
+    <AuthProvider>
+      <LanguageProvider>
+        <TooltipProvider>
           <BrowserRouter>
+            <Toaster />
+            <Sonner />
             <Routes>
               <Route path="/" element={<NavbarLayout><Index /></NavbarLayout>} />
               <Route path="/pricing" element={<NavbarLayout><Pricing /></NavbarLayout>} />
@@ -107,9 +107,9 @@ const App = () => (
               <Route path="*" element={<NavbarLayout><NotFound /></NavbarLayout>} />
             </Routes>
           </BrowserRouter>
-        </LanguageProvider>
-      </AuthProvider>
-    </TooltipProvider>
+        </TooltipProvider>
+      </LanguageProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
