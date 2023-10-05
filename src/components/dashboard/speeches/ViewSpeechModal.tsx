@@ -1,4 +1,3 @@
-
 import { 
   Dialog, 
   DialogContent, 
@@ -17,7 +16,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Translate from '@/components/Translate';
 import SpeechPreview from '@/components/speech/components/SpeechPreview';
 import SpeechExportButtons from './components/SpeechExportButtons';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ViewSpeechModalProps {
   isOpen: boolean;
@@ -29,7 +27,6 @@ interface ViewSpeechModalProps {
 const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpeechModalProps) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  const isMobile = useIsMobile();
 
   const formatDate = (dateString: string) => {
     const date = parseISO(dateString);
@@ -40,9 +37,9 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={`${isMobile ? 'w-[calc(100vw-32px)]' : 'max-w-3xl'} max-h-[90vh] overflow-auto`}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl text-purple-800 break-words">{speech.title}</DialogTitle>
+          <DialogTitle className="text-xl text-purple-800">{speech.title}</DialogTitle>
           <DialogDescription>
             <Badge className={getTypeColor(speech.speech_type)}>
               {getSpeechTypeLabel(speech.speech_type)}
@@ -52,11 +49,11 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
         <div className="overflow-auto max-h-[60vh] my-4">
           <SpeechPreview content={speech.content} />
         </div>
-        <div className={`text-sm mt-2 ${isMobile ? 'flex flex-col gap-1' : 'flex'}`}>
+        <div className="text-sm mt-2 flex">
           <span className="text-purple-600">
             <Translate text="dashboard.created" />: {formatDate(speech.created_at)}
           </span> 
-          {!isMobile && <span className="mx-2 text-gray-500">|</span>} 
+          <span className="mx-2 text-gray-500">|</span> 
           <span className="text-pink-600">
             <Translate text="dashboard.lastUpdated" />: {formatDate(speech.updated_at)}
           </span>
@@ -68,11 +65,10 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
           content={speech.content}
         />
         
-        <DialogFooter className={`mt-4 ${isMobile ? 'flex-col gap-2' : ''}`}>
+        <DialogFooter className="mt-4">
           <ButtonCustom 
             variant="outline" 
             onClick={() => onOpenChange(false)}
-            className={isMobile ? 'w-full' : ''}
           >
             <Translate text="common.close" />
           </ButtonCustom>
@@ -82,7 +78,6 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
               onOpenChange(false);
               onEditClick(speech);
             }}
-            className={isMobile ? 'w-full' : ''}
           >
             <Translate text="common.edit" />
           </ButtonCustom>

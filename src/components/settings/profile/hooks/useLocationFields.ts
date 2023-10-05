@@ -12,17 +12,27 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
   const selectedCountry = watch('country');
   const selectedState = watch('state');
   
+  // Debugging state changes
+  useEffect(() => {
+    console.log('State changed in form:', selectedState);
+  }, [selectedState]);
+  
   // Update available states when country changes
   useEffect(() => {
     const countryEntry = getCountryByName(selectedCountry);
     if (countryEntry) {
+      console.log('Getting states for country:', countryEntry.code);
       const states = getStatesForCountry(countryEntry.code);
       setAvailableStates(states);
       
-      // Preserve the current state if valid for new country, otherwise clear it
+      // Check if current state is valid for the selected country
       const currentState = getValues('state');
+      console.log('Current state value when country changes:', currentState);
+      
       if (currentState) {
         const isValid = isStateValidForCountry(currentState, states);
+        
+        // Only clear state if it's invalid AND there are states available for this country
         if (!isValid && states.length > 0) {
           console.log('Clearing invalid state:', currentState);
           setValue('state', '', { shouldDirty: true, shouldTouch: true });
@@ -35,11 +45,6 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
     }
   }, [selectedCountry, setValue, getValues]);
   
-  // Debug selected state changes
-  useEffect(() => {
-    console.log('Current state value in form:', selectedState);
-  }, [selectedState]);
-  
   const handleCountryChange = (countryName: string) => {
     console.log('Setting country to:', countryName);
     setValue('country', countryName, { shouldDirty: true, shouldTouch: true });
@@ -49,11 +54,17 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
     if (countryEntry) {
       setValue('countryCode', countryEntry.code, { shouldDirty: true, shouldTouch: true });
       
+      // If user selects United States, pre-populate common fields
+      if (countryEntry.code === 'US') {
+        // This would be a placeholder for actual address auto-completion
+        console.log('Auto-populating for US address');
+      }
+      
       // Update available states
       const states = getStatesForCountry(countryEntry.code);
       setAvailableStates(states);
       
-      // Clear state if it's invalid for the new country
+      // Clear state only if it's invalid AND there are states available
       const currentState = getValues('state');
       if (currentState && !isStateValidForCountry(currentState, states) && states.length > 0) {
         console.log('Clearing invalid state after country change:', currentState);
