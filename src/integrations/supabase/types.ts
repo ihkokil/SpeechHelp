@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          admin_id: string | null
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_2fa: {
         Row: {
           admin_user_id: string
@@ -243,6 +290,11 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           id: string
+          is_active: boolean | null
+          phone: string | null
+          subscription_end_date: string | null
+          subscription_plan: string | null
+          subscription_start_date: string | null
           updated_at: string
           username: string | null
         }
@@ -250,6 +302,11 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id: string
+          is_active?: boolean | null
+          phone?: string | null
+          subscription_end_date?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -257,6 +314,11 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id?: string
+          is_active?: boolean | null
+          phone?: string | null
+          subscription_end_date?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -292,6 +354,33 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -303,9 +392,45 @@ export type Database = {
         }
         Returns: boolean
       }
+      authenticate_admin: {
+        Args: {
+          email_input: string
+          password_input: string
+        }
+        Returns: {
+          id: string
+          email: string
+          username: string
+          is_super_admin: boolean
+        }[]
+      }
+      create_first_admin: {
+        Args: {
+          email_input: string
+          username_input: string
+          password_input: string
+        }
+        Returns: string
+      }
+      get_admin_dashboard_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      log_admin_activity: {
+        Args: {
+          admin_id_input: string
+          action_input: string
+          entity_type_input: string
+          entity_id_input: string
+          details_input: Json
+          ip_address_input?: string
+          user_agent_input?: string
+        }
+        Returns: string
       }
     }
     Enums: {
