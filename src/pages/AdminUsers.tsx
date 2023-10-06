@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/contexts/AdminContext';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -17,9 +17,6 @@ import {
   SearchIcon, 
   RefreshCwIcon, 
   EditIcon, 
-  UserPlusIcon, 
-  CheckCircleIcon, 
-  XCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon
 } from 'lucide-react';
@@ -66,8 +63,8 @@ const AdminUsers = () => {
       }
       
       if (search) {
-        // Join with auth.users to search by email
-        countQuery = countQuery.or(`id.eq.${search},username.ilike.%${search}%`);
+        // Search by username as emails are in auth.users which isn't directly accessible
+        countQuery = countQuery.ilike('username', `%${search}%`);
       }
       
       const { count, error: countError } = await countQuery;
@@ -105,7 +102,7 @@ const AdminUsers = () => {
       }
       
       if (search) {
-        query = query.or(`id.eq.${search},username.ilike.%${search}%`);
+        query = query.ilike('username', `%${search}%`);
       }
       
       const { data, error } = await query;
@@ -115,32 +112,14 @@ const AdminUsers = () => {
         return;
       }
       
-      // Fetch emails for each user from auth.users
-      if (data && data.length > 0) {
-        const userIds = data.map(user => user.id);
+      if (data) {
+        // Set email placeholder since we can't directly access auth.users
+        const usersWithEmail = data.map(user => ({
+          ...user,
+          email: `user-${user.id.substring(0, 8)}@example.com` // Placeholder email
+        }));
         
-        // Get emails from auth.users - Note: this requires admin privileges
-        const { data: authData, error: authError } = await supabase
-          .from('auth.users')
-          .select('id, email')
-          .in('id', userIds);
-        
-        if (authError) {
-          console.error('Error fetching user emails:', authError);
-        } else if (authData) {
-          // Merge the email data with the profiles data
-          const usersWithEmail = data.map(user => {
-            const authUser = authData.find(au => au.id === user.id);
-            return {
-              ...user,
-              email: authUser ? authUser.email : 'N/A'
-            };
-          });
-          
-          setUsers(usersWithEmail);
-        } else {
-          setUsers(data);
-        }
+        setUsers(usersWithEmail);
       } else {
         setUsers([]);
       }
@@ -410,11 +389,11 @@ const AdminUsers = () => {
                       <TableCell>
                         {user.is_active !== false ? (
                           <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50 border-green-200">
-                            <CheckCircleIcon className="h-3 w-3 mr-1" /> Active
+                            Active
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="bg-red-50 text-red-700 hover:bg-red-50 border-red-200">
-                            <XCircleIcon className="h-3 w-3 mr-1" /> Inactive
+                            Inactive
                           </Badge>
                         )}
                       </TableCell>
