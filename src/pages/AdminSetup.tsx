@@ -88,7 +88,7 @@ const AdminSetup = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f1eeff] p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f3f0ff] p-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-6">
           <div className="text-center">
