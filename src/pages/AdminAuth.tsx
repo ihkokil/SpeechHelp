@@ -35,16 +35,18 @@ const AdminAuth = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f0edfb] p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f1eeff] p-4">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-4">
-          <div className="flex flex-col items-center gap-1">
-            <img 
-              src="/speech-help-new-logo.svg" 
-              alt="SpeechHelp Logo" 
-              className="h-12"
-            />
-            <h1 className="text-xl font-medium text-[#b44ca1]">Admin Portal</h1>
+        <div className="flex justify-center mb-6">
+          <div className="text-center">
+            <div className="flex items-center justify-center">
+              <img 
+                src="/Speech Help - Logo.svg" 
+                alt="SpeechHelp Logo" 
+                className="h-10"
+              />
+            </div>
+            <h1 className="text-xl font-medium text-[#9c4dcc] mt-2">Admin Portal</h1>
           </div>
         </div>
         
@@ -92,7 +94,7 @@ const AdminAuth = () => {
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-[#8E31A3] hover:bg-[#7d2a91]"
+                  className="w-full bg-[#9c29b2] hover:bg-[#8923a0] text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? "Signing in..." : "Sign In"}
@@ -107,7 +109,7 @@ const AdminAuth = () => {
                 <Link to="/admin/setup" className="mt-2 block px-4 py-2 text-center text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 text-sm">
                   Create Default Admin Account
                 </Link>
-                <p className="text-xs text-gray-400 mt-3">
+                <p className="text-xs text-gray-500 mt-3">
                   Use this option only for the initial setup of your admin portal.
                 </p>
               </div>
