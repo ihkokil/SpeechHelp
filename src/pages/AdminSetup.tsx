@@ -1,11 +1,11 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { CircleAlertIcon, ShieldIcon } from 'lucide-react';
+import { CircleAlertIcon, ShieldIcon, ArrowLeftIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const AdminSetup = () => {
@@ -15,8 +15,32 @@ const AdminSetup = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [adminExists, setAdminExists] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check if admin exists on component mount
+  useEffect(() => {
+    const checkAdminExists = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase.from('admin_users').select('id').limit(1);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          setAdminExists(true);
+          setError('An admin account already exists. Please use the login page.');
+        }
+      } catch (err: any) {
+        console.error('Error checking admin existence:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAdminExists();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +66,11 @@ const AdminSetup = () => {
       });
       
       if (error) {
+        if (error.message.includes('Admin users already exist')) {
+          setAdminExists(true);
+          setError('An admin account already exists. Please use the login page.');
+          return;
+        }
         throw error;
       }
       
@@ -89,67 +118,79 @@ const AdminSetup = () => {
                 </div>
               )}
               
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="admin@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="bg-gray-50"
-                    required
-                  />
+              {adminExists ? (
+                <div className="text-center">
+                  <Link 
+                    to="/admin/login" 
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white rounded-md"
+                  >
+                    <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                    Go to Login
+                  </Link>
                 </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Choose a username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="bg-gray-50"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Create a strong password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="bg-gray-50"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Confirm your password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="bg-gray-50"
-                    required
-                  />
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Creating Account..." : "Create Admin Account"}
-                </Button>
-              </form>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="admin@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="bg-gray-50"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Choose a username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="bg-gray-50"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Create a strong password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="bg-gray-50"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="bg-gray-50"
+                      required
+                    />
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Creating Account..." : "Create Admin Account"}
+                  </Button>
+                </form>
+              )}
               
               <div className="flex items-center justify-center text-xs text-gray-500 mt-6 gap-1">
                 <ShieldIcon className="h-3 w-3" />
