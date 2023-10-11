@@ -93,9 +93,19 @@ const AdminSetup = () => {
     setError('');
     
     try {
-      const { error } = await supabase.rpc('reset_admin_users');
+      // Call the edge function to reset admin users
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-admin-users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        }
+      });
       
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to reset admin users');
+      }
       
       toast({
         title: "Admin users reset",
