@@ -37,24 +37,16 @@ const AdminAuth = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-700 via-purple-600 to-pink-600 p-4">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-8">
-          <div className="bg-white/10 backdrop-blur-md rounded-full p-4 shadow-lg">
-            <img 
-              src="/Speech Help - Logo.svg" 
-              alt="SpeechHelp Logo" 
-              className="h-12 w-auto"
-            />
-          </div>
-        </div>
-        
         <Card className="shadow-2xl border-0 overflow-hidden bg-white/95 backdrop-blur-sm">
           <div className="bg-gradient-to-r from-pink-500 to-purple-600 h-2"></div>
           <CardContent className="p-8">
             <div className="space-y-6">
               <div className="text-center space-y-2">
-                <div className="inline-flex items-center justify-center p-2 bg-purple-100 rounded-full mb-2">
-                  <LockIcon className="h-6 w-6 text-purple-600" />
-                </div>
+                <img 
+                  src="/Speech Help - Logo.svg" 
+                  alt="SpeechHelp Logo" 
+                  className="h-12 w-auto mx-auto mb-4"
+                />
                 <h2 className="text-2xl font-semibold text-gray-800">Admin Access</h2>
                 <p className="text-gray-500 text-sm">Secure authentication required</p>
               </div>
