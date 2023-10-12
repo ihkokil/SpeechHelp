@@ -5,7 +5,7 @@ import { useAdmin } from '@/contexts/AdminContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { CircleAlertIcon, SettingsIcon } from 'lucide-react';
+import { CircleAlertIcon, SettingsIcon, KeyIcon, LockIcon, UserIcon } from 'lucide-react';
 
 const AdminAuth = () => {
   const [username, setUsername] = useState('');
@@ -35,88 +35,112 @@ const AdminAuth = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f3f0ff] p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-700 via-purple-600 to-pink-600 p-4">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center">
-              <img 
-                src="/Speech Help - Logo.svg" 
-                alt="SpeechHelp Logo" 
-                className="h-10"
-              />
-            </div>
-            <h1 className="text-xl font-medium text-[#9c4dcc] mt-2">Admin Portal</h1>
+        <div className="flex justify-center mb-8">
+          <div className="bg-white/10 backdrop-blur-md rounded-full p-4 shadow-lg">
+            <img 
+              src="/Speech Help - Logo.svg" 
+              alt="SpeechHelp Logo" 
+              className="h-12 w-auto"
+            />
           </div>
         </div>
         
-        <Card className="shadow-lg border-0">
+        <Card className="shadow-2xl border-0 overflow-hidden bg-white/95 backdrop-blur-sm">
+          <div className="bg-gradient-to-r from-pink-500 to-purple-600 h-2"></div>
           <CardContent className="p-8">
             <div className="space-y-6">
-              <div className="text-center space-y-1">
+              <div className="text-center space-y-2">
+                <div className="inline-flex items-center justify-center p-2 bg-purple-100 rounded-full mb-2">
+                  <LockIcon className="h-6 w-6 text-purple-600" />
+                </div>
                 <h2 className="text-2xl font-semibold text-gray-800">Admin Access</h2>
-                <p className="text-gray-500 text-sm">Sign in to access the admin dashboard</p>
+                <p className="text-gray-500 text-sm">Secure authentication required</p>
               </div>
               
               {error && (
-                <div className="bg-red-50 text-red-800 p-3 rounded-md flex items-center text-sm">
-                  <CircleAlertIcon className="h-4 w-4 mr-2 flex-shrink-0" />
-                  {error}
+                <div className="bg-red-50 text-red-800 p-4 rounded-md flex items-center text-sm animate-fade-in">
+                  <CircleAlertIcon className="h-5 w-5 mr-2 flex-shrink-0 text-red-500" />
+                  <span>{error}</span>
                 </div>
               )}
               
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
                   <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="bg-gray-50"
-                    required
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <UserIcon className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Enter your username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="pl-10 bg-gray-50/80 border-gray-200 focus:border-purple-400 focus:ring-purple-300"
+                      required
+                    />
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="bg-gray-50"
-                    required
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <KeyIcon className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 bg-gray-50/80 border-gray-200 focus:border-purple-400 focus:ring-purple-300"
+                      required
+                    />
+                  </div>
                 </div>
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white"
+                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white shadow-md transition-all hover:shadow-lg"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Signing in..." : "Sign In"}
+                  {isLoading ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Authenticating...
+                    </span>
+                  ) : (
+                    <>
+                      <LockIcon className="mr-2 h-4 w-4" /> Sign In
+                    </>
+                  )}
                 </Button>
               </form>
               
-              <div className="pt-4 border-t border-gray-100 text-center">
-                <div className="flex items-center justify-center gap-1 text-sm text-gray-500">
-                  <SettingsIcon className="h-4 w-4" />
-                  <span>First-time Setup</span>
-                </div>
-                <Link to="/admin/setup" className="mt-2 block px-4 py-2 text-center text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 text-sm">
-                  Create Default Admin Account
+              <div className="pt-5 border-t border-gray-100 text-center">
+                <Link to="/admin/setup" className="group">
+                  <div className="inline-flex items-center justify-center gap-1.5 text-sm text-purple-600 hover:text-purple-700 transition-colors">
+                    <SettingsIcon className="h-4 w-4 group-hover:rotate-45 transition-transform duration-300" />
+                    <span>First-time Setup</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Need to create an admin account? Use the setup page.
+                  </p>
                 </Link>
-                <p className="text-xs text-gray-500 mt-3">
-                  Use this option only for the initial setup of your admin portal.
-                </p>
               </div>
               
-              <p className="text-xs text-center text-gray-400">
-                Secure access for authorized personnel only
-              </p>
+              <div className="mt-6">
+                <p className="text-xs text-center text-gray-500">
+                  SpeechHelp Admin Portal • Secure access for authorized personnel only
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
