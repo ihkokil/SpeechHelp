@@ -73,3 +73,28 @@ export const checkAdminExists = async () => {
     return false;
   }
 };
+
+// Fix the admin login function in the AdminContext.tsx file
+export const authenticateAdmin = async (username: string, password: string) => {
+  try {
+    // Use username_input instead of email_input to match the authenticate_admin function
+    const { data, error } = await supabase.rpc('authenticate_admin', {
+      email_input: username,
+      password_input: password
+    });
+    
+    if (error) {
+      console.error('Authentication error:', error);
+      return { success: false, error: error.message };
+    }
+    
+    if (!data || data.length === 0) {
+      return { success: false, error: 'Invalid username or password' };
+    }
+    
+    return { success: true, user: data[0] };
+  } catch (err: any) {
+    console.error('Error in authenticateAdmin:', err);
+    return { success: false, error: err.message };
+  }
+};
