@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -73,12 +74,16 @@ export const checkAdminExists = async () => {
   }
 };
 
-// Fixed admin login function to match the database function signature
+// Updated function to correctly call the database function with proper parameter names
 export const authenticateAdmin = async (username: string, password: string) => {
   try {
-    // The database function expects email_input, not username_input
+    // The database function expects email_input for the first parameter
+    // Since we're using username from the UI but the field in database is email,
+    // we pass username to email_input parameter
+    console.log('Attempting authentication with:', { email_input: username });
+    
     const { data, error } = await supabase.rpc('authenticate_admin', {
-      email_input: username, // Use username as the email input parameter
+      email_input: username,
       password_input: password
     });
     
