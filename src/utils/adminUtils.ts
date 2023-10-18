@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -41,7 +42,7 @@ export const useAdminReset = () => {
 export const createDefaultAdmin = async () => {
   try {
     const { data, error } = await supabase.rpc('create_first_admin', {
-      email_input: 'admin@speechhelp.com',
+      email_input: 'admin@speechhelp.ai',
       username_input: 'admin',
       password_input: 'Admin123!'
     });
