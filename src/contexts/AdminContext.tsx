@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -77,11 +78,14 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const adminLogin = async (username: string, password: string) => {
+    console.log('AdminContext: adminLogin starting with username:', username);
     setIsLoading(true);
     
     try {
       // Use our fixed authenticate function
+      console.log('AdminContext: calling authenticateAdmin');
       const result = await authenticateAdmin(username, password);
+      console.log('AdminContext: authenticateAdmin response:', result);
       
       if (!result.success) {
         toast({
@@ -89,11 +93,13 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
           description: result.error || "Invalid username or password",
           variant: "destructive"
         });
+        console.error('AdminContext: Authentication failed:', result.error);
         setIsLoading(false);
         return;
       }
       
       const adminUser = result.user;
+      console.log('AdminContext: Authentication successful for user:', adminUser);
       
       // Create session with 24 hour expiry
       const expiresAt = new Date();
@@ -114,8 +120,8 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
       
       // Load initial dashboard stats
       await refreshDashboardStats();
-    } catch (error) {
-      console.error("Admin login error:", error);
+    } catch (error: any) {
+      console.error("AdminContext: Admin login error:", error);
       toast({
         title: "Login failed",
         description: "An unexpected error occurred",
