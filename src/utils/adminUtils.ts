@@ -7,6 +7,7 @@ export const useAdminReset = () => {
 
   const resetAdminUsers = async () => {
     try {
+      console.log('Attempting to reset admin users');
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-admin-users`, {
         method: 'POST',
         headers: {
@@ -20,13 +21,17 @@ export const useAdminReset = () => {
         throw new Error(errorData.error || 'Failed to reset admin users');
       }
       
+      const responseData = await response.json();
+      
       toast({
         title: "Admin users reset",
         description: "All admin users have been deleted. You can now create a new admin account.",
       });
       
+      console.log('Admin users reset successfully:', responseData);
       return true;
     } catch (err: any) {
+      console.error('Error resetting admin users:', err);
       toast({
         title: "Error",
         description: err.message || 'Failed to reset admin users',
