@@ -17,11 +17,34 @@ export const useAdminReset = () => {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to reset admin users');
+        const errorText = await response.text();
+        let errorMessage = 'Failed to reset admin users';
+        
+        try {
+          // Only try to parse as JSON if it looks like JSON
+          if (errorText.trim().startsWith('{')) {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.error || errorMessage;
+          }
+        } catch (parseError) {
+          console.error('Error parsing error response:', parseError);
+          // If parsing fails, use the raw text
+          errorMessage = errorText || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
       }
       
-      const responseData = await response.json();
+      // Safely parse the response
+      let responseData;
+      const responseText = await response.text();
+      
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Error parsing success response:', parseError);
+        responseData = { success: true, message: 'Admin users reset (response parsing failed)' };
+      }
       
       toast({
         title: "Admin users reset",
@@ -30,7 +53,7 @@ export const useAdminReset = () => {
       
       console.log('Admin users reset successfully:', responseData);
       return true;
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error resetting admin users:', err);
       toast({
         title: "Error",
