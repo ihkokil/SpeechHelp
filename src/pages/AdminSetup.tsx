@@ -57,7 +57,7 @@ const AdminSetup = () => {
       } else {
         setError(result.error || 'Failed to create admin account');
       }
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'An unexpected error occurred');
     } finally {
       setIsCreating(false);
@@ -82,7 +82,7 @@ const AdminSetup = () => {
       } else {
         setError('Failed to reset admin users');
       }
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'An unexpected error occurred');
     } finally {
       setIsResetting(false);
@@ -220,6 +220,31 @@ const AdminSetup = () => {
                       "Create Default Admin Account"
                     )}
                   </Button>
+                  
+                  {/* Add a reset button here too, in case admin exists but the check failed */}
+                  <div className="mt-6 pt-4 border-t border-gray-100">
+                    <p className="text-sm text-gray-700 font-medium mb-2">Reset Admin Users</p>
+                    <p className="text-xs text-gray-500 mb-3">If you're getting errors about admin users already existing, use this button to reset all admin accounts.</p>
+                    
+                    <Button 
+                      onClick={handleResetAdminUsers}
+                      variant="destructive"
+                      className="w-full flex items-center justify-center"
+                      disabled={isResetting}
+                    >
+                      {isResetting ? (
+                        <span className="flex items-center">
+                          <LoaderIcon className="animate-spin mr-2 h-4 w-4" />
+                          Resetting Admin Users...
+                        </span>
+                      ) : (
+                        <>
+                          <TrashIcon className="w-4 h-4 mr-2" />
+                          Reset Admin Users
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               )}
               
