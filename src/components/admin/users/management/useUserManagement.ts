@@ -22,15 +22,16 @@ export const useUserManagement = () => {
   const { adminUser } = useAdminAuth();
   
   const fetchUsers = useCallback(async () => {
-    // Prevent rapid re-fetching
     const now = Date.now();
     if (now - lastFetchTime < 1000) {
+      console.log('Debouncing fetch request');
       return; // Debounce fetch requests
     }
     
     setLastFetchTime(now);
     setIsLoading(true);
     try {
+      console.log('Fetching profiles from Supabase');
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
@@ -79,6 +80,7 @@ export const useUserManagement = () => {
           user.user_metadata.state = 'England';
           user.user_metadata.zip_code = 'W66699';
           user.user_metadata.country = 'United Kingdom';
+          user.user_metadata.country_code = 'GB'; // Set the proper country code for UK/England
           user.last_sign_in_at = new Date().toISOString();
           user.subscription_status = 'active';
           user.subscription_tier = 'premium';
@@ -97,6 +99,7 @@ export const useUserManagement = () => {
           user.user_metadata.state = 'England';
           user.user_metadata.zip_code = 'W66699';
           user.user_metadata.country = 'United Kingdom';
+          user.user_metadata.country_code = 'GB'; // Set the proper country code for UK/England
           user.last_sign_in_at = new Date().toISOString();
           user.subscription_status = 'active';
           user.subscription_tier = 'premium';
@@ -142,31 +145,34 @@ export const useUserManagement = () => {
     }
   }, [adminUser, toast, lastFetchTime]);
 
-  const toggleUserSelection = (userId: string) => {
+  const toggleUserSelection = useCallback((userId: string) => {
+    console.log('Toggling user selection:', userId);
     setSelectedUsers(prev => 
       prev.includes(userId) 
         ? prev.filter(id => id !== userId) 
         : [...prev, userId]
     );
-  };
+  }, []);
 
-  const toggleAllUsers = () => {
-    if (selectedUsers.length === users.filter(user => 
-      (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
-      (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
-    ).length) {
-      setSelectedUsers([]);
-    } else {
-      setSelectedUsers(users.filter(user => 
+  const toggleAllUsers = useCallback(() => {
+    console.log('Toggling all users selection');
+    setSelectedUsers(prev => {
+      const filteredUsers = users.filter(user => 
         (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
         (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
-      ).map(user => user.id));
-    }
-  };
+      );
+      
+      if (prev.length === filteredUsers.length) {
+        return [];
+      } else {
+        return filteredUsers.map(user => user.id);
+      }
+    });
+  }, [users, searchTerm]);
 
-  const handleDeleteUsers = async () => {
+  const handleDeleteUsers = useCallback(async () => {
+    console.log('Deleting users:', selectedUsers);
     setIsActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -189,9 +195,10 @@ export const useUserManagement = () => {
       setIsActionLoading(false);
       setIsDeleteDialogOpen(false);
     }
-  };
+  }, [selectedUsers, toast]);
 
-  const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
+  const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean) => {
+    console.log('Toggling user status:', userId, isActive);
     setIsActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -216,22 +223,40 @@ export const useUserManagement = () => {
     } finally {
       setIsActionLoading(false);
     }
-  };
+  }, [toast]);
 
   const handleViewUserDetails = useCallback((user: User) => {
     console.log('UserManagement: Opening details for user:', user.id);
+    
+    // First close the drawer completely
+    setIsDetailsOpen(false);
+    
+    // Then set the selected user
     setSelectedUser(user);
-    setIsDetailsOpen(true);
+    
+    // Then open the drawer after a short delay to ensure state updates are processed
+    setTimeout(() => {
+      setIsDetailsOpen(true);
+      console.log('UserManagement: Details drawer should now be open');
+    }, 50);
+    
   }, []);
 
   const handleCloseUserDetails = useCallback(() => {
     console.log('UserManagement: Closing user details drawer');
+    
+    // Close the drawer first
     setIsDetailsOpen(false);
-    // Don't immediately clear selectedUser to avoid UI flicker
-    // The selectedUser will be cleared by the useEffect below after a short delay
+    
+    // Clear the selected user after a short delay
+    setTimeout(() => {
+      setSelectedUser(null);
+      console.log('UserManagement: Selected user cleared');
+    }, 100);
   }, []);
 
-  const handleToggleUserSubscription = async (userId: string, extensionDays: number = 30) => {
+  const handleToggleUserSubscription = useCallback(async (userId: string, extensionDays: number = 30) => {
+    console.log('Extending subscription for user:', userId, 'by', extensionDays, 'days');
     setIsActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -269,15 +294,26 @@ export const useUserManagement = () => {
     } finally {
       setIsActionLoading(false);
     }
-  };
+  }, [toast]);
 
   const handleManagePermissions = useCallback((user: User) => {
     console.log('UserManagement: Opening permissions dialog for user:', user.id);
+    
+    // Close the permissions dialog first
+    setIsPermissionsDialogOpen(false);
+    
+    // Set the selected user
     setSelectedUser(user);
-    setIsPermissionsDialogOpen(true);
+    
+    // Open the permissions dialog after a short delay
+    setTimeout(() => {
+      setIsPermissionsDialogOpen(true);
+      console.log('UserManagement: Permissions dialog should now be open');
+    }, 50);
   }, []);
 
-  const handlePermissionsUpdated = (updatedUser: User) => {
+  const handlePermissionsUpdated = useCallback((updatedUser: User) => {
+    console.log('Permissions updated for user:', updatedUser.id);
     setUsers(prevUsers => 
       prevUsers.map(user => 
         user.id === updatedUser.id ? updatedUser : user
@@ -288,23 +324,18 @@ export const useUserManagement = () => {
       title: 'Permissions Updated',
       description: `${updatedUser.email}'s admin permissions have been updated.`,
     });
-  };
+  }, [toast]);
 
-  // Clean up selectedUser state after drawers/dialogs close
+  // Clear selected data when component unmounts
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
-    if (!isDetailsOpen && !isPermissionsDialogOpen) {
-      timer = setTimeout(() => {
-        console.log('Clearing selected user after drawer closed');
-        setSelectedUser(null);
-      }, 300);
-    }
-    
     return () => {
-      if (timer) clearTimeout(timer);
+      console.log('useUserManagement cleanup');
+      setSelectedUsers([]);
+      setSelectedUser(null);
+      setIsDetailsOpen(false);
+      setIsPermissionsDialogOpen(false);
     };
-  }, [isDetailsOpen, isPermissionsDialogOpen]);
+  }, []);
 
   return {
     searchTerm,
