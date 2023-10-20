@@ -16,17 +16,14 @@ import Settings from "./pages/Settings";
 import HelpSupport from "./pages/HelpSupport";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
-import { AdminProvider } from "./contexts/AdminContext";
 import Navbar from "./components/Navbar";
 
-// Admin pages
+// Admin imports
+import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import AdminAuth from "./pages/AdminAuth";
-import AdminLayout from "./components/admin/AdminLayout";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminUsers from "./pages/AdminUsers";
-import AdminReports from "./pages/AdminReports";
-import AdminSettings from "./pages/AdminSettings";
-import AdminSetup from "./pages/AdminSetup";
+import AdminLayout from "./components/layouts/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserManagement from "./pages/admin/UserManagement";
 
 const queryClient = new QueryClient();
 
@@ -55,15 +52,14 @@ const NavbarLayout = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <LanguageProvider>
-        <AdminProvider>
-          <TooltipProvider>
+    <TooltipProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <AdminAuthProvider>
+            <Toaster />
+            <Sonner />
             <BrowserRouter>
-              <Toaster />
-              <Sonner />
               <Routes>
-                {/* Main App Routes */}
                 <Route path="/" element={<NavbarLayout><Index /></NavbarLayout>} />
                 <Route path="/pricing" element={<NavbarLayout><Pricing /></NavbarLayout>} />
                 <Route path="/auth" element={<NavbarLayout><Auth /></NavbarLayout>} />
@@ -117,24 +113,28 @@ const App = () => (
                 />
                 
                 {/* Admin Routes */}
-                <Route path="/admin/login" element={<AdminAuth />} />
-                <Route path="/admin/setup" element={<AdminSetup />} />
+                <Route path="/admin/auth" element={<AdminAuth />} />
                 <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route path="dashboard" element={<AdminDashboard />} />
-                  <Route path="users" element={<AdminUsers />} />
-                  <Route path="reports" element={<AdminReports />} />
-                  <Route path="settings" element={<AdminSettings />} />
+                  <Route path="users" element={<UserManagement />} />
+                  <Route path="data" element={<div className="p-4">Data Management Page (Coming Soon)</div>} />
+                  <Route path="analytics" element={<div className="p-4">Analytics Page (Coming Soon)</div>} />
+                  <Route path="logs" element={<div className="p-4">Activity Logs Page (Coming Soon)</div>} />
+                  <Route path="security" element={<div className="p-4">Security Settings Page (Coming Soon)</div>} />
+                  <Route path="settings" element={<div className="p-4">Admin Settings Page (Coming Soon)</div>} />
+                  <Route path="support" element={<div className="p-4">Help & Support Page (Coming Soon)</div>} />
+                  <Route path="profile" element={<div className="p-4">Admin Profile Page (Coming Soon)</div>} />
                 </Route>
                 
-                {/* Catch-all for 404 */}
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NavbarLayout><NotFound /></NavbarLayout>} />
               </Routes>
             </BrowserRouter>
-          </TooltipProvider>
-        </AdminProvider>
-      </LanguageProvider>
-    </AuthProvider>
+          </AdminAuthProvider>
+        </LanguageProvider>
+      </AuthProvider>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 

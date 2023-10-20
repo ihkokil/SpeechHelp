@@ -1,147 +1,390 @@
-
-import { useState } from 'react';
-import { Navigate, Link } from 'react-router-dom';
-import { useAdmin } from '@/contexts/AdminContext';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { Navigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { CircleAlertIcon, SettingsIcon, KeyIcon, LockIcon, UserIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { toast } from '@/hooks/use-toast';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertCircle, CheckCircle, LockKeyhole, Shield, Settings } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+const loginSchema = z.object({
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+const twoFactorSchema = z.object({
+  code: z.string().length(6, 'Verification code must be 6 digits'),
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Please enter a valid email'),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+type TwoFactorFormValues = z.infer<typeof twoFactorSchema>;
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 const AdminAuth = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { adminUser, isLoading, adminLogin } = useAdmin();
+  const { isAuthenticated, isLoading, signIn, verify2FA, requestPasswordReset, createDefaultAdmin } = useAdminAuth();
+  const [needs2FA, setNeeds2FA] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formTab, setFormTab] = useState<'login' | 'forgot-password'>('login');
+  const [isCreatingAdmin, setIsCreatingAdmin] = useState(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
+  const [setupSuccess, setSetupSuccess] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submission started with username:', username);
-    setError('');
-    
-    if (!username || !password) {
-      setError('Please enter both username and password');
-      return;
-    }
+  const loginForm = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+    },
+  });
+
+  const twoFactorForm = useForm<TwoFactorFormValues>({
+    resolver: zodResolver(twoFactorSchema),
+    defaultValues: {
+      code: '',
+    },
+  });
+
+  const forgotPasswordForm = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  const onSubmitLogin = async (data: LoginFormValues) => {
+    setIsSubmitting(true);
+    setLoginError(null);
     
     try {
-      console.log('Attempting admin login...');
-      await adminLogin(username, password);
-      console.log('Admin login complete');
-    } catch (err: any) {
-      console.error('Error in AdminAuth handleSubmit:', err);
-      setError(`Authentication failed: ${err.message || 'Unknown error'}`);
+      console.log(`Attempting to sign in with username: ${data.username}`);
+      const result = await signIn(data.username, data.password);
+      console.log('Sign in result:', result);
+      
+      if (result.success && result.requires2FA) {
+        setNeeds2FA(true);
+      } else if (result.success) {
+        const username = result.user?.username || data.username;
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${username}!`,
+        });
+      } else if (!result.success) {
+        setLoginError(result.error || 'Invalid credentials');
+        toast({
+          title: "Login failed",
+          description: result.error || "Invalid credentials. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setLoginError('An unexpected error occurred');
+      toast({
+        title: "Login failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     }
+    
+    setIsSubmitting(false);
   };
 
-  // Redirect to admin dashboard if already logged in
-  if (adminUser) {
-    console.log('User already logged in, redirecting to dashboard');
+  const onSubmitTwoFactor = async (data: TwoFactorFormValues) => {
+    setIsSubmitting(true);
+    
+    try {
+      await verify2FA(data.code);
+    } catch (error) {
+      console.error('Two-factor verification error:', error);
+      toast({
+        title: "Verification failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+    
+    setIsSubmitting(false);
+  };
+
+  const onSubmitForgotPassword = async (data: ForgotPasswordFormValues) => {
+    setIsSubmitting(true);
+    
+    try {
+      const result = await requestPasswordReset(data.email);
+      
+      if (!result.success) {
+        toast({
+          title: "Password reset failed",
+          description: result.error || "Unable to process your request. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      toast({
+        title: "Password reset failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+    
+    setIsSubmitting(false);
+  };
+
+  const handleCreateDefaultAdmin = async () => {
+    setIsCreatingAdmin(true);
+    setSetupError(null);
+    setSetupSuccess(false);
+    
+    try {
+      console.log('Attempting to create default admin user');
+      const result = await createDefaultAdmin();
+      console.log('Default admin creation result:', result);
+      
+      if (result.success) {
+        setSetupSuccess(true);
+        toast({
+          title: "Setup complete",
+          description: "Default admin account created. You can now login with username 'speechhelpmaster' and password 'Admin@123'.",
+        });
+        
+        loginForm.setValue('username', 'speechhelpmaster');
+        loginForm.setValue('password', 'Admin@123');
+      } else {
+        setSetupError(result.error || "Failed to create default admin account.");
+        toast({
+          title: "Setup failed",
+          description: result.error || "Failed to create default admin account.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error('Create default admin error:', error);
+      setSetupError(error.message || "An unexpected error occurred. Please try again.");
+      toast({
+        title: "Setup failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+    
+    setIsCreatingAdmin(false);
+  };
+
+  if (isAuthenticated && !isLoading) {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-700 via-purple-600 to-pink-600 p-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-2xl border-0 overflow-hidden bg-white/95 backdrop-blur-sm">
-          <div className="bg-gradient-to-r from-pink-500 to-purple-600 h-2"></div>
-          <CardContent className="p-8">
-            <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <img 
-                  src="/Speech Help - Logo.svg" 
-                  alt="SpeechHelp Logo" 
-                  className="h-12 w-auto mx-auto mb-4"
-                />
-                <h2 className="text-2xl font-semibold text-gray-800">Admin Access</h2>
-                <p className="text-gray-500 text-sm">Secure authentication required</p>
-              </div>
-              
-              {error && (
-                <div className="bg-red-50 text-red-800 p-4 rounded-md flex items-center text-sm animate-fade-in">
-                  <CircleAlertIcon className="h-5 w-5 mr-2 flex-shrink-0 text-red-500" />
-                  <span>{error}</span>
-                </div>
-              )}
-              
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-2">
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <UserIcon className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <Input
-                      id="username"
-                      type="text"
-                      placeholder="Enter your username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      className="pl-10 bg-gray-50/80 border-gray-200 focus:border-purple-400 focus:ring-purple-300"
-                      required
-                    />
-                  </div>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-100 to-pink-100 p-4">
+      <div className="mb-6 flex items-center space-x-2">
+        <img 
+          src="/Speech Help - Logo.svg" 
+          alt="Speech Help Logo" 
+          className="h-10" 
+        />
+        <div className="text-2xl font-bold text-pink-600">Admin Portal</div>
+      </div>
+      
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">Admin Access</CardTitle>
+          <CardDescription className="text-center">
+            {needs2FA 
+              ? "Enter the verification code from your authenticator app" 
+              : "Sign in to access the admin dashboard"}
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          {needs2FA ? (
+            <Form {...twoFactorForm}>
+              <form onSubmit={twoFactorForm.handleSubmit(onSubmitTwoFactor)} className="space-y-4">
+                <div className="flex justify-center my-6">
+                  <Shield className="h-12 w-12 text-pink-600" />
                 </div>
                 
-                <div className="space-y-2">
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <KeyIcon className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 bg-gray-50/80 border-gray-200 focus:border-purple-400 focus:ring-purple-300"
-                      required
-                    />
-                  </div>
-                </div>
+                <FormField
+                  control={twoFactorForm.control}
+                  name="code"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel>Verification Code</FormLabel>
+                      <FormControl>
+                        <InputOTP maxLength={6} {...field}>
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white shadow-md transition-all hover:shadow-lg"
-                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600" 
+                  disabled={isSubmitting}
                 >
-                  {isLoading ? (
-                    <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Authenticating...
-                    </span>
-                  ) : (
-                    <>
-                      <LockIcon className="mr-2 h-4 w-4" /> Sign In
-                    </>
-                  )}
+                  {isSubmitting ? "Verifying..." : "Verify"}
                 </Button>
               </form>
+            </Form>
+          ) : (
+            <Tabs value={formTab} onValueChange={(value) => setFormTab(value as 'login' | 'forgot-password')}>
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="login">Sign In</TabsTrigger>
+                <TabsTrigger value="forgot-password">Forgot Password</TabsTrigger>
+              </TabsList>
               
-              <div className="pt-5 border-t border-gray-100 text-center">
-                <Link to="/admin/setup" className="group">
-                  <div className="inline-flex items-center justify-center gap-1.5 text-sm text-purple-600 hover:text-purple-700 transition-colors">
-                    <SettingsIcon className="h-4 w-4 group-hover:rotate-45 transition-transform duration-300" />
-                    <span>First-time Setup</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Need to create an admin account? Use the setup page.
-                  </p>
-                </Link>
+              <TabsContent value="login">
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(onSubmitLogin)} className="space-y-4">
+                    {loginError && (
+                      <Alert className="bg-red-50 border-red-200 mb-4">
+                        <AlertCircle className="h-4 w-4 text-red-600" />
+                        <AlertDescription className="text-red-700">
+                          {loginError}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    <FormField
+                      control={loginForm.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter your username" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="Enter your password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600" 
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Signing in..." : "Sign In"}
+                    </Button>
+                  </form>
+                </Form>
+              </TabsContent>
+              
+              <TabsContent value="forgot-password">
+                <Form {...forgotPasswordForm}>
+                  <form onSubmit={forgotPasswordForm.handleSubmit(onSubmitForgotPassword)} className="space-y-4">
+                    <div className="flex justify-center my-2">
+                      <LockKeyhole className="h-8 w-8 text-pink-600" />
+                    </div>
+                    
+                    <FormField
+                      control={forgotPasswordForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="Enter your admin email" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600" 
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Sending..." : "Reset Password"}
+                    </Button>
+                  </form>
+                </Form>
+              </TabsContent>
+            </Tabs>
+          )}
+
+          {!needs2FA && (
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-center mb-3">
+                <Settings className="h-5 w-5 text-gray-500 mr-2" />
+                <span className="text-sm font-medium text-gray-500">First-time Setup</span>
               </div>
               
-              <div className="mt-6">
-                <p className="text-xs text-center text-gray-500">
-                  SpeechHelp Admin Portal • Secure access for authorized personnel only
-                </p>
-              </div>
+              {setupSuccess && (
+                <Alert className="mb-3 bg-green-50 border-green-200">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-700">
+                    Default admin account is ready. Use username: <strong>speechhelpmaster</strong> and password: <strong>Admin@123</strong> to log in.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {setupError && (
+                <Alert className="mb-3 bg-red-50 border-red-200">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-700">
+                    {setupError}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleCreateDefaultAdmin}
+                disabled={isCreatingAdmin}
+              >
+                {isCreatingAdmin ? "Setting up..." : "Create Default Admin Account"}
+              </Button>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Use this option only for the initial setup of your admin portal.
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+        
+        <CardFooter className="justify-center text-sm text-gray-500">
+          <p>Secure access for authorized personnel only</p>
+        </CardFooter>
+      </Card>
     </div>
   );
 };
