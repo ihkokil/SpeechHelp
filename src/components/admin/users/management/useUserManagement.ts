@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +30,27 @@ export const useUserManagement = () => {
     setLastFetchTime(now);
     setIsLoading(true);
     try {
+      console.log('Fetching users from Supabase auth');
+      
+      // Fetch users from auth.users via a Supabase function
+      const { data: authUsersData, error: authUsersError } = await supabase.functions.invoke('fetch-users', {
+        method: 'GET'
+      });
+      
+      if (authUsersError) {
+        console.error('Error fetching auth users:', authUsersError);
+        toast({
+          title: 'Error',
+          description: 'Failed to load users. Please try again.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('Fetched auth users:', authUsersData);
+      
+      // Fetch profile data
       console.log('Fetching profiles from Supabase');
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
@@ -49,66 +69,44 @@ export const useUserManagement = () => {
       
       console.log('Fetched profiles:', profilesData);
       
-      const mappedUsers: User[] = [];
-      
-      for (const profile of profilesData) {
+      // Map users with their profiles
+      const mappedUsers: User[] = authUsersData.users.map((authUser: any) => {
+        const profile = profilesData.find((p: any) => p.id === authUser.id) || {};
+        
         const user: User = {
-          id: profile.id,
-          email: profile.username ? `${profile.username}@example.com` : 'user@example.com',
-          last_sign_in_at: null,
-          created_at: profile.created_at,
-          updated_at: profile.updated_at,
+          id: authUser.id,
+          email: authUser.email || 'No email',
+          last_sign_in_at: authUser.last_sign_in_at,
+          created_at: authUser.created_at,
+          updated_at: authUser.updated_at || null,
           app_metadata: {
-            provider: 'email',
+            provider: authUser.app_metadata?.provider || 'email',
+            providers: authUser.app_metadata?.providers || ['email'],
           },
           user_metadata: {
-            name: profile.username,
+            name: profile.username || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
+            full_name: authUser.user_metadata?.full_name || profile.username || '',
+            first_name: authUser.user_metadata?.first_name || '',
+            last_name: authUser.user_metadata?.last_name || '',
+            email: authUser.email,
+            phone: profile.phone || authUser.user_metadata?.phone || '',
+            street_address: authUser.user_metadata?.street_address || '',
+            city: authUser.user_metadata?.city || '',
+            state: authUser.user_metadata?.state || '',
+            zip_code: authUser.user_metadata?.zip_code || '',
+            country: authUser.user_metadata?.country || '',
+            country_code: authUser.user_metadata?.country_code || '',
           },
-          is_active: true,
-          is_admin: false,
+          is_active: profile.is_active !== false, // Default to true if not specified
+          subscription_status: profile.subscription_plan ? 'active' : undefined,
+          subscription_end_date: profile.subscription_end_date || undefined,
+          subscription_tier: profile.subscription_plan || undefined,
         };
         
-        if (profile.username && profile.username.toLowerCase().includes('gillis')) {
-          user.email = 'wayne@gillis.net';
-          user.user_metadata.email = 'wayne@gillis.net';
-          user.user_metadata.first_name = 'Wayne';
-          user.user_metadata.last_name = 'Gillis';
-          user.user_metadata.full_name = 'Wayne Gillis';
-          user.user_metadata.phone = '602-989-331';
-          user.user_metadata.street_address = '123 Any Street';
-          user.user_metadata.city = 'Notting Hill';
-          user.user_metadata.state = 'England';
-          user.user_metadata.zip_code = 'W66699';
-          user.user_metadata.country = 'United Kingdom';
-          user.user_metadata.country_code = 'GB'; // Set the proper country code for UK/England
-          user.last_sign_in_at = new Date().toISOString();
-          user.subscription_status = 'active';
-          user.subscription_tier = 'premium';
-          user.subscription_end_date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(); // 30 days from now
-        }
-        
-        if (profile.username && profile.username.toLowerCase() === 'gillisco') {
-          user.email = 'gillisco@gmail.com';
-          user.user_metadata.email = 'gillisco@gmail.com';
-          user.user_metadata.first_name = 'Wayne';
-          user.user_metadata.last_name = 'Gillis';
-          user.user_metadata.full_name = 'Wayne Gillis';
-          user.user_metadata.phone = '602-989-331';
-          user.user_metadata.street_address = '123 Any Street';
-          user.user_metadata.city = 'Notting Hill';
-          user.user_metadata.state = 'England';
-          user.user_metadata.zip_code = 'W66699';
-          user.user_metadata.country = 'United Kingdom';
-          user.user_metadata.country_code = 'GB'; // Set the proper country code for UK/England
-          user.last_sign_in_at = new Date().toISOString();
-          user.subscription_status = 'active';
-          user.subscription_tier = 'premium';
-          user.subscription_end_date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(); // 30 days from now
-        }
-        
-        mappedUsers.push(user);
-      }
+        return user;
+      });
       
+      // Add admin user if it doesn't exist and current user is admin
       const adminExists = mappedUsers.some(user => user.is_admin);
       if (!adminExists && adminUser) {
         mappedUsers.push({
@@ -131,7 +129,7 @@ export const useUserManagement = () => {
         });
       }
       
-      console.log('Mapped users with correct emails:', mappedUsers);
+      console.log('Mapped users with profiles:', mappedUsers);
       setUsers(mappedUsers);
     } catch (error) {
       console.error('Exception fetching users:', error);
