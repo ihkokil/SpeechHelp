@@ -32,9 +32,44 @@ serve(async (req) => {
       throw error;
     }
     
-    // Return the users
+    // Fetch all profiles to join with users
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('*');
+      
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+      // We'll continue but with empty profiles
+    }
+    
+    // Create a map of profiles by id for faster lookup
+    const profilesMap = new Map();
+    if (profiles) {
+      profiles.forEach(profile => {
+        profilesMap.set(profile.id, profile);
+      });
+    }
+    
+    // Enhance users with their profile data
+    const enhancedUsers = users.users.map(user => {
+      // Find the corresponding profile or use default empty profile
+      const profile = profilesMap.get(user.id) || {
+        username: null,
+        phone: null,
+        is_active: true,
+        subscription_plan: null,
+        subscription_end_date: null
+      };
+      
+      return {
+        ...user,
+        profile
+      };
+    });
+    
+    // Return the enhanced users
     return new Response(
-      JSON.stringify({ users: users.users }),
+      JSON.stringify({ users: enhancedUsers }),
       { 
         headers: { 
           'Content-Type': 'application/json',
