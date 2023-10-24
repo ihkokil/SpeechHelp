@@ -1,3 +1,4 @@
+
 import { User } from '../../types';
 import { format } from 'date-fns';
 import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
@@ -24,7 +25,11 @@ export const getUserName = (user: User) => {
     return user.user_metadata.name;
   }
   
-  return user.email?.split('@')[0] || 'Unknown';
+  if (user.email) {
+    return `${user.email.split('@')[0]} (No name provided)`;
+  }
+  
+  return 'No name provided';
 };
 
 export const getUserPhone = (user: User) => {
