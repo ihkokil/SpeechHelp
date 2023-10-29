@@ -1,17 +1,21 @@
 
 import React from 'react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { User } from './types';
 import { DrawerSheetContent } from './details/DrawerSheetContent';
-import { User as UserType } from './types';
 import { useUserDetails } from './hooks/useUserDetails';
 
 interface UserDetailsDrawerProps {
-  user: UserType | null;
+  user: User | null;
   open: boolean;
   onClose: () => void;
 }
 
-const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClose }) => {
+const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ 
+  user, 
+  open, 
+  onClose 
+}) => {
   const {
     speeches,
     isLoadingSpeeches,
