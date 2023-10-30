@@ -9,8 +9,18 @@ export const useUserDetails = (user: User | null, open: boolean) => {
   const [userJoinedDays, setUserJoinedDays] = useState<number>(0);
   const [totalActivityTime, setTotalActivityTime] = useState<number>(0);
 
+  // Function to reset all states
+  const resetState = useCallback(() => {
+    setSpeeches([]);
+    setIsLoadingSpeeches(false);
+    setUserJoinedDays(0);
+    setTotalActivityTime(0);
+  }, []);
+
   // Function to fetch speech data
   const fetchUserSpeeches = useCallback(async (userId: string) => {
+    if (!userId) return;
+    
     setIsLoadingSpeeches(true);
     try {
       const { data, error } = await supabase
@@ -50,27 +60,18 @@ export const useUserDetails = (user: User | null, open: boolean) => {
 
   // Reset states and fetch data when the drawer opens with a user
   useEffect(() => {
-    console.log('UserDetailsDrawer: drawer mount/update', { user: user?.id, open });
-    
     if (user && open) {
-      setSpeeches([]);
-      setIsLoadingSpeeches(false);
-      setUserJoinedDays(0);
-      setTotalActivityTime(0);
+      resetState();
       fetchUserSpeeches(user.id);
       calculateUserStats(user);
     }
-    
-    // Cleanup function
-    return () => {
-      console.log('UserDetailsDrawer: cleaning up');
-    };
-  }, [user, open, fetchUserSpeeches, calculateUserStats]);
+  }, [user, open, fetchUserSpeeches, calculateUserStats, resetState]);
 
   return {
     speeches,
     isLoadingSpeeches,
     userJoinedDays,
     totalActivityTime,
+    resetState
   };
 };
