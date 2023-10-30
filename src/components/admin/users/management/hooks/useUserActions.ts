@@ -73,18 +73,13 @@ export const useUserActions = () => {
   const handleViewUserDetails = useCallback((user: User) => {
     console.log('UserManagement: Opening details for user:', user.id);
     
-    // First close the drawer completely
-    setIsDetailsOpen(false);
-    
-    // Then set the selected user
+    // Set the selected user first
     setSelectedUser(user);
     
-    // Then open the drawer after a short delay to ensure state updates are processed
-    setTimeout(() => {
-      setIsDetailsOpen(true);
-      console.log('UserManagement: Details drawer should now be open');
-    }, 50);
+    // Then open the drawer
+    setIsDetailsOpen(true);
     
+    console.log('UserManagement: Details drawer should now be open');
   }, []);
 
   const handleCloseUserDetails = useCallback(() => {
@@ -93,11 +88,10 @@ export const useUserActions = () => {
     // Close the drawer first
     setIsDetailsOpen(false);
     
-    // Clear the selected user after a short delay
-    setTimeout(() => {
-      setSelectedUser(null);
-      console.log('UserManagement: Selected user cleared');
-    }, 100);
+    // Clear the selected user
+    setSelectedUser(null);
+    
+    console.log('UserManagement: Selected user cleared');
   }, []);
 
   const handleToggleUserSubscription = useCallback(async (userId: string, extensionDays: number = 30, users: User[], setUsers: (users: User[]) => void) => {
@@ -146,17 +140,13 @@ export const useUserActions = () => {
   const handleManagePermissions = useCallback((user: User) => {
     console.log('UserManagement: Opening permissions dialog for user:', user.id);
     
-    // Close the permissions dialog first
-    setIsPermissionsDialogOpen(false);
-    
     // Set the selected user
     setSelectedUser(user);
     
-    // Open the permissions dialog after a short delay
-    setTimeout(() => {
-      setIsPermissionsDialogOpen(true);
-      console.log('UserManagement: Permissions dialog should now be open');
-    }, 50);
+    // Open the permissions dialog
+    setIsPermissionsDialogOpen(true);
+    
+    console.log('UserManagement: Permissions dialog should now be open');
   }, []);
 
   const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[], setUsers: (users: User[]) => void) => {
@@ -171,6 +161,9 @@ export const useUserActions = () => {
       title: 'Permissions Updated',
       description: `${updatedUser.email}'s admin permissions have been updated.`,
     });
+    
+    // Close the dialog
+    setIsPermissionsDialogOpen(false);
   }, [toast]);
 
   return {

@@ -32,10 +32,14 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
     onClose();
   };
   
+  // When sheet is closed with escape key or by clicking outside
   const handleSheetOpenChange = (isOpen: boolean) => {
     console.log('UserDetailsDrawer: Sheet open state changed to', isOpen);
     if (!isOpen) {
-      onClose();
+      // Use setTimeout to avoid React state update conflicts
+      setTimeout(() => {
+        onClose();
+      }, 0);
     }
   };
 
