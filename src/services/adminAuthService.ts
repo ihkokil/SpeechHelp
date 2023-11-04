@@ -35,6 +35,21 @@ export const adminAuthService = {
     try {
       console.log('Attempting to create default admin user');
       
+      // Try to check if the edge function exists first
+      const { error: functionCheckError } = await supabase.functions.invoke('admin-auth', {
+        body: { action: 'ping' },
+      }).catch(error => {
+        return { error };
+      });
+      
+      if (functionCheckError) {
+        console.error('Edge function check failed:', functionCheckError);
+        return { 
+          success: false, 
+          error: 'Admin authentication service is not available. Please check your deployment.' 
+        };
+      }
+      
       const { data, error } = await supabase.functions.invoke('admin-auth', {
         body: { 
           action: 'create_admin',
@@ -109,12 +124,32 @@ export const adminAuthService = {
           username: credentials.username, 
           password: credentials.password 
         },
+      }).catch(error => {
+        // Handle function not found error specifically
+        if (error.message?.includes('not found') || error.message?.includes('404')) {
+          console.error('Admin auth function not found. It may not be deployed:', error);
+          return { 
+            error: {
+              message: 'Authentication service is not available. The admin-auth function may not be deployed.'
+            }
+          };
+        }
+        return { error };
       });
 
       console.log('Sign in response:', { data, error });
 
       if (error) {
         console.error('Admin auth function error:', error);
+        
+        // Check for specific error types
+        if (error.message?.includes('not found') || error.message?.includes('404')) {
+          return { 
+            success: false, 
+            error: 'Authentication service is not available. Please contact the administrator.' 
+          };
+        }
+        
         return { 
           success: false, 
           error: 'Authentication service error. Please try again later.' 
