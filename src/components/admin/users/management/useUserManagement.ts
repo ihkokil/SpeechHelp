@@ -7,6 +7,7 @@ import { useUserActions } from './hooks/useUserActions';
 
 export const useUserManagement = () => {
   const isInitialMount = useRef(true);
+  const isMounted = useRef(true);
   
   const {
     users,
@@ -49,35 +50,58 @@ export const useUserManagement = () => {
   } = useUserActions();
   
   // Wrapper functions to include users and setUsers
-  const toggleAllUsers = () => baseToggleAllUsers(users, searchTerm);
+  const toggleAllUsers = useCallback(() => {
+    if (isMounted.current) {
+      baseToggleAllUsers(users, searchTerm);
+    }
+  }, [baseToggleAllUsers, users, searchTerm]);
   
-  const handleDeleteUsers = () => baseHandleDeleteUsers(selectedUsers, users, setUsers);
+  const handleDeleteUsers = useCallback(() => {
+    if (isMounted.current) {
+      baseHandleDeleteUsers(selectedUsers, users, setUsers);
+    }
+  }, [baseHandleDeleteUsers, selectedUsers, users, setUsers]);
   
-  const handleToggleUserStatus = (userId: string, isActive: boolean) => 
-    baseHandleToggleUserStatus(userId, isActive, users, setUsers);
+  const handleToggleUserStatus = useCallback((userId: string, isActive: boolean) => {
+    if (isMounted.current) {
+      baseHandleToggleUserStatus(userId, isActive, users, setUsers);
+    }
+  }, [baseHandleToggleUserStatus, users, setUsers]);
     
-  const handleToggleUserSubscription = (userId: string, days: number = 30) => 
-    baseHandleToggleUserSubscription(userId, days, users, setUsers);
+  const handleToggleUserSubscription = useCallback((userId: string, days: number = 30) => {
+    if (isMounted.current) {
+      baseHandleToggleUserSubscription(userId, days, users, setUsers);
+    }
+  }, [baseHandleToggleUserSubscription, users, setUsers]);
     
-  const handlePermissionsUpdated = (updatedUser: any) => 
-    baseHandlePermissionsUpdated(updatedUser, users, setUsers);
+  const handlePermissionsUpdated = useCallback((updatedUser: any) => {
+    if (isMounted.current) {
+      baseHandlePermissionsUpdated(updatedUser, users, setUsers);
+    }
+  }, [baseHandlePermissionsUpdated, users, setUsers]);
 
   // Global cleanup function
   const cleanup = useCallback(() => {
-    setSelectedUsers([]);
-    resetUserActions();
+    console.log('UserManagement: Running cleanup');
+    if (isMounted.current) {
+      setSelectedUsers([]);
+      resetUserActions();
+    }
   }, [setSelectedUsers, resetUserActions]);
 
-  // Cleanup effect
+  // Cleanup effect on unmount
   useEffect(() => {
     return () => {
+      console.log('UserManagement: Component unmounting');
+      isMounted.current = false;
       cleanup();
     };
   }, [cleanup]);
 
   // Initial fetch effect
   useEffect(() => {
-    if (isInitialMount.current) {
+    if (isInitialMount.current && isMounted.current) {
+      console.log('UserManagement: Initial fetch');
       fetchUsers();
       isInitialMount.current = false;
     }

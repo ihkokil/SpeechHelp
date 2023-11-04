@@ -27,7 +27,12 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
   // Handle cleanup when drawer closes
   useEffect(() => {
     if (!open) {
-      resetState();
+      // Delay reset to avoid state conflicts during animations
+      const timer = setTimeout(() => {
+        resetState();
+      }, 300);
+      
+      return () => clearTimeout(timer);
     }
   }, [open, resetState]);
   

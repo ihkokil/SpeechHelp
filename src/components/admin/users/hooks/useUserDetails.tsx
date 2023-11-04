@@ -11,6 +11,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
 
   // Function to reset all states
   const resetState = useCallback(() => {
+    console.log('Resetting user details state');
     setSpeeches([]);
     setIsLoadingSpeeches(false);
     setUserJoinedDays(0);
@@ -23,6 +24,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     
     setIsLoadingSpeeches(true);
     try {
+      console.log('Fetching speeches for user:', userId);
       const { data, error } = await supabase
         .from('speeches')
         .select('*')
@@ -32,6 +34,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
       if (error) {
         console.error('Error fetching user speeches:', error);
       } else {
+        console.log('Fetched speeches:', data?.length || 0);
         setSpeeches(data || []);
         calculateTotalActivityTime(data || []);
       }
@@ -45,6 +48,8 @@ export const useUserDetails = (user: User | null, open: boolean) => {
   // Calculate user statistics
   const calculateUserStats = useCallback((user: User) => {
     // Calculate days since user joined
+    if (!user?.created_at) return;
+    
     const createdDate = new Date(user.created_at);
     const today = new Date();
     const diffTime = Math.abs(today.getTime() - createdDate.getTime());
@@ -60,11 +65,24 @@ export const useUserDetails = (user: User | null, open: boolean) => {
 
   // Reset states and fetch data when the drawer opens with a user
   useEffect(() => {
+    let isMounted = true;
+    
     if (user && open) {
-      resetState();
-      fetchUserSpeeches(user.id);
-      calculateUserStats(user);
+      console.log('User details drawer opened for user:', user.id);
+      // When opening drawer with a user, reset state and fetch data
+      if (isMounted) {
+        resetState();
+      }
+      
+      if (isMounted) {
+        fetchUserSpeeches(user.id);
+        calculateUserStats(user);
+      }
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [user, open, fetchUserSpeeches, calculateUserStats, resetState]);
 
   return {
