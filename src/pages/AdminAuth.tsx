@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Navigate } from 'react-router-dom';
@@ -12,7 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { toast } from '@/hooks/use-toast';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, CheckCircle, LockKeyhole, Shield, Settings, Info } from 'lucide-react';
+import { AlertCircle, CheckCircle, LockKeyhole, Shield, Settings, Info, Terminal } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -48,6 +49,7 @@ const AdminAuth = () => {
   useEffect(() => {
     const checkFunctionDeployment = async () => {
       try {
+        setCheckingDeployment(true);
         await supabase.functions.invoke('admin-auth', {
           body: { action: 'ping' },
         }).catch(error => {
@@ -59,6 +61,7 @@ const AdminAuth = () => {
         });
       } catch (error) {
         console.error('Function deployment check error:', error);
+        setDeploymentError(true);
       } finally {
         setCheckingDeployment(false);
       }
@@ -233,13 +236,16 @@ const AdminAuth = () => {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Deployment Issue Detected</AlertTitle>
           <AlertDescription>
-            The admin authentication service is not available. The Supabase Edge Function 'admin-auth' may not be deployed correctly.
+            <div>
+              The admin authentication service is not available. The Supabase Edge Function 'admin-auth' needs to be deployed.
+            </div>
             <div className="mt-2">
-              <strong>Troubleshooting:</strong>
+              <strong>How to fix this:</strong>
               <ul className="list-disc pl-5 mt-1 text-sm">
-                <li>Check if your Supabase project is properly configured</li>
-                <li>Verify that the admin-auth function is deployed in your Supabase project</li>
-                <li>Try refreshing the page after a few moments</li>
+                <li>Make sure the function is defined in <code>supabase/functions/admin-auth/index.ts</code></li>
+                <li>The <code>config.toml</code> file should have <code>name = "admin-auth"</code></li>
+                <li>Deploy your Supabase Functions using the Supabase CLI: <code>supabase functions deploy admin-auth</code></li>
+                <li>Or wait for the automatic deployment to complete if you're using a CI/CD pipeline</li>
               </ul>
             </div>
           </AlertDescription>

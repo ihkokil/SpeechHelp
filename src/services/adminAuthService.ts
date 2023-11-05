@@ -39,6 +39,7 @@ export const adminAuthService = {
       const functionCheckResult = await supabase.functions.invoke('admin-auth', {
         body: { action: 'ping' },
       }).catch(error => {
+        console.error('Edge function check failed:', error);
         return { error };
       });
       
@@ -74,7 +75,7 @@ export const adminAuthService = {
       }
       
       // Check if data exists on the response
-      const responseData = 'data' in functionResult ? functionResult.data : null;
+      const responseData = functionResult && 'data' in functionResult ? functionResult.data : null;
       
       if (!responseData) {
         console.error('No data returned from admin-auth function');
@@ -152,7 +153,7 @@ export const adminAuthService = {
         if (functionResult.error.message?.includes('not found') || functionResult.error.message?.includes('404')) {
           return { 
             success: false, 
-            error: 'Authentication service is not available. Please contact the administrator.' 
+            error: 'Authentication service is not available. Please check if the Edge Function is deployed.' 
           };
         }
         
@@ -163,7 +164,7 @@ export const adminAuthService = {
       }
 
       // Check if data exists on the response
-      const responseData = 'data' in functionResult ? functionResult.data : null;
+      const responseData = functionResult && 'data' in functionResult ? functionResult.data : null;
       
       if (!responseData || !responseData.success) {
         // Log failed login attempt
