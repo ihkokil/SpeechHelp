@@ -1,48 +1,42 @@
 
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Speech } from '@/types/auth';
 import { FilterOption, SortOption } from './FilterBar';
 
 export const useSpeechesFilter = (
-  speeches: Speech[],
-  searchQuery: string,
+  speeches: Speech[], 
+  searchQuery: string, 
   filterType: FilterOption,
   sortBy: SortOption
 ) => {
   const filteredSpeeches = useMemo(() => {
-    let result = [...speeches];
+    // First filter by type if not "all"
+    let filtered = speeches;
+    if (filterType !== 'all') {
+      filtered = filtered.filter(speech => speech.speech_type === filterType);
+    }
     
-    // Apply search filter
+    // Then filter by search query if provided
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(speech => 
-        speech.title.toLowerCase().includes(query)
+      filtered = filtered.filter(speech => 
+        speech.title.toLowerCase().includes(query) || 
+        speech.content.toLowerCase().includes(query)
       );
     }
     
-    // Apply type filter
-    if (filterType !== 'all') {
-      result = result.filter(speech => speech.speech_type === filterType);
-    }
-    
-    // Apply sorting
-    switch (sortBy) {
-      case 'newest':
-        return result.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-      case 'oldest':
-        return result.sort((a, b) => 
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
-      case 'title':
-        return result.sort((a, b) => 
-          a.title.localeCompare(b.title)
-        );
-      default:
-        return result;
-    }
-  }, [speeches, searchQuery, sortBy, filterType]);
-
-  return filteredSpeeches;
+    // Finally sort according to selection
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'newest') {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      } else if (sortBy === 'oldest') {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      } else if (sortBy === 'title') {
+        return a.title.localeCompare(b.title);
+      }
+      return 0;
+    });
+  }, [speeches, searchQuery, filterType, sortBy]);
+  
+  return { filteredSpeeches };
 };

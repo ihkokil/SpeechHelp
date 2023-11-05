@@ -11,9 +11,11 @@ import {
 } from '@/components/ui/select';
 import { SearchIcon } from 'lucide-react';
 import Translate from '@/components/Translate';
+import { speechTypesData } from '@/components/speech/data/speechTypesData';
+import { useTranslatedSpeechType } from './speech-utils';
 
 export type SortOption = 'newest' | 'oldest' | 'title';
-export type FilterOption = 'all' | 'wedding' | 'business' | 'eulogy' | 'graduation' | 'other';
+export type FilterOption = string;
 
 interface FilterBarProps {
   searchQuery: string;
@@ -32,6 +34,8 @@ const FilterBar = ({
   sortBy,
   setSortBy
 }: FilterBarProps) => {
+  const { getTranslatedTypeLabel } = useTranslatedSpeechType();
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div>
@@ -63,11 +67,11 @@ const FilterBar = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="wedding">Wedding</SelectItem>
-            <SelectItem value="business">Business</SelectItem>
-            <SelectItem value="eulogy">Eulogy</SelectItem>
-            <SelectItem value="graduation">Graduation</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
+            {speechTypesData.map((type) => (
+              <SelectItem key={type.id} value={type.id}>
+                {getTranslatedTypeLabel(type.id)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
