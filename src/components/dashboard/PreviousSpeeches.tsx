@@ -4,20 +4,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Speech } from '@/types/auth';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useNavigate } from 'react-router-dom';
-import ViewSpeechModal from './speeches/ViewSpeechModal';
-import EditSpeechModal from './speeches/EditSpeechModal';
-import DeleteSpeechAlert from './speeches/DeleteSpeechAlert';
 import SpeechesTable from './speeches/SpeechesTable';
+import SpeechModals from './speeches/SpeechModals';
 import Translate from '@/components/Translate';
 
 const PreviousSpeeches = () => {
-  const { speeches, updateSpeech, deleteSpeech } = useAuth();
+  const { speeches } = useAuth();
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
-  const [editTitle, setEditTitle] = useState('');
-  const [editContent, setEditContent] = useState('');
   const navigate = useNavigate();
 
   const handleViewSpeech = (speech: Speech) => {
@@ -27,36 +23,12 @@ const PreviousSpeeches = () => {
 
   const handleEditSpeech = (speech: Speech) => {
     setSelectedSpeech(speech);
-    setEditTitle(speech.title);
-    setEditContent(speech.content);
     setIsEditModalOpen(true);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!selectedSpeech) return;
-    
-    try {
-      await updateSpeech(selectedSpeech.id, editTitle, editContent);
-      setIsEditModalOpen(false);
-    } catch (error) {
-      console.error('Error updating speech:', error);
-    }
   };
 
   const handleDeleteSpeech = (speech: Speech) => {
     setSelectedSpeech(speech);
     setIsDeleteAlertOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!selectedSpeech) return;
-    
-    try {
-      await deleteSpeech(selectedSpeech.id);
-      setIsDeleteAlertOpen(false);
-    } catch (error) {
-      console.error('Error deleting speech:', error);
-    }
   };
 
   const handleCreateNewSpeech = () => {
@@ -96,29 +68,15 @@ const PreviousSpeeches = () => {
       )}
       
       {/* Modals */}
-      <ViewSpeechModal 
-        isOpen={isViewModalOpen}
-        onOpenChange={setIsViewModalOpen}
-        speech={selectedSpeech}
+      <SpeechModals 
+        selectedSpeech={selectedSpeech}
+        isViewModalOpen={isViewModalOpen}
+        setIsViewModalOpen={setIsViewModalOpen}
+        isEditModalOpen={isEditModalOpen}
+        setIsEditModalOpen={setIsEditModalOpen}
+        isDeleteAlertOpen={isDeleteAlertOpen}
+        setIsDeleteAlertOpen={setIsDeleteAlertOpen}
         onEditClick={handleEditSpeech}
-      />
-      
-      <EditSpeechModal 
-        isOpen={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
-        speech={selectedSpeech}
-        editTitle={editTitle}
-        editContent={editContent}
-        setEditTitle={setEditTitle}
-        setEditContent={setEditContent}
-        onSave={handleSaveEdit}
-      />
-      
-      <DeleteSpeechAlert 
-        isOpen={isDeleteAlertOpen}
-        onOpenChange={setIsDeleteAlertOpen}
-        speech={selectedSpeech}
-        onConfirm={confirmDelete}
       />
     </div>
   );

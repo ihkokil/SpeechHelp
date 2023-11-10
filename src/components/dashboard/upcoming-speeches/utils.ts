@@ -1,5 +1,6 @@
 
 // Utility functions for working with speech events
+import { SpeechEvent } from './types';
 
 export const formatDate = (date: Date, localeCode: string): string => {
   return date.toLocaleDateString(localeCode, { 

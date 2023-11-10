@@ -1,10 +1,9 @@
 
-import { useState } from 'react';
 import { Speech } from '@/types/auth';
-import ViewSpeechModal from './ViewSpeechModal';
-import EditSpeechModal from './EditSpeechModal';
-import DeleteSpeechAlert from './DeleteSpeechAlert';
-import { useAuth } from '@/contexts/AuthContext';
+import ViewSpeechModal from './modals/ViewSpeechModal';
+import EditSpeechModal from './modals/EditSpeechModal';
+import DeleteSpeechAlert from './modals/DeleteSpeechAlert';
+import { useSpeechModals } from './hooks/useSpeechModals';
 
 interface SpeechModalsProps {
   selectedSpeech: Speech | null;
@@ -27,49 +26,34 @@ const SpeechModals = ({
   setIsDeleteAlertOpen,
   onEditClick,
 }: SpeechModalsProps) => {
-  const { updateSpeech, deleteSpeech } = useAuth();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const {
+    title,
+    setTitle,
+    content,
+    setContent,
+    handleEditModalOpen,
+    handleUpdateSpeech,
+    handleDeleteSpeech
+  } = useSpeechModals();
   
-  // Initialize edit form when a speech is selected
-  const handleEditModalOpen = (open: boolean) => {
-    setIsEditModalOpen(open);
-    
-    // If opening the modal, set the initial values
-    if (open && selectedSpeech) {
-      setTitle(selectedSpeech.title);
-      setContent(selectedSpeech.content);
-    }
+  // Handle edit modal opening/closing
+  const onEditModalOpenChange = (open: boolean) => {
+    setIsEditModalOpen(handleEditModalOpen(open, selectedSpeech));
   };
   
   // Handle speech update
-  const handleUpdateSpeech = async () => {
-    if (!selectedSpeech) return;
-    
-    setIsSubmitting(true);
-    try {
-      await updateSpeech(selectedSpeech.id, title, content);
+  const onSaveEdit = async () => {
+    const success = await handleUpdateSpeech(selectedSpeech);
+    if (success) {
       setIsEditModalOpen(false);
-    } catch (error) {
-      console.error('Error updating speech:', error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
   
   // Handle speech deletion
-  const handleDeleteSpeech = async () => {
-    if (!selectedSpeech) return;
-    
-    setIsSubmitting(true);
-    try {
-      await deleteSpeech(selectedSpeech.id);
+  const onConfirmDelete = async () => {
+    const success = await handleDeleteSpeech(selectedSpeech);
+    if (success) {
       setIsDeleteAlertOpen(false);
-    } catch (error) {
-      console.error('Error deleting speech:', error);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -90,12 +74,12 @@ const SpeechModals = ({
         <EditSpeechModal
           speech={selectedSpeech}
           isOpen={isEditModalOpen}
-          onOpenChange={handleEditModalOpen}
+          onOpenChange={onEditModalOpenChange}
           editTitle={title}
           editContent={content}
           setEditTitle={setTitle}
           setEditContent={setContent}
-          onSave={handleUpdateSpeech}
+          onSave={onSaveEdit}
         />
       )}
       
@@ -105,7 +89,7 @@ const SpeechModals = ({
           speech={selectedSpeech}
           isOpen={isDeleteAlertOpen}
           onOpenChange={setIsDeleteAlertOpen}
-          onConfirm={handleDeleteSpeech}
+          onConfirm={onConfirmDelete}
         />
       )}
     </>

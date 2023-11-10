@@ -1,0 +1,87 @@
+
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
+import { Speech } from '@/types/auth';
+import { Badge } from '@/components/ui/badge';
+import { ButtonCustom } from '@/components/ui/button-custom';
+import { format, parseISO } from 'date-fns';
+import { getSpeechTypeLabel, getTypeColor } from '../speech-utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+import Translate from '@/components/Translate';
+import SpeechPreview from '@/components/speech/components/SpeechPreview';
+import SpeechExportButtons from '../components/SpeechExportButtons';
+
+interface ViewSpeechModalProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  speech: Speech;
+  onEditClick: () => void;
+}
+
+const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpeechModalProps) => {
+  const { currentLanguage } = useLanguage();
+
+  const formatDate = (dateString: string) => {
+    const date = parseISO(dateString);
+    return format(date, 'MMM d, yyyy h:mm a');
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl text-purple-800">{speech.title}</DialogTitle>
+          <DialogDescription>
+            <Badge className={getTypeColor(speech.speech_type)}>
+              {getSpeechTypeLabel(speech.speech_type)}
+            </Badge>
+          </DialogDescription>
+        </DialogHeader>
+        <div className="overflow-auto max-h-[60vh] my-4">
+          <SpeechPreview content={speech.content} />
+        </div>
+        <div className="text-sm mt-2 flex">
+          <span className="text-purple-600">
+            <Translate text="dashboard.created" />: {formatDate(speech.created_at)}
+          </span> 
+          <span className="mx-2 text-gray-500">|</span> 
+          <span className="text-pink-600">
+            <Translate text="dashboard.lastUpdated" />: {formatDate(speech.updated_at)}
+          </span>
+        </div>
+        
+        <SpeechExportButtons 
+          speech={speech}
+          title={speech.title}
+          content={speech.content}
+        />
+        
+        <DialogFooter className="mt-4">
+          <ButtonCustom 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+          >
+            <Translate text="common.close" />
+          </ButtonCustom>
+          <ButtonCustom 
+            variant="default" 
+            onClick={() => {
+              onOpenChange(false);
+              onEditClick();
+            }}
+          >
+            <Translate text="common.edit" />
+          </ButtonCustom>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default ViewSpeechModal;
