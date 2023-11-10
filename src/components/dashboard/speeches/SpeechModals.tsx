@@ -91,10 +91,11 @@ const SpeechModals = ({
           speech={selectedSpeech}
           isOpen={isEditModalOpen}
           onOpenChange={handleEditModalOpen}
-          initialTitle={selectedSpeech.title}
-          initialContent={selectedSpeech.content}
+          editTitle={title}
+          editContent={content}
+          setEditTitle={setTitle}
+          setEditContent={setContent}
           onSave={handleUpdateSpeech}
-          isSubmitting={isSubmitting}
         />
       )}
       
@@ -105,7 +106,6 @@ const SpeechModals = ({
           isOpen={isDeleteAlertOpen}
           onOpenChange={setIsDeleteAlertOpen}
           onConfirm={handleDeleteSpeech}
-          isDeleting={isSubmitting}
         />
       )}
     </>
