@@ -1,22 +1,21 @@
 
 import React from 'react';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SpeechLabLayoutProps {
   children: React.ReactNode;
 }
 
 const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
-  const isMobile = useIsMobile();
-  
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Dashboard Sidebar */}
-      <DashboardSidebar />
+    <div className="min-h-screen flex">
+      {/* Dashboard Sidebar - Fixed position */}
+      <div className="fixed top-0 left-0 h-screen">
+        <DashboardSidebar />
+      </div>
       
-      {/* Main Content */}
-      <div className={`flex-1 bg-gray-50 ${isMobile ? 'w-full' : 'overflow-auto'}`}>
+      {/* Main Content - With left padding to account for fixed sidebar */}
+      <div className="flex-1 ml-64 bg-gray-50 overflow-auto">
         {children}
       </div>
     </div>

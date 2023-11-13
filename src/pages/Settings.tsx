@@ -17,9 +17,13 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen flex">
-      <DashboardSidebar />
+      {/* Dashboard Sidebar - Fixed position */}
+      <div className="fixed top-0 left-0 h-screen">
+        <DashboardSidebar />
+      </div>
       
-      <div className="flex-1 bg-gray-50 overflow-auto">
+      {/* Main Content - With left padding to account for fixed sidebar */}
+      <div className="flex-1 ml-64 bg-gray-50 overflow-auto">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <header className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900">

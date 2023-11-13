@@ -16,11 +16,39 @@ const HelpSupport = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
 
+  // Sample FAQs for the FAQsTab
+  const faqs = [
+    {
+      question: 'How do I create a new speech?',
+      answer: 'Navigate to the Speech Lab from your dashboard and follow the guided steps to create a new speech. You can select an occasion, fill out the questionnaire, and our AI will help generate a speech tailored to your needs.'
+    },
+    {
+      question: 'Can I edit my speeches after they are generated?',
+      answer: 'Yes! After generation, you can edit your speech in the Speech Lab. You can also access all your saved speeches in the "My Speeches" section where you can view, edit, or delete them.'
+    },
+    {
+      question: 'How do I export my speech?',
+      answer: 'You can export your speech in various formats including PDF, Word document, or plain text. Just go to "My Speeches", select the speech you want to export, and use the export options available.'
+    },
+    {
+      question: 'What if I need help with my speech?',
+      answer: 'We offer writing tips and guidelines in the "Writing Tips" section. If you need more help, you can contact our support team through the "Help & Support" page.'
+    },
+    {
+      question: 'How can I change my subscription plan?',
+      answer: 'You can manage your subscription in the "Settings" page under the "Billing" tab. From there, you can upgrade, downgrade, or cancel your subscription.'
+    }
+  ];
+
   return (
     <div className="min-h-screen flex">
-      <DashboardSidebar />
+      {/* Dashboard Sidebar - Fixed position */}
+      <div className="fixed top-0 left-0 h-screen">
+        <DashboardSidebar />
+      </div>
       
-      <div className="flex-1 bg-gray-50 overflow-auto">
+      {/* Main Content - With left padding to account for fixed sidebar */}
+      <div className="flex-1 ml-64 bg-gray-50 overflow-auto">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Help & Support</h1>
@@ -64,7 +92,7 @@ const HelpSupport = () => {
             </TabsList>
 
             <TabsContent value="faq" className="space-y-6">
-              <FAQsTab />
+              <FAQsTab faqs={faqs} />
             </TabsContent>
 
             <TabsContent value="guides" className="space-y-6">
