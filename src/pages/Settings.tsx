@@ -27,33 +27,33 @@ const Settings = () => {
           </p>
         </header>
 
-        <Tabs defaultValue="profile" onValueChange={setActiveTab} value={activeTab} className="space-y-6">
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-gradient-to-r from-pink-500 via-pink-500 to-purple-600 p-1 rounded-lg">
+        <Tabs defaultValue="profile" onValueChange={setActiveTab} value={activeTab} className="space-y-8">
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-gradient-to-r from-pink-500 via-pink-500 to-purple-600 rounded-lg overflow-hidden h-14">
               <TabsTrigger 
                 value="profile" 
-                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
               >
                 <User className="h-5 w-5" />
                 <span>{t('settings.tabs.profile', currentLanguage.code)}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="billing" 
-                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
               >
                 <CreditCard className="h-5 w-5" />
                 <span>{t('settings.tabs.billing', currentLanguage.code)}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="notifications" 
-                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
               >
                 <Bell className="h-5 w-5" />
                 <span>{t('settings.tabs.notifications', currentLanguage.code)}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="security" 
-                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
               >
                 <Shield className="h-5 w-5" />
                 <span>{t('settings.tabs.security', currentLanguage.code)}</span>

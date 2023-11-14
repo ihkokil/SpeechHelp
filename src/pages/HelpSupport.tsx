@@ -52,33 +52,33 @@ const HelpSupport = () => {
           <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         </div>
 
-        <Tabs defaultValue="faq" className="space-y-6">
-          <div className="bg-white p-4 rounded-lg shadow-sm">
-            <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-gradient-to-r from-pink-500 via-pink-500 to-purple-600 p-1 rounded-lg">
+        <Tabs defaultValue="faq" className="space-y-8">
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-gradient-to-r from-pink-500 via-pink-500 to-purple-600 rounded-lg overflow-hidden h-14">
               <TabsTrigger 
                 value="faq" 
-                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
               >
                 <HelpCircle className="h-5 w-5" />
                 <span>FAQs</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="guides" 
-                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
               >
                 <BookOpen className="h-5 w-5" />
                 <span>Guides</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="contact" 
-                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
               >
                 <MessageSquare className="h-5 w-5" />
                 <span>Contact Us</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="resources" 
-                className="flex flex-col items-center gap-1 py-2 data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
               >
                 <FileText className="h-5 w-5" />
                 <span>Resources</span>

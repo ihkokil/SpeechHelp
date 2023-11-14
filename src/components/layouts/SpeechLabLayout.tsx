@@ -15,7 +15,7 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
       </div>
       
       {/* Main Content - With left margin to account for fixed sidebar */}
-      <div className="flex-1 ml-64 bg-gray-50 min-h-screen">
+      <div className="flex-1 ml-64 bg-gray-50 min-h-screen overflow-y-auto">
         {children}
       </div>
     </div>
