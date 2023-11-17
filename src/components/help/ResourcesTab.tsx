@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, ExternalLink, Lock } from 'lucide-react';
+import { FileText, Download, Lock } from 'lucide-react';
 import { speechTypesData } from '@/components/speech/data/speechTypesData';
 import { questionnaires } from '@/components/speech/questionnaires';
 import { useToast } from '@/hooks/use-toast';
@@ -10,7 +10,6 @@ import { createPdfFromContent } from '@/components/speech/utils/pdfGenerator';
 import { createFormattedSpeech } from '@/components/speech/utils/speechContentCreator';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -64,17 +63,44 @@ const ResourcesTab = () => {
     const questionnaire = questionnaires[selectedSpeechType as keyof typeof questionnaires];
     if (!questionnaire) return;
     
-    // Create a formatted speech template
-    const emptyDetails = {};
-    
-    // Create a formatted speech content with placeholder text
+    // Create a formatted content with the latest questionnaire structure
     const formattedContent = `# ${templateTitle}\n\n` +
       `## About This Template\n\n` +
       `This is a template for creating a ${speechTypeLabel.toLowerCase()} speech. Use our Speech Lab tool to fill in the questionnaire and generate a complete speech tailored to your needs.\n\n` +
       `## Questionnaire Structure\n\n` +
-      `${questionnaire.map(q => `### ${q.question}\n${q.type === 'radio' ? `Options: ${q.options?.join(', ')}` : 'Enter your response here...'}\n\n`).join('')}` +
+      `${questionnaire.map(q => {
+        // Format each question based on its type
+        let questionText = `### ${q.question}\n`;
+        if (q.type === 'radio' && q.options) {
+          questionText += `Options: ${q.options.join(', ')}\n\n`;
+        } else if (q.type === 'textarea' || q.type === 'text') {
+          questionText += `Type: ${q.type}\n`;
+          if (q.placeholder) {
+            questionText += `Placeholder: ${q.placeholder}\n`;
+          }
+          questionText += '\n';
+        }
+        
+        // Add condition information if present
+        if (q.condition) {
+          questionText += `Displays when: "${q.condition.question}" is "${q.condition.value}"\n\n`;
+        }
+        
+        return questionText;
+      }).join('')}` +
       `## Sample Speech Structure\n\n` +
-      `${createFormattedSpeech(templateTitle, emptyDetails)}`;
+      `### Introduction\n` +
+      `• Opening hook\n` +
+      `• Greeting and introduction\n` +
+      `• Purpose statement\n\n` +
+      `### Body\n` +
+      `• Main point 1 (with supporting details)\n` +
+      `• Main point 2 (with supporting details)\n` +
+      `• Main point 3 (with supporting details)\n\n` +
+      `### Conclusion\n` +
+      `• Summary of key points\n` +
+      `• Final message or call to action\n` +
+      `• Closing statement`;
     
     // Generate and download the PDF
     createPdfFromContent(
@@ -102,56 +128,69 @@ const ResourcesTab = () => {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Speech Writing Templates</CardTitle>
-              <CardDescription>Download templates for different types of speeches</CardDescription>
+          <Card className="border-0 shadow-md">
+            <CardHeader className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-t-lg">
+              <CardTitle className="text-lg text-gray-800">Speech Writing Templates</CardTitle>
+              <CardDescription>Download templates with the latest questionnaires</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {speechTypesData.map((speechType) => (
-                <div key={speechType.id} className="flex justify-between items-center">
-                  <span className="text-sm">{speechType.label}</span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="flex gap-1 items-center"
-                    onClick={() => handleTemplateClick(speechType.id)}
-                  >
-                    <Lock className="h-4 w-4 mr-1" />
-                    <FileText className="h-4 w-4" />
-                    Download
-                  </Button>
-                </div>
-              ))}
+            <CardContent className="space-y-3 pt-4">
+              <div className="grid grid-cols-1 gap-3">
+                {speechTypesData.map((speechType) => (
+                  <div key={speechType.id} className="flex justify-between items-center p-2 hover:bg-gray-50 rounded-md transition-colors">
+                    <span className="text-sm font-medium text-gray-700">{speechType.label}</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex gap-1 items-center border-pink-200 hover:bg-pink-50 hover:text-pink-700"
+                      onClick={() => handleTemplateClick(speechType.id)}
+                    >
+                      <Lock className="h-3.5 w-3.5 mr-1 text-pink-500" />
+                      <Download className="h-3.5 w-3.5 mr-1 text-pink-500" />
+                      <span className="text-xs">Download</span>
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">External Resources</CardTitle>
+          <Card className="border-0 shadow-md">
+            <CardHeader className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-t-lg">
+              <CardTitle className="text-lg text-gray-800">External Resources</CardTitle>
               <CardDescription>Valuable resources from around the web</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Public Speaking Tips</span>
-                <Button variant="ghost" size="sm" className="flex gap-1 items-center">
-                  <ExternalLink className="h-4 w-4" />
-                  Visit
-                </Button>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Voice Training Exercises</span>
-                <Button variant="ghost" size="sm" className="flex gap-1 items-center">
-                  <ExternalLink className="h-4 w-4" />
-                  Visit
-                </Button>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm">Body Language Guide</span>
-                <Button variant="ghost" size="sm" className="flex gap-1 items-center">
-                  <ExternalLink className="h-4 w-4" />
-                  Visit
-                </Button>
+            <CardContent className="space-y-3 pt-4">
+              <div className="grid grid-cols-1 gap-3">
+                <div className="flex justify-between items-center p-2 hover:bg-gray-50 rounded-md transition-colors">
+                  <span className="text-sm font-medium text-gray-700">Public Speaking Tips</span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-pink-200 hover:bg-pink-50 hover:text-pink-700"
+                  >
+                    <span className="text-xs">Visit</span>
+                  </Button>
+                </div>
+                <div className="flex justify-between items-center p-2 hover:bg-gray-50 rounded-md transition-colors">
+                  <span className="text-sm font-medium text-gray-700">Voice Training Exercises</span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-pink-200 hover:bg-pink-50 hover:text-pink-700"
+                  >
+                    <span className="text-xs">Visit</span>
+                  </Button>
+                </div>
+                <div className="flex justify-between items-center p-2 hover:bg-gray-50 rounded-md transition-colors">
+                  <span className="text-sm font-medium text-gray-700">Body Language Guide</span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-pink-200 hover:bg-pink-50 hover:text-pink-700"
+                  >
+                    <span className="text-xs">Visit</span>
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -185,7 +224,12 @@ const ResourcesTab = () => {
                   <Button type="button" variant="outline" onClick={onDialogClose}>
                     Cancel
                   </Button>
-                  <Button type="submit">Download</Button>
+                  <Button 
+                    type="submit" 
+                    className="bg-gradient-to-r from-pink-500 via-pink-500 to-purple-600 text-white"
+                  >
+                    Download
+                  </Button>
                 </DialogFooter>
               </form>
             </Form>
