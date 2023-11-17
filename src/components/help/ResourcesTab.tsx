@@ -7,7 +7,6 @@ import { speechTypesData } from '@/components/speech/data/speechTypesData';
 import { questionnaires } from '@/components/speech/questionnaires';
 import { useToast } from '@/hooks/use-toast';
 import { createPdfFromContent } from '@/components/speech/utils/pdfGenerator';
-import { createFormattedSpeech } from '@/components/speech/utils/speechContentCreator';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
@@ -40,6 +39,23 @@ const ResourcesTab = () => {
     setIsDialogOpen(true);
   };
 
+  const formatQuestionForTemplate = (question: any) => {
+    let formattedContent = '';
+    
+    // Format the question
+    formattedContent += `### ${question.question}\n`;
+    
+    // Add options if they exist
+    if (question.type === 'radio' && question.options) {
+      formattedContent += `Options: ${question.options.join(', ')}\n\n`;
+    } else {
+      // Add a blank space for written answers
+      formattedContent += `Answer: _____________________________________________\n\n`;
+    }
+    
+    return formattedContent;
+  };
+
   const handleTemplateDownload = (values: PasswordFormValues) => {
     // Check if password is correct
     if (values.password !== '2215') {
@@ -56,39 +72,25 @@ const ResourcesTab = () => {
     // Get the speech type label
     const speechTypeLabel = speechTypesData.find(type => type.id === selectedSpeechType)?.label || selectedSpeechType;
     
-    // Create a sample title for the template
+    // Create a title for the template
     const templateTitle = `${speechTypeLabel} Speech Template`;
     
     // Get the questionnaire for this speech type
     const questionnaire = questionnaires[selectedSpeechType as keyof typeof questionnaires];
     if (!questionnaire) return;
     
-    // Create a formatted content with the latest questionnaire structure
+    // Create a formatted content with properly formatted questions
     const formattedContent = `# ${templateTitle}\n\n` +
-      `## About This Template\n\n` +
-      `This is a template for creating a ${speechTypeLabel.toLowerCase()} speech. Use our Speech Lab tool to fill in the questionnaire and generate a complete speech tailored to your needs.\n\n` +
-      `## Questionnaire Structure\n\n` +
+      `## Questionnaire\n\n` +
       `${questionnaire.map(q => {
-        // Format each question based on its type
-        let questionText = `### ${q.question}\n`;
-        if (q.type === 'radio' && q.options) {
-          questionText += `Options: ${q.options.join(', ')}\n\n`;
-        } else if (q.type === 'textarea' || q.type === 'text') {
-          questionText += `Type: ${q.type}\n`;
-          if (q.placeholder) {
-            questionText += `Placeholder: ${q.placeholder}\n`;
-          }
-          questionText += '\n';
-        }
-        
-        // Add condition information if present
+        // Check if this question has a condition
         if (q.condition) {
-          questionText += `Displays when: "${q.condition.question}" is "${q.condition.value}"\n\n`;
+          const conditionInfo = `Note: This question appears when "${q.condition.question}" is answered with "${q.condition.value}"\n\n`;
+          return formatQuestionForTemplate(q) + conditionInfo;
         }
-        
-        return questionText;
+        return formatQuestionForTemplate(q);
       }).join('')}` +
-      `## Sample Speech Structure\n\n` +
+      `\n## Sample Speech Structure\n\n` +
       `### Introduction\n` +
       `• Opening hook\n` +
       `• Greeting and introduction\n` +
@@ -102,7 +104,7 @@ const ResourcesTab = () => {
       `• Final message or call to action\n` +
       `• Closing statement`;
     
-    // Generate and download the PDF
+    // Generate and download the PDF with fillable fields
     createPdfFromContent(
       templateTitle,
       formattedContent,
