@@ -6,32 +6,30 @@ import { Checkbox } from '@/components/ui/checkbox';
 interface UserTableHeaderProps {
   onToggleAll: () => void;
   isAllSelected: boolean;
-  disabled?: boolean;
+  disabled: boolean;
 }
 
-const UserTableHeader: React.FC<UserTableHeaderProps> = ({
-  onToggleAll,
+const UserTableHeader: React.FC<UserTableHeaderProps> = ({ 
+  onToggleAll, 
   isAllSelected,
-  disabled = false
+  disabled
 }) => {
   return (
     <TableHeader>
       <TableRow>
-        <TableHead className="w-12">
+        <TableHead className="w-[40px]">
           <Checkbox 
-            checked={isAllSelected} 
+            checked={isAllSelected}
             onCheckedChange={onToggleAll}
             disabled={disabled}
+            aria-label="Select all users"
           />
         </TableHead>
-        <TableHead>Name</TableHead>
-        <TableHead>Email Address</TableHead>
-        <TableHead>Phone</TableHead>
-        <TableHead>Subscription Plan</TableHead>
-        <TableHead>Created</TableHead>
-        <TableHead>Last Login</TableHead>
-        <TableHead>Status</TableHead>
-        <TableHead className="w-12 text-right pr-2">Actions</TableHead>
+        <TableHead className="w-[250px]">User</TableHead>
+        <TableHead className="hidden md:table-cell">Status</TableHead>
+        <TableHead className="hidden md:table-cell">Joined</TableHead>
+        <TableHead className="hidden lg:table-cell">Last Sign In</TableHead>
+        <TableHead>Actions</TableHead>
       </TableRow>
     </TableHeader>
   );

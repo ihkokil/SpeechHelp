@@ -50,31 +50,35 @@ export const useUserManagement = () => {
   } = useUserActions();
   
   // Wrapper functions to include users and setUsers
-  const toggleAllUsers = useCallback(() => {
+  const toggleAllUsers = useCallback((filteredUsers = []) => {
     if (isMounted.current) {
-      baseToggleAllUsers(users, searchTerm);
+      const currentFilteredUsers = filterUsers(users, searchTerm);
+      baseToggleAllUsers(currentFilteredUsers);
     }
-  }, [baseToggleAllUsers, users, searchTerm]);
+  }, [baseToggleAllUsers, users, searchTerm, filterUsers]);
   
-  const handleDeleteUsers = useCallback(() => {
+  const handleDeleteUsers = useCallback(async () => {
     if (isMounted.current) {
-      baseHandleDeleteUsers(selectedUsers, users, setUsers);
+      const success = await baseHandleDeleteUsers(selectedUsers, users, setUsers);
+      if (success) {
+        setSelectedUsers([]);
+      }
     }
-  }, [baseHandleDeleteUsers, selectedUsers, users, setUsers]);
+  }, [baseHandleDeleteUsers, selectedUsers, users, setUsers, setSelectedUsers]);
   
-  const handleToggleUserStatus = useCallback((userId: string, isActive: boolean) => {
+  const handleToggleUserStatus = useCallback(async (userId, isActive) => {
     if (isMounted.current) {
-      baseHandleToggleUserStatus(userId, isActive, users, setUsers);
+      return await baseHandleToggleUserStatus(userId, isActive, users, setUsers);
     }
   }, [baseHandleToggleUserStatus, users, setUsers]);
     
-  const handleToggleUserSubscription = useCallback((userId: string, days: number = 30) => {
+  const handleToggleUserSubscription = useCallback(async (userId, days = 30) => {
     if (isMounted.current) {
-      baseHandleToggleUserSubscription(userId, days, users, setUsers);
+      return await baseHandleToggleUserSubscription(userId, days, users, setUsers);
     }
   }, [baseHandleToggleUserSubscription, users, setUsers]);
     
-  const handlePermissionsUpdated = useCallback((updatedUser: any) => {
+  const handlePermissionsUpdated = useCallback((updatedUser) => {
     if (isMounted.current) {
       baseHandlePermissionsUpdated(updatedUser, users, setUsers);
     }

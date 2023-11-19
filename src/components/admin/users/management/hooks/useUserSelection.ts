@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 
 export const useUserSelection = () => {
@@ -13,18 +12,16 @@ export const useUserSelection = () => {
     );
   }, []);
 
-  const toggleAllUsers = useCallback((users, searchTerm) => {
+  const toggleAllUsers = useCallback((filteredUsers) => {
     console.log('Toggling all users selection');
     setSelectedUsers(prev => {
-      const filteredUsers = users.filter(user => 
-        (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
-        (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-      
-      if (prev.length === filteredUsers.length) {
+      // If the length of currently selected users equals the length of filtered users,
+      // it means all are selected, so we deselect all
+      if (prev.length === filteredUsers.length && 
+          filteredUsers.every(user => prev.includes(user.id))) {
         return [];
       } else {
+        // Otherwise, select all filtered users
         return filteredUsers.map(user => user.id);
       }
     });

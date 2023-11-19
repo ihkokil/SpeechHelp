@@ -24,6 +24,15 @@ export const useUserActions = () => {
 
   const handleDeleteUsers = useCallback(async (selectedUsers: string[], users: User[], setUsers: (users: User[]) => void) => {
     console.log('Deleting users:', selectedUsers);
+    if (selectedUsers.length === 0) {
+      toast({
+        title: 'No users selected',
+        description: 'Please select at least one user to delete.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
     setIsActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -35,6 +44,7 @@ export const useUserActions = () => {
         description: `${selectedUsers.length} users have been deleted.`,
       });
 
+      setIsDeleteDialogOpen(false);
       return true;
     } catch (error) {
       console.error('Error deleting users:', error);
@@ -46,7 +56,6 @@ export const useUserActions = () => {
       return false;
     } finally {
       setIsActionLoading(false);
-      setIsDeleteDialogOpen(false);
     }
   }, [toast]);
 
