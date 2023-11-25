@@ -5,6 +5,7 @@ import { useUserSearch } from './hooks/useUserSearch';
 import { useUserSelection } from './hooks/useUserSelection';
 import { useUserActions } from './hooks/useUserActions';
 import { useToast } from '@/hooks/use-toast';
+import { User } from '../types';
 
 export const useUserManagement = () => {
   const isInitialMount = useRef(true);
@@ -53,7 +54,7 @@ export const useUserManagement = () => {
   } = useUserActions();
   
   // Wrapper functions to include users and setUsers
-  const toggleAllUsers = useCallback((filteredUsers) => {
+  const toggleAllUsers = useCallback((filteredUsers: User[]) => {
     if (isMounted.current) {
       baseToggleAllUsers(filteredUsers);
     }
@@ -68,19 +69,19 @@ export const useUserManagement = () => {
     }
   }, [baseHandleDeleteUsers, selectedUsers, users, setUsers, setSelectedUsers]);
   
-  const handleToggleUserStatus = useCallback(async (userId, isActive) => {
+  const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean) => {
     if (isMounted.current) {
       return await baseHandleToggleUserStatus(userId, isActive, users, setUsers);
     }
   }, [baseHandleToggleUserStatus, users, setUsers]);
     
-  const handleToggleUserSubscription = useCallback(async (userId, days = 30) => {
+  const handleToggleUserSubscription = useCallback(async (userId: string, days = 30) => {
     if (isMounted.current) {
       return await baseHandleToggleUserSubscription(userId, days, users, setUsers);
     }
   }, [baseHandleToggleUserSubscription, users, setUsers]);
     
-  const handlePermissionsUpdated = useCallback((updatedUser) => {
+  const handlePermissionsUpdated = useCallback((updatedUser: User) => {
     if (isMounted.current) {
       baseHandlePermissionsUpdated(updatedUser, users, setUsers);
     }
