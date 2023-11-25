@@ -38,6 +38,9 @@ const UserManagement = () => {
     handleToggleUserSubscription,
     handleManagePermissions,
     handlePermissionsUpdated,
+    handleBulkDelete,
+    handleBulkActivate,
+    handleBulkDeactivate,
     cleanup
   } = useUserManagement();
   
@@ -89,6 +92,9 @@ const UserManagement = () => {
             setSelectedUsers={setSelectedUsers}
             setIsDeleteDialogOpen={setIsDeleteDialogOpen}
             searchTerm={searchTerm}
+            handleBulkDelete={handleBulkDelete}
+            handleBulkActivate={handleBulkActivate}
+            handleBulkDeactivate={handleBulkDeactivate}
           />
         </CardContent>
       </Card>

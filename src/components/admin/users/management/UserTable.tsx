@@ -12,7 +12,7 @@ interface UserTableProps {
   isLoading: boolean;
   selectedUsers: string[];
   toggleUserSelection: (userId: string) => void;
-  toggleAllUsers: () => void;
+  toggleAllUsers: (filteredUsers: User[]) => void;
   handleViewUserDetails: (user: User) => void;
   handleManagePermissions: (user: User) => void;
   handleToggleUserStatus: (userId: string, isActive: boolean) => void;
@@ -20,6 +20,9 @@ interface UserTableProps {
   setSelectedUsers: (users: string[]) => void;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
   searchTerm: string;
+  handleBulkDelete: () => void;
+  handleBulkActivate: () => void;
+  handleBulkDeactivate: () => void;
 }
 
 export const UserTable: React.FC<UserTableProps> = ({ 
@@ -34,7 +37,10 @@ export const UserTable: React.FC<UserTableProps> = ({
   handleToggleUserSubscription, 
   setSelectedUsers, 
   setIsDeleteDialogOpen,
-  searchTerm
+  searchTerm,
+  handleBulkDelete,
+  handleBulkActivate,
+  handleBulkDeactivate
 }) => {
   console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
@@ -81,15 +87,23 @@ export const UserTable: React.FC<UserTableProps> = ({
     selectedUsers.length === filteredUsers.length &&
     filteredUsers.every(user => selectedUsers.includes(user.id));
 
+  const handleToggleAll = () => {
+    toggleAllUsers(filteredUsers);
+  };
+
   console.log('UserTable: Rendering with', filteredUsers.length, 'filtered users, all selected:', isAllSelected);
 
   return (
     <div className="rounded-md border">
       <Table>
         <UserTableHeader 
-          onToggleAll={() => toggleAllUsers()}
+          onToggleAll={handleToggleAll}
           isAllSelected={isAllSelected}
           disabled={isLoading || filteredUsers.length === 0}
+          selectedCount={selectedUsers.length}
+          onBulkDelete={handleBulkDelete}
+          onBulkActivate={handleBulkActivate}
+          onBulkDeactivate={handleBulkDeactivate}
         />
         <TableBody>
           {isLoading ? (

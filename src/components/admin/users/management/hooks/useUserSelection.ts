@@ -1,4 +1,6 @@
+
 import { useState, useCallback } from 'react';
+import { User } from '../../types';
 
 export const useUserSelection = () => {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -12,11 +14,10 @@ export const useUserSelection = () => {
     );
   }, []);
 
-  const toggleAllUsers = useCallback((filteredUsers) => {
+  const toggleAllUsers = useCallback((filteredUsers: User[]) => {
     console.log('Toggling all users selection');
     setSelectedUsers(prev => {
-      // If the length of currently selected users equals the length of filtered users,
-      // it means all are selected, so we deselect all
+      // If all filtered users are currently selected, deselect all
       if (prev.length === filteredUsers.length && 
           filteredUsers.every(user => prev.includes(user.id))) {
         return [];
@@ -27,10 +28,32 @@ export const useUserSelection = () => {
     });
   }, []);
 
+  const selectMultipleUsers = useCallback((userIds: string[]) => {
+    setSelectedUsers(userIds);
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedUsers([]);
+  }, []);
+
+  const isUserSelected = useCallback((userId: string) => {
+    return selectedUsers.includes(userId);
+  }, [selectedUsers]);
+
+  const isAllSelected = useCallback((filteredUsers: User[]) => {
+    return filteredUsers.length > 0 && 
+      selectedUsers.length === filteredUsers.length && 
+      filteredUsers.every(user => selectedUsers.includes(user.id));
+  }, [selectedUsers]);
+
   return {
     selectedUsers,
     setSelectedUsers,
     toggleUserSelection,
-    toggleAllUsers
+    toggleAllUsers,
+    selectMultipleUsers,
+    clearSelection,
+    isUserSelected,
+    isAllSelected
   };
 };
