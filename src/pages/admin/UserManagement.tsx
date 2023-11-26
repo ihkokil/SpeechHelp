@@ -9,6 +9,7 @@ import UserDetailsDrawer from '@/components/admin/users/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/AddUserDialog';
 import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
 import { useToast } from '@/hooks/use-toast';
+import { User } from '@/components/admin/users/types';
 
 const UserManagement = () => {
   const {
@@ -47,16 +48,12 @@ const UserManagement = () => {
   
   const { toast } = useToast();
   
-  // Fetch users on initial mount
+  // Clean up all state when component unmounts
   useEffect(() => {
-    console.log("UserManagement: Fetching users on mount");
-    fetchUsers();
-    
-    // Clean up all state when component unmounts
     return () => {
       cleanup();
     };
-  }, [fetchUsers, cleanup]);
+  }, [cleanup]);
 
   return (
     <div className="space-y-6">
@@ -82,7 +79,7 @@ const UserManagement = () => {
           />
           
           <UserTable 
-            users={filteredUsers}
+            users={users}
             isLoading={isLoading}
             selectedUsers={selectedUsers}
             toggleUserSelection={toggleUserSelection}
@@ -109,17 +106,19 @@ const UserManagement = () => {
         selectedCount={selectedUsers.length}
       />
 
-      <UserDetailsDrawer 
-        user={selectedUser} 
-        open={isDetailsOpen} 
-        onClose={handleCloseUserDetails} 
-      />
+      {selectedUser && (
+        <UserDetailsDrawer 
+          user={selectedUser} 
+          open={isDetailsOpen} 
+          onClose={handleCloseUserDetails} 
+        />
+      )}
       
       <AddUserDialog 
         open={isAddUserDialogOpen} 
         onOpenChange={setIsAddUserDialogOpen} 
-        onUserAdded={(newUser) => {
-          setUsers(prev => [...prev, newUser]);
+        onUserAdded={(newUser: User) => {
+          setUsers([...users, newUser]);
           toast({
             title: "User added",
             description: `${newUser.email} has been added successfully.`

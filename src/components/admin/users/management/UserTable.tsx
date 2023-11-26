@@ -10,14 +10,14 @@ import { LoadingState, EmptyState } from './components/UserTableStates';
 interface UserTableProps {
   users: User[];
   isLoading: boolean;
-  selectedUsers: string[];
-  toggleUserSelection: (userId: string) => void;
+  selectedUsers: User[];
+  toggleUserSelection: (user: User) => void;
   toggleAllUsers: (filteredUsers: User[]) => void;
   handleViewUserDetails: (user: User) => void;
   handleManagePermissions: (user: User) => void;
   handleToggleUserStatus: (userId: string, isActive: boolean) => void;
   handleToggleUserSubscription: (userId: string, days: number) => void;
-  setSelectedUsers: (users: string[]) => void;
+  setSelectedUsers: (users: User[]) => void;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
   searchTerm: string;
   handleBulkDelete: () => void;
@@ -44,7 +44,7 @@ export const UserTable: React.FC<UserTableProps> = ({
 }) => {
   console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
-  const { filterUsers } = useUserSearch();
+  const { filterUsers } = useUserSearch(users);
   const filteredUsers = useMemo(() => filterUsers(users, searchTerm), [users, searchTerm, filterUsers]);
 
   const viewUserDetails = (e: React.MouseEvent, user: User) => {
@@ -79,13 +79,17 @@ export const UserTable: React.FC<UserTableProps> = ({
     e.preventDefault();
     e.stopPropagation();
     console.log('UserTable: Preparing to delete user:', userId);
-    setSelectedUsers([userId]);
-    setIsDeleteDialogOpen(true);
+    // Find the user by ID and select it
+    const userToDelete = users.find(user => user.id === userId);
+    if (userToDelete) {
+      setSelectedUsers([userToDelete]);
+      setIsDeleteDialogOpen(true);
+    }
   };
 
   const isAllSelected = filteredUsers.length > 0 && 
     selectedUsers.length === filteredUsers.length &&
-    filteredUsers.every(user => selectedUsers.includes(user.id));
+    filteredUsers.every(user => selectedUsers.some(selectedUser => selectedUser.id === user.id));
 
   const handleToggleAll = () => {
     toggleAllUsers(filteredUsers);
@@ -115,7 +119,7 @@ export const UserTable: React.FC<UserTableProps> = ({
               <UserTableRow
                 key={user.id}
                 user={user}
-                isSelected={selectedUsers.includes(user.id)}
+                isSelected={selectedUsers.some(selectedUser => selectedUser.id === user.id)}
                 onToggleSelection={toggleUserSelection}
                 onViewDetails={viewUserDetails}
                 onManagePermissions={managePermissions}
