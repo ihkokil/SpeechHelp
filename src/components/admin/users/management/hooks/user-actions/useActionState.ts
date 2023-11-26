@@ -1,37 +1,20 @@
 
-import { useState, useCallback } from 'react';
-import { User } from '../../../types';
+import { useCallback, useState } from 'react';
 
-export const useActionState = () => {
-  const [isActionLoading, setIsActionLoading] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
-  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
-
-  const reset = useCallback(() => {
-    setIsActionLoading(false);
-    setSelectedUser(null);
-    setIsDetailsOpen(false);
-    setIsDeleteDialogOpen(false);
-    setIsAddUserDialogOpen(false);
-    setIsPermissionsDialogOpen(false);
-  }, []);
-
+export const useActionState = (setIsActionLoadingProp?: (loading: boolean) => void) => {
+  const [isActionLoading, setIsActionLoadingState] = useState(false);
+  
+  const setActionLoading = useCallback((loading: boolean) => {
+    // Use the prop setter if provided, otherwise use the local state setter
+    if (setIsActionLoadingProp) {
+      setIsActionLoadingProp(loading);
+    } else {
+      setIsActionLoadingState(loading);
+    }
+  }, [setIsActionLoadingProp]);
+  
   return {
-    isActionLoading,
-    setIsActionLoading,
-    selectedUser,
-    setSelectedUser,
-    isDetailsOpen,
-    setIsDetailsOpen,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
-    isAddUserDialogOpen,
-    setIsAddUserDialogOpen,
-    isPermissionsDialogOpen,
-    setIsPermissionsDialogOpen,
-    reset
+    isActionLoading: setIsActionLoadingProp ? undefined : isActionLoading,
+    setActionLoading
   };
 };

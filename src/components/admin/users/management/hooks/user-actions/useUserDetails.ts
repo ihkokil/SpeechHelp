@@ -3,45 +3,36 @@ import { useCallback } from 'react';
 import { User } from '../../../types';
 
 export const useUserDetails = (
-  setSelectedUser: (user: User | null) => void,
-  setIsDetailsOpen: (isOpen: boolean) => void,
-  setIsPermissionsDialogOpen: (isOpen: boolean) => void
+  setSelectedUser?: (user: User | null) => void,
+  setIsDetailsOpen?: (isOpen: boolean) => void,
+  setIsPermissionsDialogOpen?: (isOpen: boolean) => void
 ) => {
+  // View user details
   const handleViewUserDetails = useCallback((user: User) => {
-    console.log('UserManagement: Opening details for user:', user.id);
-    
-    // Set the selected user first
-    setSelectedUser(user);
-    
-    // Then open the drawer
-    setIsDetailsOpen(true);
+    console.log('Viewing user details:', user.id);
+    if (setSelectedUser) setSelectedUser(user);
+    if (setIsDetailsOpen) setIsDetailsOpen(true);
   }, [setSelectedUser, setIsDetailsOpen]);
 
+  // Close user details
   const handleCloseUserDetails = useCallback(() => {
-    console.log('UserManagement: Closing user details drawer');
-    
-    // Close the drawer first
-    setIsDetailsOpen(false);
-    
-    // Clear the selected user after a short delay to avoid state conflicts
+    if (setIsDetailsOpen) setIsDetailsOpen(false);
+    // We set selected user to null with a delay to prevent UI flickering
     setTimeout(() => {
-      setSelectedUser(null);
+      if (setSelectedUser) setSelectedUser(null);
     }, 300);
   }, [setSelectedUser, setIsDetailsOpen]);
 
+  // Manage user permissions
   const handleManagePermissions = useCallback((user: User) => {
-    console.log('UserManagement: Opening permissions dialog for user:', user.id);
-    
-    // Set the selected user
-    setSelectedUser(user);
-    
-    // Open the permissions dialog
-    setIsPermissionsDialogOpen(true);
+    console.log('Managing permissions for user:', user.id);
+    if (setSelectedUser) setSelectedUser(user);
+    if (setIsPermissionsDialogOpen) setIsPermissionsDialogOpen(true);
   }, [setSelectedUser, setIsPermissionsDialogOpen]);
 
   return {
     handleViewUserDetails,
     handleCloseUserDetails,
-    handleManagePermissions
+    handleManagePermissions,
   };
 };

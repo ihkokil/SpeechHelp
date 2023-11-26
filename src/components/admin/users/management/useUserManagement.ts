@@ -1,57 +1,100 @@
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useFetchUsers } from './hooks/useFetchUsers';
 import { useUserSearch } from './hooks/useUserSearch';
 import { useUserSelection } from './hooks/useUserSelection';
 import { useUserActions } from './hooks/useUserActions';
-import { useToast } from '@/hooks/use-toast';
+import { useUserDetails } from './hooks/user-actions/useUserDetails';
+import { usePermissionActions } from './hooks/user-actions/usePermissionActions';
+import { useUserCrud } from './hooks/user-actions/useUserCrud';
+import { useSubscriptionActions } from './hooks/user-actions/useSubscriptionActions';
+import { useActionState } from './hooks/user-actions/useActionState';
 import { User } from '../types';
+import { toast } from '@/components/ui/use-toast';
 
 export const useUserManagement = () => {
-  const isInitialMount = useRef(true);
+  console.log("Initializing useUserManagement");
   const isMounted = useRef(true);
-  const { toast } = useToast();
+  const isInitialMount = useRef(true);
+
+  // User data state
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isActionLoading, setIsActionLoading] = useState(false);
   
-  const {
-    users,
-    setUsers,
-    isLoading,
-    fetchUsers
-  } = useFetchUsers();
+  // Dialogs and drawer state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
-  const {
-    searchTerm,
-    setSearchTerm,
-    filterUsers
-  } = useUserSearch();
+  // Fetch users data
+  const { fetchUsers: apiFetchUsers } = useFetchUsers();
   
-  const {
-    selectedUsers,
-    setSelectedUsers,
-    toggleUserSelection,
-    toggleAllUsers: baseToggleAllUsers,
-    clearSelection
+  // User search
+  const { searchTerm, setSearchTerm, filteredUsers } = useUserSearch(users);
+  
+  // User selection
+  const { 
+    selectedUsers, 
+    setSelectedUsers, 
+    toggleUserSelection: baseToggleUserSelection,
+    toggleAllUsers: baseToggleAllUsers 
   } = useUserSelection();
   
-  const {
-    isActionLoading,
-    selectedUser,
-    isDetailsOpen,
-    isDeleteDialogOpen,
-    isAddUserDialogOpen,
-    isPermissionsDialogOpen,
-    setIsDeleteDialogOpen,
-    setIsAddUserDialogOpen,
-    setIsPermissionsDialogOpen,
+  // Action state
+  const { setActionLoading } = useActionState(setIsActionLoading);
+  
+  // Permission actions
+  const { handlePermissionsUpdated: baseHandlePermissionsUpdated } = usePermissionActions(setIsPermissionsDialogOpen);
+  
+  // User CRUD operations
+  const { 
     handleDeleteUsers: baseHandleDeleteUsers,
+    handleBulkDelete: baseHandleBulkDelete,
+    handleBulkActivate: baseHandleBulkActivate,
+    handleBulkDeactivate: baseHandleBulkDeactivate
+  } = useUserCrud(setActionLoading, setSelectedUsers);
+  
+  // Subscription actions
+  const {
     handleToggleUserStatus: baseHandleToggleUserStatus,
-    handleViewUserDetails,
-    handleCloseUserDetails,
-    handleToggleUserSubscription: baseHandleToggleUserSubscription,
-    handleManagePermissions,
-    handlePermissionsUpdated: baseHandlePermissionsUpdated,
-    reset: resetUserActions
-  } = useUserActions();
+    handleToggleUserSubscription: baseHandleToggleUserSubscription
+  } = useSubscriptionActions(setActionLoading);
+  
+  // User details
+  const {
+    handleViewUserDetails: baseHandleViewUserDetails,
+    handleCloseUserDetails: baseHandleCloseUserDetails,
+    handleManagePermissions: baseHandleManagePermissions
+  } = useUserDetails(setSelectedUser, setIsDetailsOpen, setIsPermissionsDialogOpen);
+  
+  // Fetch users
+  const fetchUsers = useCallback(async () => {
+    console.log("Fetching users...");
+    if (isMounted.current) {
+      setIsLoading(true);
+      try {
+        const fetchedUsers = await apiFetchUsers();
+        console.log("Fetched users:", fetchedUsers);
+        if (isMounted.current) {
+          setUsers(fetchedUsers || []);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch users. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        if (isMounted.current) {
+          setIsLoading(false);
+        }
+      }
+    }
+  }, [apiFetchUsers]);
   
   // Wrapper functions to include users and setUsers
   const toggleAllUsers = useCallback((filteredUsers: User[]) => {
@@ -60,162 +103,119 @@ export const useUserManagement = () => {
     }
   }, [baseToggleAllUsers]);
   
+  const toggleUserSelection = useCallback((user: User) => {
+    if (isMounted.current) {
+      baseToggleUserSelection(user);
+    }
+  }, [baseToggleUserSelection]);
+  
   const handleDeleteUsers = useCallback(async () => {
     if (isMounted.current) {
-      const success = await baseHandleDeleteUsers(selectedUsers, users, setUsers);
-      if (success) {
-        setSelectedUsers([]);
-      }
+      await baseHandleDeleteUsers(selectedUsers, users, setUsers);
+      setIsDeleteDialogOpen(false);
     }
-  }, [baseHandleDeleteUsers, selectedUsers, users, setUsers, setSelectedUsers]);
+  }, [baseHandleDeleteUsers, selectedUsers, users, setUsers]);
   
   const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean) => {
     if (isMounted.current) {
       return await baseHandleToggleUserStatus(userId, isActive, users, setUsers);
     }
   }, [baseHandleToggleUserStatus, users, setUsers]);
-    
+  
   const handleToggleUserSubscription = useCallback(async (userId: string, days = 30) => {
     if (isMounted.current) {
       return await baseHandleToggleUserSubscription(userId, days, users, setUsers);
     }
   }, [baseHandleToggleUserSubscription, users, setUsers]);
-    
+  
   const handlePermissionsUpdated = useCallback((updatedUser: User) => {
     if (isMounted.current) {
       baseHandlePermissionsUpdated(updatedUser, users, setUsers);
     }
   }, [baseHandlePermissionsUpdated, users, setUsers]);
-
-  // Bulk action handlers
-  const handleBulkDelete = useCallback(() => {
-    if (selectedUsers.length === 0) {
-      toast({
-        title: "No users selected",
-        description: "Please select at least one user to delete.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setIsDeleteDialogOpen(true);
-  }, [selectedUsers.length, setIsDeleteDialogOpen, toast]);
-
-  const handleBulkActivate = useCallback(async () => {
-    if (selectedUsers.length === 0) {
-      toast({
-        title: "No users selected",
-        description: "Please select at least one user to activate.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const updatedUsers = [...users];
-    let successCount = 0;
-
-    for (const userId of selectedUsers) {
-      try {
-        const success = await baseHandleToggleUserStatus(userId, true, users, (newUsers) => {
-          updatedUsers.splice(0, updatedUsers.length, ...newUsers);
-        });
-        if (success) successCount++;
-      } catch (error) {
-        console.error(`Error activating user ${userId}:`, error);
-      }
-    }
-
-    setUsers(updatedUsers);
-    
-    toast({
-      title: `${successCount} users activated`,
-      description: `Successfully activated ${successCount} out of ${selectedUsers.length} selected users.`
-    });
-    
-    if (successCount > 0) {
-      clearSelection();
-    }
-  }, [selectedUsers, users, setUsers, baseHandleToggleUserStatus, toast, clearSelection]);
-
-  const handleBulkDeactivate = useCallback(async () => {
-    if (selectedUsers.length === 0) {
-      toast({
-        title: "No users selected",
-        description: "Please select at least one user to deactivate.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const updatedUsers = [...users];
-    let successCount = 0;
-
-    for (const userId of selectedUsers) {
-      try {
-        const success = await baseHandleToggleUserStatus(userId, false, users, (newUsers) => {
-          updatedUsers.splice(0, updatedUsers.length, ...newUsers);
-        });
-        if (success) successCount++;
-      } catch (error) {
-        console.error(`Error deactivating user ${userId}:`, error);
-      }
-    }
-
-    setUsers(updatedUsers);
-    
-    toast({
-      title: `${successCount} users deactivated`,
-      description: `Successfully deactivated ${successCount} out of ${selectedUsers.length} selected users.`
-    });
-    
-    if (successCount > 0) {
-      clearSelection();
-    }
-  }, [selectedUsers, users, setUsers, baseHandleToggleUserStatus, toast, clearSelection]);
-
-  // Global cleanup function
-  const cleanup = useCallback(() => {
-    console.log('UserManagement: Running cleanup');
+  
+  const handleViewUserDetails = useCallback((user: User) => {
     if (isMounted.current) {
-      setSelectedUsers([]);
-      resetUserActions();
+      baseHandleViewUserDetails(user);
     }
-  }, [setSelectedUsers, resetUserActions]);
-
-  // Cleanup effect on unmount
+  }, [baseHandleViewUserDetails]);
+  
+  const handleCloseUserDetails = useCallback(() => {
+    if (isMounted.current) {
+      baseHandleCloseUserDetails();
+    }
+  }, [baseHandleCloseUserDetails]);
+  
+  const handleManagePermissions = useCallback((user: User) => {
+    if (isMounted.current) {
+      baseHandleManagePermissions(user);
+    }
+  }, [baseHandleManagePermissions]);
+  
+  // Bulk actions
+  const handleBulkDelete = useCallback(async () => {
+    if (isMounted.current) {
+      await baseHandleBulkDelete(selectedUsers, users, setUsers);
+    }
+  }, [baseHandleBulkDelete, selectedUsers, users, setUsers]);
+  
+  const handleBulkActivate = useCallback(async () => {
+    if (isMounted.current) {
+      await baseHandleBulkActivate(selectedUsers, users, setUsers);
+    }
+  }, [baseHandleBulkActivate, selectedUsers, users, setUsers]);
+  
+  const handleBulkDeactivate = useCallback(async () => {
+    if (isMounted.current) {
+      await baseHandleBulkDeactivate(selectedUsers, users, setUsers);
+    }
+  }, [baseHandleBulkDeactivate, selectedUsers, users, setUsers]);
+  
+  // Lifecycle hooks
   useEffect(() => {
+    isMounted.current = true;
+    
     return () => {
-      console.log('UserManagement: Component unmounting');
       isMounted.current = false;
-      cleanup();
     };
-  }, [cleanup]);
-
-  // Initial fetch effect
+  }, []);
+  
+  // Cleanup function for component unmount
+  const cleanup = useCallback(() => {
+    setSelectedUsers([]);
+    setSearchTerm('');
+    setIsDeleteDialogOpen(false);
+    setIsAddUserDialogOpen(false);
+    setIsDetailsOpen(false);
+    setIsPermissionsDialogOpen(false);
+    setSelectedUser(null);
+  }, [setSelectedUsers, setSearchTerm]);
+  
+  // Log filtered users for debugging
   useEffect(() => {
-    if (isInitialMount.current && isMounted.current) {
-      console.log('UserManagement: Initial fetch');
-      fetchUsers();
-      isInitialMount.current = false;
-    }
-  }, [fetchUsers]);
-
+    console.log('Filtered users:', filteredUsers);
+  }, [filteredUsers]);
+  
   return {
+    // State
+    users,
+    setUsers,
     searchTerm,
     setSearchTerm,
     selectedUsers,
     setSelectedUsers,
+    isLoading,
+    isActionLoading,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
     isAddUserDialogOpen,
     setIsAddUserDialogOpen,
-    users,
-    setUsers,
-    isLoading,
-    isActionLoading,
     selectedUser,
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
+    
+    // Functions
     fetchUsers,
     toggleUserSelection,
     toggleAllUsers,

@@ -4,35 +4,36 @@ import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
 
 export const useUserCrud = (
-  setIsActionLoading: (isLoading: boolean) => void,
-  setIsDeleteDialogOpen: (isOpen: boolean) => void
+  setActionLoading?: (loading: boolean) => void,
+  setSelectedUsers?: (users: User[]) => void
 ) => {
   const { toast } = useToast();
 
-  const handleDeleteUsers = useCallback(async (selectedUsers: string[], users: User[], setUsers: (users: User[]) => void) => {
-    console.log('Deleting users:', selectedUsers);
-    if (selectedUsers.length === 0) {
-      toast({
-        title: 'No users selected',
-        description: 'Please select at least one user to delete.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    setIsActionLoading(true);
+  // Delete multiple users
+  const handleDeleteUsers = useCallback(async (
+    selectedUsers: User[], 
+    users: User[], 
+    setUsers: (users: User[]) => void
+  ) => {
+    if (setActionLoading) setActionLoading(true);
+    
     try {
+      console.log('Deleting users:', selectedUsers.map(user => user.id));
+      
+      // Simulate API call - In a real app, this would be an actual API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setUsers(users.filter(user => !selectedUsers.includes(user.id)));
+      // Remove deleted users from state
+      setUsers(users.filter(user => !selectedUsers.some(selectedUser => selectedUser.id === user.id)));
+      
+      // Clear selected users
+      if (setSelectedUsers) setSelectedUsers([]);
       
       toast({
-        title: 'Success',
-        description: `${selectedUsers.length} users have been deleted.`,
+        title: 'Users Deleted',
+        description: `${selectedUsers.length} user(s) have been deleted.`,
       });
-
-      setIsDeleteDialogOpen(false);
-      return true;
+      
     } catch (error) {
       console.error('Error deleting users:', error);
       toast({
@@ -40,44 +41,104 @@ export const useUserCrud = (
         description: 'Failed to delete users.',
         variant: 'destructive',
       });
-      return false;
     } finally {
-      setIsActionLoading(false);
+      if (setActionLoading) setActionLoading(false);
     }
-  }, [toast, setIsActionLoading, setIsDeleteDialogOpen]);
+  }, [toast, setActionLoading, setSelectedUsers]);
 
-  const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean, users: User[], setUsers: (users: User[]) => void) => {
-    console.log('Toggling user status:', userId, isActive);
-    setIsActionLoading(true);
+  // Bulk delete multiple users
+  const handleBulkDelete = useCallback(async (
+    selectedUsers: User[], 
+    users: User[], 
+    setUsers: (users: User[]) => void
+  ) => {
+    await handleDeleteUsers(selectedUsers, users, setUsers);
+  }, [handleDeleteUsers]);
+
+  // Bulk activate multiple users
+  const handleBulkActivate = useCallback(async (
+    selectedUsers: User[], 
+    users: User[], 
+    setUsers: (users: User[]) => void
+  ) => {
+    if (setActionLoading) setActionLoading(true);
+    
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('Activating users:', selectedUsers.map(user => user.id));
       
+      // Simulate API call - In a real app, this would be an actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update user status in state
       setUsers(
         users.map(user => 
-          user.id === userId ? { ...user, is_active: isActive } : user
+          selectedUsers.some(selectedUser => selectedUser.id === user.id)
+            ? { ...user, is_active: true }
+            : user
         )
       );
       
       toast({
-        title: 'Success',
-        description: `User status updated to ${isActive ? 'active' : 'inactive'}.`,
+        title: 'Users Activated',
+        description: `${selectedUsers.length} user(s) have been activated.`,
       });
-      return true;
+      
     } catch (error) {
-      console.error('Error updating user status:', error);
+      console.error('Error activating users:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update user status.',
+        description: 'Failed to activate users.',
         variant: 'destructive',
       });
-      return false;
     } finally {
-      setIsActionLoading(false);
+      if (setActionLoading) setActionLoading(false);
     }
-  }, [toast, setIsActionLoading]);
+  }, [toast, setActionLoading]);
+
+  // Bulk deactivate multiple users
+  const handleBulkDeactivate = useCallback(async (
+    selectedUsers: User[], 
+    users: User[], 
+    setUsers: (users: User[]) => void
+  ) => {
+    if (setActionLoading) setActionLoading(true);
+    
+    try {
+      console.log('Deactivating users:', selectedUsers.map(user => user.id));
+      
+      // Simulate API call - In a real app, this would be an actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update user status in state
+      setUsers(
+        users.map(user => 
+          selectedUsers.some(selectedUser => selectedUser.id === user.id)
+            ? { ...user, is_active: false }
+            : user
+        )
+      );
+      
+      toast({
+        title: 'Users Deactivated',
+        description: `${selectedUsers.length} user(s) have been deactivated.`,
+      });
+      
+    } catch (error) {
+      console.error('Error deactivating users:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to deactivate users.',
+        variant: 'destructive',
+      });
+    } finally {
+      if (setActionLoading) setActionLoading(false);
+    }
+  }, [toast, setActionLoading]);
 
   return {
     handleDeleteUsers,
-    handleToggleUserStatus
+    handleBulkDelete,
+    handleBulkActivate,
+    handleBulkDeactivate,
   };
 };
