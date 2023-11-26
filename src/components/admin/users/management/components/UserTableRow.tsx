@@ -10,7 +10,7 @@ import { formatDate, getUserName, getUserPhone } from '../utils/userDisplayUtils
 interface UserTableRowProps {
   user: User;
   isSelected: boolean;
-  onToggleSelection: (userId: string) => void;
+  onToggleSelection: (user: User) => void;
   onViewDetails: (e: React.MouseEvent, user: User) => void;
   onManagePermissions: (e: React.MouseEvent, user: User) => void;
   onToggleUserActive: (e: React.MouseEvent, userId: string, isActive: boolean) => void;
@@ -35,7 +35,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       <TableCell>
         <Checkbox 
           checked={isSelected} 
-          onCheckedChange={() => onToggleSelection(user.id)} 
+          onCheckedChange={() => onToggleSelection(user)} 
         />
       </TableCell>
       <TableCell className="font-medium">

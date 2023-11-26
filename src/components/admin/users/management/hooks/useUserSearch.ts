@@ -1,22 +1,32 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { User } from '../../types';
 
-export const useUserSearch = () => {
+export const useUserSearch = (users: User[]) => {
   const [searchTerm, setSearchTerm] = useState('');
   
-  const filterUsers = useCallback((users, term) => {
-    if (!term) return users;
+  const filterUsers = useCallback((users: User[], term: string) => {
+    if (!term.trim()) return users;
     
-    return users.filter(user => 
-      (user.email && user.email.toLowerCase().includes(term.toLowerCase())) || 
-      (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(term.toLowerCase())) ||
-      (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(term.toLowerCase()))
-    );
+    const lowerTerm = term.toLowerCase();
+    return users.filter(user => {
+      const name = user.user_metadata.name || user.user_metadata.full_name || '';
+      const email = user.email || '';
+      return (
+        name.toLowerCase().includes(lowerTerm) ||
+        email.toLowerCase().includes(lowerTerm)
+      );
+    });
   }, []);
+  
+  const filteredUsers = useMemo(() => {
+    return filterUsers(users, searchTerm);
+  }, [users, searchTerm, filterUsers]);
 
   return {
     searchTerm,
     setSearchTerm,
-    filterUsers
+    filterUsers,
+    filteredUsers
   };
 };
