@@ -8,8 +8,11 @@ import { useSubscriptionActions } from './user-actions/useSubscriptionActions';
 import { usePermissionActions } from './user-actions/usePermissionActions';
 
 export const useUserActions = () => {
-  // Get the setActionLoading function by providing a dummy setState function
-  const { setActionLoading } = useActionState(() => {});
+  // Create a dummy setState function to pass to useActionState
+  const dummySetState = () => {};
+  
+  // Get the setActionLoading function by providing the dummy setState function
+  const { setActionLoading } = useActionState(dummySetState);
   
   // Initialize hooks with necessary parameters
   const { 
@@ -28,9 +31,9 @@ export const useUserActions = () => {
     handleViewUserDetails,
     handleCloseUserDetails,
     handleManagePermissions
-  } = useUserDetails(() => {}, () => {}, () => {});
+  } = useUserDetails(dummySetState, dummySetState, dummySetState);
   
-  const { handlePermissionsUpdated } = usePermissionActions(() => {});
+  const { handlePermissionsUpdated } = usePermissionActions(dummySetState);
   
   // Return all actions from sub-hooks
   return {

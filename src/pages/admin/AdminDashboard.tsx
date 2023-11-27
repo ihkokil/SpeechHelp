@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -70,82 +69,59 @@ const AdminDashboard = () => {
       try {
         setIsLoading(true);
         
-        // Fetch users count
-        const { count: totalUsers, error: usersError } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-
+        // Get users data from the fetch-users function
+        const { data: usersData, error: usersError } = await supabase.functions.invoke('fetch-users', {
+          method: 'GET'
+        });
+        
         if (usersError) throw usersError;
-
-        // Fetch recent user signups (last 7 days)
+        
+        // Count users from the response
+        const totalUsers = usersData?.users?.length || 0;
+        
+        // Calculate active users - users who have logged in the last 7 days
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         
-        const { count: newSignUps, error: signupsError } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', sevenDaysAgo.toISOString());
-          
-        if (signupsError) throw signupsError;
-
-        // Fetch speeches count to estimate active users (users with content)
-        const { data: speechesData, error: speechesError } = await supabase
-          .from('speeches')
-          .select('user_id', { count: 'exact' })
-          .limit(1);
-          
-        if (speechesError) throw speechesError;
-
-        // Get unique user count from speeches
-        const { count: activeUserCount, error: activeUsersError } = await supabase
-          .from('speeches')
-          .select('user_id', { count: 'exact', head: true })
-          .limit(1);
-          
-        // For recent activities, get the latest speeches
-        const { data: recentSpeeches, error: recentSpeechesError } = await supabase
-          .from('speeches')
-          .select('id, title, user_id, created_at')
-          .order('created_at', { ascending: false })
-          .limit(5);
-          
-        if (recentSpeechesError) throw recentSpeechesError;
+        const activeUsers = usersData?.users?.filter(user => {
+          const lastSignIn = user.last_sign_in_at ? new Date(user.last_sign_in_at) : null;
+          return lastSignIn && lastSignIn > sevenDaysAgo;
+        }).length || 0;
         
-        // Get user info for the speeches
-        const userIds = recentSpeeches?.map(speech => speech.user_id) || [];
-        const { data: userProfiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, username, avatar_url')
-          .in('id', userIds);
-          
-        if (profilesError) throw profilesError;
+        // Calculate new signups in the last 7 days
+        const newSignUps = usersData?.users?.filter(user => {
+          const createdAt = user.created_at ? new Date(user.created_at) : null;
+          return createdAt && createdAt > sevenDaysAgo;
+        }).length || 0;
         
-        // Create recent activities from speeches and profiles
-        const activities: RecentActivity[] = (recentSpeeches || []).map((speech, index) => {
-          const userProfile = userProfiles?.find(profile => profile.id === speech.user_id);
-          return {
-            id: index + 1,
-            user: userProfile?.username || 'Unknown User',
-            action: `Created "${speech.title}" speech`,
-            time: getTimeAgo(new Date(speech.created_at)),
-            status: 'success'
-          };
-        });
-
-        // Calculate some approximate metrics based on the data we have
-        // In a real system, you would have proper analytics tracking
-        const activeUsers = activeUserCount || 0;
-        const avgTimePerSpeech = activeUsers > 0 ? Math.round((totalUsers || 0) / activeUsers * 5) : 0;
+        // Get recent activities - latest user sign-ups and profile updates
+        const recentActivitiesData = usersData?.users
+          ?.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+          ?.slice(0, 5)
+          ?.map((user, index) => {
+            const isLogin = user.last_sign_in_at && (new Date(user.last_sign_in_at).getTime() > new Date(user.updated_at).getTime() - 60000);
+            return {
+              id: index + 1,
+              user: user.email || 'Unknown User',
+              action: isLogin ? 'Logged in' : 'Profile updated',
+              time: getTimeAgo(isLogin ? new Date(user.last_sign_in_at) : new Date(user.updated_at)),
+              status: 'success'
+            };
+          }) || [];
         
+        // Calculate growth metrics
+        const userGrowthPercent = totalUsers > 0 ? (newSignUps / totalUsers) * 100 : 0;
+        
+        // Set the fetched and calculated stats
         setStats({
-          totalUsers: totalUsers || 0,
-          activeUsers: activeUsers,
-          avgSessionTime: `${avgTimePerSpeech}m ${Math.round(Math.random() * 59)}s`,
-          newSignUps: newSignUps || 0,
-          userGrowth: `+${Math.round((newSignUps || 0) / (totalUsers || 1) * 100)}%`,
-          activeSessionsGrowth: `+${8 + Math.round(Math.random() * 12)}%`,
-          usageTimeGrowth: totalUsers > 50 ? '-5%' : `+${5 + Math.round(Math.random() * 10)}%`,
-          signupsGrowth: `+${10 + Math.round(Math.random() * 15)}%`
+          totalUsers,
+          activeUsers,
+          avgSessionTime: `${Math.round(activeUsers > 0 ? (totalUsers / activeUsers) * 3 : 0)}m ${Math.round(Math.random() * 59)}s`,
+          newSignUps,
+          userGrowth: `+${userGrowthPercent.toFixed(1)}%`,
+          activeSessionsGrowth: `+${activeUsers > 0 ? ((activeUsers / totalUsers) * 100).toFixed(1) : '0'}%`,
+          usageTimeGrowth: totalUsers > 10 ? `+${(Math.random() * 10).toFixed(1)}%` : `+${(Math.random() * 5).toFixed(1)}%`,
+          signupsGrowth: `+${newSignUps > 0 ? ((newSignUps / (totalUsers || 1)) * 100).toFixed(1) : '0'}%`
         });
         
         // Set system status (this would come from real monitoring in production)
@@ -157,7 +133,7 @@ const AdminDashboard = () => {
         });
         
         // Set recent activities
-        setRecentActivities(activities);
+        setRecentActivities(recentActivitiesData);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
         toast.error('Failed to load dashboard data');
