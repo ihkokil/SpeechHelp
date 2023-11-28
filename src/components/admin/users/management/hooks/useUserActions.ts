@@ -34,12 +34,28 @@ export const useUserActions = () => {
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   
   const {
-    handleViewUserDetails,
-    handleCloseUserDetails,
-    handleManagePermissions
+    handleViewUserDetails: baseHandleViewUserDetails,
+    handleCloseUserDetails: baseHandleCloseUserDetails,
+    handleManagePermissions: baseHandleManagePermissions
   } = useUserDetails(setSelectedUser, setIsDetailsOpen, setIsPermissionsDialogOpen);
   
   const { handlePermissionsUpdated } = usePermissionActions(setIsPermissionsDialogOpen);
+  
+  // Wrap the user details functions to add logging
+  const handleViewUserDetails = useCallback((user: User) => {
+    console.log("useUserActions: View details called for user:", user.id);
+    baseHandleViewUserDetails(user);
+  }, [baseHandleViewUserDetails]);
+  
+  const handleCloseUserDetails = useCallback(() => {
+    console.log("useUserActions: Close details called");
+    baseHandleCloseUserDetails();
+  }, [baseHandleCloseUserDetails]);
+  
+  const handleManagePermissions = useCallback((user: User) => {
+    console.log("useUserActions: Manage permissions called for user:", user.id);
+    baseHandleManagePermissions(user);
+  }, [baseHandleManagePermissions]);
   
   // Return all actions and state from sub-hooks
   return {

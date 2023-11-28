@@ -4,13 +4,8 @@ import { useFetchUsers } from './hooks/useFetchUsers';
 import { useUserSearch } from './hooks/useUserSearch';
 import { useUserSelection } from './hooks/useUserSelection';
 import { useUserActions } from './hooks/useUserActions';
-import { useUserDetails } from './hooks/user-actions/useUserDetails';
-import { usePermissionActions } from './hooks/user-actions/usePermissionActions';
-import { useUserCrud } from './hooks/user-actions/useUserCrud';
-import { useSubscriptionActions } from './hooks/user-actions/useSubscriptionActions';
-import { useActionState } from './hooks/user-actions/useActionState';
 import { User } from '../types';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export const useUserManagement = () => {
   console.log("Initializing useUserManagement");
@@ -20,14 +15,10 @@ export const useUserManagement = () => {
   // User data state
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isActionLoading, setIsActionLoading] = useState(false);
   
   // Dialogs and drawer state
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
   // Fetch users data
   const { users: fetchedUsers, isLoading: isFetchLoading, fetchUsers: apiFetchUsers } = useFetchUsers();
@@ -43,32 +34,27 @@ export const useUserManagement = () => {
     toggleAllUsers 
   } = useUserSelection();
   
-  // Action state
-  const { setActionLoading } = useActionState(setIsActionLoading);
-  
-  // Permission actions
-  const { handlePermissionsUpdated: baseHandlePermissionsUpdated } = usePermissionActions(setIsPermissionsDialogOpen);
-  
-  // User CRUD operations
-  const { 
+  // Get all user actions and their states from the useUserActions hook
+  const {
+    // Actions
     handleDeleteUsers: baseHandleDeleteUsers,
     handleBulkDelete: baseHandleBulkDelete,
     handleBulkActivate: baseHandleBulkActivate,
-    handleBulkDeactivate: baseHandleBulkDeactivate
-  } = useUserCrud(setActionLoading);
-  
-  // Subscription actions
-  const {
+    handleBulkDeactivate: baseHandleBulkDeactivate,
     handleToggleUserStatus: baseHandleToggleUserStatus,
-    handleToggleUserSubscription: baseHandleToggleUserSubscription
-  } = useSubscriptionActions(setActionLoading);
-  
-  // User details
-  const {
+    handleToggleUserSubscription: baseHandleToggleUserSubscription,
     handleViewUserDetails: baseHandleViewUserDetails,
     handleCloseUserDetails: baseHandleCloseUserDetails,
-    handleManagePermissions: baseHandleManagePermissions
-  } = useUserDetails(setSelectedUser, setIsDetailsOpen, setIsPermissionsDialogOpen);
+    handleManagePermissions: baseHandleManagePermissions,
+    handlePermissionsUpdated: baseHandlePermissionsUpdated,
+    
+    // States
+    isActionLoading,
+    selectedUser,
+    isDetailsOpen,
+    isPermissionsDialogOpen,
+    setIsPermissionsDialogOpen
+  } = useUserActions();
   
   // Update users when fetchedUsers changes
   useEffect(() => {
@@ -87,7 +73,7 @@ export const useUserManagement = () => {
         await apiFetchUsers();
       } catch (error) {
         console.error("Error fetching users:", error);
-        toast({
+        useToast().toast({
           title: "Error",
           description: "Failed to fetch users. Please try again.",
           variant: "destructive"
@@ -136,6 +122,7 @@ export const useUserManagement = () => {
   
   const handleViewUserDetails = useCallback((user: User) => {
     if (isMounted.current) {
+      console.log("UserManagement: View details called for user:", user.id);
       baseHandleViewUserDetails(user);
     }
   }, [baseHandleViewUserDetails]);
@@ -189,15 +176,7 @@ export const useUserManagement = () => {
     setSearchTerm('');
     setIsDeleteDialogOpen(false);
     setIsAddUserDialogOpen(false);
-    setIsDetailsOpen(false);
-    setIsPermissionsDialogOpen(false);
-    setSelectedUser(null);
   }, [setSelectedUsers, setSearchTerm]);
-  
-  // Log filtered users for debugging
-  useEffect(() => {
-    console.log('Filtered users:', filteredUsers);
-  }, [filteredUsers]);
   
   return {
     // State
