@@ -1,19 +1,18 @@
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { User } from '../../types';
-import { useActionState } from './user-actions/useActionState';
 import { useUserCrud } from './user-actions/useUserCrud';
-import { useUserDetails } from './user-actions/useUserDetails';
 import { useSubscriptionActions } from './user-actions/useSubscriptionActions';
 import { usePermissionActions } from './user-actions/usePermissionActions';
-import { useState } from 'react';
 
 export const useUserActions = () => {
-  // Create a local state to track action loading
+  // Create internal state for tracking action loading
   const [isActionLoading, setIsActionLoading] = useState(false);
   
-  // Use the actual state setter instead of a dummy function
-  const { setActionLoading } = useActionState(setIsActionLoading);
+  // Create local states for user details and permissions dialogs
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   
   // Initialize hooks with necessary parameters
   const { 
@@ -21,43 +20,41 @@ export const useUserActions = () => {
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate
-  } = useUserCrud(setActionLoading);
+  } = useUserCrud(setIsActionLoading);
   
   const {
     handleToggleUserStatus,
     handleToggleUserSubscription
-  } = useSubscriptionActions(setActionLoading);
+  } = useSubscriptionActions(setIsActionLoading);
   
-  // Create local states for user details and permissions dialogs
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
-  
-  const {
-    handleViewUserDetails: baseHandleViewUserDetails,
-    handleCloseUserDetails: baseHandleCloseUserDetails,
-    handleManagePermissions: baseHandleManagePermissions
-  } = useUserDetails(setSelectedUser, setIsDetailsOpen, setIsPermissionsDialogOpen);
-  
-  const { handlePermissionsUpdated } = usePermissionActions(setIsPermissionsDialogOpen);
-  
-  // Wrap the user details functions to add logging
+  // View user details
   const handleViewUserDetails = useCallback((user: User) => {
     console.log("useUserActions: View details called for user:", user.id);
-    baseHandleViewUserDetails(user);
-  }, [baseHandleViewUserDetails]);
+    setSelectedUser(user);
+    setIsDetailsOpen(true);
+  }, []);
   
+  // Close user details
   const handleCloseUserDetails = useCallback(() => {
     console.log("useUserActions: Close details called");
-    baseHandleCloseUserDetails();
-  }, [baseHandleCloseUserDetails]);
+    setIsDetailsOpen(false);
+    // We set selected user to null with a delay to prevent UI flickering
+    setTimeout(() => {
+      setSelectedUser(null);
+    }, 300);
+  }, []);
   
+  // Manage user permissions
   const handleManagePermissions = useCallback((user: User) => {
     console.log("useUserActions: Manage permissions called for user:", user.id);
-    baseHandleManagePermissions(user);
-  }, [baseHandleManagePermissions]);
+    setSelectedUser(user);
+    setIsPermissionsDialogOpen(true);
+  }, []);
   
-  // Return all actions and state from sub-hooks
+  // Handle permissions updated
+  const { handlePermissionsUpdated } = usePermissionActions(setIsPermissionsDialogOpen);
+  
+  // Return all actions and state
   return {
     // User CRUD operations
     handleDeleteUsers,
