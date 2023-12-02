@@ -13,7 +13,8 @@ export const useUserManagementData = () => {
   const { 
     users: fetchedUsers, 
     isLoading: isFetchLoading, 
-    fetchUsers: apiFetchUsers 
+    fetchUsers: apiFetchUsers,
+    error: fetchError
   } = useFetchUsers();
   
   // Update users when fetchedUsers changes
@@ -22,7 +23,16 @@ export const useUserManagementData = () => {
       setUsers(fetchedUsers);
       setIsLoading(false);
     }
-  }, [fetchedUsers]);
+    
+    if (fetchError) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch users. Please try again.",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+    }
+  }, [fetchedUsers, fetchError, toast]);
   
   // Fetch users
   const fetchUsers = useCallback(async () => {
@@ -37,13 +47,20 @@ export const useUserManagementData = () => {
         description: "Failed to fetch users. Please try again.",
         variant: "destructive"
       });
+      setIsLoading(false);
     }
   }, [apiFetchUsers, toast]);
+
+  // Add new user to list
+  const addUser = useCallback((newUser: User) => {
+    setUsers(prevUsers => [...prevUsers, newUser]);
+  }, []);
 
   return {
     users,
     setUsers,
     isLoading: isLoading || isFetchLoading,
-    fetchUsers
+    fetchUsers,
+    addUser
   };
 };
