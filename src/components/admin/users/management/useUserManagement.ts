@@ -16,7 +16,8 @@ export const useUserManagement = () => {
     users,
     setUsers,
     isLoading,
-    fetchUsers
+    fetchUsers,
+    addUser
   } = useUserManagementData();
   
   // Get UI state management
@@ -25,6 +26,12 @@ export const useUserManagement = () => {
     setIsDeleteDialogOpen,
     isAddUserDialogOpen,
     setIsAddUserDialogOpen,
+    isPermissionsDialogOpen,
+    setIsPermissionsDialogOpen,
+    isDetailsOpen,
+    setIsDetailsOpen,
+    selectedUser,
+    setSelectedUser,
     resetUIState
   } = useUserManagementUIState();
   
@@ -55,11 +62,7 @@ export const useUserManagement = () => {
     handlePermissionsUpdated: baseHandlePermissionsUpdated,
     
     // States
-    isActionLoading,
-    selectedUser,
-    isDetailsOpen,
-    isPermissionsDialogOpen,
-    setIsPermissionsDialogOpen
+    isActionLoading
   } = useUserActions();
   
   // Wrapper functions to include users and setUsers
@@ -103,21 +106,24 @@ export const useUserManagement = () => {
   const handleViewUserDetails = useCallback((user: User) => {
     if (isMounted.current) {
       console.log("UserManagement: View details called for user:", user.id);
-      baseHandleViewUserDetails(user);
+      setSelectedUser(user);
+      setIsDetailsOpen(true);
     }
-  }, [baseHandleViewUserDetails]);
+  }, [setSelectedUser, setIsDetailsOpen]);
   
   const handleCloseUserDetails = useCallback(() => {
     if (isMounted.current) {
-      baseHandleCloseUserDetails();
+      setIsDetailsOpen(false);
+      setSelectedUser(null);
     }
-  }, [baseHandleCloseUserDetails]);
+  }, [setIsDetailsOpen, setSelectedUser]);
   
   const handleManagePermissions = useCallback((user: User) => {
     if (isMounted.current) {
-      baseHandleManagePermissions(user);
+      setSelectedUser(user);
+      setIsPermissionsDialogOpen(true);
     }
-  }, [baseHandleManagePermissions]);
+  }, [setSelectedUser, setIsPermissionsDialogOpen]);
   
   // Bulk actions
   const handleBulkDelete = useCallback(async () => {
@@ -191,6 +197,7 @@ export const useUserManagement = () => {
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
-    cleanup
+    cleanup,
+    addUser
   };
 };
