@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Navigate, Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
@@ -67,12 +66,10 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // If not authenticated, redirect to admin login
   if (!isLoading && !isAuthenticated) {
     return <Navigate to="/admin/auth" replace />;
   }
 
-  // Show loading state
   if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -81,7 +78,6 @@ const AdminLayout = () => {
     );
   }
 
-  // Define navigation items
   const navItems = [
     { icon: Home, label: 'Dashboard', href: '/admin/dashboard' },
     { icon: Users, label: 'User Management', href: '/admin/users' },
@@ -101,13 +97,12 @@ const AdminLayout = () => {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-gray-50">
-        {/* Desktop Sidebar */}
         <Sidebar>
           <SidebarHeader className="pb-0">
             <div className="flex items-center space-x-2 px-3 py-2">
               <Link to="/admin/dashboard">
                 <img
-                  src="/Speech Help - Logo.svg"
+                  src="/speech-help-new-logo.svg"
                   alt="Speech Help Logo"
                   className="h-8"
                 />
@@ -147,7 +142,6 @@ const AdminLayout = () => {
           </SidebarFooter>
         </Sidebar>
 
-        {/* Mobile Header and Sidebar */}
         <div className="flex w-full flex-col">
           <header className="flex h-16 w-full items-center justify-between border-b bg-white px-4 lg:px-6">
             <div className="flex items-center space-x-4">
@@ -165,7 +159,7 @@ const AdminLayout = () => {
                     <div className="flex items-center space-x-2">
                       <Link to="/admin/dashboard">
                         <img
-                          src="/Speech Help - Logo.svg"
+                          src="/speech-help-new-logo.svg"
                           alt="Speech Help Logo"
                           className="h-8"
                         />
@@ -217,7 +211,7 @@ const AdminLayout = () => {
               <div className="md:hidden">
                 <Link to="/admin/dashboard">
                   <img
-                    src="/Speech Help - Logo.svg"
+                    src="/speech-help-new-logo.svg"
                     alt="Speech Help Logo"
                     className="h-8"
                   />
