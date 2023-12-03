@@ -35,6 +35,11 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
   setIsDeleteDialogOpen,
   setIsAddUserDialogOpen
 }) => {
+  const handleAddUserClick = () => {
+    console.log("Add User button clicked");
+    setIsAddUserDialogOpen(true);
+  };
+
   return (
     <div className="mb-4 flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
       <div className="flex w-full items-center space-x-2 sm:w-auto">
@@ -93,7 +98,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
           <FileUp className="mr-2 h-4 w-4" />
           Import
         </Button>
-        <Button onClick={() => setIsAddUserDialogOpen(true)}>
+        <Button onClick={handleAddUserClick}>
           <UserPlus className="mr-2 h-4 w-4" />
           Add User
         </Button>
