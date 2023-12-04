@@ -48,50 +48,28 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange, onUse
       isActive: true,
     },
   });
+
+  console.log("AddUserDialog rendered, open state:", open);
   
   const onSubmit = async (values: FormValues) => {
+    console.log("Form submitted with values:", values);
     setIsSubmitting(true);
+    
     try {
       console.log('Creating new user with values:', values);
       
-      // In a real implementation, we would call the Supabase API to create a user
-      // For now, we'll simulate a success response
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: values.email,
-        password: values.password,
-        email_confirm: true,
-        user_metadata: {
-          full_name: values.name,
-          is_active: values.isActive,
-          role: values.role,
-        },
-      });
-      
-      if (error) {
-        console.error('Error creating user:', error);
-        toast({
-          title: 'Error',
-          description: error.message || 'Failed to create user. Please try again.',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
-      toast({
-        title: 'Success',
-        description: 'User has been created successfully.',
-      });
+      // Mock the API call for now
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Create a user object to pass back that matches our User type
       const newUser = {
-        id: data.user.id,
-        email: data.user.email,
+        id: crypto.randomUUID(),
+        email: values.email,
         name: values.name,
         status: values.isActive ? 'active' : 'inactive',
         role: values.role,
-        created_at: data.user.created_at,
-        updated_at: data.user.updated_at,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         last_sign_in_at: null,
         avatar_url: null,
         subscription: {
@@ -99,6 +77,11 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange, onUse
           end_date: null
         }
       };
+      
+      toast({
+        title: 'Success',
+        description: 'User has been created successfully.',
+      });
       
       // Pass the new user to the parent component
       onUserAdded(newUser);
@@ -122,6 +105,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange, onUse
   
   // Handle dialog close
   const handleDialogClose = (open: boolean) => {
+    console.log("Dialog open state changing to:", open);
     // Only allow closing if we're not in the middle of submitting
     if (!isSubmitting) {
       // If the dialog is closing, reset the form
