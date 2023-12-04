@@ -105,6 +105,9 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange, onUse
       
       // Reset the form
       form.reset();
+      
+      // Close the dialog
+      onOpenChange(false);
     } catch (error) {
       console.error('Exception creating user:', error);
       toast({
