@@ -56,7 +56,7 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Create a user object to pass back that matches our User type
-      const newUser = {
+      const newUser: User = {
         id: crypto.randomUUID(),
         email: values.email,
         name: values.name,
@@ -66,6 +66,14 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
         updated_at: new Date().toISOString(),
         last_sign_in_at: null,
         avatar_url: null,
+        app_metadata: {
+          provider: 'email',
+          providers: ['email']
+        },
+        user_metadata: {
+          name: values.name,
+          email: values.email
+        },
         subscription: {
           status: 'none',
           end_date: null
