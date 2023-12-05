@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Speech } from '../types';
+import { User, Speech } from '../../types';
 
 export const useUserDetails = (user: User | null, open: boolean) => {
   const [speeches, setSpeeches] = useState<Speech[]>([]);

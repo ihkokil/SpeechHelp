@@ -5,7 +5,7 @@ import { useUserManagement } from '@/components/admin/users/management/useUserMa
 import { SearchToolbar } from '@/components/admin/users/management/SearchToolbar';
 import { UserTable } from '@/components/admin/users/management/UserTable';
 import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
-import UserDetailsDrawer from '@/components/admin/users/UserDetailsDrawer';
+import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
 import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
 import { useToast } from '@/hooks/use-toast';
