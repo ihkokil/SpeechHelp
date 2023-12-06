@@ -59,7 +59,6 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
       const newUser: User = {
         id: crypto.randomUUID(),
         email: values.email,
-        name: values.name,
         status: values.isActive ? 'active' : 'inactive',
         role: values.role,
         created_at: new Date().toISOString(),
