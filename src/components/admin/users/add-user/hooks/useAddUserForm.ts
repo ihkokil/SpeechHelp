@@ -59,12 +59,12 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
       const newUser: User = {
         id: crypto.randomUUID(),
         email: values.email,
-        status: values.isActive ? 'active' : 'inactive',
-        role: values.role,
+        is_active: values.isActive,
+        is_admin: values.role === 'admin',
+        admin_role: values.role !== 'user' ? values.role : undefined,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         last_sign_in_at: null,
-        avatar_url: null,
         app_metadata: {
           provider: 'email',
           providers: ['email']
@@ -73,10 +73,9 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
           name: values.name,
           email: values.email
         },
-        subscription: {
-          status: 'none',
-          end_date: null
-        }
+        subscription_status: 'none',
+        subscription_end_date: null,
+        subscription_tier: null
       };
       
       toast({
