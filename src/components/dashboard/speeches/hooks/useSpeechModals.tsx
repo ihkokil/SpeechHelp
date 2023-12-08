@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Speech } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
+import { getEditableContent } from '@/components/speech/utils/speechFormattingUtils';
 
 export const useSpeechModals = () => {
   const { updateSpeech, deleteSpeech } = useAuth();
@@ -14,7 +15,10 @@ export const useSpeechModals = () => {
     // If opening the modal, set the initial values
     if (open && selectedSpeech) {
       setTitle(selectedSpeech.title);
-      setContent(selectedSpeech.content);
+      
+      // Extract the content for editing, making sure we get the actual content and not JSON wrapper
+      const extractedContent = getEditableContent(selectedSpeech.content, true, true);
+      setContent(extractedContent);
     }
     
     return open;

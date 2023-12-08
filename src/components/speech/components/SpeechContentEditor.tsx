@@ -29,14 +29,22 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
 
   // Process content on initial load and when content changes
   useEffect(() => {
-    // Extract content appropriately
-    const extractedContent = getEditableContent(content, false);
+    // Make sure we have content to display
+    if (!content) {
+      console.warn('No content provided to SpeechContentEditor');
+      setProcessedContent('');
+      setHtmlContent('');
+      return;
+    }
+
+    // Extract content appropriately for editing
+    const extractedContent = getEditableContent(content, preserveHtml, showFormattedContent);
     setProcessedContent(extractedContent);
 
     // Generate HTML representation for the editor when in preview mode
     const formattedHtml = formatSpeechContent(content);
     setHtmlContent(formattedHtml);
-  }, [content]);
+  }, [content, preserveHtml, showFormattedContent]);
 
   // Custom handler for content changes to maintain JSON structure if it exists
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -44,7 +52,7 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
     setProcessedContent(newValue);
     
     // If original content was JSON and we need to preserve structure
-    if (content.includes('{"content"') && preserveHtml) {
+    if (content && content.includes('{"content"') && preserveHtml) {
       try {
         const jsonContent = JSON.parse(content);
         // Create new event with updated content structure
@@ -61,11 +69,23 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
         onContentChange(newEvent as React.ChangeEvent<HTMLTextAreaElement>);
       } catch (e) {
         // If JSON parsing fails, just update with the raw value
-        onContentChange(e);
+        onContentChange({
+          ...e,
+          target: {
+            ...e.target,
+            value: newValue
+          }
+        } as React.ChangeEvent<HTMLTextAreaElement>);
       }
     } else {
       // If not JSON, just update normally
-      onContentChange(e);
+      onContentChange({
+        ...e,
+        target: {
+          ...e.target,
+          value: newValue
+        }
+      } as React.ChangeEvent<HTMLTextAreaElement>);
     }
   };
 
@@ -73,7 +93,8 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
     setViewMode(mode);
   };
 
-  const editableContent = getEditableContent(content, preserveHtml, showFormattedContent);
+  // Get the appropriate content for editing
+  const editableContent = processedContent || '';
 
   return (
     <div>
