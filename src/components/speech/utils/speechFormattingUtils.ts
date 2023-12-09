@@ -68,33 +68,30 @@ export const formatSpeechContent = (text: string): string => {
 /**
  * Extract content from JSON if needed
  * @param content Raw content that might be JSON
- * @param preserveHtml Whether to preserve HTML
- * @param showFormattedContent Whether to format the content
- * @returns Extracted and possibly formatted content
+ * @returns Extracted content
  */
-export const getEditableContent = (
-  content: string, 
-  preserveHtml: boolean = false, 
-  showFormattedContent: boolean = false
-): string => {
-  if (showFormattedContent && content.includes('{"content"')) {
-    try {
-      const jsonContent = JSON.parse(content);
-      return jsonContent.content || content;
-    } catch (e) {
-      return content;
-    }
+export const getEditableContent = (content: string): string => {
+  console.log('Getting editable content from:', content);
+  
+  if (!content) {
+    console.log('No content provided to extract');
+    return '';
   }
   
-  if (content.includes('{"content"')) {
-    try {
-      const jsonContent = JSON.parse(content);
-      return preserveHtml ? content : (jsonContent.content || content);
-    } catch (e) {
-      return content;
+  try {
+    // Check if content is JSON format
+    if (content.includes('{"content"')) {
+      const jsonObj = JSON.parse(content);
+      if (jsonObj.content) {
+        console.log('Successfully extracted content from JSON');
+        return jsonObj.content;
+      }
     }
+  } catch (error) {
+    console.error('Error parsing JSON content:', error);
   }
   
+  // Return original content if not JSON or if parsing failed
   return content;
 };
 

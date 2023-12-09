@@ -23,7 +23,7 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
   showFormattedContent = false
 }) => {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>(forceEditMode ? 'edit' : 'edit');
-  const [processedContent, setProcessedContent] = useState(content || '');
+  const [processedContent, setProcessedContent] = useState('');
   const [htmlContent, setHtmlContent] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -39,7 +39,7 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
 
   // Process content on initial load and when content changes
   useEffect(() => {
-    console.log('Content changed, processing:', content);
+    console.log('Content changed in SpeechContentEditor, processing:', content);
     
     // Make sure we have content to display
     if (!content) {
@@ -49,20 +49,9 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
       return;
     }
 
-    // Try to format the content properly for the editor
-    let extractedContent = content;
-    
-    // If it's JSON content, extract the actual content
-    if (content.includes('{"content"')) {
-      try {
-        const jsonContent = JSON.parse(content);
-        extractedContent = jsonContent.content || content;
-        console.log('Extracted content from JSON:', extractedContent);
-      } catch (e) {
-        console.error('Failed to parse JSON content', e);
-      }
-    }
-    
+    // Extract the actual content if it's JSON format
+    const extractedContent = getEditableContent(content);
+    console.log('Extracted content for editor:', extractedContent);
     setProcessedContent(extractedContent);
     
     // Generate HTML representation for preview mode
@@ -113,7 +102,7 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
           ref={textareaRef}
         />
       ) : (
-        <SpeechPreview content={content} />
+        <SpeechPreview content={processedContent} />
       )}
     </div>
   );

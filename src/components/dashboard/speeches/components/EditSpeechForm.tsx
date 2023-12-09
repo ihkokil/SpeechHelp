@@ -25,7 +25,7 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   
   useEffect(() => {
-    // Log values to make debugging easier
+    // Log values for debugging
     console.log('EditSpeechForm received:', { speech, editTitle, editContent });
   }, [speech, editTitle, editContent]);
   
@@ -49,14 +49,31 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
           className="w-full"
         />
       </div>
+      
       <div>
         {viewMode === 'edit' ? (
-          <SpeechContentEditor 
-            content={editContent}
-            onContentChange={handleContentChange}
-            preserveHtml={false}
-            forceEditMode={true}
-          />
+          <>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-pink-600 font-medium uppercase">
+                <Translate text="speechLab.content" fallback="Speech Content" />
+              </label>
+              
+              <button 
+                onClick={() => setViewMode('preview')}
+                className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <Translate text="speechLab.preview" fallback="Preview" />
+              </button>
+            </div>
+            
+            <textarea
+              value={editContent}
+              onChange={handleContentChange}
+              className="w-full min-h-[300px] p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 resize-y"
+              placeholder="Enter your speech content here..."
+            />
+          </>
         ) : (
           <div>
             <div className="flex justify-between items-center mb-2">
@@ -75,6 +92,7 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
           </div>
         )}
       </div>
+      
       <SpeechExportButtons 
         speech={speech}
         title={editTitle}
