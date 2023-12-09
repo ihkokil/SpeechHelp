@@ -22,13 +22,16 @@ export const useSpeechModals = () => {
       try {
         // Extract content from JSON if it's in that format
         const extractedContent = getEditableContent(selectedSpeech.content);
-        console.log('Extracted content:', extractedContent);
+        console.log('Extracted content for editing:', extractedContent);
         setContent(extractedContent);
       } catch (error) {
-        console.error('Error parsing speech content:', error);
+        console.error('Error extracting speech content:', error);
         // Fallback to raw content if parsing fails
         setContent(selectedSpeech.content || '');
+        console.log('Using fallback content:', selectedSpeech.content);
       }
+    } else {
+      console.log('Closing edit modal or no speech selected');
     }
     
     return open;
@@ -36,9 +39,14 @@ export const useSpeechModals = () => {
   
   // Handle speech update
   const handleUpdateSpeech = async (selectedSpeech: Speech | null) => {
-    if (!selectedSpeech) return false;
+    if (!selectedSpeech) {
+      console.error('No speech selected for update');
+      return false;
+    }
     
     setIsSubmitting(true);
+    console.log('Updating speech with:', { title, contentLength: content.length });
+    
     try {
       // For JSON content, we need to preserve the structure
       let finalContent = content;
@@ -46,6 +54,7 @@ export const useSpeechModals = () => {
         try {
           const jsonContent = JSON.parse(selectedSpeech.content);
           finalContent = JSON.stringify({ ...jsonContent, content });
+          console.log('Updated JSON content structure');
         } catch (e) {
           console.error('Error updating JSON content structure:', e);
         }
