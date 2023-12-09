@@ -24,8 +24,13 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   
-  // Handle content change without any processing at this level
+  useEffect(() => {
+    // Log values to make debugging easier
+    console.log('EditSpeechForm received:', { speech, editTitle, editContent });
+  }, [speech, editTitle, editContent]);
+  
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    console.log('Content changed:', e.target.value);
     setEditContent(e.target.value);
   };
 
@@ -49,7 +54,7 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
           <SpeechContentEditor 
             content={editContent}
             onContentChange={handleContentChange}
-            preserveHtml={true}
+            preserveHtml={false}
             forceEditMode={true}
           />
         ) : (
