@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -25,9 +26,10 @@ const Dashboard = () => {
   const { t } = useTranslation();
   const [isRefreshing, setIsRefreshing] = useState(false);
   
+  // Fetch speeches when component mounts or when user changes
   useEffect(() => {
     const refreshSpeeches = async () => {
-      if (user) {
+      if (user && !isLoading) {
         setIsRefreshing(true);
         try {
           console.log('Dashboard: Fetching speeches for user:', user.id);
@@ -41,15 +43,19 @@ const Dashboard = () => {
       }
     };
     
-    refreshSpeeches();
-  }, [user, fetchSpeeches, t, currentLanguage.code]);
+    if (user) {
+      refreshSpeeches();
+    }
+  }, [user, fetchSpeeches, t, currentLanguage.code, isLoading]);
   
+  // Redirect to auth if not logged in
   useEffect(() => {
     if (!isLoading && !user) {
       navigate('/auth');
     }
   }, [user, isLoading, navigate]);
   
+  // Get user info when user changes
   useEffect(() => {
     if (user) {
       const metadata = user.user_metadata;
@@ -71,10 +77,6 @@ const Dashboard = () => {
       }
     }
   }, [user]);
-
-  useEffect(() => {
-    console.log('Current speeches in Dashboard:', speeches);
-  }, [speeches]);
 
   // Calculate relevant metrics from speeches
   const dashboardMetrics = useMemo(() => {
@@ -109,15 +111,8 @@ const Dashboard = () => {
     
     return {
       totalSpeeches,
-      inProgressCount: speeches.filter(speech => {
-        const speechDate = new Date(speech.created_at);
-        return speechDate.getMonth() === new Date().getMonth() && 
-               speechDate.getFullYear() === new Date().getFullYear();
-      }).length,
-      recentImprovementCount: speeches.filter(speech => {
-        const speechDate = new Date(speech.created_at);
-        return speechDate >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-      }).length,
+      inProgressCount: thisMonthSpeeches.length,
+      recentImprovementCount: last30DaysSpeeches.length,
       speechTypeDistribution
     };
   }, [speeches]);
@@ -131,6 +126,11 @@ const Dashboard = () => {
         </div>
       </div>
     );
+  }
+
+  // Only render when user is authenticated and not loading
+  if (!user) {
+    return null;
   }
 
   return (

@@ -14,24 +14,29 @@ export const useSpeechService = () => {
     
     console.log('Fetching speeches for user ID:', userId);
     
-    const { data, error } = await supabase
-      .from('speeches')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching speeches:', error);
-      toast({
-        title: "Error fetching speeches",
-        description: error.message,
-        variant: "destructive"
-      });
+    try {
+      const { data, error } = await supabase
+        .from('speeches')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching speeches:', error);
+        toast({
+          title: "Error fetching speeches",
+          description: error.message,
+          variant: "destructive"
+        });
+        return [];
+      }
+      
+      console.log(`Fetched ${data?.length || 0} speeches`);
+      return data as Speech[] || [];
+    } catch (e) {
+      console.error('Unexpected error in fetchSpeeches:', e);
       return [];
     }
-    
-    console.log(`Fetched ${data?.length || 0} speeches`);
-    return data as Speech[] || [];
   };
 
   const saveSpeech = async (userId: string, title: string, content: string, speechType: string) => {
@@ -40,34 +45,39 @@ export const useSpeechService = () => {
     console.log('Saving speech for user:', userId);
     console.log('Speech details:', { title, contentLength: content.length, speechType });
     
-    const { data, error } = await supabase
-      .from('speeches')
-      .insert({
-        user_id: userId,
-        title,
-        content,
-        speech_type: speechType
-      })
-      .select();
-    
-    if (error) {
-      console.error('Error saving speech:', error);
+    try {
+      const { data, error } = await supabase
+        .from('speeches')
+        .insert({
+          user_id: userId,
+          title,
+          content,
+          speech_type: speechType
+        })
+        .select();
+      
+      if (error) {
+        console.error('Error saving speech:', error);
+        toast({
+          title: "Error saving speech",
+          description: error.message,
+          variant: "destructive"
+        });
+        throw error;
+      }
+      
+      console.log('Speech saved successfully:', data);
+      
       toast({
-        title: "Error saving speech",
-        description: error.message,
-        variant: "destructive"
+        title: "Speech Saved",
+        description: "Your speech has been saved to your account.",
       });
-      throw error;
+      
+      return data[0] as Speech;
+    } catch (e) {
+      console.error('Unexpected error in saveSpeech:', e);
+      throw e;
     }
-    
-    console.log('Speech saved successfully:', data);
-    
-    toast({
-      title: "Speech Saved",
-      description: "Your speech has been saved to your account.",
-    });
-    
-    return data[0] as Speech;
   };
 
   const updateSpeech = async (userId: string, id: string, title: string, content: string) => {
@@ -75,36 +85,41 @@ export const useSpeechService = () => {
     
     console.log('Updating speech:', { id, title, contentLength: content.length });
     
-    // Explicitly set the updated_at to ensure it's refreshed
-    const { data, error } = await supabase
-      .from('speeches')
-      .update({
-        title,
-        content,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .eq('user_id', userId)
-      .select();
-    
-    if (error) {
-      console.error('Error updating speech:', error);
+    try {
+      // Explicitly set the updated_at to ensure it's refreshed
+      const { data, error } = await supabase
+        .from('speeches')
+        .update({
+          title,
+          content,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .eq('user_id', userId)
+        .select();
+      
+      if (error) {
+        console.error('Error updating speech:', error);
+        toast({
+          title: "Error updating speech",
+          description: error.message,
+          variant: "destructive"
+        });
+        throw error;
+      }
+      
+      console.log('Speech updated successfully:', data);
+      
       toast({
-        title: "Error updating speech",
-        description: error.message,
-        variant: "destructive"
+        title: "Speech updated",
+        description: "Your speech has been updated successfully.",
       });
-      throw error;
+      
+      return data[0] as Speech;
+    } catch (e) {
+      console.error('Unexpected error in updateSpeech:', e);
+      throw e;
     }
-    
-    console.log('Speech updated successfully:', data);
-    
-    toast({
-      title: "Speech updated",
-      description: "Your speech has been updated successfully.",
-    });
-    
-    return data[0] as Speech;
   };
 
   const deleteSpeech = async (userId: string, id: string) => {
@@ -112,28 +127,33 @@ export const useSpeechService = () => {
     
     console.log('Deleting speech:', id);
     
-    const { error } = await supabase
-      .from('speeches')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', userId);
-    
-    if (error) {
-      console.error('Error deleting speech:', error);
+    try {
+      const { error } = await supabase
+        .from('speeches')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId);
+      
+      if (error) {
+        console.error('Error deleting speech:', error);
+        toast({
+          title: "Error deleting speech",
+          description: error.message,
+          variant: "destructive"
+        });
+        throw error;
+      }
+      
+      console.log('Speech deleted successfully');
+      
       toast({
-        title: "Error deleting speech",
-        description: error.message,
-        variant: "destructive"
+        title: "Speech deleted",
+        description: "Your speech has been deleted successfully.",
       });
-      throw error;
+    } catch (e) {
+      console.error('Unexpected error in deleteSpeech:', e);
+      throw e;
     }
-    
-    console.log('Speech deleted successfully');
-    
-    toast({
-      title: "Speech deleted",
-      description: "Your speech has been deleted successfully.",
-    });
   };
 
   return {

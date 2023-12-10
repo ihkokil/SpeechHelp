@@ -27,7 +27,7 @@ const MySpeeches = () => {
   // Fetch speeches when component mounts or when user changes
   useEffect(() => {
     const refreshSpeeches = async () => {
-      if (user) {
+      if (user && !isLoading) {
         setIsRefreshing(true);
         try {
           console.log('Fetching speeches for user:', user.id);
@@ -40,12 +40,10 @@ const MySpeeches = () => {
       }
     };
     
-    refreshSpeeches();
-  }, [user, fetchSpeeches]);
-
-  useEffect(() => {
-    console.log('Current speeches in MySpeeches:', speeches);
-  }, [speeches]);
+    if (user) {
+      refreshSpeeches();
+    }
+  }, [user, fetchSpeeches, isLoading]);
 
   if (isLoading || isRefreshing) {
     return (
@@ -56,6 +54,11 @@ const MySpeeches = () => {
         </div>
       </div>
     );
+  }
+
+  // Only render when user is authenticated and not loading
+  if (!user) {
+    return null;
   }
 
   return (
