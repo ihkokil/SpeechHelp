@@ -57,9 +57,11 @@ const SpeechModals = ({
   // Handle speech update
   const onSaveEdit = async () => {
     console.log('Saving speech with:', { title, content });
-    const success = await handleUpdateSpeech(selectedSpeech);
-    if (success) {
-      setIsEditModalOpen(false);
+    if (selectedSpeech) {
+      const success = await handleUpdateSpeech(selectedSpeech);
+      if (success) {
+        setIsEditModalOpen(false);
+      }
     }
   };
   
