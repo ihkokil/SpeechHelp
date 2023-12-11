@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -25,12 +25,15 @@ const Dashboard = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const fetchedRef = useRef(false);
   
   // Fetch speeches when component mounts or when user changes
   useEffect(() => {
     const refreshSpeeches = async () => {
-      if (user && !isLoading) {
+      if (user && !isLoading && !fetchedRef.current) {
         setIsRefreshing(true);
+        fetchedRef.current = true;
+        
         try {
           console.log('Dashboard: Fetching speeches for user:', user.id);
           await fetchSpeeches();
@@ -43,9 +46,12 @@ const Dashboard = () => {
       }
     };
     
-    if (user) {
-      refreshSpeeches();
-    }
+    refreshSpeeches();
+    
+    // Reset fetchedRef when user changes
+    return () => {
+      fetchedRef.current = false;
+    };
   }, [user, fetchSpeeches, t, currentLanguage.code, isLoading]);
   
   // Redirect to auth if not logged in

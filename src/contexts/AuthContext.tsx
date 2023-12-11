@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import { AuthContextType, Speech } from '@/types/auth';
@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [speeches, setSpeeches] = useState<Speech[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const speechesFetchedRef = useRef(false);
   
   const { toast } = useToast();
   const speechService = useSpeechService();
@@ -41,11 +42,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return [];
     }
     
+    if (speechesFetchedRef.current) {
+      console.log('Speeches already fetched, using cached data');
+      return speeches;
+    }
+    
     console.log('AuthContext: Fetching speeches for user:', user.id);
     try {
       const fetchedSpeeches = await speechService.fetchSpeeches(user.id);
       console.log(`AuthContext: Got ${fetchedSpeeches.length} speeches`);
       setSpeeches(fetchedSpeeches);
+      speechesFetchedRef.current = true;
       return fetchedSpeeches;
     } catch (error) {
       console.error('Error fetching speeches:', error);
@@ -56,7 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       return [];
     }
-  }, [user, speechService, toast]);
+  }, [user, speechService, toast, speeches]);
 
   // Save a new speech
   const saveSpeech = async (title: string, content: string, speechType: string) => {
@@ -66,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "You must be logged in to save a speech.",
         variant: "destructive"
       });
-      return;
+      throw new Error("User not authenticated");
     }
     
     try {
@@ -93,7 +100,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "You must be logged in to update a speech.",
         variant: "destructive"
       });
-      return;
+      throw new Error("User not authenticated");
     }
     
     try {
@@ -122,7 +129,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "You must be logged in to delete a speech.",
         variant: "destructive"
       });
-      return;
+      throw new Error("User not authenticated");
     }
     
     try {
@@ -145,6 +152,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       await signIn(email, password, toast);
+      // Reset speeches fetch state on sign in
+      speechesFetchedRef.current = false;
     } finally {
       setIsLoading(false);
     }
@@ -167,6 +176,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSpeeches([]);
       setUser(null);
       setSession(null);
+      // Reset speeches fetch state
+      speechesFetchedRef.current = false;
     } finally {
       setIsLoading(false);
     }
@@ -174,6 +185,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     console.log('AuthContext initializing');
+    let unsubscribe: (() => void) | undefined;
+    
     const initializeAuth = async () => {
       setIsLoading(true);
       
@@ -186,7 +199,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setSession(newSession);
           setUser(newSession?.user ?? null);
           
-          // Don't fetch speeches in the listener to avoid race conditions
+          // Reset speeches fetch state on auth change
+          if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+            speechesFetchedRef.current = false;
+          }
+          
           setIsLoading(false);
         }
       );
@@ -202,29 +219,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsInitialized(true);
       setIsLoading(false);
       
-      return () => {
+      unsubscribe = () => {
         subscription.unsubscribe();
       };
     };
     
     initializeAuth();
-  }, []);
-  
-  // Fetch speeches when user is set but only after initialization
-  useEffect(() => {
-    const loadUserData = async () => {
-      if (user && isInitialized) {
-        console.log('User authenticated, fetching speeches');
-        try {
-          await fetchSpeeches();
-        } catch (e) {
-          console.error('Error fetching speeches after auth:', e);
-        }
+    
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
       }
     };
-    
-    loadUserData();
-  }, [user, isInitialized, fetchSpeeches]);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ 
