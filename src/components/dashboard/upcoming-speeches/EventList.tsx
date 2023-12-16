@@ -45,7 +45,7 @@ const EventList: React.FC<EventListProps> = ({ events, onCreateSpeech, refreshEv
             </div>
           </div>
           <div className="flex w-full sm:w-auto justify-between items-center sm:flex-col sm:items-end mt-2 sm:mt-0 sm:space-y-2">
-            <Badge className={`${getCategoryColor(speech.category)} text-xs`}>
+            <Badge className={`${getCategoryColor(speech.category)} text-xs w-24 text-center`}>
               {speech.category.charAt(0).toUpperCase() + speech.category.slice(1)}
             </Badge>
             <UpcomingEventActions 
