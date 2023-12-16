@@ -17,20 +17,30 @@ export const formatDate = (date: Date, languageCode: string): string => {
   }
 };
 
-// Get color class based on category
+// Get color class based on category - updated to match speech-utils.ts color scheme
 export const getCategoryColor = (category: string): string => {
-  switch (category.toLowerCase()) {
-    case 'business':
-      return 'bg-blue-100 text-blue-800';
-    case 'personal':
-      return 'bg-green-100 text-green-800';
-    case 'academic':
-      return 'bg-purple-100 text-purple-800';
-    case 'social':
-      return 'bg-yellow-100 text-yellow-800';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
+  const colorMap: Record<string, string> = {
+    'wedding': 'bg-pink-100 text-pink-800',
+    'graduation': 'bg-blue-100 text-blue-800',
+    'birthday': 'bg-purple-100 text-purple-800',
+    'business': 'bg-slate-100 text-slate-800',
+    'tedtalk': 'bg-red-100 text-red-800',
+    'motivational': 'bg-amber-100 text-amber-800',
+    'funeral': 'bg-gray-100 text-gray-800',
+    'keynote': 'bg-emerald-100 text-emerald-800',
+    'social': 'bg-indigo-100 text-indigo-800',
+    'farewell': 'bg-cyan-100 text-cyan-800',
+    'informative': 'bg-teal-100 text-teal-800',
+    'persuasive': 'bg-orange-100 text-orange-800',
+    'entertaining': 'bg-violet-100 text-violet-800',
+    'retirement': 'bg-sky-100 text-sky-800',
+    'award': 'bg-lime-100 text-lime-800',
+    'personal': 'bg-green-100 text-green-800',
+    'academic': 'bg-purple-100 text-purple-800',
+    'other': 'bg-gray-100 text-gray-800'
+  };
+  
+  return colorMap[category.toLowerCase()] || 'bg-gray-100 text-gray-800';
 };
 
 // Load events from localStorage
