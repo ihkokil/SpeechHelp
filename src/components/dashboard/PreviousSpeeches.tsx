@@ -60,7 +60,7 @@ const PreviousSpeeches = () => {
           </ButtonCustom>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="w-full">
           <SpeechesTable 
             speeches={speeches}
             onView={handleViewSpeech}

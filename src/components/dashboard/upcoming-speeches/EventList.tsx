@@ -26,12 +26,12 @@ const EventList: React.FC<EventListProps> = ({ events, onCreateSpeech, refreshEv
   }
   
   return (
-    <div className="divide-y max-h-60 sm:max-h-80 overflow-y-auto">
+    <div className="divide-y max-h-[500px] overflow-y-auto">
       {events
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .map((speech) => (
-        <div key={speech.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-          <div className="flex-1">
+        <div key={speech.id} className="p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+          <div className="flex-1 min-w-0">
             <h3 className="font-medium text-gray-900 truncate">{speech.title}</h3>
             <div className="mt-1 flex flex-wrap items-center text-xs sm:text-sm text-gray-500 gap-2 sm:gap-4">
               <div className="flex items-center">
@@ -44,7 +44,7 @@ const EventList: React.FC<EventListProps> = ({ events, onCreateSpeech, refreshEv
               </div>
             </div>
           </div>
-          <div className="flex justify-between items-center sm:flex-col sm:items-end mt-2 sm:mt-0 sm:space-y-2">
+          <div className="flex w-full sm:w-auto justify-between items-center sm:flex-col sm:items-end mt-2 sm:mt-0 sm:space-y-2">
             <Badge className={`${getCategoryColor(speech.category)} text-xs`}>
               {speech.category.charAt(0).toUpperCase() + speech.category.slice(1)}
             </Badge>
