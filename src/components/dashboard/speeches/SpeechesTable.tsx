@@ -42,10 +42,10 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
       <Table className="min-w-full">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[40%]"><Translate text="common.title" /></TableHead>
+            <TableHead className="w-[40%] sm:w-[30%]"><Translate text="common.title" /></TableHead>
             <TableHead className="w-[15%] text-center hidden sm:table-cell"><Translate text="common.type" /></TableHead>
-            <TableHead className="w-[20%] hidden md:table-cell"><Translate text="dashboard.created" /></TableHead>
-            <TableHead className="w-[20%] hidden md:table-cell"><Translate text="dashboard.lastUpdated" /></TableHead>
+            <TableHead className="w-[15%] hidden md:table-cell"><Translate text="dashboard.created" /></TableHead>
+            <TableHead className="w-[15%] hidden md:table-cell"><Translate text="dashboard.lastUpdated" /></TableHead>
             <TableHead className="w-[25%] sm:w-[15%] text-right"><Translate text="common.actions" /></TableHead>
           </TableRow>
         </TableHeader>
