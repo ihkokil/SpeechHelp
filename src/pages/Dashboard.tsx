@@ -145,7 +145,7 @@ const Dashboard = () => {
     <div className="min-h-screen flex flex-col md:flex-row">
       <DashboardSidebar />
       
-      <div className="flex-1 bg-gray-50 overflow-auto">
+      <div className="flex-1 bg-gray-50 overflow-y-auto">
         <header className="flex justify-between items-center p-4 md:p-6 sticky top-0 bg-gray-50 z-10">
           <div className="flex items-center">
             <div className="bg-purple-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md flex items-center text-sm md:text-base">
@@ -156,7 +156,7 @@ const Dashboard = () => {
           <LanguageSelector />
         </header>
 
-        <main className="px-4 md:px-6 pb-8 md:pb-12">
+        <main className="px-4 md:px-6 pb-8 md:pb-12 max-w-full">
           <WelcomeCard 
             userName={userName} 
             firstName={firstName} 
