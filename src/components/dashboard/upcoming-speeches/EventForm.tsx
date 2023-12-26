@@ -54,7 +54,7 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent }) => {
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="event-title" className="block text-sm mb-1">Speech Title (Optional)</Label>
+            <Label htmlFor="event-title" className="block text-sm mb-1">Speech Title</Label>
             <Input 
               id="event-title"
               placeholder="Enter a title"
@@ -70,7 +70,7 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent }) => {
               onValueChange={setEventType}
             >
               <SelectTrigger id="event-type">
-                <SelectValue placeholder="Select type" />
+                <SelectValue placeholder="Select Type" />
               </SelectTrigger>
               <SelectContent className="max-h-60 overflow-y-auto">
                 {speechTypesData.map((type) => (
