@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { CalendarIcon, Edit, Trash } from 'lucide-react';
+import { useState } from 'react';
+import { CalendarIcon, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -8,8 +8,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { 
   AlertDialog,
@@ -22,6 +20,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { SpeechEvent } from './types';
+import { loadEventsFromStorage, saveEventsToStorage } from './utils';
 
 interface UpcomingEventActionsProps {
   event: SpeechEvent;
@@ -29,7 +28,7 @@ interface UpcomingEventActionsProps {
   refreshEvents: () => void;
 }
 
-const UpcomingEventActions: React.FC<UpcomingEventActionsProps> = ({ event, onCreateSpeech, refreshEvents }) => {
+const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: UpcomingEventActionsProps) => {
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [newDate, setNewDate] = useState<Date>(new Date(event.date));
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -40,61 +39,45 @@ const UpcomingEventActions: React.FC<UpcomingEventActionsProps> = ({ event, onCr
     setNewDate(date);
     
     // Update the event in localStorage
-    const savedEvents = localStorage.getItem('upcomingEvents');
-    if (savedEvents) {
-      try {
-        const parsedEvents = JSON.parse(savedEvents);
-        const updatedEvents = parsedEvents.map((savedEvent: any) => {
-          if (savedEvent.id === event.id) {
-            return {
-              ...savedEvent,
-              date: date.toISOString() // Store as ISO string for localStorage
-            };
-          }
-          return savedEvent;
-        });
-        
-        // Save back to localStorage
-        localStorage.setItem('upcomingEvents', JSON.stringify(updatedEvents));
-        
-        // Close the date picker
-        setIsEditingDate(false);
-        
-        // Show success message
-        toast.success('Event date updated successfully');
-        
-        // Refresh the events list
-        refreshEvents();
-      } catch (error) {
-        console.error('Error updating event date:', error);
-        toast.error('Failed to update event date');
+    const savedEvents = loadEventsFromStorage();
+    const updatedEvents = savedEvents.map((savedEvent) => {
+      if (savedEvent.id === event.id) {
+        return {
+          ...savedEvent,
+          date: date
+        };
       }
-    }
+      return savedEvent;
+    });
+    
+    // Save back to localStorage
+    saveEventsToStorage(updatedEvents);
+    
+    // Close the date picker
+    setIsEditingDate(false);
+    
+    // Show success message
+    toast.success('Event date updated successfully');
+    
+    // Refresh the events list
+    refreshEvents();
   };
   
   const handleDeleteEvent = () => {
     // Delete the event from localStorage
-    const savedEvents = localStorage.getItem('upcomingEvents');
-    if (savedEvents) {
-      try {
-        const parsedEvents = JSON.parse(savedEvents);
-        const updatedEvents = parsedEvents.filter(
-          (savedEvent: any) => savedEvent.id !== event.id
-        );
-        
-        // Save back to localStorage
-        localStorage.setItem('upcomingEvents', JSON.stringify(updatedEvents));
-        
-        // Show success message
-        toast.success('Event deleted successfully');
-        
-        // Refresh the events list
-        refreshEvents();
-      } catch (error) {
-        console.error('Error deleting event:', error);
-        toast.error('Failed to delete event');
-      }
-    }
+    const savedEvents = loadEventsFromStorage();
+    const updatedEvents = savedEvents.filter(
+      (savedEvent) => savedEvent.id !== event.id
+    );
+    
+    // Save back to localStorage
+    saveEventsToStorage(updatedEvents);
+    
+    // Show success message
+    toast.success('Event deleted successfully');
+    
+    // Refresh the events list
+    refreshEvents();
     
     // Close the dialog
     setIsDeleteDialogOpen(false);

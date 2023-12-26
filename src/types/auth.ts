@@ -16,10 +16,10 @@ export type AuthContextType = {
   session: Session | null;
   isLoading: boolean;
   speeches: Speech[];
-  fetchSpeeches: () => Promise<Speech[]>;
+  fetchSpeeches: () => Promise<void>;
   refreshUserData: () => Promise<void>;
-  saveSpeech: (title: string, content: string, speechType: string) => Promise<Speech>;
-  updateSpeech: (id: string, title: string, content: string) => Promise<Speech>;
+  saveSpeech: (title: string, content: string, speechType: string) => Promise<void>;
+  updateSpeech: (id: string, title: string, content: string) => Promise<void>;
   deleteSpeech: (id: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;

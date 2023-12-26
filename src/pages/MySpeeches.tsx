@@ -1,18 +1,15 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 
 const MySpeeches = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [initialFilter, setInitialFilter] = useState('all');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const fetchedRef = useRef(false);
   
   // Check for filter query param
   useEffect(() => {
@@ -26,34 +23,14 @@ const MySpeeches = () => {
     }
   }, [location]);
   
-  // Fetch speeches when component mounts or when user changes
+  // Fetch speeches when component mounts
   useEffect(() => {
-    const refreshSpeeches = async () => {
-      if (user && !isLoading && !fetchedRef.current) {
-        setIsRefreshing(true);
-        fetchedRef.current = true;
-        
-        try {
-          console.log('MySpeeches: Fetching speeches for user:', user.id);
-          await fetchSpeeches();
-        } catch (error) {
-          console.error('Error fetching speeches:', error);
-          toast.error('Could not load your speeches. Please try again later.');
-        } finally {
-          setIsRefreshing(false);
-        }
-      }
-    };
-    
-    refreshSpeeches();
-    
-    // Reset fetchedRef when user changes
-    return () => {
-      fetchedRef.current = false;
-    };
-  }, [user, fetchSpeeches, isLoading]);
+    if (user) {
+      fetchSpeeches();
+    }
+  }, [user, fetchSpeeches]);
 
-  if (isLoading || isRefreshing) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
         <div className="flex flex-col items-center">
@@ -62,11 +39,6 @@ const MySpeeches = () => {
         </div>
       </div>
     );
-  }
-
-  // Only render when user is authenticated and not loading
-  if (!user) {
-    return null;
   }
 
   return (
@@ -88,10 +60,7 @@ const MySpeeches = () => {
             </p>
           </div>
           
-          <SpeechesManager 
-            speeches={speeches} 
-            initialFilter={initialFilter} 
-          />
+          <SpeechesManager speeches={speeches} initialFilter={initialFilter} />
         </main>
       </div>
     </div>

@@ -102,7 +102,7 @@ const AdminLayout = () => {
             <div className="flex items-center space-x-2 px-3 py-2">
               <Link to="/admin/dashboard">
                 <img
-                  src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg"
+                  src="/Speech Help - Logo.svg"
                   alt="Speech Help Logo"
                   className="h-8"
                 />
@@ -159,7 +159,7 @@ const AdminLayout = () => {
                     <div className="flex items-center space-x-2">
                       <Link to="/admin/dashboard">
                         <img
-                          src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg"
+                          src="/Speech Help - Logo.svg"
                           alt="Speech Help Logo"
                           className="h-8"
                         />
@@ -211,7 +211,7 @@ const AdminLayout = () => {
               <div className="md:hidden">
                 <Link to="/admin/dashboard">
                   <img
-                    src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg"
+                    src="/Speech Help - Logo.svg"
                     alt="Speech Help Logo"
                     className="h-8"
                   />

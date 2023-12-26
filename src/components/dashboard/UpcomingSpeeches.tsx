@@ -24,8 +24,8 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   } = useUpcomingEvents(speeches);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border">
-      <div className="border-b p-3 sm:p-4">
+    <div className="bg-white rounded-lg shadow-sm">
+      <div className="border-b p-4">
         <h2 className="text-lg font-semibold text-gray-800">{t('dashboard.upcomingSpeeches', currentLanguage.code)}</h2>
       </div>
       
@@ -39,7 +39,7 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
         refreshEvents={loadEvents}
       />
       
-      <div className="border-t p-3 sm:p-4 text-center">
+      <div className="border-t p-4 text-center">
         <Button 
           variant="link" 
           className="text-pink-600 hover:text-pink-800 text-sm"

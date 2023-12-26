@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import { AuthContextType, Speech } from '@/types/auth';
@@ -14,8 +14,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [speeches, setSpeeches] = useState<Speech[]>([]);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const speechesFetchedRef = useRef(false);
   
   const { toast } = useToast();
   const speechService = useSpeechService();
@@ -36,115 +34,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Fetch speeches when needed
-  const fetchSpeeches = useCallback(async () => {
-    if (!user) {
-      console.log('Cannot fetch speeches: No user logged in');
-      return [];
-    }
-    
-    if (speechesFetchedRef.current) {
-      console.log('Speeches already fetched, using cached data');
-      return speeches;
-    }
-    
-    console.log('AuthContext: Fetching speeches for user:', user.id);
-    try {
-      const fetchedSpeeches = await speechService.fetchSpeeches(user.id);
-      console.log(`AuthContext: Got ${fetchedSpeeches.length} speeches`);
-      setSpeeches(fetchedSpeeches);
-      speechesFetchedRef.current = true;
-      return fetchedSpeeches;
-    } catch (error) {
-      console.error('Error fetching speeches:', error);
-      toast({
-        title: "Error fetching speeches",
-        description: "Could not retrieve your speeches. Please try again later.",
-        variant: "destructive"
-      });
-      return [];
-    }
-  }, [user, speechService, toast, speeches]);
+  const fetchSpeeches = async () => {
+    if (!user) return;
+    const fetchedSpeeches = await speechService.fetchSpeeches(user.id);
+    setSpeeches(fetchedSpeeches);
+  };
 
   // Save a new speech
   const saveSpeech = async (title: string, content: string, speechType: string) => {
-    if (!user) {
-      toast({
-        title: "Authentication Error",
-        description: "You must be logged in to save a speech.",
-        variant: "destructive"
-      });
-      throw new Error("User not authenticated");
-    }
-    
-    try {
-      const newSpeech = await speechService.saveSpeech(user.id, title, content, speechType);
-      // Update the speeches array with the new speech
-      setSpeeches(prev => [newSpeech, ...prev]);
-      return newSpeech;
-    } catch (error) {
-      console.error('Error saving speech:', error);
-      toast({
-        title: "Error saving speech",
-        description: "Could not save your speech. Please try again later.",
-        variant: "destructive"
-      });
-      throw error;
-    }
+    if (!user) return;
+    await speechService.saveSpeech(user.id, title, content, speechType);
+    await fetchSpeeches();
   };
 
   // Update an existing speech
   const updateSpeech = async (id: string, title: string, content: string) => {
-    if (!user) {
-      toast({
-        title: "Authentication Error",
-        description: "You must be logged in to update a speech.",
-        variant: "destructive"
-      });
-      throw new Error("User not authenticated");
-    }
-    
-    try {
-      const updatedSpeech = await speechService.updateSpeech(user.id, id, title, content);
-      // Update the speeches array
-      setSpeeches(prev => prev.map(speech => 
-        speech.id === id ? updatedSpeech : speech
-      ));
-      return updatedSpeech;
-    } catch (error) {
-      console.error('Error updating speech:', error);
-      toast({
-        title: "Error updating speech",
-        description: "Could not update your speech. Please try again later.",
-        variant: "destructive"
-      });
-      throw error;
-    }
+    if (!user) return;
+    await speechService.updateSpeech(user.id, id, title, content);
+    await fetchSpeeches();
   };
 
   // Delete a speech
   const deleteSpeech = async (id: string) => {
-    if (!user) {
-      toast({
-        title: "Authentication Error",
-        description: "You must be logged in to delete a speech.",
-        variant: "destructive"
-      });
-      throw new Error("User not authenticated");
-    }
-    
-    try {
-      await speechService.deleteSpeech(user.id, id);
-      // Remove the speech from the speeches array
-      setSpeeches(prev => prev.filter(speech => speech.id !== id));
-    } catch (error) {
-      console.error('Error deleting speech:', error);
-      toast({
-        title: "Error deleting speech",
-        description: "Could not delete your speech. Please try again later.",
-        variant: "destructive"
-      });
-      throw error;
-    }
+    if (!user) return;
+    await speechService.deleteSpeech(user.id, id);
+    await fetchSpeeches();
   };
 
   // Auth functions wrapped to control loading state
@@ -152,8 +66,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       await signIn(email, password, toast);
-      // Reset speeches fetch state on sign in
-      speechesFetchedRef.current = false;
     } finally {
       setIsLoading(false);
     }
@@ -172,64 +84,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       await signOut(toast);
-      // Clear speeches on sign out
-      setSpeeches([]);
-      setUser(null);
-      setSession(null);
-      // Reset speeches fetch state
-      speechesFetchedRef.current = false;
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    console.log('AuthContext initializing');
-    let unsubscribe: (() => void) | undefined;
-    
-    const initializeAuth = async () => {
+    // Check for existing session
+    const getSession = async () => {
       setIsLoading(true);
+      const { data, error } = await supabase.auth.getSession();
       
-      // First set up auth listener
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (event, newSession) => {
-          console.log(`Auth state changed: ${event}`);
-          
-          // Update session state
-          setSession(newSession);
-          setUser(newSession?.user ?? null);
-          
-          // Reset speeches fetch state on auth change
-          if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
-            speechesFetchedRef.current = false;
-          }
-          
-          setIsLoading(false);
-        }
-      );
-      
-      // Then check for existing session
-      const { data } = await supabase.auth.getSession();
-      if (data?.session) {
-        console.log('Got existing session, setting user:', data.session.user.id);
+      if (error) {
+        console.error('Error getting session:', error);
+      } else if (data?.session) {
         setSession(data.session);
         setUser(data.session.user);
+        await fetchSpeeches();
       }
       
-      setIsInitialized(true);
       setIsLoading(false);
-      
-      unsubscribe = () => {
-        subscription.unsubscribe();
-      };
     };
-    
-    initializeAuth();
-    
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
+
+    getSession();
+
+    // Listen for auth state changes
+    const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      console.log(`Auth state changed: ${event}`);
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+      
+      if (newSession?.user) {
+        await fetchSpeeches();
+      } else {
+        setSpeeches([]);
       }
+      
+      setIsLoading(false);
+    });
+
+    return () => {
+      data.subscription.unsubscribe();
     };
   }, []);
 

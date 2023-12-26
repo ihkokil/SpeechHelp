@@ -45,8 +45,19 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
   };
 
   // Add a new event
-  const addEvent = (event: SpeechEvent) => {
-    const updatedEvents = [...upcomingEvents, event];
+  const addEvent = (title: string, type: string, date: Date) => {
+    const eventTitle = title || `Upcoming ${type.charAt(0).toUpperCase() + type.slice(1)} Speech`;
+    
+    const newEvent: SpeechEvent = {
+      id: crypto.randomUUID(),
+      title: eventTitle,
+      date: date,
+      duration: 15,
+      category: type,
+      status: 'upcoming'
+    };
+    
+    const updatedEvents = [...upcomingEvents, newEvent];
     setUpcomingEvents(updatedEvents);
     
     // Save to localStorage
