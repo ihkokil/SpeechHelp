@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import SpeechContentEditor from '@/components/speech/components/SpeechContentEditor';
 import SpeechExportButtons from './SpeechExportButtons';
 import { Speech } from '@/types/auth';
 import Translate from '@/components/Translate';
 import SpeechPreview from '@/components/speech/components/SpeechPreview';
+import { getEditableContent } from '@/components/speech/utils/speechFormattingUtils';
 
 interface EditSpeechFormProps {
   speech: Speech | null;
@@ -27,20 +28,6 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
     setEditContent(newContent);
-  };
-
-  // Extract the content from JSON if needed
-  const getFormattedContent = (content: string): string => {
-    if (content.includes('{"content"')) {
-      try {
-        const jsonContent = JSON.parse(content);
-        return jsonContent.content || content;
-      } catch (e) {
-        console.error('Failed to parse JSON content', e);
-        return content;
-      }
-    }
-    return content;
   };
 
   if (!speech) return null;
@@ -65,7 +52,7 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
             onContentChange={handleContentChange}
             preserveHtml={true}
             forceEditMode={true}
-            showFormattedContent={true}  // New prop to ensure formatted content is shown
+            showFormattedContent={true}
           />
         ) : (
           <div>

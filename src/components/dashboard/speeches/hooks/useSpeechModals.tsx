@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Speech } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
+import { getEditableContent } from '@/components/speech/utils/speechFormattingUtils';
 
 export const useSpeechModals = () => {
   const { updateSpeech, deleteSpeech } = useAuth();
@@ -14,7 +15,20 @@ export const useSpeechModals = () => {
     // If opening the modal, set the initial values
     if (open && selectedSpeech) {
       setTitle(selectedSpeech.title);
-      setContent(selectedSpeech.content);
+      
+      // Extract content properly from the speech object
+      try {
+        // Check if content is stored as JSON
+        if (selectedSpeech.content && selectedSpeech.content.includes('{"content"')) {
+          const parsedContent = JSON.parse(selectedSpeech.content);
+          setContent(parsedContent.content || selectedSpeech.content);
+        } else {
+          setContent(selectedSpeech.content);
+        }
+      } catch (error) {
+        console.error('Error parsing speech content:', error);
+        setContent(selectedSpeech.content); // Fallback to using content as-is
+      }
     }
     
     return open;
@@ -26,7 +40,23 @@ export const useSpeechModals = () => {
     
     setIsSubmitting(true);
     try {
-      await updateSpeech(selectedSpeech.id, title, content);
+      // If the original content was JSON, maintain that structure
+      let contentToSave = content;
+      
+      try {
+        if (selectedSpeech.content && selectedSpeech.content.includes('{"content"')) {
+          const originalContent = JSON.parse(selectedSpeech.content);
+          contentToSave = JSON.stringify({
+            ...originalContent,
+            content: content
+          });
+        }
+      } catch (error) {
+        console.error('Error updating JSON content structure:', error);
+        // If there's an error parsing, just use the content as-is
+      }
+      
+      await updateSpeech(selectedSpeech.id, title, contentToSave);
       return true;
     } catch (error) {
       console.error('Error updating speech:', error);
