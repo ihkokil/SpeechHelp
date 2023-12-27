@@ -3,7 +3,7 @@ import React from 'react';
 import { CalendarIcon, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { SpeechEvent } from './types';
-import { getCategoryColor, formatDate } from './utils';
+import { getCategoryColor, formatDate, getDaysRemaining } from './utils';
 import UpcomingEventActions from './UpcomingEventActions';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -40,7 +40,7 @@ const EventList: React.FC<EventListProps> = ({ events, onCreateSpeech, refreshEv
               </div>
               <div className="flex items-center">
                 <Clock className="mr-1 h-4 w-4" />
-                <span>{speech.duration} min</span>
+                <span>{getDaysRemaining(speech.date)} Days Remaining</span>
               </div>
             </div>
           </div>
