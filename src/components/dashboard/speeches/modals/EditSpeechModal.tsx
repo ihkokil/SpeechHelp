@@ -11,6 +11,7 @@ import { Speech } from '@/types/auth';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import Translate from '@/components/Translate';
 import EditSpeechForm from '../components/EditSpeechForm';
+import { useEffect } from 'react';
 
 interface EditSpeechModalProps {
   isOpen: boolean;
@@ -33,6 +34,19 @@ const EditSpeechModal = ({
   setEditContent, 
   onSave 
 }: EditSpeechModalProps) => {
+  // Debug log when the modal opens/closes or speech changes
+  useEffect(() => {
+    if (isOpen && speech) {
+      console.log('EditSpeechModal opened for speech:', {
+        id: speech.id,
+        title: speech.title,
+        contentPreview: speech.content.substring(0, 50) + '...',
+        editTitle,
+        editContentPreview: editContent ? editContent.substring(0, 50) + '...' : 'empty'
+      });
+    }
+  }, [isOpen, speech, editTitle, editContent]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
