@@ -15,6 +15,8 @@ import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileDashboardNav from '@/components/dashboard/MobileDashboardNav';
 
 const Dashboard = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -24,6 +26,7 @@ const Dashboard = () => {
   const [lastName, setLastName] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     if (user) {
@@ -113,11 +116,18 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen flex">
-      <DashboardSidebar />
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Mobile Navigation - Only visible on mobile */}
+      {isMobile && <MobileDashboardNav />}
+      
+      {/* Sidebar - Hidden on mobile */}
+      <div className="hidden md:block">
+        <DashboardSidebar />
+      </div>
       
       <div className="flex-1 bg-gray-50 overflow-auto">
-        <header className="flex justify-between items-center p-6 sticky top-0 bg-gray-50 z-10">
+        {/* Desktop Header - Hidden on mobile */}
+        <header className="hidden md:flex justify-between items-center p-6 sticky top-0 bg-gray-50 z-10">
           <div className="flex items-center">
             <div className="bg-purple-600 text-white px-4 py-2 rounded-md flex items-center">
               <CalendarIcon className="mr-2 h-5 w-5" />
@@ -127,15 +137,15 @@ const Dashboard = () => {
           <LanguageSelector />
         </header>
 
-        <main className="px-6 pb-12">
+        <main className="px-4 md:px-6 pb-12">
           <WelcomeCard 
             userName={userName} 
             firstName={firstName} 
             lastName={lastName}
           />
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-            <div className="lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mt-6 md:mt-8">
+            <div className="lg:col-span-2 space-y-4 md:space-y-6">
               <div>
                 <h2 className="text-xl font-bold text-gray-800 mb-4">{t('dashboard.summary', currentLanguage.code)}</h2>
                 
@@ -171,7 +181,7 @@ const Dashboard = () => {
               <PerformanceMetrics speechData={dashboardMetrics.speechTypeDistribution} />
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               <UpcomingSpeeches speeches={speeches} />
               
               <RecentActivities speeches={speeches} />

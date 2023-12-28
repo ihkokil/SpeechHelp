@@ -12,6 +12,7 @@ import { ButtonCustom } from '@/components/ui/button-custom';
 import Translate from '@/components/Translate';
 import EditSpeechForm from '../components/EditSpeechForm';
 import { useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface EditSpeechModalProps {
   isOpen: boolean;
@@ -34,6 +35,8 @@ const EditSpeechModal = ({
   setEditContent, 
   onSave 
 }: EditSpeechModalProps) => {
+  const isMobile = useIsMobile();
+  
   // Debug log when the modal opens/closes or speech changes
   useEffect(() => {
     if (isOpen && speech) {
@@ -49,32 +52,36 @@ const EditSpeechModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
-        <DialogHeader>
-          <DialogTitle><Translate text="dashboard.editSpeech" /></DialogTitle>
-          <DialogDescription>
+      <DialogContent className={`${isMobile ? 'w-[95%]' : 'max-w-3xl'} max-h-[90vh] overflow-auto p-4 sm:p-6`}>
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="text-xl sm:text-2xl"><Translate text="dashboard.editSpeech" /></DialogTitle>
+          <DialogDescription className="text-sm">
             <Translate text="dashboard.editSpeechDesc" />
           </DialogDescription>
         </DialogHeader>
         
-        <EditSpeechForm
-          speech={speech}
-          editTitle={editTitle}
-          editContent={editContent}
-          setEditTitle={setEditTitle}
-          setEditContent={setEditContent}
-        />
+        <div className="mt-4">
+          <EditSpeechForm
+            speech={speech}
+            editTitle={editTitle}
+            editContent={editContent}
+            setEditTitle={setEditTitle}
+            setEditContent={setEditContent}
+          />
+        </div>
         
-        <DialogFooter className="mt-4">
+        <DialogFooter className={`mt-6 ${isMobile ? 'flex-col space-y-2' : 'flex-row space-x-2'}`}>
           <ButtonCustom 
             variant="outline" 
             onClick={() => onOpenChange(false)}
+            className={`${isMobile ? 'w-full' : ''}`}
           >
             <Translate text="common.cancel" />
           </ButtonCustom>
           <ButtonCustom 
             variant="default" 
             onClick={onSave}
+            className={`${isMobile ? 'w-full' : ''}`}
           >
             <Translate text="common.saveChanges" />
           </ButtonCustom>
