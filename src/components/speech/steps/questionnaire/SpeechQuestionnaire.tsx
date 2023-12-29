@@ -48,7 +48,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
         {questions.map((question) => (
           <QuestionRenderer
             key={question.question}
-            question={question}
+            questionData={question}
             value={currentQuestions[question.question] || ''}
             onChange={(value) => handleChange(question.question, value)}
           />

@@ -7,6 +7,7 @@ export type QuestionItem = {
   type: QuestionType;
   options?: string[];
   placeholder?: string;
+  required?: boolean;
   condition?: { 
     question: string; 
     value: string;
