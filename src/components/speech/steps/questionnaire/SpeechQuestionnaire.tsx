@@ -8,6 +8,7 @@ import QuestionRenderer from './QuestionRenderer';
 import Translate from '@/components/Translate';
 import { useTranslation } from '@/translations';
 import EncouragementMessage from '../../components/EncouragementMessage';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SpeechQuestionnaireProps {
   questions: QuestionItem[];
@@ -25,6 +26,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
   onPrev
 }) => {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [showEncouragement, setShowEncouragement] = useState(false);
@@ -107,10 +109,10 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
   const currentQuestionNumber = currentQuestionIndex + 1;
   
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-4 md:space-y-6 relative">
       {/* Progress bar */}
       <div className="space-y-2">
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-xs md:text-sm">
           <span>Question {currentQuestionNumber} of {questions.length}</span>
           <span>{Math.round(progress)}% complete</span>
         </div>
@@ -127,12 +129,21 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
       </div>
 
       {/* Navigation buttons */}
-      <div className="flex justify-between pt-4">
-        <ButtonCustom onClick={handlePrevQuestion} variant="outline">
+      <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'justify-between'} pt-4`}>
+        <ButtonCustom 
+          onClick={handlePrevQuestion} 
+          variant="outline"
+          className={isMobile ? 'w-full' : ''}
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           <Translate text="speechLab.backButton" />
         </ButtonCustom>
-        <ButtonCustom onClick={handleNextQuestion} variant="magenta">
+        
+        <ButtonCustom 
+          onClick={handleNextQuestion} 
+          variant="magenta"
+          className={isMobile ? 'w-full' : ''}
+        >
           {currentQuestionIndex < questions.length - 1 ? (
             <>
               <Translate text="speechLab.nextQuestion" fallback="Next Question" />
@@ -149,7 +160,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
 
       {/* Encouraging message component with key to force remount and animation */}
       {showEncouragement && (
-        <div className="mt-8 pt-6 flex justify-center">
+        <div className="mt-6 md:mt-8 pt-4 md:pt-6 flex justify-center">
           <EncouragementMessage 
             key={encouragementKey}
             currentQuestionIndex={currentQuestionIndex} 

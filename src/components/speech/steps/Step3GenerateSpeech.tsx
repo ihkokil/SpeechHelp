@@ -9,6 +9,7 @@ import SpeechGenerationProgress from '../components/SpeechGenerationProgress';
 import Translate from '@/components/Translate';
 import { SpeechDetails } from '../hooks/useSpeechLabState';
 import { SpeechType } from '../data/speechTypesData';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Step3GenerateSpeechProps {
   nextStep: () => void;
@@ -29,6 +30,7 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
   setSpeechTitle,
   speechDetails = {}
 }) => {
+  const isMobile = useIsMobile();
   const { 
     generating, 
     showConfetti, 
@@ -45,14 +47,14 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">
+    <div className={`${isMobile ? 'w-full' : 'max-w-2xl mx-auto'}`}>
+      <h2 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold mb-4 md:mb-6`}>
         <Translate text="speechLab.generateSpeech" fallback="Generate Your Speech" />
       </h2>
 
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         <div>
-          <label htmlFor="speechTitle" className="block mb-2 font-medium">
+          <label htmlFor="speechTitle" className="block mb-2 font-medium text-sm md:text-base">
             <Translate text="speechLab.speechTitle" fallback="Speech Title" />
           </label>
           <Input
@@ -75,10 +77,11 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
           <SpeechGenerationProgress showConfetti={showConfetti} />
         )}
 
-        <div className="flex justify-between pt-4">
+        <div className={`flex ${isMobile ? 'flex-col space-y-3' : 'justify-between'} pt-4`}>
           <ButtonCustom 
             onClick={prevStep} 
             variant="outline"
+            className={isMobile ? 'w-full' : ''}
             disabled={generating}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -88,6 +91,7 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
           <ButtonCustom 
             onClick={generateSpeech} 
             variant="magenta"
+            className={isMobile ? 'w-full' : ''}
             disabled={generating}
           >
             <Translate text="speechLab.generateButton" fallback="Generate Speech" />

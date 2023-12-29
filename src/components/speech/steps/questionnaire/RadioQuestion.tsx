@@ -2,6 +2,7 @@
 import React from 'react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface RadioQuestionProps {
   question: string;
@@ -16,9 +17,11 @@ const RadioQuestion: React.FC<RadioQuestionProps> = ({
   value, 
   onChange 
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="space-y-2">
-      <h3 className="text-lg font-medium">{question}</h3>
+      <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>{question}</h3>
       <RadioGroup 
         value={value} 
         onValueChange={onChange}
@@ -32,6 +35,7 @@ const RadioQuestion: React.FC<RadioQuestionProps> = ({
             />
             <Label 
               htmlFor={option.toLowerCase().replace(/ /g, '-')}
+              className={`${isMobile ? 'text-sm' : ''}`}
             >
               {option}
             </Label>
