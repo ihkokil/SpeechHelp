@@ -34,16 +34,16 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
           <Translate text="speechLab.occasionDesc" />
         </CardDescription>
       </CardHeader>
-      <CardContent className={isMobile ? 'px-4 pb-4' : ''}>
+      <CardContent className={`${isMobile ? 'px-4 pb-4' : ''} overflow-y-auto ${isMobile ? 'max-h-[60vh]' : ''}`}>
         <div className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'}`}>
           {speechTypesData.map((type) => (
             <div 
               key={type.id}
               onClick={() => setSelectedSpeechType(type.id)}
               className={`group relative rounded-md overflow-hidden cursor-pointer transition-all duration-300 ${
-                isMobile ? 'h-28' : 'h-48'
+                isMobile ? 'h-24' : 'h-48'
               } ${
-                selectedSpeechType === type.id ? 'ring-4 ring-pink-500 ring-offset-2' : 'hover:shadow-lg'
+                selectedSpeechType === type.id ? 'ring-2 ring-pink-500' : 'hover:shadow-lg'
               }`}
             >
               <img 
@@ -57,7 +57,7 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
               }`}>
                 {isMobile ? 
                   <div className="w-3 h-3">
-                    {type.icon}
+                    {React.cloneElement(type.icon, { size: 12 })}
                   </div> : 
                   type.icon
                 }
@@ -68,7 +68,7 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
                 </div>
               )}
               <div className="absolute bottom-0 left-0 p-2">
-                <h3 className={`text-white ${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>{type.label}</h3>
+                <h3 className={`text-white ${isMobile ? 'text-xs' : 'text-sm'} font-medium truncate max-w-full`}>{type.label}</h3>
                 {type.description && !isMobile && (
                   <p className="text-white/70 text-xs mt-1">{type.description}</p>
                 )}
@@ -77,7 +77,7 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
           ))}
         </div>
       </CardContent>
-      <CardFooter className={`${isMobile ? 'px-4 py-3' : ''} flex justify-end`}>
+      <CardFooter className={`${isMobile ? 'px-4 py-3 sticky bottom-0 bg-white border-t' : ''} flex justify-end`}>
         <ButtonCustom 
           onClick={nextStep} 
           variant="magenta" 
