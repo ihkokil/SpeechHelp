@@ -27,7 +27,7 @@ const SpeechLabContent: React.FC = () => {
   const isMobile = useIsMobile();
 
   return (
-    <div className={`py-6 md:py-12 px-4 sm:px-6 lg:px-8 ${isMobile ? 'mt-16' : ''}`}>
+    <div className={`py-4 md:py-12 px-3 sm:px-6 lg:px-8 ${isMobile ? 'mt-16' : ''}`}>
       <div className="max-w-7xl mx-auto">
         <SpeechLabHeader />
         

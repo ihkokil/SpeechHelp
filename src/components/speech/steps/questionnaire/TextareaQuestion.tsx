@@ -19,13 +19,13 @@ const TextareaQuestion: React.FC<TextareaQuestionProps> = ({
   const isMobile = useIsMobile();
   
   return (
-    <div className="space-y-2">
-      <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>{question}</h3>
+    <div className="space-y-1 md:space-y-2">
+      <h3 className={`${isMobile ? 'text-sm' : 'text-lg'} font-medium`}>{question}</h3>
       <Textarea 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full ${isMobile ? 'min-h-[80px]' : 'min-h-[100px]'}`}
+        className={`w-full ${isMobile ? 'min-h-[60px]' : 'min-h-[100px]'}`}
       />
     </div>
   );

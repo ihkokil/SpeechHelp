@@ -22,7 +22,7 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
       </div>
       
       {/* Main Content - With margin for desktop, full width for mobile */}
-      <div className={`flex-1 min-h-screen overflow-y-auto ${isMobile ? 'w-full' : 'ml-64'}`}>
+      <div className={`flex-1 min-h-screen overflow-y-auto ${isMobile ? 'w-full pb-6' : 'ml-64'}`}>
         {children}
       </div>
     </div>
