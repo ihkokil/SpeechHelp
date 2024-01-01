@@ -11,7 +11,7 @@ export type SpeechType = {
   label: string;
   description: string;
   image: string;
-  icon: React.ReactNode;
+  icon: React.ReactElement;
 };
 
 export const speechTypesData: SpeechType[] = [
