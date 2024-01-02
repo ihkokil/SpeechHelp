@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Textarea } from '@/components/ui/textarea';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TextareaQuestionProps {
   question: string;
@@ -16,16 +15,14 @@ const TextareaQuestion: React.FC<TextareaQuestionProps> = ({
   onChange, 
   placeholder 
 }) => {
-  const isMobile = useIsMobile();
-  
   return (
-    <div className="space-y-1 md:space-y-2">
-      <h3 className={`${isMobile ? 'text-sm' : 'text-lg'} font-medium`}>{question}</h3>
+    <div className="space-y-2">
+      <h3 className="text-lg font-medium">{question}</h3>
       <Textarea 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full ${isMobile ? 'min-h-[60px]' : 'min-h-[100px]'}`}
+        className="w-full min-h-[100px]"
       />
     </div>
   );

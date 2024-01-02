@@ -3,7 +3,6 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { TextareaWithPinkScrollbar } from '@/components/ui/textarea-with-pink-scrollbar';
 import Translate from '@/components/Translate';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface EditModeTextareaProps {
   content: string;
@@ -13,8 +12,6 @@ interface EditModeTextareaProps {
 
 const EditModeTextarea = React.forwardRef<HTMLTextAreaElement, EditModeTextareaProps>(
   ({ content, onContentChange, forceEditMode = false }, ref) => {
-    const isMobile = useIsMobile();
-    
     return (
       <>
         {forceEditMode && (
@@ -27,7 +24,7 @@ const EditModeTextarea = React.forwardRef<HTMLTextAreaElement, EditModeTextareaP
         )}
         <TextareaWithPinkScrollbar 
           id="speechContent"
-          className={`${isMobile ? 'min-h-[200px]' : 'min-h-[300px]'}`}
+          className="min-h-[300px]" 
           value={content}
           onChange={onContentChange}
           ref={ref}

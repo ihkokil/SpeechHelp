@@ -1,9 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import SpeechTitleInput from './SpeechTitleInput';
 import SpeechContentEditor from './SpeechContentEditor';
 import SpeechActionButtons from './SpeechActionButtons';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SpeechEditorProps {
   title: string;
@@ -22,10 +21,8 @@ const SpeechEditor: React.FC<SpeechEditorProps> = ({
   onDownload,
   onReset
 }) => {
-  const isMobile = useIsMobile();
-  
   return (
-    <div className={`space-y-4 w-full ${isMobile ? '' : 'space-y-6'}`}>
+    <div className="space-y-8">
       <SpeechTitleInput 
         title={title} 
         onTitleChange={onTitleChange} 

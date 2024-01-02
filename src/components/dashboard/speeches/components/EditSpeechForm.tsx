@@ -1,60 +1,101 @@
 
-import { Textarea } from '@/components/ui/textarea';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { useEffect } from 'react';
+import SpeechContentEditor from '@/components/speech/components/SpeechContentEditor';
+import SpeechExportButtons from './SpeechExportButtons';
 import { Speech } from '@/types/auth';
-import { useIsMobile } from '@/hooks/use-mobile';
+import Translate from '@/components/Translate';
+import SpeechPreview from '@/components/speech/components/SpeechPreview';
+import { getEditableContent } from '@/components/speech/utils/speechFormattingUtils';
 
 interface EditSpeechFormProps {
-  speech: Speech;
+  speech: Speech | null;
   editTitle: string;
   editContent: string;
   setEditTitle: (title: string) => void;
   setEditContent: (content: string) => void;
 }
 
-const EditSpeechForm = ({
+const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
   speech,
   editTitle,
   editContent,
   setEditTitle,
-  setEditContent,
-}: EditSpeechFormProps) => {
-  const isMobile = useIsMobile();
+  setEditContent
+}) => {
+  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
+  const [displayContent, setDisplayContent] = useState(editContent);
   
+  // Update display content when editContent changes
+  useEffect(() => {
+    if (editContent) {
+      setDisplayContent(editContent);
+    }
+  }, [editContent]);
+  
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    setEditContent(newContent);
+    setDisplayContent(newContent);
+  };
+
+  // Debug log
+  useEffect(() => {
+    console.log('EditSpeechForm rendered with:', {
+      speechId: speech?.id,
+      editTitle,
+      editContent,
+      displayContent
+    });
+  }, [speech, editTitle, editContent, displayContent]);
+
+  if (!speech) return null;
+
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="space-y-2">
-        <label 
-          htmlFor="speech-title" 
-          className="block text-sm font-medium text-gray-700"
-        >
-          Title
+    <div className="space-y-4">
+      <div>
+        <label htmlFor="editTitle" className="text-sm font-medium">
+          <Translate text="common.title" />
         </label>
         <Input
-          id="speech-title"
+          id="editTitle"
           value={editTitle}
           onChange={(e) => setEditTitle(e.target.value)}
-          placeholder="Speech Title"
           className="w-full"
         />
       </div>
-      
-      <div className="space-y-2">
-        <label 
-          htmlFor="speech-content" 
-          className="block text-sm font-medium text-gray-700"
-        >
-          Content
-        </label>
-        <Textarea
-          id="speech-content"
-          value={editContent}
-          onChange={(e) => setEditContent(e.target.value)}
-          placeholder="Speech Content"
-          className={`w-full text-sm md:text-base ${isMobile ? 'min-h-[200px]' : 'min-h-[300px]'}`}
-        />
+      <div>
+        {viewMode === 'edit' ? (
+          <SpeechContentEditor 
+            content={displayContent}
+            onContentChange={handleContentChange}
+            preserveHtml={true}
+            forceEditMode={true}
+            showFormattedContent={true}
+          />
+        ) : (
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-pink-600 font-medium uppercase">
+                <Translate text="speechLab.content" fallback="Speech Content" />
+              </label>
+              <button 
+                onClick={() => setViewMode('edit')}
+                className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                <Translate text="speechLab.edit" fallback="Edit" />
+              </button>
+            </div>
+            <SpeechPreview content={displayContent} />
+          </div>
+        )}
       </div>
+      <SpeechExportButtons 
+        speech={speech}
+        title={editTitle}
+        content={editContent}
+      />
     </div>
   );
 };

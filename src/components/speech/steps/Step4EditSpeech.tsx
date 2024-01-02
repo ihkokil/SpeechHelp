@@ -9,7 +9,6 @@ import { useSpeechSave } from '../hooks/useSpeechSave';
 import { useSpeechReset } from '../hooks/useSpeechReset';
 import { useSpeechDownload } from '../hooks/useSpeechDownload';
 import { createPlaceholderSpeech } from '../utils/speechContentUtils';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Step4Props {
   prevStep: () => void;
@@ -26,7 +25,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
   onTitleChange,
   speechDetails = {}
 }) => {
-  const isMobile = useIsMobile();
   const [title, setTitle] = useState(speechTitle);
   const [content, setContent] = useState('');
 
@@ -74,16 +72,12 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
   };
 
   return (
-    <Card className={isMobile ? 'border shadow-sm' : ''}>
-      <CardHeader className={isMobile ? 'px-4 py-3' : ''}>
-        <CardTitle className={isMobile ? 'text-lg' : ''}>
-          <Translate text="speechLab.editTitle" />
-        </CardTitle>
-        <CardDescription className={isMobile ? 'text-xs' : ''}>
-          <Translate text="speechLab.editDesc" />
-        </CardDescription>
+    <Card>
+      <CardHeader>
+        <CardTitle><Translate text="speechLab.editTitle" /></CardTitle>
+        <CardDescription><Translate text="speechLab.editDesc" /></CardDescription>
       </CardHeader>
-      <CardContent className={isMobile ? 'px-4' : ''}>
+      <CardContent>
         <SpeechEditor
           title={title}
           content={content}
@@ -93,12 +87,8 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
           onReset={handleReset}
         />
       </CardContent>
-      <CardFooter className={`${isMobile ? 'flex-col space-y-3 px-4 py-4' : 'flex justify-between'}`}>
-        <ButtonCustom 
-          onClick={prevStep} 
-          variant="outline"
-          className={isMobile ? 'w-full' : ''}
-        >
+      <CardFooter className="flex justify-between">
+        <ButtonCustom onClick={prevStep} variant="outline">
           <ArrowLeft className="mr-2 h-4 w-4" />
           <Translate text="speechLab.backButton" />
         </ButtonCustom>
@@ -106,7 +96,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
           variant="magenta" 
           onClick={handleSave}
           disabled={isSaving || !title.trim() || !content.trim()}
-          className={isMobile ? 'w-full' : ''}
         >
           {isSaving ? (
             <span className="inline-flex items-center">

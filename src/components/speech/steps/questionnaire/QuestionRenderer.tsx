@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { QuestionItem } from '@/components/speech/questionnaires/types';
+import { QuestionItem } from '../../questionnaires';
 import TextQuestion from './TextQuestion';
 import TextareaQuestion from './TextareaQuestion';
 import RadioQuestion from './RadioQuestion';
 
-export interface QuestionRendererProps {
+interface QuestionRendererProps {
   questionData: QuestionItem;
   value: string;
   onChange: (value: string) => void;
@@ -17,8 +17,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   onChange 
 }) => {
   const { question, type, options, placeholder } = questionData;
-
-  // Render the appropriate question type
+  
   switch (type) {
     case 'text':
       return (
@@ -39,15 +38,12 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         />
       );
     case 'radio':
-      if (!options || options.length === 0) {
-        return null; // Don't render a radio question without options
-      }
       return (
         <RadioQuestion 
           question={question}
-          options={options}
           value={value}
           onChange={onChange}
+          options={options || []}
         />
       );
     default:

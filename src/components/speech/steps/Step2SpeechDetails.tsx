@@ -7,7 +7,6 @@ import Translate from '@/components/Translate';
 import { getSpeechTypeLabel } from '@/components/dashboard/speeches/speech-utils';
 import { questionnaires, QuestionItem } from '../questionnaires';
 import SpeechQuestionnaire from './questionnaire/SpeechQuestionnaire';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Step2Props {
   nextStep: () => void;
@@ -24,7 +23,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
 }) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  const isMobile = useIsMobile();
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [filteredQuestions, setFilteredQuestions] = useState<QuestionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,18 +113,14 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
   }, [onDetailsChange]);
 
   return (
-    <Card className={isMobile ? 'shadow-sm border' : ''}>
-      <CardHeader className={isMobile ? 'px-4 py-3' : ''}>
-        <CardTitle className={isMobile ? 'text-lg' : ''}>
-          {getSpeechTypeLabel(selectedSpeechType)} <Translate text="speechLab.detailsTitle" />
-        </CardTitle>
-        <CardDescription className={isMobile ? 'text-xs' : ''}>
-          <Translate text="speechLab.detailsDesc" />
-        </CardDescription>
+    <Card>
+      <CardHeader>
+        <CardTitle>{getSpeechTypeLabel(selectedSpeechType)} <Translate text="speechLab.detailsTitle" /></CardTitle>
+        <CardDescription><Translate text="speechLab.detailsDesc" /></CardDescription>
       </CardHeader>
-      <CardContent className={isMobile ? 'px-4 pb-4' : ''}>
+      <CardContent>
         {isLoading ? (
-          <div className="flex justify-center items-center p-4 md:p-8">
+          <div className="flex justify-center items-center p-8">
             <p>Loading questions...</p>
           </div>
         ) : filteredQuestions.length > 0 ? (
@@ -138,7 +132,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
             onPrev={prevStep}
           />
         ) : (
-          <div className="flex justify-center items-center p-4 md:p-8">
+          <div className="flex justify-center items-center p-8">
             <p>No questions available for this speech type.</p>
           </div>
         )}
