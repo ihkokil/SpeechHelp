@@ -40,10 +40,10 @@ const SpeechStepIndicator = ({ currentStep, steps: customSteps }: StepIndicatorP
         
         {/* Step circles */}
         {steps.map((step) => (
-          <div key={step.number} className="z-20 flex flex-col items-center gap-1 md:gap-2">
+          <div key={step.number} className="z-20 flex flex-col items-center gap-1">
             <div 
               className={cn(
-                `${isMobile ? 'w-6 h-6' : 'w-8 h-8'} rounded-full flex items-center justify-center ${isMobile ? 'text-xs' : 'text-sm'} font-medium transition-colors duration-300`,
+                `${isMobile ? 'w-5 h-5' : 'w-8 h-8'} rounded-full flex items-center justify-center ${isMobile ? 'text-[10px]' : 'text-sm'} font-medium transition-colors duration-300`,
                 currentStep === step.number 
                   ? "bg-purple-600 text-white border-2 border-purple-600" 
                   : currentStep > step.number
@@ -55,7 +55,7 @@ const SpeechStepIndicator = ({ currentStep, steps: customSteps }: StepIndicatorP
             </div>
             <span 
               className={cn(
-                `${isMobile ? 'text-[10px]' : 'text-xs'} font-medium whitespace-nowrap transition-colors duration-300`,
+                `${isMobile ? 'text-[8px]' : 'text-xs'} font-medium whitespace-nowrap transition-colors duration-300`,
                 currentStep === step.number 
                   ? "text-purple-600" 
                   : currentStep > step.number

@@ -32,3 +32,26 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .mobile-container {
+    @apply px-3 py-3 w-full max-w-full;
+  }
+  
+  .mobile-card {
+    @apply rounded-md shadow-sm border;
+  }
+  
+  .mobile-footer {
+    @apply sticky bottom-0 bg-white border-t py-2 px-3;
+  }
+  
+  .mobile-header {
+    @apply px-3 py-2;
+  }
+  
+  .mobile-buttons-stack {
+    @apply flex flex-col space-y-2 w-full;
+  }
+}

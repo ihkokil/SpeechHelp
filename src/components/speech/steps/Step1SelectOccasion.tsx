@@ -22,8 +22,8 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
   const isMobile = useIsMobile();
 
   return (
-    <Card className={isMobile ? 'shadow-sm border' : ''}>
-      <CardHeader className={isMobile ? 'px-4 py-3' : ''}>
+    <Card className={`w-full shadow-sm border ${isMobile ? 'rounded-md' : ''}`}>
+      <CardHeader className={isMobile ? 'px-3 py-3' : ''}>
         <CardTitle className={isMobile ? 'text-lg' : ''}>
           <Translate text="speechLab.occasionTitle" />
         </CardTitle>
@@ -31,14 +31,14 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
           <Translate text="speechLab.occasionDesc" />
         </CardDescription>
       </CardHeader>
-      <CardContent className={`${isMobile ? 'px-4 pb-4' : ''} overflow-y-auto ${isMobile ? 'max-h-[60vh]' : ''}`}>
+      <CardContent className={`${isMobile ? 'px-3 pb-3' : ''} mobile-scrollable-area`}>
         <SpeechOccasionGrid 
           speechTypes={speechTypesData}
           selectedSpeechType={selectedSpeechType}
           setSelectedSpeechType={setSelectedSpeechType}
         />
       </CardContent>
-      <CardFooter className={`${isMobile ? 'px-4 py-3 sticky bottom-0 bg-white border-t' : ''} flex justify-end`}>
+      <CardFooter className={`${isMobile ? 'px-3 py-3 sticky bottom-0 bg-white border-t' : ''} flex justify-end`}>
         <ButtonCustom 
           onClick={nextStep} 
           variant="magenta" 

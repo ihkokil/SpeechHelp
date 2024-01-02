@@ -43,8 +43,8 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
   );
 
   return (
-    <div className="space-y-6">
-      <div className={`space-y-5 ${isMobile ? 'max-h-[60vh] overflow-y-auto pr-1' : ''}`}>
+    <div className="space-y-4">
+      <div className={`space-y-4 ${isMobile ? 'mobile-scrollable-area pb-2' : ''}`}>
         {questions.map((question) => (
           <QuestionRenderer
             key={question.question}
@@ -68,7 +68,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
           onClick={handleContinue} 
           variant="magenta" 
           disabled={!isFormValid}
-          className={isMobile ? 'w-full' : ''}
+          className={isMobile ? 'w-full mt-2' : ''}
         >
           <Translate text="speechLab.nextButton" />
           <ArrowRight className="ml-2 h-4 w-4" />

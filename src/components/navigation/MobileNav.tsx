@@ -16,7 +16,7 @@ const MobileNav = () => {
 
   return (
     <div className="md:hidden">
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-3">
         <UserMenu />
         <LanguageSelector />
         
@@ -28,10 +28,10 @@ const MobileNav = () => {
               className="text-gray-700 p-2 rounded-full hover:bg-gray-100"
               aria-label="Menu"
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5" />
             </button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[80%] sm:w-[350px] pt-12">
+          <SheetContent side="right" className="w-[85%] sm:w-[350px] pt-12">
             <button
               onClick={() => setIsMenuOpen(false)}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
