@@ -49,8 +49,15 @@ export const createSafeHtml = (content: string): string => {
 };
 
 // Extract key information from the speech content
-export const extractKeyInformation = (content: string): Record<string, string> => {
+export const extractKeyInformation = (
+  content: string | Record<string, string>
+): Record<string, string> => {
   try {
+    // If content is already a Record/object, return it directly
+    if (content && typeof content === 'object') {
+      return content;
+    }
+    
     // If the content is in JSON format, try to extract information
     if (content && typeof content === 'string' && content.trim().startsWith('{')) {
       const parsed = JSON.parse(content);
