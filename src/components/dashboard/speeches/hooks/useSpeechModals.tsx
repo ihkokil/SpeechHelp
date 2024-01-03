@@ -1,8 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Speech } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
-import { formatSpeechContent } from '@/components/speech/utils/speechFormattingUtils';
+import { formatSpeechContent, getEditableContent } from '@/components/speech/utils/speechFormattingUtils';
 
 export const useSpeechModals = () => {
   const { updateSpeech, deleteSpeech } = useAuth();
@@ -24,23 +24,30 @@ export const useSpeechModals = () => {
       
       // Try to parse JSON content if present
       try {
-        if (typeof selectedSpeech.content === 'string' && selectedSpeech.content.trim().startsWith('{')) {
-          const parsedContent = JSON.parse(selectedSpeech.content);
-          if (parsedContent.content) {
-            editableContent = parsedContent.content;
-            console.log('Parsed JSON content successfully');
+        if (selectedSpeech.content && typeof selectedSpeech.content === 'string') {
+          if (selectedSpeech.content.trim().startsWith('{')) {
+            const parsedContent = JSON.parse(selectedSpeech.content);
+            if (parsedContent.content) {
+              editableContent = parsedContent.content;
+              console.log('Parsed JSON content successfully');
+            } else {
+              editableContent = selectedSpeech.content;
+            }
+          } else {
+            editableContent = selectedSpeech.content;
+            console.log('Using raw content (not JSON)');
           }
         } else {
-          editableContent = selectedSpeech.content;
-          console.log('Using raw content (not JSON)');
+          editableContent = selectedSpeech.content || '';
         }
       } catch (error) {
         console.error('Error parsing content:', error);
         // If parsing fails, use the raw content
-        editableContent = selectedSpeech.content;
+        editableContent = selectedSpeech.content || '';
       }
       
-      console.log('Content to be edited:', editableContent.substring(0, 50) + '...');
+      console.log('Content to be edited:', 
+        editableContent ? (editableContent.substring(0, 50) + '...') : 'empty');
       setContent(editableContent);
     }
     
@@ -57,7 +64,9 @@ export const useSpeechModals = () => {
       let contentToSave = content;
       
       try {
-        if (selectedSpeech.content && typeof selectedSpeech.content === 'string' && selectedSpeech.content.includes('{"content"')) {
+        if (selectedSpeech.content && 
+            typeof selectedSpeech.content === 'string' && 
+            selectedSpeech.content.trim().startsWith('{')) {
           const originalContent = JSON.parse(selectedSpeech.content);
           contentToSave = JSON.stringify({
             ...originalContent,

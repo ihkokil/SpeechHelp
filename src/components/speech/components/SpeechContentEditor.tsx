@@ -5,7 +5,7 @@ import SpeechPreview from './SpeechPreview';
 import Translate from '@/components/Translate';
 import ViewModeToggle from './ViewModeToggle';
 import EditModeTextarea from './EditModeTextarea';
-import { formatSpeechContent } from '../utils/speechFormattingUtils';
+import { formatSpeechContent, getEditableContent } from '../utils/speechFormattingUtils';
 
 interface SpeechContentEditorProps {
   content: string;
@@ -30,7 +30,7 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
   useEffect(() => {
     console.log('SpeechContentEditor received content:', typeof content, content ? `${content.substring(0, 50)}...` : 'empty');
     
-    if (content !== undefined && content !== null) {
+    if (content) {
       setDisplayContent(content);
     } else {
       setDisplayContent('');

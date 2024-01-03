@@ -43,12 +43,40 @@ const SpeechModals = ({
       console.log('Selected speech changed:', {
         id: selectedSpeech.id,
         title: selectedSpeech.title,
-        content: selectedSpeech.content.substring(0, 100) + '...' // Log just the beginning
+        content: selectedSpeech.content ? (selectedSpeech.content.substring(0, 100) + '...') : 'empty'
       });
     }
   }, [selectedSpeech]);
   
   // Handle edit modal opening/closing
+  useEffect(() => {
+    if (isEditModalOpen && selectedSpeech) {
+      // Initialize edit form when opening modal
+      setTitle(selectedSpeech.title);
+      
+      try {
+        // Process content based on its format
+        if (selectedSpeech.content && typeof selectedSpeech.content === 'string') {
+          if (selectedSpeech.content.trim().startsWith('{')) {
+            const parsedContent = JSON.parse(selectedSpeech.content);
+            if (parsedContent.content) {
+              setContent(parsedContent.content);
+            } else {
+              setContent(selectedSpeech.content);
+            }
+          } else {
+            setContent(selectedSpeech.content);
+          }
+        } else {
+          setContent(selectedSpeech.content || '');
+        }
+      } catch (error) {
+        console.error('Error processing content when modal opens:', error);
+        setContent(selectedSpeech.content || '');
+      }
+    }
+  }, [isEditModalOpen, selectedSpeech, setTitle, setContent]);
+  
   const onEditModalOpenChange = (open: boolean) => {
     console.log('Edit modal open state changing to:', open);
     setIsEditModalOpen(handleEditModalOpen(open, selectedSpeech));

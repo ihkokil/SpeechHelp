@@ -48,11 +48,11 @@ export const createSafeHtml = (content: string): string => {
   return formattedContent.replace(/\n/g, '<br>');
 };
 
-// Extract key information from the speech content (needed by speechGenerator.ts)
+// Extract key information from the speech content
 export const extractKeyInformation = (content: string): Record<string, string> => {
   try {
     // If the content is in JSON format, try to extract information
-    if (content && typeof content === 'string' && content.includes('{"content"')) {
+    if (content && typeof content === 'string' && content.trim().startsWith('{')) {
       const parsed = JSON.parse(content);
       // Return any additional fields that might be in the JSON
       const { content: _, ...rest } = parsed;
@@ -65,7 +65,7 @@ export const extractKeyInformation = (content: string): Record<string, string> =
   return {};
 };
 
-// Create a questions and answers section (needed by speechGenerator.ts)
+// Create a questions and answers section
 export const createQuestionsAnswersSection = (questionsAnswers: Record<string, string>): string => {
   if (!questionsAnswers || Object.keys(questionsAnswers).length === 0) {
     return '';
