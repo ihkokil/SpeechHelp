@@ -31,28 +31,38 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onExtendSubscription,
   onDeleteUser
 }) => {
-  // Create handler functions that don't need the event parameter
-  const handleViewDetails = () => {
+  // Create handler functions with proper stopPropagation
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("UserActionMenu: View details called for user:", user.id);
     onViewDetails(user);
   };
   
-  const handleManagePermissions = () => {
+  const handleManagePermissions = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("UserActionMenu: Manage permissions called for user:", user.id);
     onManagePermissions(user);
   };
   
-  const handleToggleUserActive = () => {
+  const handleToggleUserActive = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("UserActionMenu: Toggle active status for user:", user.id, !user.is_active);
     onToggleUserActive(user.id, user.is_active !== false);
   };
   
-  const handleExtendSubscription = () => {
+  const handleExtendSubscription = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("UserActionMenu: Extend subscription for user:", user.id);
     onExtendSubscription(user.id);
   };
   
-  const handleDeleteUser = () => {
+  const handleDeleteUser = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("UserActionMenu: Delete user:", user.id);
     onDeleteUser(user.id);
   };

@@ -103,10 +103,10 @@ export const useUserManagement = () => {
     }
   }, [baseHandlePermissionsUpdated, users, setUsers]);
   
-  // Updated to accept user directly
+  // Directly use User parameter instead of going through hooks layer
   const handleViewUserDetails = useCallback((user: User) => {
     if (isMounted.current) {
-      console.log("UserManagement: View details called for user:", user.id);
+      console.log("UserManagement: Direct view details called for user:", user.id);
       setSelectedUser(user);
       setIsDetailsOpen(true);
     }
@@ -114,6 +114,7 @@ export const useUserManagement = () => {
   
   const handleCloseUserDetails = useCallback(() => {
     if (isMounted.current) {
+      console.log("UserManagement: Closing user details drawer");
       setIsDetailsOpen(false);
       setTimeout(() => {
         setSelectedUser(null);
@@ -121,9 +122,10 @@ export const useUserManagement = () => {
     }
   }, [setIsDetailsOpen, setSelectedUser]);
   
-  // Updated to accept user directly
+  // Directly use User parameter instead of going through hooks layer
   const handleManagePermissions = useCallback((user: User) => {
     if (isMounted.current) {
+      console.log("UserManagement: Direct manage permissions called for user:", user.id);
       setSelectedUser(user);
       setIsPermissionsDialogOpen(true);
     }

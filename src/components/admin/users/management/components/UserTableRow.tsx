@@ -30,12 +30,18 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
 }) => {
   const fullName = getUserName(user);
   
+  const handleToggleSelection = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleSelection(user);
+  };
+  
   return (
     <TableRow key={user.id}>
       <TableCell>
         <Checkbox 
           checked={isSelected} 
           onCheckedChange={() => onToggleSelection(user)} 
+          onClick={handleToggleSelection}
         />
       </TableCell>
       <TableCell className="font-medium">
