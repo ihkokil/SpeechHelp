@@ -16,11 +16,11 @@ import {
 
 interface UserActionMenuProps {
   user: User;
-  onViewDetails: (e: React.MouseEvent, user: User) => void;
-  onManagePermissions: (e: React.MouseEvent, user: User) => void;
-  onToggleUserActive: (e: React.MouseEvent, userId: string, isActive: boolean) => void;
-  onExtendSubscription: (e: React.MouseEvent, userId: string) => void;
-  onDeleteUser: (e: React.MouseEvent, userId: string) => void;
+  onViewDetails: (user: User) => void;
+  onManagePermissions: (user: User) => void;
+  onToggleUserActive: (userId: string, isActive: boolean) => void;
+  onExtendSubscription: (userId: string) => void;
+  onDeleteUser: (userId: string) => void;
 }
 
 const UserActionMenu: React.FC<UserActionMenuProps> = ({
@@ -31,6 +31,32 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onExtendSubscription,
   onDeleteUser
 }) => {
+  // Create handler functions that don't need the event parameter
+  const handleViewDetails = () => {
+    console.log("UserActionMenu: View details called for user:", user.id);
+    onViewDetails(user);
+  };
+  
+  const handleManagePermissions = () => {
+    console.log("UserActionMenu: Manage permissions called for user:", user.id);
+    onManagePermissions(user);
+  };
+  
+  const handleToggleUserActive = () => {
+    console.log("UserActionMenu: Toggle active status for user:", user.id, !user.is_active);
+    onToggleUserActive(user.id, user.is_active !== false);
+  };
+  
+  const handleExtendSubscription = () => {
+    console.log("UserActionMenu: Extend subscription for user:", user.id);
+    onExtendSubscription(user.id);
+  };
+  
+  const handleDeleteUser = () => {
+    console.log("UserActionMenu: Delete user:", user.id);
+    onDeleteUser(user.id);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -40,7 +66,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
-        <DropdownMenuItem onClick={(e) => onViewDetails(e, user)}>
+        <DropdownMenuItem onClick={handleViewDetails}>
           <Eye className="mr-2 h-4 w-4" />
           <span>View Details</span>
         </DropdownMenuItem>
@@ -48,13 +74,11 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
           <UserCog className="mr-2 h-4 w-4" />
           <span>Edit User</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={(e) => onManagePermissions(e, user)}>
+        <DropdownMenuItem onClick={handleManagePermissions}>
           <Shield className="mr-2 h-4 w-4" />
           <span>Manage Permissions</span>
         </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={(e) => onExtendSubscription(e, user.id)}
-        >
+        <DropdownMenuItem onClick={handleExtendSubscription}>
           <Clock className="mr-2 h-4 w-4" />
           <span>Extend Subscription</span>
         </DropdownMenuItem>
@@ -64,16 +88,12 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {user.is_active !== false ? (
-          <DropdownMenuItem 
-            onClick={(e) => onToggleUserActive(e, user.id, false)}
-          >
+          <DropdownMenuItem onClick={handleToggleUserActive}>
             <UserMinus className="mr-2 h-4 w-4" />
             <span>Deactivate User</span>
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuItem 
-            onClick={(e) => onToggleUserActive(e, user.id, true)}
-          >
+          <DropdownMenuItem onClick={handleToggleUserActive}>
             <UserCheck className="mr-2 h-4 w-4" />
             <span>Activate User</span>
           </DropdownMenuItem>
@@ -81,7 +101,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="text-red-600 focus:text-red-700 focus:bg-red-50"
-          onClick={(e) => onDeleteUser(e, user.id)}
+          onClick={handleDeleteUser}
         >
           <UserMinus className="mr-2 h-4 w-4" />
           <span>Delete User</span>
