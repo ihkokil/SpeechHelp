@@ -20,8 +20,8 @@ export const DrawerContent: React.FC<DrawerContentProps> = ({
   userJoinedDays,
   totalActivityTime
 }) => {
-  // Create a wrapper handler for the close button that properly handles events
-  const handleClose = (e: React.MouseEvent) => {
+  // Improve the close handler for better reliability
+  const handleClose = (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();

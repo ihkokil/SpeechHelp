@@ -87,26 +87,29 @@ export const useUserManagement = () => {
   
   const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean) => {
     if (isMounted.current) {
+      console.log("useUserManagement: Toggle user status called for user:", userId, isActive);
       return await baseHandleToggleUserStatus(userId, isActive, users, setUsers);
     }
   }, [baseHandleToggleUserStatus, users, setUsers]);
   
   const handleToggleUserSubscription = useCallback(async (userId: string, days = 30) => {
     if (isMounted.current) {
+      console.log("useUserManagement: Toggle subscription called for user:", userId, days);
       return await baseHandleToggleUserSubscription(userId, days, users, setUsers);
     }
   }, [baseHandleToggleUserSubscription, users, setUsers]);
   
   const handlePermissionsUpdated = useCallback((updatedUser: User) => {
     if (isMounted.current) {
+      console.log("useUserManagement: Permissions updated for user:", updatedUser.id);
       baseHandlePermissionsUpdated(updatedUser, users, setUsers);
     }
   }, [baseHandlePermissionsUpdated, users, setUsers]);
   
-  // Directly use User parameter instead of going through hooks layer
+  // Simplified direct handlers for view/manage operations
   const handleViewUserDetails = useCallback((user: User) => {
     if (isMounted.current) {
-      console.log("UserManagement: Direct view details called for user:", user.id);
+      console.log("useUserManagement: View details called for user:", user.id);
       setSelectedUser(user);
       setIsDetailsOpen(true);
     }
@@ -114,18 +117,18 @@ export const useUserManagement = () => {
   
   const handleCloseUserDetails = useCallback(() => {
     if (isMounted.current) {
-      console.log("UserManagement: Closing user details drawer");
+      console.log("useUserManagement: Close details called");
       setIsDetailsOpen(false);
+      // Use a timeout to prevent UI flicker when drawer is closing
       setTimeout(() => {
         setSelectedUser(null);
       }, 300);
     }
   }, [setIsDetailsOpen, setSelectedUser]);
   
-  // Directly use User parameter instead of going through hooks layer
   const handleManagePermissions = useCallback((user: User) => {
     if (isMounted.current) {
-      console.log("UserManagement: Direct manage permissions called for user:", user.id);
+      console.log("useUserManagement: Manage permissions called for user:", user.id);
       setSelectedUser(user);
       setIsPermissionsDialogOpen(true);
     }

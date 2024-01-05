@@ -30,18 +30,29 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
 }) => {
   const fullName = getUserName(user);
   
-  const handleToggleSelection = (e: React.MouseEvent) => {
+  // Handle checkbox clicks with proper propagation stopping
+  const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+  };
+  
+  // Handle row clicks for selection
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Only handle row clicks if it's not on a button or other interactive element
+    if ((e.target as HTMLElement).closest('button, .checkbox')) {
+      return;
+    }
+    
     onToggleSelection(user);
   };
   
   return (
-    <TableRow key={user.id}>
+    <TableRow key={user.id} onClick={handleRowClick} className="cursor-pointer">
       <TableCell>
         <Checkbox 
           checked={isSelected} 
           onCheckedChange={() => onToggleSelection(user)} 
-          onClick={handleToggleSelection}
+          onClick={handleCheckboxClick}
+          className="checkbox"
         />
       </TableCell>
       <TableCell className="font-medium">
