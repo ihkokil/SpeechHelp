@@ -37,20 +37,25 @@ export const useUserActions = () => {
   // View user details wrapper
   const handleViewUserDetails = useCallback((user: User) => {
     console.log("useUserActions: View details called for user:", user.id);
-    baseHandleViewUserDetails(user, setSelectedUser, setIsDetailsOpen);
-  }, [baseHandleViewUserDetails]);
+    setSelectedUser(user);
+    setIsDetailsOpen(true);
+  }, []);
   
   // Close user details wrapper
   const handleCloseUserDetails = useCallback(() => {
     console.log("useUserActions: Close details called");
-    baseHandleCloseUserDetails(setIsDetailsOpen, setSelectedUser);
-  }, [baseHandleCloseUserDetails]);
+    setIsDetailsOpen(false);
+    setTimeout(() => {
+      setSelectedUser(null);
+    }, 300);
+  }, []);
   
   // Manage user permissions wrapper
   const handleManagePermissions = useCallback((user: User) => {
     console.log("useUserActions: Manage permissions called for user:", user.id);
-    baseHandleManagePermissions(user, setSelectedUser, setIsPermissionsDialogOpen);
-  }, [baseHandleManagePermissions]);
+    setSelectedUser(user);
+    setIsPermissionsDialogOpen(true);
+  }, []);
   
   // Handle deleting users (plural for backward compatibility)
   const handleDeleteUsers = useCallback(async (

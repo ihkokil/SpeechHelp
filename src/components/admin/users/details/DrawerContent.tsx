@@ -20,14 +20,10 @@ export const DrawerContent: React.FC<DrawerContentProps> = ({
   userJoinedDays,
   totalActivityTime
 }) => {
-  const handleClose = () => {
-    onClose();
-  };
-
   return (
     <DrawerSheetContent
       user={user}
-      onClose={handleClose}
+      onClose={onClose}
       speeches={speeches}
       isLoadingSpeeches={isLoadingSpeeches}
       userJoinedDays={userJoinedDays}
