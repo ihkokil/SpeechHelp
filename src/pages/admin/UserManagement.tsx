@@ -34,6 +34,7 @@ const UserManagement = () => {
     toggleUserSelection,
     toggleAllUsers,
     handleDeleteUsers,
+    handleDeleteUser,
     handleToggleUserStatus,
     handleViewUserDetails,
     handleCloseUserDetails,
@@ -109,6 +110,7 @@ const UserManagement = () => {
             handleBulkDelete={handleBulkDelete}
             handleBulkActivate={handleBulkActivate}
             handleBulkDeactivate={handleBulkDeactivate}
+            handleDeleteUser={handleDeleteUser}
           />
         </CardContent>
       </Card>

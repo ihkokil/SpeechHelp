@@ -36,18 +36,13 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   };
   
   // Handle row clicks for selection
-  const handleRowClick = (e: React.MouseEvent) => {
-    // Only handle row clicks if it's not on a button or other interactive element
-    if ((e.target as HTMLElement).closest('button, .checkbox')) {
-      return;
-    }
-    
+  const handleRowClick = () => {
     onToggleSelection(user);
   };
   
   return (
     <TableRow key={user.id} onClick={handleRowClick} className="cursor-pointer">
-      <TableCell>
+      <TableCell className="p-4">
         <Checkbox 
           checked={isSelected} 
           onCheckedChange={() => onToggleSelection(user)} 

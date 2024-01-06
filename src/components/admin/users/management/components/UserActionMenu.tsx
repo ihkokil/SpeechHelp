@@ -31,40 +31,10 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onExtendSubscription,
   onDeleteUser
 }) => {
-  // Improve handler functions to ensure proper event propagation handling
-  const handleViewDetails = (e: React.MouseEvent) => {
+  const handleAction = (handler: Function, ...args: any[]) => (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("UserActionMenu: View details clicked for user:", user.id);
-    onViewDetails(user);
-  };
-  
-  const handleManagePermissions = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("UserActionMenu: Manage permissions clicked for user:", user.id);
-    onManagePermissions(user);
-  };
-  
-  const handleToggleUserActive = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("UserActionMenu: Toggle active status clicked for user:", user.id, !user.is_active);
-    onToggleUserActive(user.id, user.is_active !== false);
-  };
-  
-  const handleExtendSubscription = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("UserActionMenu: Extend subscription clicked for user:", user.id);
-    onExtendSubscription(user.id);
-  };
-  
-  const handleDeleteUser = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("UserActionMenu: Delete user clicked for user:", user.id);
-    onDeleteUser(user.id);
+    handler(...args);
   };
 
   return (
@@ -76,7 +46,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
-        <DropdownMenuItem onClick={handleViewDetails}>
+        <DropdownMenuItem onSelect={() => onViewDetails(user)}>
           <Eye className="mr-2 h-4 w-4" />
           <span>View Details</span>
         </DropdownMenuItem>
@@ -84,11 +54,11 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
           <UserCog className="mr-2 h-4 w-4" />
           <span>Edit User</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleManagePermissions}>
+        <DropdownMenuItem onSelect={() => onManagePermissions(user)}>
           <Shield className="mr-2 h-4 w-4" />
           <span>Manage Permissions</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleExtendSubscription}>
+        <DropdownMenuItem onSelect={() => onExtendSubscription(user.id)}>
           <Clock className="mr-2 h-4 w-4" />
           <span>Extend Subscription</span>
         </DropdownMenuItem>
@@ -98,12 +68,12 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {user.is_active !== false ? (
-          <DropdownMenuItem onClick={handleToggleUserActive}>
+          <DropdownMenuItem onSelect={() => onToggleUserActive(user.id, user.is_active !== false)}>
             <UserMinus className="mr-2 h-4 w-4" />
             <span>Deactivate User</span>
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuItem onClick={handleToggleUserActive}>
+          <DropdownMenuItem onSelect={() => onToggleUserActive(user.id, user.is_active !== false)}>
             <UserCheck className="mr-2 h-4 w-4" />
             <span>Activate User</span>
           </DropdownMenuItem>
@@ -111,7 +81,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="text-red-600 focus:text-red-700 focus:bg-red-50"
-          onClick={handleDeleteUser}
+          onSelect={() => onDeleteUser(user.id)}
         >
           <UserMinus className="mr-2 h-4 w-4" />
           <span>Delete User</span>

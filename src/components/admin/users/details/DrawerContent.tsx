@@ -20,13 +20,7 @@ export const DrawerContent: React.FC<DrawerContentProps> = ({
   userJoinedDays,
   totalActivityTime
 }) => {
-  // Improve the close handler for better reliability
-  const handleClose = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    console.log("Closing user details drawer");
+  const handleClose = () => {
     onClose();
   };
 
