@@ -84,17 +84,15 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
           {user.is_active !== false ? 'active' : 'inactive'}
         </Badge>
       </TableCell>
-      <TableCell className="text-right">
-        <div onClick={(e) => e.stopPropagation()}>
-          <UserActionMenu 
-            user={user}
-            onViewDetails={onViewDetails}
-            onManagePermissions={onManagePermissions}
-            onToggleUserActive={onToggleUserActive}
-            onExtendSubscription={onExtendSubscription}
-            onDeleteUser={onDeleteUser}
-          />
-        </div>
+      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+        <UserActionMenu 
+          user={user}
+          onViewDetails={onViewDetails}
+          onManagePermissions={onManagePermissions}
+          onToggleUserActive={onToggleUserActive}
+          onExtendSubscription={onExtendSubscription}
+          onDeleteUser={onDeleteUser}
+        />
       </TableCell>
     </TableRow>
   );

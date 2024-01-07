@@ -31,11 +31,35 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onExtendSubscription,
   onDeleteUser
 }) => {
-  // Prevent event bubbling
-  const handleAction = (e: React.MouseEvent, callback: Function, ...args: any[]) => {
+  // Handle menu item actions - now these are explicit functions
+  const handleViewDetails = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    callback(...args);
+    onViewDetails(user);
+  };
+  
+  const handleManagePermissions = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onManagePermissions(user);
+  };
+  
+  const handleToggleUserActive = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onToggleUserActive(user.id, user.is_active !== false);
+  };
+  
+  const handleExtendSubscription = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onExtendSubscription(user.id);
+  };
+  
+  const handleDeleteUser = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDeleteUser(user.id);
   };
 
   return (
@@ -47,40 +71,42 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
-        <DropdownMenuItem onSelect={() => onViewDetails(user)} onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onClick={handleViewDetails}>
           <Eye className="mr-2 h-4 w-4" />
           <span>View Details</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => console.log('Edit User clicked')} onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Edit User clicked');
+        }}>
           <UserCog className="mr-2 h-4 w-4" />
           <span>Edit User</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => onManagePermissions(user)} onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onClick={handleManagePermissions}>
           <Shield className="mr-2 h-4 w-4" />
           <span>Manage Permissions</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => onExtendSubscription(user.id)} onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onClick={handleExtendSubscription}>
           <Clock className="mr-2 h-4 w-4" />
           <span>Extend Subscription</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => console.log('Send Email clicked')} onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Send Email clicked');
+        }}>
           <Mail className="mr-2 h-4 w-4" />
           <span>Send Email</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {user.is_active !== false ? (
-          <DropdownMenuItem 
-            onSelect={() => onToggleUserActive(user.id, user.is_active !== false)}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <DropdownMenuItem onClick={handleToggleUserActive}>
             <UserMinus className="mr-2 h-4 w-4" />
             <span>Deactivate User</span>
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuItem 
-            onSelect={() => onToggleUserActive(user.id, user.is_active !== false)}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <DropdownMenuItem onClick={handleToggleUserActive}>
             <UserCheck className="mr-2 h-4 w-4" />
             <span>Activate User</span>
           </DropdownMenuItem>
@@ -88,8 +114,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="text-red-600 focus:text-red-700 focus:bg-red-50"
-          onSelect={() => onDeleteUser(user.id)}
-          onClick={(e) => e.stopPropagation()}
+          onClick={handleDeleteUser}
         >
           <UserMinus className="mr-2 h-4 w-4" />
           <span>Delete User</span>

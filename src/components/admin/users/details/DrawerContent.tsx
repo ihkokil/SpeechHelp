@@ -23,9 +23,7 @@ export const DrawerContent: React.FC<DrawerContentProps> = ({
   // Ensure onClose does something
   const handleClose = () => {
     console.log("DrawerContent: Closing drawer");
-    if (onClose) {
-      onClose();
-    }
+    onClose();
   };
 
   return (

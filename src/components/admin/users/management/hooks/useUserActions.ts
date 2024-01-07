@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react';
 import { User } from '../../types';
 import { useBulkActions } from './user-actions/useBulkActions';
 import { useIndividualUserActions } from './user-actions/useIndividualUserActions';
-import { useUserDetailsActions } from './user-actions/useUserDetailsActions';
 import { useToast } from '@/hooks/use-toast';
 
 export const useUserActions = () => {
@@ -53,15 +52,17 @@ export const useUserActions = () => {
   }, []);
   
   // Handle permissions updated
-  const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[], setUsers: (users: User[]) => void) => {
+  const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[] = [], setUsers: ((users: User[]) => void) | null = null) => {
     console.log('Permissions updated for user:', updatedUser.id);
     
-    // Update the user in the users array
-    setUsers(
-      users.map(user => 
-        user.id === updatedUser.id ? updatedUser : user
-      )
-    );
+    // Update the user in the users array if setUsers is provided
+    if (setUsers && users.length > 0) {
+      setUsers(
+        users.map(user => 
+          user.id === updatedUser.id ? updatedUser : user
+        )
+      );
+    }
     
     // Show a success toast
     toast({
@@ -76,17 +77,25 @@ export const useUserActions = () => {
   // Handle deleting users (plural for backward compatibility)
   const handleDeleteUsers = useCallback(async (
     selectedUsers: User[], 
-    users: User[], 
-    setUsers: (users: User[]) => void
+    users: User[] = [], 
+    setUsers: ((users: User[]) => void) | null = null
   ) => {
     console.log('Deleting users:', selectedUsers.map(user => user.id));
     setIsActionLoading(true);
     try {
       // If only one user, use the single user delete method
       if (selectedUsers.length === 1) {
-        await handleDeleteUser(selectedUsers[0].id, users, setUsers);
+        if (setUsers && users.length > 0) {
+          await handleDeleteUser(selectedUsers[0].id, users, setUsers);
+        } else {
+          await handleDeleteUser(selectedUsers[0].id, [], null);
+        }
       } else {
-        await handleBulkDelete(selectedUsers, users, setUsers);
+        if (setUsers && users.length > 0) {
+          await handleBulkDelete(selectedUsers, users, setUsers);
+        } else {
+          await handleBulkDelete(selectedUsers, [], null);
+        }
       }
     } catch (error) {
       console.error('Error deleting users:', error);
