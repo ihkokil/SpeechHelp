@@ -20,10 +20,18 @@ export const DrawerContent: React.FC<DrawerContentProps> = ({
   userJoinedDays,
   totalActivityTime
 }) => {
+  // Ensure onClose does something
+  const handleClose = () => {
+    console.log("DrawerContent: Closing drawer");
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
     <DrawerSheetContent
       user={user}
-      onClose={onClose}
+      onClose={handleClose}
       speeches={speeches}
       isLoadingSpeeches={isLoadingSpeeches}
       userJoinedDays={userJoinedDays}

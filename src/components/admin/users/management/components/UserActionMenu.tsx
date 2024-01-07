@@ -31,48 +31,56 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onExtendSubscription,
   onDeleteUser
 }) => {
-  // Stop propagation on menu trigger to prevent row selection
-  const handleTriggerClick = (e: React.MouseEvent) => {
+  // Prevent event bubbling
+  const handleAction = (e: React.MouseEvent, callback: Function, ...args: any[]) => {
+    e.preventDefault();
     e.stopPropagation();
+    callback(...args);
   };
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild onClick={handleTriggerClick}>
+      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
         <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
           <MoreVertical className="h-4 w-4" />
           <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
-        <DropdownMenuItem onClick={() => onViewDetails(user)}>
+        <DropdownMenuItem onSelect={() => onViewDetails(user)} onClick={(e) => e.stopPropagation()}>
           <Eye className="mr-2 h-4 w-4" />
           <span>View Details</span>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => console.log('Edit User clicked')} onClick={(e) => e.stopPropagation()}>
           <UserCog className="mr-2 h-4 w-4" />
           <span>Edit User</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onManagePermissions(user)}>
+        <DropdownMenuItem onSelect={() => onManagePermissions(user)} onClick={(e) => e.stopPropagation()}>
           <Shield className="mr-2 h-4 w-4" />
           <span>Manage Permissions</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onExtendSubscription(user.id)}>
+        <DropdownMenuItem onSelect={() => onExtendSubscription(user.id)} onClick={(e) => e.stopPropagation()}>
           <Clock className="mr-2 h-4 w-4" />
           <span>Extend Subscription</span>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => console.log('Send Email clicked')} onClick={(e) => e.stopPropagation()}>
           <Mail className="mr-2 h-4 w-4" />
           <span>Send Email</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {user.is_active !== false ? (
-          <DropdownMenuItem onClick={() => onToggleUserActive(user.id, user.is_active !== false)}>
+          <DropdownMenuItem 
+            onSelect={() => onToggleUserActive(user.id, user.is_active !== false)}
+            onClick={(e) => e.stopPropagation()}
+          >
             <UserMinus className="mr-2 h-4 w-4" />
             <span>Deactivate User</span>
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuItem onClick={() => onToggleUserActive(user.id, user.is_active !== false)}>
+          <DropdownMenuItem 
+            onSelect={() => onToggleUserActive(user.id, user.is_active !== false)}
+            onClick={(e) => e.stopPropagation()}
+          >
             <UserCheck className="mr-2 h-4 w-4" />
             <span>Activate User</span>
           </DropdownMenuItem>
@@ -80,7 +88,8 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           className="text-red-600 focus:text-red-700 focus:bg-red-50"
-          onClick={() => onDeleteUser(user.id)}
+          onSelect={() => onDeleteUser(user.id)}
+          onClick={(e) => e.stopPropagation()}
         >
           <UserMinus className="mr-2 h-4 w-4" />
           <span>Delete User</span>

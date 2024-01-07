@@ -4,8 +4,10 @@ import { User } from '../../types';
 import { useBulkActions } from './user-actions/useBulkActions';
 import { useIndividualUserActions } from './user-actions/useIndividualUserActions';
 import { useUserDetailsActions } from './user-actions/useUserDetailsActions';
+import { useToast } from '@/hooks/use-toast';
 
 export const useUserActions = () => {
+  const { toast } = useToast();
   // Create internal state for tracking action loading
   const [isActionLoading, setIsActionLoading] = useState(false);
   
@@ -27,21 +29,14 @@ export const useUserActions = () => {
     handleDeleteUser
   } = useIndividualUserActions();
   
-  const {
-    handleViewUserDetails: baseHandleViewUserDetails,
-    handleCloseUserDetails: baseHandleCloseUserDetails,
-    handleManagePermissions: baseHandleManagePermissions,
-    handlePermissionsUpdated: baseHandlePermissionsUpdated
-  } = useUserDetailsActions();
-  
-  // View user details wrapper
+  // View user details handler
   const handleViewUserDetails = useCallback((user: User) => {
     console.log("useUserActions: View details called for user:", user.id);
     setSelectedUser(user);
     setIsDetailsOpen(true);
   }, []);
   
-  // Close user details wrapper
+  // Close user details handler
   const handleCloseUserDetails = useCallback(() => {
     console.log("useUserActions: Close details called");
     setIsDetailsOpen(false);
@@ -50,12 +45,33 @@ export const useUserActions = () => {
     }, 300);
   }, []);
   
-  // Manage user permissions wrapper
+  // Manage user permissions handler
   const handleManagePermissions = useCallback((user: User) => {
     console.log("useUserActions: Manage permissions called for user:", user.id);
     setSelectedUser(user);
     setIsPermissionsDialogOpen(true);
   }, []);
+  
+  // Handle permissions updated
+  const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[], setUsers: (users: User[]) => void) => {
+    console.log('Permissions updated for user:', updatedUser.id);
+    
+    // Update the user in the users array
+    setUsers(
+      users.map(user => 
+        user.id === updatedUser.id ? updatedUser : user
+      )
+    );
+    
+    // Show a success toast
+    toast({
+      title: 'Permissions Updated',
+      description: `${updatedUser.email}'s admin permissions have been updated.`,
+    });
+    
+    // Close the dialog
+    setIsPermissionsDialogOpen(false);
+  }, [toast]);
   
   // Handle deleting users (plural for backward compatibility)
   const handleDeleteUsers = useCallback(async (
@@ -64,13 +80,25 @@ export const useUserActions = () => {
     setUsers: (users: User[]) => void
   ) => {
     console.log('Deleting users:', selectedUsers.map(user => user.id));
-    // If only one user, use the single user delete method
-    if (selectedUsers.length === 1) {
-      await handleDeleteUser(selectedUsers[0].id, users, setUsers);
-    } else {
-      await handleBulkDelete(selectedUsers, users, setUsers);
+    setIsActionLoading(true);
+    try {
+      // If only one user, use the single user delete method
+      if (selectedUsers.length === 1) {
+        await handleDeleteUser(selectedUsers[0].id, users, setUsers);
+      } else {
+        await handleBulkDelete(selectedUsers, users, setUsers);
+      }
+    } catch (error) {
+      console.error('Error deleting users:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete users. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsActionLoading(false);
     }
-  }, [handleDeleteUser, handleBulkDelete]);
+  }, [handleDeleteUser, handleBulkDelete, toast]);
   
   // Return all actions and state
   return {
@@ -91,9 +119,7 @@ export const useUserActions = () => {
     handleManagePermissions,
     
     // Permission operations
-    handlePermissionsUpdated: (updatedUser: User, users: User[], setUsers: (users: User[]) => void) => {
-      baseHandlePermissionsUpdated(updatedUser, users, setUsers, setIsPermissionsDialogOpen);
-    },
+    handlePermissionsUpdated,
     
     // States
     isActionLoading,
