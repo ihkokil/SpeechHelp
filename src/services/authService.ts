@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import WelcomeEmail from './welcome-email.tsx';
+import { renderToString } from 'react-dom/server';
 
 // Define the ToastProps type directly here to avoid the import error
 type ToastProps = {
@@ -48,13 +48,14 @@ export const signUp = async (
 			}
 		}
 	});
+	console.log("RES", res)
 	if (res.data.user || res.data.session) {
 		// Call the Supabase Edge Function
 		const { data, error } = await supabase.functions.invoke('send-email', {
 			body: {
 				email: email,
 				subject: "Welcome to SpeechHelp!",
-				emailHtml: WelcomeEmail({ username: firstName || 'there' }),
+				emailHtml: renderToString(WelcomeEmail({ username: firstName || 'there' })),
 				message: "Welcome to SpeechHelp! Please check your email to confirm your account."
 			}
 		});
