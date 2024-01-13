@@ -71,6 +71,10 @@ export const es = {
   'common.delete': 'Eliminar',
   'common.saveChanges': 'Guardar cambios',
   'common.areYouSure': '¿Estás seguro?',
+  'common.error': 'Error',
+  'common.saving': 'Guardando...',
+  'common.authRequired': 'Autenticación Requerida',
+  'common.signInToSave': 'Por favor inicia sesión para guardar tu discurso.',
 
   // Dashboard - Speeches
   'dashboard.editSpeech': 'Editar discurso',
@@ -211,6 +215,20 @@ export const es = {
   'speechLab.savedSuccess': '¡Discurso guardado con éxito!',
   'speechLab.speechTitleLabel': 'Título del discurso',
   'speechLab.speechTitlePlaceholder': 'Ingresa un título para tu discurso',
+  'speechLab.titleRequired': 'Título Requerido',
+  'speechLab.pleaseEnterTitle': 'Por favor ingresa un título para tu discurso',
+  'speechLab.contentRequired': 'Contenido Requerido',
+  'speechLab.enterContentPrompt': 'Por favor ingresa contenido para tu discurso',
+  'speechLab.speechUpdated': 'Discurso Actualizado',
+  'speechLab.speechUpdatedDesc': 'Tu discurso ha sido actualizado exitosamente.',
+  'speechLab.speechSaved': 'Discurso Guardado',
+  'speechLab.speechSavedDesc': 'Tu discurso ha sido guardado exitosamente.',
+  'speechLab.saveError': 'Error al guardar el discurso. Por favor intenta de nuevo.',
+  'speechLab.differentLanguage': 'Este discurso fue creado en un idioma diferente. Algunos contenidos pueden no aparecer correctamente.',
+  'speechLab.readyToEdit': 'Tu discurso está listo para editar.',
+  'speechLab.generationError': 'Error al generar el discurso. Por favor intenta de nuevo.',
+  'speechLab.content': 'Contenido del Discurso',
+  'speechLab.generateSpeech': 'Genera Tu Discurso',
 
   // Settings
   'settings.title': 'Configuración de la Cuenta',
