@@ -71,10 +71,6 @@ export const enUS = {
   'common.delete': 'Delete',
   'common.saveChanges': 'Save Changes',
   'common.areYouSure': 'Are you sure?',
-  'common.error': 'Error',
-  'common.saving': 'Saving...',
-  'common.authRequired': 'Authentication Required',
-  'common.signInToSave': 'Please sign in to save your speech.',
 
   // Dashboard - Speeches
   'dashboard.editSpeech': 'Edit Speech',
@@ -215,20 +211,6 @@ export const enUS = {
   'speechLab.savedSuccess': 'Speech saved successfully!',
   'speechLab.speechTitleLabel': 'Speech Title',
   'speechLab.speechTitlePlaceholder': 'Enter a title for your speech',
-  'speechLab.titleRequired': 'Title Required',
-  'speechLab.pleaseEnterTitle': 'Please enter a title for your speech',
-  'speechLab.contentRequired': 'Content Required',
-  'speechLab.enterContentPrompt': 'Please enter content for your speech',
-  'speechLab.speechUpdated': 'Speech Updated',
-  'speechLab.speechUpdatedDesc': 'Your speech has been updated successfully.',
-  'speechLab.speechSaved': 'Speech Saved',
-  'speechLab.speechSavedDesc': 'Your speech has been saved successfully.',
-  'speechLab.saveError': 'Failed to save speech. Please try again.',
-  'speechLab.differentLanguage': 'This speech was created in a different language. Some content may not appear correctly.',
-  'speechLab.readyToEdit': 'Your speech is ready to edit.',
-  'speechLab.generationError': 'Failed to generate speech. Please try again.',
-  'speechLab.content': 'Speech Content',
-  'speechLab.generateSpeech': 'Generate Your Speech',
 
   // Settings
   'settings.title': 'Account Settings',

@@ -9,7 +9,6 @@ import { useSpeechSave } from '../hooks/useSpeechSave';
 import { useSpeechReset } from '../hooks/useSpeechReset';
 import { useSpeechDownload } from '../hooks/useSpeechDownload';
 import { createPlaceholderSpeech } from '../utils/speechContentUtils';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Step4Props {
 	prevStep: () => void;
@@ -28,7 +27,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 }) => {
 	const [title, setTitle] = useState(speechTitle);
 	const [content, setContent] = useState('');
-	const { currentLanguage } = useLanguage();
 
 	const { isSaving, handleSave, speechId } = useSpeechSave({
 		title,
@@ -57,32 +55,12 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 	useEffect(() => {
 		const savedSpeech = localStorage.getItem('generatedSpeech');
 		if (savedSpeech) {
-			// Try to parse to check if it's structured content with language info
-			try {
-				const parsedSpeech = JSON.parse(savedSpeech);
-				if (parsedSpeech.metadata?.language && parsedSpeech.content) {
-					// This is structured content
-					setContent(savedSpeech);
-				} else {
-					// Not structured, create structured content with current language
-					const structuredContent = JSON.stringify({
-						content: savedSpeech,
-						metadata: {
-							language: currentLanguage.code,
-							createdAt: new Date().toISOString()
-						}
-					});
-					setContent(structuredContent);
-				}
-			} catch (e) {
-				// Not JSON, just use as is
-				setContent(savedSpeech);
-			}
+			setContent(savedSpeech);
 		} else {
 			const placeholderSpeech = createPlaceholderSpeech(title, speechDetails);
 			setContent(placeholderSpeech);
 		}
-	}, [currentLanguage]);
+	}, []);
 
 	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setTitle(e.target.value);
