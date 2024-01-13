@@ -25,6 +25,7 @@ import AdminLayout from "./components/layouts/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import Test from "./pages/Test";
+import Account from "./pages/Account";
 
 const queryClient = new QueryClient();
 
@@ -62,9 +63,15 @@ const App = () => (
 						<BrowserRouter>
 							<Routes>
 								<Route path="/" element={<NavbarLayout><Index /></NavbarLayout>} />
-								{/* <Route path="/test" element={<NavbarLayout><Test /></NavbarLayout>} /> */}
+								<Route path="/test" element={<NavbarLayout><Test /></NavbarLayout>} />
 								<Route path="/pricing" element={<NavbarLayout><Pricing /></NavbarLayout>} />
 								<Route path="/auth" element={<NavbarLayout><Auth /></NavbarLayout>} />
+								<Route
+									path="/account"
+									element={
+										<Account />
+									}
+								/>
 								<Route
 									path="/dashboard"
 									element={
