@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { NavItem } from '@/types/auth';
 
 const DashboardSidebar = () => {
   const navigate = useNavigate();
