@@ -2,7 +2,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
-import { AuthContextType, Speech } from '@/types/auth';
+import { AuthContextType } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { signIn, signUp, signOut } from '@/services/authService';
 import { useSpeechService } from '@/services/speechService';
 import { useToast } from '@/hooks/use-toast';

@@ -1,4 +1,6 @@
 
+import { Speech } from './speech';
+
 export interface AuthContextType {
   user: any;
   session: any;
@@ -12,20 +14,4 @@ export interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
   signOut: () => Promise<void>;
-}
-
-export interface Speech {
-  id: string;
-  user_id: string;
-  title: string;
-  content: string;
-  speech_type: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface NavItem {
-  icon: React.ReactNode;  // Changed from React.ElementType to React.ReactNode for better type compatibility
-  label: string;
-  href: string;
 }

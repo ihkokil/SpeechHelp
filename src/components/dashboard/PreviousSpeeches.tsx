@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useNavigate } from 'react-router-dom';
 import SpeechesTable from './speeches/SpeechesTable';

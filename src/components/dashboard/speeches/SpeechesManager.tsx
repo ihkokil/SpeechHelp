@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import FilterBar from './FilterBar';
 import SpeechesTable from './SpeechesTable';
 import EmptyState from './EmptyState';
