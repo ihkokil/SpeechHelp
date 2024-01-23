@@ -1,5 +1,12 @@
 
 import { Session, User } from "@supabase/supabase-js";
+import React from 'react';
+
+export type NavItem = {
+  icon: React.ReactNode;
+  label: string;
+  href: string;
+};
 
 export type Speech = {
   id: string;
@@ -25,3 +32,4 @@ export type AuthContextType = {
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
+
