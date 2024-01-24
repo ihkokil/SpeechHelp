@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { FilterOption, SortOption } from './FilterBar';
 
 export const useSpeechesFilter = (

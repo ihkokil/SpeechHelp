@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { SpeechEvent } from './types';
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { loadEventsFromStorage, saveEventsToStorage } from './utils';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';

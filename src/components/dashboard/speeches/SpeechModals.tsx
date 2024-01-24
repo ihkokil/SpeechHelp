@@ -1,5 +1,5 @@
 
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import ViewSpeechModal from './modals/ViewSpeechModal';
 import EditSpeechModal from './modals/EditSpeechModal';
 import DeleteSpeechAlert from './modals/DeleteSpeechAlert';

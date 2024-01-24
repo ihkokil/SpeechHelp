@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Download, Printer } from 'lucide-react';
 import Translate from '@/components/Translate';

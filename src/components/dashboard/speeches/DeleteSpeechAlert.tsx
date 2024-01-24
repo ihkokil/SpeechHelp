@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import Translate from '@/components/Translate';
 
 interface DeleteSpeechAlertProps {

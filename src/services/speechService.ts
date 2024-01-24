@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { useToast } from '@/hooks/use-toast';
 
 export const useSpeechService = () => {

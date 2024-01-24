@@ -7,7 +7,7 @@ import {
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog';
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { Badge } from '@/components/ui/badge';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { format, parseISO } from 'date-fns';
