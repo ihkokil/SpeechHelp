@@ -21,8 +21,11 @@ const SpeechExportButtons: React.FC<SpeechExportButtonsProps> = ({
 }) => {
   const { handleDownload, handlePrint } = useExportFunctions(speech, title, content);
 
-  // Don't render export buttons for upcoming speeches with no content
-  if (!speech || (speech && !speech.content.trim())) return null;
+  // Check if it's an upcoming speech with no content
+  const isUpcoming = speech && 'isUpcoming' in speech && speech.isUpcoming === true;
+  
+  // Don't render export buttons for upcoming speeches or speeches with no content
+  if (!speech || (speech && !speech.content.trim()) || isUpcoming) return null;
 
   return (
     <div className="flex flex-wrap gap-2">
