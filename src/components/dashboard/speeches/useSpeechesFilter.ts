@@ -13,7 +13,7 @@ export const useSpeechesFilter = (
     // Start with regular speeches
     let regularSpeeches = [...speeches];
     
-    // Get upcoming speech events from localStorage
+    // Get upcoming speech events from localStorage (only once)
     let upcomingEvents: any[] = [];
     try {
       const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
@@ -34,9 +34,9 @@ export const useSpeechesFilter = (
       user_id: '', 
       title: event.title,
       content: event.notes || '',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      speech_type: event.type || 'upcoming',
+      created_at: '', // Empty string instead of current date
+      updated_at: '', // Empty string instead of current date
+      speech_type: event.category || 'upcoming',
       isUpcoming: true // Mark as upcoming for identification
     }));
     
@@ -52,8 +52,7 @@ export const useSpeechesFilter = (
       // Also filter upcoming speeches by search query
       const filteredUpcomingSpeeches = upcomingSpeeches.filter(
         (speech) => 
-          speech.title.toLowerCase().includes(query) || 
-          speech.content.toLowerCase().includes(query)
+          speech.title.toLowerCase().includes(query)
       );
       
       upcomingSpeeches.length = 0; // Clear the array
@@ -76,10 +75,14 @@ export const useSpeechesFilter = (
     
     // Finally, sort the filtered speeches
     return filtered.sort((a, b) => {
+      // Handle empty dates for upcoming speeches
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : Date.now();
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : Date.now();
+      
       if (sortBy === 'newest') {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return dateB - dateA;
       } else if (sortBy === 'oldest') {
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        return dateA - dateB;
       } else if (sortBy === 'title-asc') {
         return a.title.localeCompare(b.title);
       } else {
