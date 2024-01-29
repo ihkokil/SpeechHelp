@@ -47,7 +47,9 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
       </TableHeader>
       <TableBody>
         {speeches.map((speech) => {
-          const isUpcoming = 'isUpcoming' in speech && speech.isUpcoming === true;
+          const isUpcoming = speech.isUpcoming === true;
+          const displayType = isUpcoming ? 'upcoming' : speech.speech_type;
+          
           return (
             <TableRow key={speech.id}>
               <TableCell className="font-medium max-w-[200px] truncate">
@@ -57,19 +59,19 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                 </div>
                 <div className="md:hidden mt-1">
                   <Badge 
-                    className={`${getTypeColor(speech.speech_type)} inline-flex justify-center h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
-                    title={getSpeechTypeLabel(speech.speech_type)}
+                    className={`${getTypeColor(displayType)} inline-flex justify-center h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
+                    title={getSpeechTypeLabel(displayType)}
                   >
-                    {isUpcoming ? 'Upcoming' : getSpeechTypeLabel(speech.speech_type)}
+                    {isUpcoming ? 'Upcoming' : getSpeechTypeLabel(displayType)}
                   </Badge>
                 </div>
               </TableCell>
               <TableCell className="text-center hidden md:table-cell">
                 <Badge 
-                  className={`${isUpcoming ? 'bg-blue-100 text-blue-800' : getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center w-32 h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
-                  title={isUpcoming ? 'Upcoming Speech' : getSpeechTypeLabel(speech.speech_type)}
+                  className={`${getTypeColor(displayType)} mx-auto inline-flex justify-center w-32 h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
+                  title={isUpcoming ? 'Upcoming Speech' : getSpeechTypeLabel(displayType)}
                 >
-                  {isUpcoming ? 'Upcoming' : getSpeechTypeLabel(speech.speech_type)}
+                  {isUpcoming ? 'Upcoming' : getSpeechTypeLabel(displayType)}
                 </Badge>
               </TableCell>
               <TableCell className="hidden md:table-cell">{formatDate(speech.created_at)}</TableCell>
