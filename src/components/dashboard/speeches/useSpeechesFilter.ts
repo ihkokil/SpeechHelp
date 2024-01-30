@@ -34,10 +34,10 @@ export const useSpeechesFilter = (
       user_id: '', 
       title: event.title,
       content: event.notes || '',
-      created_at: '', // Empty string instead of current date
-      updated_at: '', // Empty string instead of current date
+      created_at: '', 
+      updated_at: '', 
       speech_type: event.category || 'upcoming',
-      isUpcoming: true // Mark as upcoming for identification
+      isUpcoming: true
     }));
     
     // Filter by search query if provided
@@ -46,7 +46,7 @@ export const useSpeechesFilter = (
       regularSpeeches = regularSpeeches.filter(
         (speech) => 
           speech.title.toLowerCase().includes(query) || 
-          speech.content.toLowerCase().includes(query)
+          (speech.content && speech.content.toLowerCase().includes(query))
       );
       
       // Also filter upcoming speeches by search query
@@ -75,14 +75,22 @@ export const useSpeechesFilter = (
     
     // Finally, sort the filtered speeches
     return filtered.sort((a, b) => {
-      // Handle empty dates for upcoming speeches
-      const dateA = a.created_at ? new Date(a.created_at).getTime() : Date.now();
-      const dateB = b.created_at ? new Date(b.created_at).getTime() : Date.now();
-      
       if (sortBy === 'newest') {
-        return dateB - dateA;
+        // For upcoming speeches which don't have dates, always sort to the top
+        if (a.isUpcoming && !b.isUpcoming) return -1;
+        if (!a.isUpcoming && b.isUpcoming) return 1;
+        if (a.isUpcoming && b.isUpcoming) return 0;
+        
+        // For regular speeches, sort by date
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       } else if (sortBy === 'oldest') {
-        return dateA - dateB;
+        // For upcoming speeches which don't have dates, always sort to the bottom
+        if (a.isUpcoming && !b.isUpcoming) return 1;
+        if (!a.isUpcoming && b.isUpcoming) return -1;
+        if (a.isUpcoming && b.isUpcoming) return 0;
+        
+        // For regular speeches, sort by date
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       } else if (sortBy === 'title-asc') {
         return a.title.localeCompare(b.title);
       } else {
