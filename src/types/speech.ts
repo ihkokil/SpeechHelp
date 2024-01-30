@@ -8,4 +8,5 @@ export type Speech = {
   updated_at: string;
   speech_type: string;
   isUpcoming?: boolean;
+  event_date?: string;
 };
