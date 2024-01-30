@@ -35,6 +35,9 @@ const PreviousSpeeches = () => {
     navigate('/speech-lab');
   };
 
+  // Filter out upcoming speeches for PreviousSpeeches component
+  const regularSpeeches = speeches.filter(speech => !speech.isUpcoming);
+
   return (
     <div className="bg-white rounded-lg shadow-sm border">
       <div className="p-4 flex justify-between items-center border-b">
@@ -48,7 +51,7 @@ const PreviousSpeeches = () => {
         </ButtonCustom>
       </div>
       
-      {speeches.length === 0 ? (
+      {regularSpeeches.length === 0 ? (
         <div className="p-8 text-center">
           <p className="text-gray-500 mb-4"><Translate text="dashboard.noSpeeches" /></p>
           <ButtonCustom 
@@ -60,7 +63,7 @@ const PreviousSpeeches = () => {
         </div>
       ) : (
         <SpeechesTable 
-          speeches={speeches}
+          speeches={regularSpeeches}
           onView={handleViewSpeech}
           onEdit={handleEditSpeech}
           onDelete={handleDeleteSpeech}
