@@ -41,23 +41,27 @@ export const useSpeechesFilter = (
       event_date: event.date
     }));
     
+    // Initialize full collection of speeches (regular + upcoming)
+    let allSpeeches = [...regularSpeeches, ...upcomingSpeeches];
+    
     // Filter by search query if provided
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      regularSpeeches = regularSpeeches.filter(
+      const query = searchQuery.toLowerCase().trim();
+      
+      // Apply the filter to all speeches together
+      allSpeeches = allSpeeches.filter(
         (speech) => 
           speech.title.toLowerCase().includes(query) || 
           (speech.content && speech.content.toLowerCase().includes(query))
       );
       
-      // Also filter upcoming speeches by search query
-      const filteredUpcomingSpeeches = upcomingSpeeches.filter(
-        (speech) => 
-          speech.title.toLowerCase().includes(query)
-      );
+      // After filtering, split back into regular and upcoming for filter type logic
+      regularSpeeches = allSpeeches.filter(speech => !speech.isUpcoming);
+      const filteredUpcomingSpeeches = allSpeeches.filter(speech => speech.isUpcoming);
       
-      upcomingSpeeches.length = 0; // Clear the array
-      upcomingSpeeches.push(...filteredUpcomingSpeeches); // Add filtered results
+      // Update the upcomingSpeeches array
+      upcomingSpeeches.length = 0;
+      upcomingSpeeches.push(...filteredUpcomingSpeeches);
     }
     
     // Apply filter based on selected type
