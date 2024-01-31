@@ -39,10 +39,11 @@ export const useSpeechesFilter = (
       speech_type: event.category || 'upcoming',
       isUpcoming: true,
       event_date: event.date
-    }));
+    } as Speech)); // Explicitly cast to Speech type
     
     // Initialize full collection of speeches (regular + upcoming)
-    let allSpeeches = [...regularSpeeches, ...upcomingSpeeches];
+    // Cast explicitly to ensure all items are treated as Speech type
+    let allSpeeches: Speech[] = [...regularSpeeches, ...upcomingSpeeches];
     
     // Filter by search query if provided
     if (searchQuery.trim()) {
@@ -56,8 +57,8 @@ export const useSpeechesFilter = (
       );
       
       // After filtering, split back into regular and upcoming for filter type logic
-      regularSpeeches = allSpeeches.filter(speech => !speech.isUpcoming);
-      const filteredUpcomingSpeeches = allSpeeches.filter(speech => speech.isUpcoming);
+      regularSpeeches = allSpeeches.filter(speech => speech.isUpcoming !== true);
+      const filteredUpcomingSpeeches = allSpeeches.filter(speech => speech.isUpcoming === true);
       
       // Update the upcomingSpeeches array
       upcomingSpeeches.length = 0;
