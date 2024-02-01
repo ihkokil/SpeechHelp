@@ -13,7 +13,7 @@ export const useSpeechesFilter = (
     console.log('Original speeches:', speeches);
     
     // Start with regular speeches
-    let regularSpeeches = [...speeches];
+    let regularSpeeches = [...speeches].filter(speech => !speech.isUpcoming);
     console.log('Regular speeches count:', regularSpeeches.length);
     
     // Get upcoming speech events from localStorage (only once)
