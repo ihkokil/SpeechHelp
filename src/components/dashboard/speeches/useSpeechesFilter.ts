@@ -10,8 +10,11 @@ export const useSpeechesFilter = (
   sortBy: SortOption
 ) => {
   const filteredSpeeches = useMemo(() => {
+    console.log('Original speeches:', speeches);
+    
     // Start with regular speeches
     let regularSpeeches = [...speeches];
+    console.log('Regular speeches count:', regularSpeeches.length);
     
     // Get upcoming speech events from localStorage (only once)
     let upcomingEvents: any[] = [];
@@ -32,6 +35,8 @@ export const useSpeechesFilter = (
       upcomingEvents = [];
     }
     
+    console.log('Upcoming events count:', upcomingEvents.length);
+    
     // Create speech-like objects for upcoming events
     // Use event.id directly to maintain unique IDs
     const upcomingSpeeches = upcomingEvents.map((event) => ({
@@ -46,29 +51,31 @@ export const useSpeechesFilter = (
       event_date: event.date
     } as Speech)); // Explicitly cast to Speech type
     
-    // Initialize full collection of speeches (regular + upcoming)
-    // Cast explicitly to ensure all items are treated as Speech type
-    let allSpeeches: Speech[] = [...regularSpeeches, ...upcomingSpeeches];
+    console.log('Transformed upcoming speeches count:', upcomingSpeeches.length);
     
     // Filter by search query if provided
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       
-      // Apply the filter to all speeches together
-      allSpeeches = allSpeeches.filter(
+      // Apply the search filter separately to regular and upcoming speeches
+      regularSpeeches = regularSpeeches.filter(
         (speech) => 
           speech.title.toLowerCase().includes(query) || 
           (speech.content && speech.content.toLowerCase().includes(query))
       );
       
-      // After filtering, split back into regular and upcoming for filter type logic
-      regularSpeeches = allSpeeches.filter(speech => speech.isUpcoming !== true);
-      const filteredUpcomingSpeeches = allSpeeches.filter(speech => speech.isUpcoming === true);
+      const filteredUpcomingSpeeches = upcomingSpeeches.filter(
+        (speech) => 
+          speech.title.toLowerCase().includes(query) || 
+          (speech.content && speech.content.toLowerCase().includes(query))
+      );
       
-      // Update the upcomingSpeeches array
       upcomingSpeeches.length = 0;
       upcomingSpeeches.push(...filteredUpcomingSpeeches);
     }
+    
+    console.log('After search filter - Regular speeches:', regularSpeeches.length);
+    console.log('After search filter - Upcoming speeches:', upcomingSpeeches.length);
     
     // Apply filter based on selected type
     let filtered: Speech[] = [];
@@ -76,18 +83,24 @@ export const useSpeechesFilter = (
     if (filterType === 'all') {
       // For "all", include both regular and upcoming speeches
       filtered = [...regularSpeeches, ...upcomingSpeeches];
+      console.log('All filtered speeches count (all):', filtered.length);
     } else if (filterType === 'upcoming') {
       // For "upcoming", only show upcoming events
       filtered = [...upcomingSpeeches];
+      console.log('All filtered speeches count (upcoming):', filtered.length);
     } else {
       // Filter regular speeches by speech type
       filtered = regularSpeeches.filter((speech) => speech.speech_type === filterType);
+      console.log('All filtered speeches count (specific type):', filtered.length);
     }
     
     // Ensure uniqueness of speeches by ID
     filtered = Array.from(
       new Map(filtered.map(speech => [speech.id, speech])).values()
     );
+    
+    console.log('After deduplication - Final filtered count:', filtered.length);
+    console.log('Final filtered speeches:', filtered);
     
     // Finally, sort the filtered speeches
     return filtered.sort((a, b) => {
