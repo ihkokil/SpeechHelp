@@ -1,4 +1,3 @@
-
 import { 
   Dialog, 
   DialogContent, 
@@ -17,6 +16,7 @@ import Translate from '@/components/Translate';
 import SpeechPreview from '@/components/speech/components/SpeechPreview';
 import SpeechExportButtons from '../components/SpeechExportButtons';
 import { CalendarClock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ViewSpeechModalProps {
   isOpen: boolean;
@@ -27,6 +27,7 @@ interface ViewSpeechModalProps {
 
 const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpeechModalProps) => {
   const { currentLanguage } = useLanguage();
+  const navigate = useNavigate();
 
   const formatDate = (dateString: string) => {
     // Check if date string is empty or invalid (for upcoming speeches)
@@ -67,6 +68,21 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
   };
   
   const daysRemaining = getDaysRemaining();
+
+  const handleCreateSpeech = () => {
+    // Store event details for use in Speech Lab, same as dashboard functionality
+    localStorage.setItem('currentEvent', JSON.stringify({
+      id: speech.id,
+      title: speech.title,
+      date: speech.event_date,
+      category: speech.speech_type,
+      status: 'upcoming'
+    }));
+    
+    // Navigate to speech lab
+    navigate('/speech-lab');
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -126,15 +142,24 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
           >
             <Translate text="common.close" />
           </ButtonCustom>
-          <ButtonCustom 
-            variant="default" 
-            onClick={() => {
-              onOpenChange(false);
-              onEditClick();
-            }}
-          >
-            <Translate text="common.edit" />
-          </ButtonCustom>
+          {speech.isUpcoming ? (
+            <ButtonCustom
+              variant="premium"
+              onClick={handleCreateSpeech}
+            >
+              <Translate text="common.create" />
+            </ButtonCustom>
+          ) : (
+            <ButtonCustom 
+              variant="default" 
+              onClick={() => {
+                onOpenChange(false);
+                onEditClick();
+              }}
+            >
+              <Translate text="common.edit" />
+            </ButtonCustom>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
