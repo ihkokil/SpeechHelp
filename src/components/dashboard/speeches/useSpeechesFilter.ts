@@ -12,11 +12,11 @@ export const useSpeechesFilter = (
   const filteredSpeeches = useMemo(() => {
     console.log('Original speeches:', speeches);
     
-    // Start with regular speeches
-    let regularSpeeches = [...speeches].filter(speech => !speech.isUpcoming);
+    // Separate regular speeches and upcoming speeches from the original speeches array
+    let regularSpeeches = speeches.filter(speech => !speech.isUpcoming);
     console.log('Regular speeches count:', regularSpeeches.length);
     
-    // Get upcoming speech events from localStorage (only once)
+    // Get upcoming speech events from localStorage
     let upcomingEvents: any[] = [];
     try {
       const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
@@ -38,7 +38,6 @@ export const useSpeechesFilter = (
     console.log('Upcoming events count:', upcomingEvents.length);
     
     // Create speech-like objects for upcoming events
-    // Use event.id directly to maintain unique IDs
     const upcomingSpeeches = upcomingEvents.map((event) => ({
       id: event.id,
       user_id: '', 
@@ -49,7 +48,7 @@ export const useSpeechesFilter = (
       speech_type: event.category || 'upcoming',
       isUpcoming: true,
       event_date: event.date
-    } as Speech)); // Explicitly cast to Speech type
+    } as Speech));
     
     console.log('Transformed upcoming speeches count:', upcomingSpeeches.length);
     
@@ -105,20 +104,34 @@ export const useSpeechesFilter = (
     // Finally, sort the filtered speeches
     return filtered.sort((a, b) => {
       if (sortBy === 'newest') {
-        // For upcoming speeches which don't have dates, always sort to the top
+        // For upcoming speeches with event dates, sort by event date
+        if (a.isUpcoming && b.isUpcoming) {
+          if (a.event_date && b.event_date) {
+            return new Date(b.event_date).getTime() - new Date(a.event_date).getTime();
+          }
+          return 0;
+        }
+        
+        // Upcoming speeches should appear before regular speeches
         if (a.isUpcoming && !b.isUpcoming) return -1;
         if (!a.isUpcoming && b.isUpcoming) return 1;
-        if (a.isUpcoming && b.isUpcoming) return 0;
         
-        // For regular speeches, sort by date
+        // For regular speeches, sort by created_at date
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       } else if (sortBy === 'oldest') {
-        // For upcoming speeches which don't have dates, always sort to the bottom
+        // For upcoming speeches with event dates, sort by event date
+        if (a.isUpcoming && b.isUpcoming) {
+          if (a.event_date && b.event_date) {
+            return new Date(a.event_date).getTime() - new Date(b.event_date).getTime();
+          }
+          return 0;
+        }
+        
+        // Regular speeches should appear before upcoming speeches
         if (a.isUpcoming && !b.isUpcoming) return 1;
         if (!a.isUpcoming && b.isUpcoming) return -1;
-        if (a.isUpcoming && b.isUpcoming) return 0;
         
-        // For regular speeches, sort by date
+        // For regular speeches, sort by created_at date
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       } else if (sortBy === 'title-asc') {
         return a.title.localeCompare(b.title);
