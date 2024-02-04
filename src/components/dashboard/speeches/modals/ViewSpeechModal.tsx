@@ -141,7 +141,7 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
               variant="default"
               onClick={handleCreateSpeech}
             >
-              <Translate text="common.create" />
+              <Translate text="common.Create" />
             </ButtonCustom>
           ) : (
             <ButtonCustom 
