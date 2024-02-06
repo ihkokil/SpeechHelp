@@ -12,8 +12,11 @@ export const useSpeechesFilter = (
   const filteredSpeeches = useMemo(() => {
     console.log('Original speeches:', speeches);
     
-    // Separate regular speeches and upcoming speeches from the original speeches array
-    let regularSpeeches = speeches.filter(speech => !speech.isUpcoming);
+    // Make a copy of the original speeches array to avoid mutation issues
+    const allSpeeches = [...speeches];
+    
+    // Separate regular speeches and upcoming speeches from the array
+    let regularSpeeches = allSpeeches.filter(speech => !speech.isUpcoming);
     console.log('Regular speeches count:', regularSpeeches.length);
     
     // Get upcoming speech events from localStorage
@@ -53,43 +56,43 @@ export const useSpeechesFilter = (
     console.log('Transformed upcoming speeches count:', upcomingSpeeches.length);
     
     // Filter by search query if provided
+    let filteredRegularSpeeches = [...regularSpeeches];
+    let filteredUpcomingSpeeches = [...upcomingSpeeches];
+    
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       
       // Apply the search filter separately to regular and upcoming speeches
-      regularSpeeches = regularSpeeches.filter(
+      filteredRegularSpeeches = filteredRegularSpeeches.filter(
         (speech) => 
           speech.title.toLowerCase().includes(query) || 
           (speech.content && speech.content.toLowerCase().includes(query))
       );
       
-      const filteredUpcomingSpeeches = upcomingSpeeches.filter(
+      filteredUpcomingSpeeches = filteredUpcomingSpeeches.filter(
         (speech) => 
           speech.title.toLowerCase().includes(query) || 
           (speech.content && speech.content.toLowerCase().includes(query))
       );
-      
-      upcomingSpeeches.length = 0;
-      upcomingSpeeches.push(...filteredUpcomingSpeeches);
     }
     
-    console.log('After search filter - Regular speeches:', regularSpeeches.length);
-    console.log('After search filter - Upcoming speeches:', upcomingSpeeches.length);
+    console.log('After search filter - Regular speeches:', filteredRegularSpeeches.length);
+    console.log('After search filter - Upcoming speeches:', filteredUpcomingSpeeches.length);
     
     // Apply filter based on selected type
     let filtered: Speech[] = [];
     
     if (filterType === 'all') {
       // For "all", include both regular and upcoming speeches
-      filtered = [...regularSpeeches, ...upcomingSpeeches];
+      filtered = [...filteredRegularSpeeches, ...filteredUpcomingSpeeches];
       console.log('All filtered speeches count (all):', filtered.length);
     } else if (filterType === 'upcoming') {
       // For "upcoming", only show upcoming events
-      filtered = [...upcomingSpeeches];
+      filtered = [...filteredUpcomingSpeeches];
       console.log('All filtered speeches count (upcoming):', filtered.length);
     } else {
       // Filter regular speeches by speech type
-      filtered = regularSpeeches.filter((speech) => speech.speech_type === filterType);
+      filtered = filteredRegularSpeeches.filter((speech) => speech.speech_type === filterType);
       console.log('All filtered speeches count (specific type):', filtered.length);
     }
     
