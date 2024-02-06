@@ -1,4 +1,3 @@
-
 import { 
   Table, 
   TableBody, 
@@ -145,4 +144,3 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
 };
 
 export default SpeechesTable;
-
