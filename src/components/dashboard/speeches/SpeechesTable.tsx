@@ -1,3 +1,4 @@
+
 import { 
   Table, 
   TableBody, 
@@ -70,14 +71,17 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
       </TableHeader>
       <TableBody>
         {uniqueSpeeches.map((speech) => {
-          const isUpcoming = speech.isUpcoming === true;
+          // Ensure isUpcoming is consistently applied
+          const isUpcoming = speech.isUpcoming === true || 
+            (speech.event_date && new Date(speech.event_date) > new Date());
+          
           const displayType = isUpcoming ? 'upcoming' : speech.speech_type;
           
           return (
             <TableRow key={speech.id}>
               <TableCell className="font-medium max-w-[200px] truncate">
                 <div className="flex items-center gap-2">
-                  {/* Always show calendar icon for upcoming speeches */}
+                  {/* Consistently show calendar icon for all upcoming speeches */}
                   {isUpcoming && <CalendarClock className="h-4 w-4 text-blue-500" />}
                   {speech.title}
                 </div>
@@ -141,3 +145,4 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
 };
 
 export default SpeechesTable;
+
