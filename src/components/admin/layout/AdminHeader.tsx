@@ -19,6 +19,8 @@ interface AdminHeaderProps {
 }
 
 const AdminHeader = ({ navItems, mobileMenuOpen, setMobileMenuOpen }: AdminHeaderProps) => {
+  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
+  
   return (
     <header className="flex h-16 w-full items-center justify-between border-b bg-white px-4 lg:px-6">
       <div className="flex items-center space-x-4">
@@ -33,9 +35,9 @@ const AdminHeader = ({ navItems, mobileMenuOpen, setMobileMenuOpen }: AdminHeade
         <div className="md:hidden">
           <Link to="/admin/dashboard">
             <img
-              src="/Speech Help - Logo.svg"
+              src={logoPath}
               alt="Speech Help Logo"
-              className="h-8"
+              className="h-8 w-auto"
             />
           </Link>
         </div>

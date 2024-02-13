@@ -18,6 +18,7 @@ interface AdminSidebarProps {
 
 const AdminSidebar = ({ navItems, onSignOut }: AdminSidebarProps) => {
   const location = useLocation();
+  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
   
   return (
     <Sidebar>
@@ -25,9 +26,9 @@ const AdminSidebar = ({ navItems, onSignOut }: AdminSidebarProps) => {
         <div className="flex items-center space-x-2 px-3 py-2">
           <Link to="/admin/dashboard">
             <img
-              src="/Speech Help - Logo.svg"
+              src={logoPath}
               alt="Speech Help Logo"
-              className="h-8"
+              className="h-8 w-auto"
             />
           </Link>
           <span className="text-lg font-bold text-pink-600">Admin</span>
