@@ -38,7 +38,7 @@ const Navbar = () => {
             <img 
               src={logoPath}
               alt="SpeechHelp Logo" 
-              className="h-12"
+              className="h-12 w-auto"
             />
           </Link>
 
@@ -54,3 +54,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
