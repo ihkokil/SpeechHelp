@@ -120,7 +120,7 @@ export const useSpeechesFilter = (
         if (!a.isUpcoming && b.isUpcoming) return 1;
         
         // For regular speeches, sort by created_at date
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        return new Date(b.created_at || Date.now()).getTime() - new Date(a.created_at || Date.now()).getTime();
       } else if (sortBy === 'oldest') {
         // For upcoming speeches with event dates, sort by event date
         if (a.isUpcoming && b.isUpcoming) {
@@ -135,7 +135,7 @@ export const useSpeechesFilter = (
         if (!a.isUpcoming && b.isUpcoming) return -1;
         
         // For regular speeches, sort by created_at date
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        return new Date(a.created_at || Date.now()).getTime() - new Date(b.created_at || Date.now()).getTime();
       } else if (sortBy === 'title-asc') {
         return a.title.localeCompare(b.title);
       } else {
