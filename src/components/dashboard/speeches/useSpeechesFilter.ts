@@ -97,15 +97,15 @@ export const useSpeechesFilter = (
     }
     
     // Ensure uniqueness of speeches by ID
-    filtered = Array.from(
+    const uniqueFilteredSpeeches = Array.from(
       new Map(filtered.map(speech => [speech.id, speech])).values()
     );
     
-    console.log('After deduplication - Final filtered count:', filtered.length);
-    console.log('Final filtered speeches:', filtered);
+    console.log('After deduplication - Final filtered count:', uniqueFilteredSpeeches.length);
+    console.log('Final filtered speeches:', uniqueFilteredSpeeches);
     
     // Finally, sort the filtered speeches
-    return filtered.sort((a, b) => {
+    return uniqueFilteredSpeeches.sort((a, b) => {
       if (sortBy === 'newest') {
         // For upcoming speeches with event dates, sort by event date
         if (a.isUpcoming && b.isUpcoming) {
