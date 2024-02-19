@@ -119,8 +119,10 @@ export const useSpeechesFilter = (
         if (a.isUpcoming && !b.isUpcoming) return -1;
         if (!a.isUpcoming && b.isUpcoming) return 1;
         
-        // For regular speeches, sort by created_at date
-        return new Date(b.created_at || Date.now()).getTime() - new Date(a.created_at || Date.now()).getTime();
+        // For regular speeches, sort by created_at date, with a fallback for speeches without dates
+        const aDate = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const bDate = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return bDate - aDate;
       } else if (sortBy === 'oldest') {
         // For upcoming speeches with event dates, sort by event date
         if (a.isUpcoming && b.isUpcoming) {
@@ -134,12 +136,14 @@ export const useSpeechesFilter = (
         if (a.isUpcoming && !b.isUpcoming) return 1;
         if (!a.isUpcoming && b.isUpcoming) return -1;
         
-        // For regular speeches, sort by created_at date
-        return new Date(a.created_at || Date.now()).getTime() - new Date(b.created_at || Date.now()).getTime();
+        // For regular speeches, sort by created_at date, with a fallback for speeches without dates
+        const aDate = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const bDate = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return aDate - bDate;
       } else if (sortBy === 'title-asc') {
-        return a.title.localeCompare(b.title);
+        return (a.title || '').localeCompare(b.title || '');
       } else {
-        return b.title.localeCompare(a.title);
+        return (b.title || '').localeCompare(a.title || '');
       }
     });
   }, [speeches, searchQuery, filterType, sortBy]);
