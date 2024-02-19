@@ -13,7 +13,8 @@ export const useSpeechesFilter = (
     console.log('Original speeches:', speeches);
     
     // Make a copy of the original speeches array to avoid mutation issues
-    const allSpeeches = [...speeches];
+    // Also ensure we have an array even if speeches is undefined or null
+    const allSpeeches = Array.isArray(speeches) ? [...speeches] : [];
     
     // Separate regular speeches and upcoming speeches from the array
     let regularSpeeches = allSpeeches.filter(speech => !speech.isUpcoming);
@@ -42,9 +43,9 @@ export const useSpeechesFilter = (
     
     // Create speech-like objects for upcoming events
     const upcomingSpeeches = upcomingEvents.map((event) => ({
-      id: event.id,
+      id: event.id || `upcoming-${Date.now()}-${Math.random()}`,
       user_id: '', 
-      title: event.title,
+      title: event.title || 'Untitled Event',
       content: event.notes || '',
       created_at: '', 
       updated_at: '', 
@@ -65,13 +66,13 @@ export const useSpeechesFilter = (
       // Apply the search filter separately to regular and upcoming speeches
       filteredRegularSpeeches = filteredRegularSpeeches.filter(
         (speech) => 
-          speech.title.toLowerCase().includes(query) || 
+          (speech.title && speech.title.toLowerCase().includes(query)) || 
           (speech.content && speech.content.toLowerCase().includes(query))
       );
       
       filteredUpcomingSpeeches = filteredUpcomingSpeeches.filter(
         (speech) => 
-          speech.title.toLowerCase().includes(query) || 
+          (speech.title && speech.title.toLowerCase().includes(query)) || 
           (speech.content && speech.content.toLowerCase().includes(query))
       );
     }
