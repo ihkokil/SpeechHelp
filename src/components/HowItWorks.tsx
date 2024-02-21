@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { PencilIcon, SparklesIcon, MicIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -21,21 +20,23 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
     : 'translate-x-[100px]';
   
   return (
-    <div className={`mb-8 transform transition-all duration-700 ease-out opacity-0 ${animationClass} ${
-      isVisible ? 'opacity-100 translate-x-0' : ''
-    } hover:scale-105 hover:shadow-lg hover:bg-gray-50 rounded-lg p-4 transition-all duration-300 group`}>
-      <div className="flex items-start">
-        <div className="relative mr-4 sm:mr-6 flex-shrink-0">
-          <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-pink-100 text-pink-600 font-bold border-2 border-pink-600 z-10 
+    <div 
+      className={`transform transition-all duration-700 ease-out opacity-0 ${animationClass} ${
+        isVisible ? 'opacity-100 translate-x-0' : ''
+      } hover:scale-105 hover:shadow-lg hover:bg-gray-50 rounded-lg p-4 sm:p-6 transition-all duration-300 group w-full`}
+    >
+      <div className="flex items-start gap-4">
+        <div className="relative flex-shrink-0">
+          <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-pink-100 text-pink-600 font-bold border-2 border-pink-600 z-10 
             transform transition-all duration-500 group-hover:scale-110 group-hover:bg-pink-200">
             {stepNumber}
           </div>
         </div>
-        <div className="flex-1 pt-1">
-          <h3 className="text-lg sm:text-xl font-semibold text-pink-600 mb-2 group-hover:text-pink-700 transition-colors">
+        <div className="flex-1">
+          <h3 className="text-base sm:text-lg font-semibold text-pink-600 mb-2 group-hover:text-pink-700 transition-colors">
             {t(`howItWorks.step${stepNumber}.title`, currentLanguage.code)}
           </h3>
-          <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 max-w-md group-hover:text-gray-800 transition-colors">
+          <p className="text-sm sm:text-base text-gray-600 group-hover:text-gray-800 transition-colors">
             {t(`howItWorks.step${stepNumber}.description`, currentLanguage.code)}
           </p>
         </div>
@@ -80,91 +81,33 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-12 md:py-24 bg-gray-50 relative overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 md:px-12">
-        <div className="text-center max-w-3xl mx-auto mb-10 md:mb-16" ref={sectionRef}>
-          <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 transform transition-all duration-700 opacity-0 translate-y-8 ${
+    <section id="how-it-works" className="py-8 sm:py-12 md:py-24 bg-gray-50 relative overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12" ref={sectionRef}>
+          <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 transform transition-all duration-700 opacity-0 translate-y-8 ${
             isVisible ? 'opacity-100 translate-y-0' : ''
           }`}>
             How It <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Works</span>
           </h2>
-          <p className={`text-base sm:text-lg text-gray-600 transform transition-all duration-700 delay-200 opacity-0 translate-y-8 ${
+          <p className={`text-sm sm:text-base text-gray-600 transform transition-all duration-700 delay-200 opacity-0 translate-y-8 ${
             isVisible ? 'opacity-100 translate-y-0' : ''
           }`}>
             {t('howItWorks.subtitle', currentLanguage.code)}
           </p>
         </div>
 
-        <div className="max-w-6xl mx-auto">
-          {isMobile ? (
-            // Mobile layout - single column
-            <div className="space-y-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="space-y-6 sm:space-y-8">
+            {[1, 2, 3, 4].map((stepNumber) => (
               <Step
-                key={1}
-                icon={stepIcons[0]}
-                stepNumber={1}
+                key={stepNumber}
+                icon={stepIcons[stepNumber - 1]}
+                stepNumber={stepNumber}
                 isVisible={isVisible}
-                slideDirection="left"
+                slideDirection={stepNumber % 2 === 0 ? 'right' : 'left'}
               />
-              <Step
-                key={2}
-                icon={stepIcons[1]}
-                stepNumber={2}
-                isVisible={isVisible}
-                slideDirection="right"
-              />
-              <Step
-                key={3}
-                icon={stepIcons[2]}
-                stepNumber={3}
-                isVisible={isVisible}
-                slideDirection="left"
-              />
-              <Step
-                key={4}
-                icon={stepIcons[3]}
-                stepNumber={4}
-                isVisible={isVisible}
-                slideDirection="right"
-              />
-            </div>
-          ) : (
-            // Desktop layout - two columns
-            <div className="grid md:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-4 sm:gap-y-8">
-              <div className="space-y-8">
-                <Step
-                  key={1}
-                  icon={stepIcons[0]}
-                  stepNumber={1}
-                  isVisible={isVisible}
-                  slideDirection="left"
-                />
-                <Step
-                  key={3}
-                  icon={stepIcons[2]}
-                  stepNumber={3}
-                  isVisible={isVisible}
-                  slideDirection="left"
-                />
-              </div>
-              <div className="space-y-8">
-                <Step
-                  key={2}
-                  icon={stepIcons[1]}
-                  stepNumber={2}
-                  isVisible={isVisible}
-                  slideDirection="right"
-                />
-                <Step
-                  key={4}
-                  icon={stepIcons[3]}
-                  stepNumber={4}
-                  isVisible={isVisible}
-                  slideDirection="right"
-                />
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       </div>
     </section>
