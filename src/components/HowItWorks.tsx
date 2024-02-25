@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { PencilIcon, SparklesIcon, MicIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -42,6 +41,33 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
           </p>
         </div>
       </div>
+    </div>
+  );
+};
+
+const CurvedArrow = ({ index }: { index: number }) => {
+  const upwardCurve = index === 1;
+  const path = upwardCurve
+    ? "M10,50 C160,-30 160,130 310,50" 
+    : "M10,50 C160,130 160,-30 310,50";
+
+  return (
+    <div className="hidden lg:block relative w-full h-24 -mt-4">
+      <svg className="absolute left-1/2 -translate-x-1/2 w-80 h-24">
+        <path
+          d={path}
+          fill="none"
+          stroke="url(#purpleGradient)"
+          strokeWidth="3"
+          className={`opacity-0 transition-all duration-1000 ${isVisible ? 'opacity-100' : ''}`}
+        />
+        <defs>
+          <linearGradient id={`purpleGradient${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#9333EA" />
+            <stop offset="100%" stopColor="#E879F9" />
+          </linearGradient>
+        </defs>
+      </svg>
     </div>
   );
 };
@@ -100,13 +126,18 @@ const HowItWorks = () => {
         <div className="max-w-4xl mx-auto">
           <div className="space-y-6 sm:space-y-8">
             {[1, 2, 3, 4].map((stepNumber) => (
-              <Step
-                key={stepNumber}
-                icon={stepIcons[stepNumber - 1]}
-                stepNumber={stepNumber}
-                isVisible={isVisible}
-                slideDirection={stepNumber % 2 === 0 ? 'right' : 'left'}
-              />
+              <>
+                <Step
+                  key={`step-${stepNumber}`}
+                  icon={stepIcons[stepNumber - 1]}
+                  stepNumber={stepNumber}
+                  isVisible={isVisible}
+                  slideDirection={stepNumber % 2 === 0 ? 'right' : 'left'}
+                />
+                {stepNumber < 4 && (
+                  <CurvedArrow key={`arrow-${stepNumber}`} index={stepNumber} />
+                )}
+              </>
             ))}
           </div>
         </div>
