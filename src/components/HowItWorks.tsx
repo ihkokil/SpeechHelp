@@ -48,26 +48,47 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
 
 const CurvedArrow = ({ index, isVisible }: { index: number; isVisible: boolean }) => {
   const upwardCurve = index % 2 === 0;
+  // Define the paths for the curved arrows
   const path = upwardCurve
     ? "M10,50 C160,-30 160,130 310,50" 
     : "M10,50 C160,130 160,-30 310,50";
+  
+  // Define marker ID for arrow
+  const markerId = `arrowhead${index}`;
 
   return (
     <div className="hidden lg:block relative w-full h-24 -mt-4">
       <svg className="absolute left-1/2 -translate-x-1/2 w-80 h-24">
-        <path
-          d={path}
-          fill="none"
-          stroke={`url(#purpleGradient${index})`}
-          strokeWidth="3"
-          className={`opacity-0 transition-all duration-1000 ${isVisible ? 'opacity-100' : ''}`}
-        />
         <defs>
           <linearGradient id={`purpleGradient${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#9333EA" />
             <stop offset="100%" stopColor="#E879F9" />
           </linearGradient>
+          
+          <marker 
+            id={markerId} 
+            markerWidth="10" 
+            markerHeight="8" 
+            refX="9.5" 
+            refY="4" 
+            orient="auto"
+            markerUnits="userSpaceOnUse"
+          >
+            <path 
+              d="M0,0 L0,8 L10,4 L0,0" 
+              fill={`url(#purpleGradient${index})`} 
+            />
+          </marker>
         </defs>
+        
+        <path
+          d={path}
+          fill="none"
+          stroke={`url(#purpleGradient${index})`}
+          strokeWidth="3"
+          markerEnd={`url(#${markerId})`}
+          className={`opacity-0 transition-all duration-1000 ${isVisible ? 'opacity-100' : ''}`}
+        />
       </svg>
     </div>
   );
