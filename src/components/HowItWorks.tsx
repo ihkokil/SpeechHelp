@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { PencilIcon, SparklesIcon, MicIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -47,10 +48,12 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
 
 const CurvedArrow = ({ index, isVisible }: { index: number; isVisible: boolean }) => {
   const upwardCurve = index % 2 === 0;
-  // Define the paths for the curved arrows - starting from the circle of current step to the next step's circle
+  
+  // Define the paths for the curved arrows that connect from the circle of one step to the next circle
+  // Path format: M(start-x,start-y) C(control1-x,control1-y) (control2-x,control2-y) (end-x,end-y)
   const path = upwardCurve
-    ? "M45,35 C160,-30 160,130 275,35" 
-    : "M45,35 C160,130 160,-30 275,35";
+    ? "M10,10 C120,-50 200,100 320,10" 
+    : "M10,10 C120,100 200,-50 320,10";
   
   // Define marker ID for arrow
   const markerId = `arrowhead${index}`;
