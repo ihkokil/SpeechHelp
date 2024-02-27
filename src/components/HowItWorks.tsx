@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { PencilIcon, SparklesIcon, MicIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -42,59 +41,6 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
           </p>
         </div>
       </div>
-    </div>
-  );
-};
-
-const CurvedArrow = ({ index, isVisible }: { index: number; isVisible: boolean }) => {
-  const upwardCurve = index % 2 === 0;
-  
-  // These path coordinates are designed to start near the number circle and point to the next one
-  // M = starting point (near first circle)
-  // C = control points for the curve
-  // End point is near the next circle
-  const path = upwardCurve
-    ? "M15,10 C80,-30 240,-30 305,10" // Upward curve path - starts left, curves up, ends right
-    : "M15,10 C80,50 240,50 305,10";  // Downward curve path - starts left, curves down, ends right
-  
-  // Define marker ID for arrow
-  const markerId = `arrowhead${index}`;
-
-  return (
-    <div className="hidden lg:block relative w-full h-16 -my-1">
-      <svg className="absolute left-1/2 -translate-x-1/2 w-80 h-16 overflow-visible">
-        <defs>
-          <linearGradient id={`purpleGradient${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#9333EA" />
-            <stop offset="100%" stopColor="#E879F9" />
-          </linearGradient>
-          
-          <marker 
-            id={markerId} 
-            markerWidth="10" 
-            markerHeight="8" 
-            refX="9.5" 
-            refY="4" 
-            orient="auto"
-            markerUnits="userSpaceOnUse"
-          >
-            <path 
-              d="M0,0 L0,8 L10,4 L0,0" 
-              fill={`url(#purpleGradient${index})`} 
-            />
-          </marker>
-        </defs>
-        
-        <path
-          d={path}
-          fill="none"
-          stroke={`url(#purpleGradient${index})`}
-          strokeWidth="2.5"
-          strokeDasharray="6,4"
-          markerEnd={`url(#${markerId})`}
-          className={`opacity-0 transition-all duration-1000 ${isVisible ? 'opacity-100 animate-pulse' : ''}`}
-        />
-      </svg>
     </div>
   );
 };
@@ -151,24 +97,15 @@ const HowItWorks = () => {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="space-y-0">
+          <div className="space-y-4">
             {[1, 2, 3, 4].map((stepNumber) => (
-              <React.Fragment key={`step-group-${stepNumber}`}>
-                <Step
-                  key={`step-${stepNumber}`}
-                  icon={stepIcons[stepNumber - 1]}
-                  stepNumber={stepNumber}
-                  isVisible={isVisible}
-                  slideDirection={stepNumber % 2 === 0 ? 'right' : 'left'}
-                />
-                {stepNumber < 4 && (
-                  <CurvedArrow 
-                    key={`arrow-${stepNumber}`} 
-                    index={stepNumber} 
-                    isVisible={isVisible}
-                  />
-                )}
-              </React.Fragment>
+              <Step
+                key={`step-${stepNumber}`}
+                icon={stepIcons[stepNumber - 1]}
+                stepNumber={stepNumber}
+                isVisible={isVisible}
+                slideDirection={stepNumber % 2 === 0 ? 'right' : 'left'}
+              />
             ))}
           </div>
         </div>
