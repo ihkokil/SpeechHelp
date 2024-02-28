@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -14,28 +13,23 @@ const Hero = () => {
   const isMobile = useIsMobile();
   const heroRef = useRef<HTMLElement>(null);
   
-  // Video hosted on Supabase
   const videoUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/sign/videofiles/Video%20Montage%20-%20Speech%20Help%20App.mov?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ2aWRlb2ZpbGVzL1ZpZGVvIE1vbnRhZ2UgLSBTcGVlY2ggSGVscCBBcHAubW92IiwiaWF0IjoxNzQzMDk4MTg0LCJleHAiOjE3NzQ2MzQxODR9.wLJRfrryzMvSYVz8ZeCt6YPHJvBheaX4JZ2MAeEt1R4";
   
   useEffect(() => {
     setIsLoaded(true);
     
-    // Strong anti-scroll implementation
     const preventScroll = () => {
       if (heroRef.current) {
         window.scrollTo(0, 0);
       }
     };
     
-    // Apply multiple scroll preventions
     window.scrollTo(0, 0);
     setTimeout(() => window.scrollTo(0, 0), 100);
     setTimeout(() => window.scrollTo(0, 0), 300);
     
-    // Add scroll event listener for the first second to prevent scrolling
     window.addEventListener('scroll', preventScroll);
     
-    // Remove the event listener after a delay to allow scrolling later
     const scrollTimer = setTimeout(() => {
       window.removeEventListener('scroll', preventScroll);
     }, 1000);
@@ -46,22 +40,20 @@ const Hero = () => {
     };
   }, []);
 
-  // Get the navbar height for positioning
-  const navbarHeight = 76; // Height of the navbar in pixels
+  const navbarHeight = 76;
 
   return (
     <>
       <section 
         ref={heroRef}
-        className="text-white pb-16 md:pb-24 overflow-hidden relative"
+        className="text-white pb-8 sm:pb-16 md:pb-24 overflow-hidden relative"
         style={{ paddingTop: navbarHeight + 20 }}
       >
-        {/* Video Background */}
         <div 
           className="absolute inset-0 z-0 overflow-hidden" 
           style={{ 
             top: navbarHeight,
-            height: `calc(100% - ${navbarHeight}px + ${isMobile ? '10vh' : '20vh'})` // Adjusted for mobile
+            height: `calc(100% - ${navbarHeight}px + ${isMobile ? '5vh' : '20vh'})` 
           }}
         >
           <video
@@ -78,29 +70,25 @@ const Hero = () => {
           <div className="absolute inset-0 bg-black/60"></div>
         </div>
         
-        <div className="container relative z-10 mx-auto px-6 md:px-12 pt-16 pb-12">
-          <div className="max-w-5xl mx-auto text-center">
-            {/* Main Headline */}
-            <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
+        <div className="container relative z-10 mx-auto px-4 sm:px-6 md:px-12 pt-8 sm:pt-16 pb-6 sm:pb-12">
+          <div className="max-w-[95%] sm:max-w-5xl mx-auto text-center">
+            <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight sm:leading-tight md:leading-tight lg:leading-tight mb-3 sm:mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
               Need a <span className="text-pink-500">creative speech?</span>
             </h1>
             
-            {/* Subheadline - Making it approximately 60% larger */}
-            <h2 className={`text-3xl md:text-4xl lg:text-5xl font-medium leading-tight md:leading-tight lg:leading-tight mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
+            <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium leading-tight sm:leading-tight md:leading-tight lg:leading-tight mb-6 sm:mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
               {t('hero.subheadline', currentLanguage.code)}
             </h2>
             
-            {/* Added more spacing before the CTA button */}
-            <div className={`flex justify-center mb-16 mt-14 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
+            <div className={`flex justify-center mb-8 sm:mb-16 mt-8 sm:mt-14 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
               <Link to="/pricing">
-                <ButtonCustom variant="magenta" size="lg" className="group">
+                <ButtonCustom variant="magenta" size="lg" className="group text-base sm:text-lg">
                   <span>{t('hero.cta', currentLanguage.code)}</span>
                 </ButtonCustom>
               </Link>
             </div>
             
-            {/* Features/Benefits Icons - Moved lower with increased top margin */}
-            <div className={`grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto mt-16 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
+            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8 max-w-3xl mx-auto mt-8 sm:mt-16 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
               <div className="text-center">
                 <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
                   <span className="text-base font-bold">AI</span>

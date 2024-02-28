@@ -105,18 +105,18 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden">
+    <div className="min-h-screen flex flex-col overflow-x-hidden w-full">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 w-full">
         <Hero />
-        <div id="features">
+        <div id="features" className="w-full">
           <Features />
         </div>
-        <div id="how-it-works">
+        <div id="how-it-works" className="w-full">
           <HowItWorks />
         </div>
         <SpeechGallery />
-        <div id="contact">
+        <div id="contact" className="w-full">
           <ContactForm />
         </div>
       </main>
