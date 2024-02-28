@@ -44,41 +44,6 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
   );
 };
 
-const ConnectingArrow = ({ isVisible, direction = 'down' }: { isVisible: boolean; direction?: 'down' | 'up' }) => {
-  const path = direction === 'down' 
-    ? "M30,0 Q30,50 120,100" 
-    : "M30,100 Q30,50 120,0";
-
-  return (
-    <div className="hidden lg:block relative w-32 h-32">
-      <svg className="absolute w-full h-full">
-        <defs>
-          <marker
-            id="arrowhead"
-            markerWidth="10"
-            markerHeight="7"
-            refX="9"
-            refY="3.5"
-            orient="auto">
-            <polygon
-              points="0 0, 10 3.5, 0 7"
-              fill="#8B5CF6"
-            />
-          </marker>
-        </defs>
-        <path
-          d={path}
-          fill="none"
-          stroke="#8B5CF6"
-          strokeWidth="2"
-          markerEnd="url(#arrowhead)"
-          className={`opacity-0 transition-all duration-1000 ${isVisible ? 'opacity-100' : ''}`}
-        />
-      </svg>
-    </div>
-  );
-};
-
 const HowItWorks = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -130,24 +95,15 @@ const HowItWorks = () => {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 gap-8 relative">
+          <div className="grid grid-cols-1 gap-8">
             {[1, 2, 3, 4].map((stepNumber) => (
-              <div key={`step-group-${stepNumber}`} className="relative">
-                <Step
-                  icon={stepIcons[stepNumber - 1]}
-                  stepNumber={stepNumber}
-                  isVisible={isVisible}
-                  slideDirection={stepNumber % 2 === 0 ? 'right' : 'left'}
-                />
-                {stepNumber < 4 && (
-                  <div className="absolute -right-16 -bottom-16 transform translate-x-1/2">
-                    <ConnectingArrow 
-                      isVisible={isVisible}
-                      direction={stepNumber % 2 === 0 ? 'up' : 'down'}
-                    />
-                  </div>
-                )}
-              </div>
+              <Step
+                key={`step-${stepNumber}`}
+                icon={stepIcons[stepNumber - 1]}
+                stepNumber={stepNumber}
+                isVisible={isVisible}
+                slideDirection={stepNumber % 2 === 0 ? 'right' : 'left'}
+              />
             ))}
           </div>
         </div>
