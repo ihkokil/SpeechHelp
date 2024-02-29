@@ -1,17 +1,16 @@
 
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTranslation } from '@/translations';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface TranslateProps {
   text: string;
   fallback?: string;
+  variables?: Record<string, string>;
 }
 
-const Translate: React.FC<TranslateProps> = ({ text, fallback }) => {
-  const { currentLanguage } = useLanguage();
-  const { t } = useTranslation();
+const Translate: React.FC<TranslateProps> = ({ text, fallback, variables }) => {
+  const { translate } = useTranslatedContent();
   
-  const translation = t(text, currentLanguage.code);
+  const translation = translate(text, variables);
   
   // If the translation is the same as the key and it looks like a translation key,
   // render the fallback text if provided or format the key in a user-friendly way
@@ -27,3 +26,4 @@ const Translate: React.FC<TranslateProps> = ({ text, fallback }) => {
 };
 
 export default Translate;
+
