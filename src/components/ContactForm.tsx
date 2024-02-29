@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Mail, MessageSquare } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -34,7 +33,7 @@ const ContactForm = () => {
       <div className="container mx-auto px-6 md:px-12">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
-            Who We Are & <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">How We Help</span>
+            {t('headers.whoWeAre', currentLanguage.code)} <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">{t('headers.howWeHelp', currentLanguage.code)}</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             {t('contact.getInTouch', currentLanguage.code)}

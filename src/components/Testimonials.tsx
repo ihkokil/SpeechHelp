@@ -1,5 +1,4 @@
-
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from 'react';
 import { Star, Quote } from "lucide-react";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -88,7 +87,7 @@ const Testimonials = () => {
       <div className="container mx-auto px-6 md:px-12">
         <div className="max-w-3xl mx-auto text-center mb-12" ref={sectionRef}>
           <h2 className={`text-3xl md:text-4xl font-bold mb-6 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
-            {t('testimonials.title', currentLanguage.code)} <span className="text-pink-600">About Us</span>
+            {t('headers.whatClientsAboutUs', currentLanguage.code)}
           </h2>
         </div>
 

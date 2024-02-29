@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { ArrowRight, CheckIcon } from 'lucide-react';
 import { ButtonCustom } from './ui/button-custom';
@@ -48,14 +47,12 @@ const CallToAction = () => {
 
   return (
     <section id="pricing" className="py-20 md:py-32 relative">
-      <div 
-        id="cta-section"
-        className="container mx-auto px-6 md:px-12">
+      <div id="cta-section" className="container mx-auto px-6 md:px-12">
         <div className="max-w-5xl mx-auto bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl overflow-hidden shadow-xl">
           <div className="flex flex-col md:flex-row">
             <div className="md:w-3/5 p-8 md:p-12 text-white">
               <h2 className={`text-3xl md:text-4xl font-bold mb-6 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
-                {t('cta.title', currentLanguage.code)}
+                {t('headers.readyTransform', currentLanguage.code)}
               </h2>
               <p className={`text-blue-100 text-lg mb-8 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>
                 {t('cta.subtitle', currentLanguage.code)}

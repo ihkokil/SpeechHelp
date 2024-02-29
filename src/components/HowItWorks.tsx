@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { PencilIcon, SparklesIcon, MicIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -86,7 +85,7 @@ const HowItWorks = () => {
           <h2 className={`text-3xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6 transform transition-all duration-700 opacity-0 translate-y-8 ${
             isVisible ? 'opacity-100 translate-y-0' : ''
           }`}>
-            How It <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Works</span>
+            {t('headers.howItWorks', currentLanguage.code)} <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">{t('headers.works', currentLanguage.code)}</span>
           </h2>
           <p className={`text-base sm:text-lg md:text-xl text-gray-600 transform transition-all duration-700 delay-200 opacity-0 translate-y-8 ${
             isVisible ? 'opacity-100 translate-y-0' : ''
