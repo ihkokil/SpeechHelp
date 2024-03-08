@@ -1,3 +1,4 @@
+
 export const fr = {
   // General
   'app.name': 'SpeechHelp',
@@ -104,6 +105,8 @@ export const fr = {
   // Features Section
   'features.title': 'Bienvenue sur Speech Help!',
   'features.subtitle': 'Avez-vous déjà fixé une page blanche en vous sentant jugé? Que vous fassiez un toast de mariage, ralliez une équipe ou présentiez une conférence, Speech Help est là pour vous sauver de la paralysie des idées.',
+  'features.introText1': 'Avez-vous déjà fixé une page blanche en vous sentant jugé? Que vous fassiez un toast de mariage, ralliez une équipe ou présentiez une conférence, Speech Help est là pour vous sauver de la paralysie des idées et du syndrome de la page blanche.',
+  'features.introText2': 'Notre assistant conversationnel étape par étape vous guidera sans effort à travers une série de questions simples et réfléchies qui révèlent votre perspective et votre voix uniques. Aucune expertise en rédaction n\'est nécessaire - répondez simplement naturellement comme si vous discutiez avec un ami, et nous vous aiderons à transformer ces réponses en un discours soigné qui vous ressemble exactement, en mieux.',
   'features.ai.title': 'Magie alimentée par l\'IA',
   'features.ai.description': 'Chez Speech Help, nous ne nous contentons pas d\'écrire des discours - nous vous aidons à créer des moments mémorables! Notre système alimenté par l\'IA est comme un assistant personnel qui transforme vos idées en un discours qui impressionnera tout le monde.',
   'features.writersBlock.title': 'Fini le syndrome de la page blanche',

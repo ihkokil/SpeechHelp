@@ -1,3 +1,4 @@
+
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { CalendarRange, Zap, Target, Clock, Calendar, Sparkles } from 'lucide-react';
@@ -14,10 +15,10 @@ const Features = () => {
             {t('headers.welcomeTo', currentLanguage.code)} <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Speech Help!</span>
           </h2>
           <p className="text-lg text-gray-700 leading-relaxed mb-4">
-            Ever stared at a blank page and felt it judging you? Whether you're giving a wedding toast, rallying a team, or delivering a conference keynote, Speech Help is here to rescue you from idea paralysis and blank-page syndrome.
+            {t('features.introText1', currentLanguage.code)}
           </p>
           <p className="text-lg text-gray-700 leading-relaxed">
-            Our step-by-step conversational style wizard will effortlessly guide you through a series of simple and thoughtful questions that unlock your unique perspective and voice. No writing expertise needed - just answer naturally as if chatting with a friend, and we'll help shape those responses into a polished speech that sounds exactly like you, only better.
+            {t('features.introText2', currentLanguage.code)}
           </p>
         </div>
 
