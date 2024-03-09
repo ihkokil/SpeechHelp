@@ -34,3 +34,4 @@ export const enUSTranslations = {
   ...headers,
   ...gallery
 };
+
