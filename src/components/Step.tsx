@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTranslation } from '@/translations';
+import Translate from '@/components/Translate';
 
 interface StepProps {
   icon: JSX.Element;
@@ -11,9 +10,6 @@ interface StepProps {
 }
 
 const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
-  const { currentLanguage } = useLanguage();
-  const { t } = useTranslation();
-  
   const animationClass = slideDirection === 'left' 
     ? 'translate-x-[-30px] sm:translate-x-[-50px]' 
     : 'translate-x-[30px] sm:translate-x-[50px]';
@@ -33,10 +29,10 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-base sm:text-lg md:text-xl font-semibold text-pink-600 mb-1 sm:mb-2 group-hover:text-pink-700 transition-colors">
-            {t(`howItWorks.step${stepNumber}.title`, currentLanguage.code)}
+            <Translate text={`howItWorks.step${stepNumber}.title`} />
           </h3>
           <p className="text-sm sm:text-base md:text-lg text-gray-600 group-hover:text-gray-800 transition-colors pr-1">
-            {t(`howItWorks.step${stepNumber}.description`, currentLanguage.code)}
+            <Translate text={`howItWorks.step${stepNumber}.description`} />
           </p>
         </div>
       </div>

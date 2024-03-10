@@ -18,4 +18,6 @@ export const cta = {
   'cta.proFeature4': 'Support prioritaire',
   'cta.enterprise': 'Besoin d\'une solution d\'entreprise?',
   'cta.contactUs': 'Contactez-nous',
+  'cta.title': 'Prêt à transformer votre prise de parole en public ?',
+  'cta.proButtonCta': 'Choisir le plan Pro'
 };

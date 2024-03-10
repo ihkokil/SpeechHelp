@@ -5,4 +5,5 @@ export const navigation = {
   'nav.howItWorks': 'Comment ça marche',
   'nav.testimonials': 'Témoignages',
   'nav.contact': 'Contact',
+  'nav.pricing': 'Tarifs'
 };

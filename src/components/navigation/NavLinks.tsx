@@ -1,8 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import { useTranslation } from "@/translations";
-import { useLanguage } from "@/contexts/LanguageContext";
+import Translate from '@/components/Translate';
 
 interface NavLinksProps {
   isMobile?: boolean;
@@ -11,8 +10,6 @@ interface NavLinksProps {
 
 const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
   const location = useLocation();
-  const { currentLanguage } = useLanguage();
-  const { t } = useTranslation();
 
   const scrollToSection = (sectionId: string) => {
     // Only attempt to scroll if we're on the homepage
@@ -68,32 +65,32 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
           onClick={scrollToTop}
           className={className}
         >
-          {t('nav.home', currentLanguage.code)}
+          <Translate text="nav.home" />
         </button>
         <button
           onClick={() => scrollToSection('features')}
           className={className}
         >
-          {t('nav.features', currentLanguage.code)}
+          <Translate text="nav.features" />
         </button>
         <button
           onClick={() => scrollToSection('how-it-works')}
           className={className}
         >
-          {t('nav.howItWorks', currentLanguage.code)}
+          <Translate text="nav.howItWorks" />
         </button>
         <Link
           to="/pricing"
           className={className}
           onClick={handlePricingClick}
         >
-          Pricing
+          <Translate text="nav.pricing" />
         </Link>
         <button
           onClick={() => scrollToSection('contact')}
           className={className}
         >
-          {t('nav.contact', currentLanguage.code)}
+          <Translate text="nav.contact" />
         </button>
       </>
     );
@@ -107,35 +104,35 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         className={className}
         onClick={scrollToTop}
       >
-        {t('nav.home', currentLanguage.code)}
+        <Translate text="nav.home" />
       </Link>
       <Link
         to="/#features"
         className={className}
         onClick={onItemClick}
       >
-        {t('nav.features', currentLanguage.code)}
+        <Translate text="nav.features" />
       </Link>
       <Link
         to="/#how-it-works"
         className={className}
         onClick={onItemClick}
       >
-        {t('nav.howItWorks', currentLanguage.code)}
+        <Translate text="nav.howItWorks" />
       </Link>
       <Link
         to="/pricing"
         className={className}
         onClick={handlePricingClick}
       >
-        Pricing
+        <Translate text="nav.pricing" />
       </Link>
       <Link
         to="/#contact"
         className={className}
         onClick={onItemClick}
       >
-        {t('nav.contact', currentLanguage.code)}
+        <Translate text="nav.contact" />
       </Link>
     </>
   );
