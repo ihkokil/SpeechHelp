@@ -5,6 +5,7 @@ import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
 import { ButtonCustom } from './ui/button-custom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import Translate from '@/components/Translate';
 
 const Hero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -73,23 +74,17 @@ const Hero = () => {
         <div className="container relative z-10 mx-auto px-4 sm:px-6 md:px-12 pt-8 sm:pt-16 pb-6 sm:pb-12">
           <div className="max-w-[95%] sm:max-w-5xl mx-auto text-center">
             <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight sm:leading-tight md:leading-tight lg:leading-tight mb-3 sm:mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
-              {t('headers.needCreativeSpeech', currentLanguage.code).split(' ').map((word, index) => 
-                word.toLowerCase() === 'creative' || word.toLowerCase() === 'speech?' ? 
-                  <span key={index} className="text-pink-600">
-                    {word + ' '}
-                  </span> : 
-                  word + ' '
-              )}
+              <Translate text="headers.needCreativeSpeech" />
             </h1>
             
             <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium leading-tight sm:leading-tight md:leading-tight lg:leading-tight mb-6 sm:mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
-              {t('hero.subheadline', currentLanguage.code)}
+              <Translate text="hero.subheadline" />
             </h2>
             
             <div className={`flex justify-center mb-8 sm:mb-16 mt-8 sm:mt-14 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
               <Link to="/pricing">
                 <ButtonCustom variant="magenta" size="lg" className="group text-base sm:text-lg">
-                  <span>{t('hero.cta', currentLanguage.code)}</span>
+                  <span><Translate text="hero.cta" /></span>
                 </ButtonCustom>
               </Link>
             </div>
@@ -99,19 +94,19 @@ const Hero = () => {
                 <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
                   <span className="text-base font-bold">AI</span>
                 </div>
-                <p className="text-gray-300 text-sm">{t('hero.feature1', currentLanguage.code)}</p>
+                <p className="text-gray-300 text-sm"><Translate text="hero.feature1" /></p>
               </div>
               <div className="text-center">
                 <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
                   <span className="text-base font-bold">⌛</span>
                 </div>
-                <p className="text-gray-300 text-sm">{t('hero.feature2', currentLanguage.code)}</p>
+                <p className="text-gray-300 text-sm"><Translate text="hero.feature2" /></p>
               </div>
               <div className="text-center">
                 <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
                   <span className="text-base font-bold">★</span>
                 </div>
-                <p className="text-gray-300 text-sm">{t('hero.feature3', currentLanguage.code)}</p>
+                <p className="text-gray-300 text-sm"><Translate text="hero.feature3" /></p>
               </div>
             </div>
           </div>

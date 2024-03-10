@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { PencilIcon, SparklesIcon, MicIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
+import Translate from '@/components/Translate';
 
 interface StepProps {
   icon: JSX.Element;
@@ -34,10 +35,10 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-base sm:text-lg md:text-xl font-semibold text-pink-600 mb-1 sm:mb-2 group-hover:text-pink-700 transition-colors">
-            {t(`howItWorks.step${stepNumber}.title`, currentLanguage.code)}
+            <Translate text={`howItWorks.step${stepNumber}.title`} />
           </h3>
           <p className="text-sm sm:text-base md:text-lg text-gray-600 group-hover:text-gray-800 transition-colors pr-1">
-            {t(`howItWorks.step${stepNumber}.description`, currentLanguage.code)}
+            <Translate text={`howItWorks.step${stepNumber}.description`} />
           </p>
         </div>
       </div>
@@ -86,12 +87,12 @@ const HowItWorks = () => {
           <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6 transform transition-all duration-700 opacity-0 translate-y-8 ${
             isVisible ? 'opacity-100 translate-y-0' : ''
           }`}>
-            {t('headers.howItWorks', currentLanguage.code)} <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">{t('headers.works', currentLanguage.code)}</span>
+            <Translate text="headers.howItWorks" /> <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent"><Translate text="headers.works" /></span>
           </h2>
           <p className={`text-base sm:text-lg md:text-xl text-gray-600 transform transition-all duration-700 delay-200 opacity-0 translate-y-8 ${
             isVisible ? 'opacity-100 translate-y-0' : ''
           } px-2`}>
-            {t('howItWorks.subtitle', currentLanguage.code)}
+            <Translate text="howItWorks.subtitle" />
           </p>
         </div>
 
