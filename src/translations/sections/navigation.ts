@@ -6,4 +6,5 @@ export const navigation = {
   'nav.howItWorks': 'How It Works',
   'nav.testimonials': 'Testimonials',
   'nav.contact': 'Contact',
+  'nav.pricing': 'Pricing', // Capitalized 'P'
 };

@@ -5,5 +5,5 @@ export const navigation = {
   'nav.howItWorks': 'Cómo funciona',
   'nav.testimonials': 'Testimonios',
   'nav.contact': 'Contacto',
-  'nav.pricing': 'Precios'
+  'nav.pricing': 'Precios', // Keeping original translation
 };
