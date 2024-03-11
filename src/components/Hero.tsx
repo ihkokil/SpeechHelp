@@ -74,7 +74,14 @@ const Hero = () => {
         <div className="container relative z-10 mx-auto px-4 sm:px-6 md:px-12 pt-8 sm:pt-16 pb-6 sm:pb-12">
           <div className="max-w-[95%] sm:max-w-5xl mx-auto text-center">
             <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight sm:leading-tight md:leading-tight lg:leading-tight mb-3 sm:mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
-              <Translate text="headers.needCreativeSpeech" />
+              <Translate 
+                text="headers.needCreativeSpeech" 
+                fallback={
+                  <>
+                    Need a <span className="text-pink-500">creative speech</span>?
+                  </>
+                } 
+              />
             </h1>
             
             <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium leading-tight sm:leading-tight md:leading-tight lg:leading-tight mb-6 sm:mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
