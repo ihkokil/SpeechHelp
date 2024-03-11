@@ -1,5 +1,4 @@
 
-import { enUSTranslations } from './sections';
+import { esTranslations } from './es/index';
 
-export const es = enUSTranslations;
-
+export const es = esTranslations;
