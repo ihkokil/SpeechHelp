@@ -21,12 +21,37 @@ const Translate: React.FC<TranslateProps> = ({
   
   // If components are provided, replace tagged content
   if (components) {
+    // We need to convert the translation to JSX elements
+    const parts: (string | ReactNode)[] = [];
+    let lastIndex = 0;
+    
     Object.entries(components).forEach(([tag, renderFn]) => {
       const regex = new RegExp(`<${tag}>(.*?)</${tag}>`, 'g');
-      translation = translation.replace(regex, (match, content) => {
-        return renderFn(content);
-      });
+      let match;
+      
+      while ((match = regex.exec(translation)) !== null) {
+        // Add text before the match
+        if (match.index > lastIndex) {
+          parts.push(translation.substring(lastIndex, match.index));
+        }
+        
+        // Add the transformed content
+        parts.push(renderFn(match[1]));
+        
+        // Update last index
+        lastIndex = match.index + match[0].length;
+      }
     });
+    
+    // Add any remaining text
+    if (lastIndex < translation.length) {
+      parts.push(translation.substring(lastIndex));
+    }
+    
+    // If we found any tags to replace, return the JSX elements
+    if (parts.length > 0) {
+      return <>{parts}</>;
+    }
   }
   
   // If the translation is the same as the key and it looks like a translation key,
@@ -43,4 +68,3 @@ const Translate: React.FC<TranslateProps> = ({
 };
 
 export default Translate;
-
