@@ -1,4 +1,3 @@
-
 export const contact = {
   // Contact Section
   'contact.title': 'Who We Are & How We Help',
@@ -15,4 +14,6 @@ export const contact = {
   'contact.infoSubtitle': 'We\'re here to answer your questions and help you get the most out of SpeechHelp.',
   'contact.emailAddress': 'hello@speechhelp.ai',
   'contact.liveChatSupport': 'Live Chat Support',
+  'contact.whoWeAre': 'Who We Are',
+  'contact.howWeHelp': '& How We Help',
 };
