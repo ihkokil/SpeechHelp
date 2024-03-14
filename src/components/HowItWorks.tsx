@@ -40,7 +40,7 @@ const HowItWorks = () => {
     <section id="how-it-works" className="py-8 sm:py-12 md:py-16 lg:py-24 bg-gray-50 relative overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
         <div className="text-center max-w-full sm:max-w-3xl mx-auto mb-8 sm:mb-12 lg:mb-16" ref={sectionRef}>
-          <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6 transform transition-all duration-700 opacity-0 translate-y-8 ${
+          <h2 className={`text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6 transform transition-all duration-700 opacity-0 translate-y-8 ${
             isVisible ? 'opacity-100 translate-y-0' : ''
           }`}>
             <Translate text="headers.howItWorks" /> <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent"><Translate text="headers.works" /></span>
