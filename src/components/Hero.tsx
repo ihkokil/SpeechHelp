@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -67,7 +68,8 @@ const Hero = () => {
             <source src={videoUrl} type="video/quicktime" />
             <source src={videoUrl} type="video/mp4" />
           </video>
-          <div className="absolute inset-0 bg-black/60"></div>
+          {/* Enhanced video overlay with improved readability */}
+          <div className="absolute inset-0 bg-black/50 backdrop-brightness-75 backdrop-contrast-125"></div>
         </div>
         
         <div className="container relative z-10 mx-auto px-4 sm:px-6 md:px-12 pt-8 sm:pt-16 pb-6 sm:pb-12">
@@ -126,3 +128,4 @@ const Hero = () => {
 };
 
 export default Hero;
+
