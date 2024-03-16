@@ -4,12 +4,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const MySpeeches = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [initialFilter, setInitialFilter] = useState('all');
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Check for filter parameter in URL
@@ -40,12 +42,17 @@ const MySpeeches = () => {
     );
   }
 
+  // Calculate sidebar offset for main content
+  const contentClasses = isMobile 
+    ? "w-full pt-16" // Add top padding on mobile to account for the toggle button
+    : "ml-64"; // Add margin on desktop to account for the fixed sidebar
+
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-gray-50">
       <DashboardSidebar />
 
-      <div className="flex-1 bg-gray-50 overflow-auto px-4 md:px-6 lg:px-8">
-        <main className="max-w-7xl mx-auto py-6">
+      <div className={`flex-1 overflow-auto ${contentClasses}`}>
+        <main className="px-4 sm:px-6 lg:px-8 py-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">
               {initialFilter === 'upcoming' ? 'Upcoming Speeches' : 'My Speeches'}
