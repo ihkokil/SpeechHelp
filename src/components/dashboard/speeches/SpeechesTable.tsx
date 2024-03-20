@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { 
   Table, 
@@ -25,18 +24,9 @@ interface SpeechesTableProps {
 const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProps) => {
   const isMobile = useIsMobile();
   
-  // Format the display date based on various date values
-  const getFormattedDate = (speech: Speech) => {
-    if (speech.isUpcoming && speech.event_date) {
-      return format(new Date(speech.event_date), 'MMM d, yyyy');
-    }
-    if (speech.updated_at) {
-      return format(new Date(speech.updated_at), 'MMM d, yyyy');
-    }
-    if (speech.created_at) {
-      return format(new Date(speech.created_at), 'MMM d, yyyy');
-    }
-    return 'N/A';
+  const getFormattedDate = (date: string | null) => {
+    if (!date) return 'N/A';
+    return format(new Date(date), 'MMM d, yyyy');
   };
 
   if (isMobile) {
@@ -53,7 +43,10 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                 <Badge className={getTypeColor(speech.speech_type)}>
                   {getSpeechTypeLabel(speech.speech_type)}
                 </Badge>
-                <div className="mt-2">{getFormattedDate(speech)}</div>
+                <div className="mt-2">
+                  <div>Created: {getFormattedDate(speech.created_at)}</div>
+                  <div>Modified: {getFormattedDate(speech.updated_at)}</div>
+                </div>
               </div>
               <div className="flex space-x-2">
                 <button
@@ -87,9 +80,10 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[40%]">Title</TableHead>
+            <TableHead className="w-[30%]">Title</TableHead>
             <TableHead>Type</TableHead>
-            <TableHead>Date</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead>Modified</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -104,7 +98,8 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                   {getSpeechTypeLabel(speech.speech_type)}
                 </Badge>
               </TableCell>
-              <TableCell>{getFormattedDate(speech)}</TableCell>
+              <TableCell>{getFormattedDate(speech.created_at)}</TableCell>
+              <TableCell>{getFormattedDate(speech.updated_at)}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end space-x-2">
                   <button
