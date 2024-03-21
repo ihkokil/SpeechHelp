@@ -27,11 +27,13 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   
   const getFormattedDate = (date: string | null) => {
     if (!date || date === "") {
+      console.log('Empty date received:', date);
       return 'N/A';
     }
     
     try {
       // Parse the date string to a Date object
+      console.log('Attempting to format date:', date);
       const parsedDate = new Date(date);
       
       // Check if the date is valid
@@ -41,7 +43,9 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
       }
       
       // Format the date
-      return format(parsedDate, 'MMM d, yyyy');
+      const formatted = format(parsedDate, 'MMM d, yyyy');
+      console.log('Successfully formatted date:', date, 'to', formatted);
+      return formatted;
     } catch (error) {
       console.error('Error formatting date:', error, 'Date value:', date);
       return 'N/A';
@@ -51,11 +55,15 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   // Check date fields on initial render
   useEffect(() => {
     if (speeches.length > 0) {
-      console.log('Sample speech data:', {
-        id: speeches[0].id,
-        created_at: speeches[0].created_at,
-        updated_at: speeches[0].updated_at,
-        type: typeof speeches[0].created_at
+      speeches.forEach((speech, index) => {
+        console.log(`Speech ${index} data:`, {
+          id: speech.id,
+          title: speech.title,
+          created_at: speech.created_at,
+          updated_at: speech.updated_at,
+          created_type: typeof speech.created_at,
+          updated_type: typeof speech.updated_at
+        });
       });
     }
   }, [speeches]);
