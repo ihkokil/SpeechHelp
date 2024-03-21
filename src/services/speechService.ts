@@ -12,6 +12,7 @@ export const useSpeechService = () => {
 		const { data, error } = await supabase
 			.from('speeches')
 			.select('*')
+			.eq('user_id', userId) // Only fetch speeches from the current user
 			.order('created_at', { ascending: false });
 
 		if (error) {
@@ -24,11 +25,21 @@ export const useSpeechService = () => {
 			return [];
 		}
 
-		return data as Speech[] || [];
+		// Ensure timestamps are properly formatted
+		const processedSpeeches = data?.map(speech => ({
+			...speech,
+			created_at: speech.created_at || new Date().toISOString(),
+			updated_at: speech.updated_at || speech.created_at || new Date().toISOString()
+		})) || [];
+
+		console.log('Fetched speeches with timestamps:', processedSpeeches);
+		return processedSpeeches as Speech[];
 	};
 
 	const saveSpeech = async (userId: string, title: string, content: string, speechType: string) => {
 		if (!userId) throw new Error('User not authenticated');
+
+		const timestamp = new Date().toISOString();
 
 		const { data: speech, error } = await supabase
 			.from('speeches')
@@ -36,7 +47,9 @@ export const useSpeechService = () => {
 				user_id: userId,
 				title,
 				content,
-				speech_type: speechType
+				speech_type: speechType,
+				created_at: timestamp,
+				updated_at: timestamp
 			});
 
 		if (error) {
