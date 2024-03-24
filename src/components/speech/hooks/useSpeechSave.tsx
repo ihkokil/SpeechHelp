@@ -68,8 +68,12 @@ export const useSpeechSave = ({
 				});
 			} else {
 				if (user) {
-					let speech = await speechService.saveSpeech(user.id, title, contentToSave, speechType);
-					setSpeechId(speech);
+					// Fix: Extract the speech ID from the response instead of assigning the whole array
+					const speechResponse = await speechService.saveSpeech(user.id, title, contentToSave, speechType);
+					if (speechResponse && speechResponse[0]) {
+						setSpeechId(speechResponse[0].id);
+					}
+					
 					toast({
 						title: "Speech Saved",
 						description: "Your speech has been saved successfully.",
