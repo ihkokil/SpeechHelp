@@ -37,8 +37,9 @@ const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
   return (
     <div className="bg-white rounded-lg shadow-sm p-8">
       <div>
-        <h1 className="text-3xl font-bold text-purple-600">
-          Hello, <span className="text-pink-600">{displayName}!</span>
+        <h1 className="text-3xl font-bold">
+          <span className="text-purple-600">Hello, </span>
+          <span className="text-pink-600">{displayName}!</span>
         </h1>
         <p className="text-gray-500 mt-2">It's a beautiful {dayOfWeek} {timeOfDay}, so let's get creative and help you craft a memorable speech!</p>
       </div>

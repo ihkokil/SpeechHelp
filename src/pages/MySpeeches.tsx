@@ -13,8 +13,8 @@ const MySpeeches = () => {
   const [initialFilter, setInitialFilter] = useState('all');
   const isMobile = useIsMobile();
 
+  // Parse URL parameters for filtering
   useEffect(() => {
-    // Check for filter parameter in URL
     const params = new URLSearchParams(location.search);
     const filterParam = params.get('filter');
 
@@ -25,6 +25,7 @@ const MySpeeches = () => {
     }
   }, [location]);
 
+  // Fetch speeches when component mounts
   useEffect(() => {
     if (user) {
       console.log('MySpeeches component mounted, fetching speeches for user:', user.id);
