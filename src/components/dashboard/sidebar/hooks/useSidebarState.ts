@@ -8,6 +8,16 @@ export const useSidebarState = () => {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(!isMobile);
   
+  // Ensure sidebar state is properly synced with device size
+  useEffect(() => {
+    if (isMobile) {
+      setIsOpen(false);
+    } else {
+      setIsOpen(true);
+    }
+  }, [isMobile]);
+
+  // Close sidebar on mobile when route changes
   useEffect(() => {
     if (isMobile) {
       setIsOpen(false);

@@ -1,56 +1,57 @@
 
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { NavLink } from 'react-router-dom';
 import { primaryNavItems, secondaryNavItems } from '../constants/navigationItems';
+import { cn } from '@/lib/utils';
 
-export const SidebarNavigation = ({ onItemClick }: { onItemClick?: () => void }) => {
-  const location = useLocation();
-  const currentPath = location.pathname;
+interface SidebarNavigationProps {
+  onItemClick?: () => void;
+}
 
+export const SidebarNavigation = ({ onItemClick }: SidebarNavigationProps) => {
   return (
-    <nav className="flex-1 overflow-y-auto py-4 px-3">
-      <div className="space-y-1">
-        {primaryNavItems.map((item) => (
-          <Link
-            key={item.label}
-            to={item.href}
-            className={cn(
-              "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-              currentPath.startsWith(item.href) 
-                ? "bg-purple-50 text-purple-700" 
-                : "text-gray-700 hover:bg-gray-100"
-            )}
-            onClick={onItemClick}
-          >
-            <span className="mr-3">{item.icon}</span>
-            {item.label}
-          </Link>
-        ))}
-      </div>
-
-      <div className="h-px bg-gray-200 my-6 mx-3"></div>
-
-      <div className="px-3">
-        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-          Settings
-        </p>
+    <nav className="flex-1 px-4 py-6 overflow-y-auto">
+      <div className="space-y-6">
         <div className="space-y-1">
-          {secondaryNavItems.map((item) => (
-            <Link
-              key={item.label}
+          {primaryNavItems.map((item, index) => (
+            <NavLink
+              key={index}
               to={item.href}
-              className={cn(
-                "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                currentPath.startsWith(item.href) 
-                  ? "bg-purple-50 text-purple-700" 
-                  : "text-gray-700 hover:bg-gray-100"
-              )}
               onClick={onItemClick}
+              className={({ isActive }) => cn(
+                "flex items-center px-3 py-2 text-sm rounded-md font-medium transition-colors",
+                isActive 
+                  ? "bg-purple-50 text-purple-700" 
+                  : "text-gray-600 hover:bg-gray-100"
+              )}
             >
               <span className="mr-3">{item.icon}</span>
-              {item.label}
-            </Link>
+              <span>{item.label}</span>
+            </NavLink>
           ))}
+        </div>
+
+        <div>
+          <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            Support
+          </h3>
+          <div className="mt-2 space-y-1">
+            {secondaryNavItems.map((item, index) => (
+              <NavLink
+                key={index}
+                to={item.href}
+                onClick={onItemClick}
+                className={({ isActive }) => cn(
+                  "flex items-center px-3 py-2 text-sm rounded-md font-medium transition-colors",
+                  isActive 
+                    ? "bg-purple-50 text-purple-700" 
+                    : "text-gray-600 hover:bg-gray-100"
+                )}
+              >
+                <span className="mr-3">{item.icon}</span>
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
         </div>
       </div>
     </nav>
