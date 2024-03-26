@@ -45,16 +45,11 @@ const MySpeeches = () => {
     );
   }
 
-  // Calculate sidebar offset for main content
-  const contentClasses = isMobile 
-    ? "w-full pt-16" // Add top padding on mobile to account for the toggle button
-    : "ml-64"; // Add margin on desktop to account for the fixed sidebar
-
   return (
     <div className="min-h-screen flex bg-gray-50">
       <DashboardSidebar />
 
-      <div className={`flex-1 overflow-auto ${contentClasses}`}>
+      <div className={`flex-1 ${isMobile ? "pt-16" : "ml-64"}`}>
         <main className="px-4 sm:px-6 lg:px-8 py-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">

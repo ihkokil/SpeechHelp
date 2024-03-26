@@ -19,7 +19,7 @@ const DashboardSidebar = () => {
           className="fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md md:hidden"
           aria-label="Toggle sidebar"
         >
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          <Menu className="h-6 w-6" />
         </button>
       )}
 
@@ -35,7 +35,7 @@ const DashboardSidebar = () => {
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img src={logoPath} alt="Speech Help" className="h-10 w-auto" />
           </Link>
-          {isMobile && (
+          {isMobile && isOpen && (
             <button onClick={toggleSidebar} className="p-1">
               <X className="h-5 w-5" />
             </button>
