@@ -36,7 +36,7 @@ const MySpeeches = () => {
 
   // Debug log all speeches when they change
   useEffect(() => {
-    console.log(`MySpeeches has ${speeches.length} total speeches:`, 
+    console.log(`MySpeeches has ${speeches.length} total regular speeches:`, 
       speeches.map(s => ({
         id: s.id,
         title: s.title,
