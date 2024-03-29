@@ -10,8 +10,11 @@ export const useSpeechesFilter = (
   sortBy: SortOption
 ) => {
   const filteredSpeeches = useMemo(() => {
-    // Make a copy of the original speeches array
-    const allSpeeches = Array.isArray(speeches) ? [...speeches] : [];
+    // Make a copy of the original speeches array and ensure isUpcoming is explicitly set to false
+    const allSpeeches = Array.isArray(speeches) ? speeches.map(speech => ({
+      ...speech,
+      isUpcoming: speech.isUpcoming === true ? true : false // Explicitly set to false if not true
+    })) : [];
     
     // Get upcoming speech events from localStorage
     let upcomingEvents: any[] = [];
@@ -40,6 +43,7 @@ export const useSpeechesFilter = (
     } as Speech));
 
     console.log('Regular speeches count:', allSpeeches.length);
+    console.log('Regular speeches with isUpcoming=false:', allSpeeches.filter(s => s.isUpcoming === false).length);
     console.log('Upcoming speeches count:', upcomingSpeeches.length);
 
     // Combine regular and upcoming speeches for initial filtering
@@ -69,15 +73,15 @@ export const useSpeechesFilter = (
       console.log('Upcoming filter applied, speeches count:', filtered.length);
     } else {
       // Filter by specific speech type and exclude upcoming speeches
-      filtered = combinedSpeeches.filter(speech => speech.speech_type === filterType && !speech.isUpcoming);
+      filtered = combinedSpeeches.filter(speech => speech.speech_type === filterType && speech.isUpcoming === false);
       console.log('Speech type filter applied:', filterType, 'speeches count:', filtered.length);
     }
     
     // Log info about speeches with isUpcoming flag
     console.log('Speeches with isUpcoming = true:', 
       filtered.filter(speech => speech.isUpcoming === true).length);
-    console.log('Speeches with isUpcoming = undefined:', 
-      filtered.filter(speech => speech.isUpcoming === undefined).length);
+    console.log('Speeches with isUpcoming = false:', 
+      filtered.filter(speech => speech.isUpcoming === false).length);
     
     // Ensure uniqueness of speeches by ID
     const uniqueFilteredSpeeches = Array.from(
