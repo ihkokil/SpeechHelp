@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -12,9 +11,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 
-// All writing tips in one array
 const allTipsSections = [
   {
     id: "how-to-write",
@@ -137,9 +136,8 @@ const WritingTips = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const isMobile = useIsMobile();
   
-  // Redirect if not logged in
   useEffect(() => {
     if (!isLoading && !user) {
       navigate('/auth');
@@ -162,13 +160,11 @@ const WritingTips = () => {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Dashboard Sidebar */}
+    <div className="min-h-screen flex bg-gray-50">
       <DashboardSidebar />
       
-      {/* Main Content Area */}
       <motion.div 
-        className="flex-1 relative bg-gray-50"
+        className={`flex-1 relative bg-gray-50 ${isMobile ? "" : "ml-64"}`}
         initial={{ x: '100%' }}
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
@@ -192,17 +188,15 @@ const WritingTips = () => {
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Resources</h2>
             
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <Accordion type="single" collapsible className="divide-y">
+              <Accordion type="single" collapsible className="w-full">
                 {allTipsSections.map((section) => (
-                  <AccordionItem key={section.id} value={section.id}>
-                    <div className="border-b border-gray-200">
-                      <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                        <div className="text-left">
-                          <h3 className="text-xl font-bold text-pink-600">{section.title}</h3>
-                          <p className="text-gray-600 mt-1">{section.description}</p>
-                        </div>
-                      </AccordionTrigger>
-                    </div>
+                  <AccordionItem key={section.id} value={section.id} className="border-b border-gray-200">
+                    <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                      <div className="text-left">
+                        <h3 className="text-xl font-bold text-pink-600">{section.title}</h3>
+                        <p className="text-gray-600 mt-1">{section.description}</p>
+                      </div>
+                    </AccordionTrigger>
                     <AccordionContent className="px-6 py-4 bg-gray-50">
                       <div className="prose max-w-none">
                         {section.content}
