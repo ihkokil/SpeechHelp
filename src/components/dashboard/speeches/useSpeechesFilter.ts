@@ -12,11 +12,18 @@ export const useSpeechesFilter = (
   const filteredSpeeches = useMemo(() => {
     // Log the original speeches to see what we're working with
     console.log('Original speeches array count:', speeches.length);
+    console.log('Original speeches:', speeches.map(s => ({ 
+      id: s.id, 
+      title: s.title, 
+      type: s.speech_type,
+      isUpcoming: s.isUpcoming 
+    })));
     
-    // Make a copy of the original speeches array and ensure each speech has isUpcoming property
-    const allSpeeches = Array.isArray(speeches) ? speeches.map(speech => ({
+    // First, ensure each speech has correct isUpcoming flag
+    // Regular speeches (from backend) should be marked as NOT upcoming
+    let allSpeeches = Array.isArray(speeches) ? speeches.map(speech => ({
       ...speech,
-      isUpcoming: false // Regular speeches are not upcoming
+      isUpcoming: speech.isUpcoming === true // Preserve true flags, default to false otherwise
     })) : [];
     
     console.log('Regular speeches after mapping:', allSpeeches.length);
@@ -51,11 +58,20 @@ export const useSpeechesFilter = (
     } as Speech));
 
     console.log('Created upcoming speeches objects:', upcomingSpeeches.length);
+    console.log('Upcoming speeches:', upcomingSpeeches.map(s => ({ 
+      id: s.id, 
+      title: s.title, 
+      type: s.speech_type,
+      isUpcoming: s.isUpcoming 
+    })));
 
-    // Combine regular and upcoming speeches for initial filtering
+    // Combine regular and upcoming speeches
     const combinedSpeeches = [...allSpeeches, ...upcomingSpeeches];
     
     console.log('Combined speeches before filtering:', combinedSpeeches.length);
+    console.log('Regular speeches count:', allSpeeches.length);
+    console.log('Regular speeches with isUpcoming=false:', allSpeeches.filter(s => s.isUpcoming === false).length);
+    console.log('Upcoming speeches count:', upcomingSpeeches.length);
     
     // Apply search filter if provided
     let searchFiltered = combinedSpeeches;
@@ -73,16 +89,24 @@ export const useSpeechesFilter = (
     let filtered: Speech[] = [];
     if (filterType === 'all') {
       // Show all speeches - both regular and upcoming
-      filtered = searchFiltered; 
+      filtered = searchFiltered;
       console.log('All filter applied, speeches count:', filtered.length);
+      console.log('All filter - speeches breakdown:', filtered.map(s => ({ 
+        id: s.id, 
+        title: s.title, 
+        type: s.speech_type,
+        isUpcoming: s.isUpcoming 
+      })));
     } else if (filterType === 'upcoming') {
       // Only show upcoming speeches 
       filtered = searchFiltered.filter(speech => speech.isUpcoming === true);
       console.log('Upcoming filter applied, speeches count:', filtered.length);
     } else {
-      // Filter by specific speech type and exclude upcoming speeches
-      filtered = searchFiltered.filter(speech => speech.speech_type === filterType && speech.isUpcoming === false);
-      console.log('Speech type filter applied:', filterType, 'speeches count:', filtered.length);
+      // Filter by specific speech type and exclude upcoming speeches (unless the type matches)
+      filtered = searchFiltered.filter(speech => 
+        speech.speech_type === filterType
+      );
+      console.log(`Speech type filter applied: ${filterType}, speeches count:`, filtered.length);
     }
     
     // Log info about speeches with isUpcoming flag for debugging

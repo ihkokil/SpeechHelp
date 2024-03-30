@@ -42,7 +42,8 @@ const MySpeeches = () => {
     console.log('Regular speeches from database:', speeches.map(s => ({
       id: s.id,
       title: s.title,
-      type: s.speech_type
+      type: s.speech_type,
+      isUpcoming: s.isUpcoming || false // Ensure isUpcoming is explicitly set
     })));
 
     // Check for localStorage upcoming events
