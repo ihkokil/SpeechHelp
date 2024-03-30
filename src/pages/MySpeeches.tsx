@@ -75,7 +75,7 @@ const MySpeeches = () => {
     <div className="min-h-screen flex bg-gray-50">
       <DashboardSidebar />
 
-      <div className={`flex-1 ${isMobile ? "pt-16" : "ml-64"}`}>
+      <div className={`flex-1 overflow-x-hidden ${isMobile ? "pt-16" : "ml-64"}`}>
         <main className="px-4 sm:px-6 lg:px-8 py-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">
@@ -88,7 +88,9 @@ const MySpeeches = () => {
             </p>
           </div>
 
-          <SpeechesManager speeches={speeches} initialFilter={initialFilter} />
+          <div className="overflow-hidden">
+            <SpeechesManager speeches={speeches} initialFilter={initialFilter} />
+          </div>
         </main>
       </div>
     </div>

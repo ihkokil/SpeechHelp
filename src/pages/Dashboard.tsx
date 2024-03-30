@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -64,12 +63,9 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  // Calculate relevant metrics from speeches
   const dashboardMetrics = useMemo(() => {
-    // Total number of speeches
     const totalSpeeches = speeches.length;
     
-    // Current month speeches
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
@@ -80,7 +76,6 @@ const Dashboard = () => {
              speechDate.getFullYear() === currentYear;
     });
     
-    // Speeches in last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
@@ -89,7 +84,6 @@ const Dashboard = () => {
       return speechDate >= thirtyDaysAgo;
     });
     
-    // Speech types distribution for performance metrics
     const speechTypeDistribution = speeches.reduce((acc, speech) => {
       acc[speech.speech_type] = (acc[speech.speech_type] || 0) + 1;
       return acc;
@@ -118,7 +112,7 @@ const Dashboard = () => {
     <div className="min-h-screen flex bg-gray-50">
       <DashboardSidebar />
       
-      <div className={`flex-1 ${isMobile ? "pt-16" : "ml-64"}`}>
+      <div className={`flex-1 overflow-x-hidden ${isMobile ? "pt-16" : "ml-64"}`}>
         <header className="flex justify-between items-center p-4 sm:p-6 sticky top-0 bg-gray-50 z-10">
           <div className="flex items-center">
             <div className="bg-purple-600 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-md flex items-center text-sm sm:text-base">
@@ -129,7 +123,7 @@ const Dashboard = () => {
           <LanguageSelector />
         </header>
 
-        <main className="px-4 sm:px-6 pb-12">
+        <main className="px-4 sm:px-6 pb-12 max-w-full">
           <WelcomeCard 
             userName={userName} 
             firstName={firstName} 
@@ -168,15 +162,23 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              <PreviousSpeeches />
+              <div className="overflow-hidden">
+                <PreviousSpeeches />
+              </div>
               
-              <PerformanceMetrics speechData={dashboardMetrics.speechTypeDistribution} />
+              <div className="overflow-hidden">
+                <PerformanceMetrics speechData={dashboardMetrics.speechTypeDistribution} />
+              </div>
             </div>
             
             <div className="space-y-4 sm:space-y-6">
-              <UpcomingSpeeches speeches={speeches} />
+              <div className="overflow-hidden">
+                <UpcomingSpeeches speeches={speeches} />
+              </div>
               
-              <RecentActivities speeches={speeches} />
+              <div className="overflow-hidden">
+                <RecentActivities speeches={speeches} />
+              </div>
             </div>
           </div>
         </main>
