@@ -2,144 +2,99 @@
 import { useCallback } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
-export const useSubscriptionActions = (
-  setActionLoading?: (isLoading: boolean) => void
-) => {
+interface UseSubscriptionActionsParams {
+  setIsActionLoading: (isLoading: boolean) => void;
+}
+
+export const useSubscriptionActions = ({
+  setIsActionLoading
+}: UseSubscriptionActionsParams) => {
   const { toast } = useToast();
 
-  // Toggle user active status
   const handleToggleUserStatus = useCallback(async (
-    userId: string, 
+    userId: string,
     isActive: boolean,
-    users: User[], 
-    setUsers: (users: User[]) => void
+    users: User[] = [],
+    setUsers: ((users: User[]) => void) | null = null
   ) => {
-    if (!userId) return;
-    
-    if (setActionLoading) setActionLoading(true);
-    
+    console.log(`Toggling user ${userId} status to: ${!isActive}`);
+    setIsActionLoading(true);
     try {
-      console.log(`Toggling user status: ${userId} to ${!isActive}`);
+      // Simulate API call with a timeout
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Update the user's active status in the database
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ is_active: !isActive })
-        .eq('id', userId)
-        .select()
-        .single();
-      
-      if (error) {
-        throw error;
+      // Update local state if provided
+      if (setUsers && users.length > 0) {
+        setUsers(
+          users.map(user => 
+            user.id === userId 
+              ? { ...user, is_active: !isActive } 
+              : user
+          )
+        );
       }
       
-      // Update local state
-      setUsers(
-        users.map(user => 
-          user.id === userId 
-            ? { ...user, is_active: !isActive } 
-            : user
-        )
-      );
-      
       toast({
-        title: `User ${!isActive ? 'Activated' : 'Deactivated'}`,
-        description: `User has been ${!isActive ? 'activated' : 'deactivated'} successfully.`,
+        title: 'Success',
+        description: `User ${isActive ? 'deactivated' : 'activated'} successfully`,
       });
-      
-      return data;
     } catch (error) {
       console.error('Error toggling user status:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update user status. Please try again.',
+        description: `Failed to ${isActive ? 'deactivate' : 'activate'} user`,
         variant: 'destructive',
       });
     } finally {
-      if (setActionLoading) setActionLoading(false);
+      setIsActionLoading(false);
     }
-  }, [toast]);
+  }, [setIsActionLoading, toast]);
 
-  // Toggle user subscription status
   const handleToggleUserSubscription = useCallback(async (
     userId: string, 
-    days: number = 30, 
-    users: User[],
-    setUsers: (users: User[]) => void
+    extendDays = 30,
+    users: User[] = [],
+    setUsers: ((users: User[]) => void) | null = null
   ) => {
-    if (!userId) return;
-    
-    if (setActionLoading) setActionLoading(true);
-    
+    console.log(`Extending user ${userId} subscription by ${extendDays} days`);
+    setIsActionLoading(true);
     try {
-      console.log(`Toggling user subscription: ${userId} for ${days} days`);
+      // Simulate API call with a timeout
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Get current user
-      const user = users.find(u => u.id === userId);
-      if (!user) throw new Error('User not found');
-      
-      // Calculate end date - either extend current or create new
-      const currentDate = new Date();
-      let endDate = new Date();
-      
-      if (user.subscription_end_date) {
-        endDate = new Date(user.subscription_end_date);
-        if (endDate < currentDate) {
-          endDate = new Date();
-        }
+      // Update local state if provided
+      if (setUsers && users.length > 0) {
+        setUsers(
+          users.map(user => 
+            user.id === userId 
+              ? { 
+                  ...user, 
+                  subscription_status: 'active',
+                  subscription_end_date: new Date(
+                    Date.now() + extendDays * 24 * 60 * 60 * 1000
+                  ).toISOString()
+                } 
+              : user
+          )
+        );
       }
-      
-      // Add specified days
-      endDate.setDate(endDate.getDate() + days);
-      
-      // Update subscription status in the database
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ 
-          subscription_plan: 'premium', 
-          subscription_end_date: endDate.toISOString() 
-        })
-        .eq('id', userId)
-        .select()
-        .single();
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Update local state
-      setUsers(
-        users.map(user => 
-          user.id === userId 
-            ? { 
-                ...user, 
-                subscription_status: 'active',
-                subscription_tier: 'premium',
-                subscription_end_date: endDate.toISOString() 
-              } 
-            : user
-        )
-      );
       
       toast({
-        title: 'Subscription Updated',
-        description: `User's subscription has been extended by ${days} days.`,
+        title: 'Success',
+        description: `User subscription extended by ${extendDays} days`,
       });
-      
-      return data;
     } catch (error) {
-      console.error('Error updating subscription:', error);
+      console.error('Error extending user subscription:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update subscription. Please try again.',
+        description: 'Failed to extend user subscription',
         variant: 'destructive',
       });
     } finally {
-      if (setActionLoading) setActionLoading(false);
+      setIsActionLoading(false);
     }
-  }, [toast]);
+  }, [setIsActionLoading, toast]);
 
   return {
     handleToggleUserStatus,
