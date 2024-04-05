@@ -10,8 +10,8 @@ export const useBulkActions = () => {
   // Bulk delete multiple users
   const handleBulkDelete = useCallback(async (
     selectedUsers: User[], 
-    users: User[], 
-    setUsers: (users: User[]) => void
+    users: User[] = [], 
+    setUsers: ((users: User[]) => void) | null = null
   ) => {
     if (!selectedUsers.length) return;
     
@@ -24,7 +24,9 @@ export const useBulkActions = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Remove deleted users from state
-      setUsers(users.filter(user => !selectedUsers.some(selectedUser => selectedUser.id === user.id)));
+      if (setUsers && users.length > 0) {
+        setUsers(users.filter(user => !selectedUsers.some(selectedUser => selectedUser.id === user.id)));
+      }
       
       toast({
         title: 'Users Deleted',
@@ -46,8 +48,8 @@ export const useBulkActions = () => {
   // Bulk activate multiple users
   const handleBulkActivate = useCallback(async (
     selectedUsers: User[], 
-    users: User[], 
-    setUsers: (users: User[]) => void
+    users: User[] = [], 
+    setUsers: ((users: User[]) => void) | null = null
   ) => {
     if (!selectedUsers.length) return;
     
@@ -60,13 +62,15 @@ export const useBulkActions = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Update users status in state
-      setUsers(
-        users.map(user => 
-          selectedUsers.some(selectedUser => selectedUser.id === user.id)
-            ? { ...user, is_active: true }
-            : user
-        )
-      );
+      if (setUsers && users.length > 0) {
+        setUsers(
+          users.map(user => 
+            selectedUsers.some(selectedUser => selectedUser.id === user.id)
+              ? { ...user, is_active: true }
+              : user
+          )
+        );
+      }
       
       toast({
         title: 'Users Activated',
@@ -88,8 +92,8 @@ export const useBulkActions = () => {
   // Bulk deactivate multiple users
   const handleBulkDeactivate = useCallback(async (
     selectedUsers: User[], 
-    users: User[], 
-    setUsers: (users: User[]) => void
+    users: User[] = [], 
+    setUsers: ((users: User[]) => void) | null = null
   ) => {
     if (!selectedUsers.length) return;
     
@@ -102,13 +106,15 @@ export const useBulkActions = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Update users status in state
-      setUsers(
-        users.map(user => 
-          selectedUsers.some(selectedUser => selectedUser.id === user.id)
-            ? { ...user, is_active: false }
-            : user
-        )
-      );
+      if (setUsers && users.length > 0) {
+        setUsers(
+          users.map(user => 
+            selectedUsers.some(selectedUser => selectedUser.id === user.id)
+              ? { ...user, is_active: false }
+              : user
+          )
+        );
+      }
       
       toast({
         title: 'Users Deactivated',
