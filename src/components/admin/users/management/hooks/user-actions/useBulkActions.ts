@@ -2,6 +2,7 @@
 import { useCallback, useState } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useBulkActions = () => {
   const { toast } = useToast();
@@ -18,10 +19,16 @@ export const useBulkActions = () => {
     setIsActionLoading(true);
     
     try {
-      console.log('Bulk deleting users:', selectedUsers.map(user => user.id));
+      const userIds = selectedUsers.map(user => user.id);
+      console.log('Bulk deleting users:', userIds);
       
-      // Simulate API call - In a real app, this would be an actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Actual API call to Supabase to delete users
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .in('id', userIds);
+      
+      if (error) throw error;
       
       // Remove deleted users from state
       if (setUsers && users.length > 0) {
@@ -56,10 +63,16 @@ export const useBulkActions = () => {
     setIsActionLoading(true);
     
     try {
-      console.log('Bulk activating users:', selectedUsers.map(user => user.id));
+      const userIds = selectedUsers.map(user => user.id);
+      console.log('Bulk activating users:', userIds);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Actual API call to Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_active: true })
+        .in('id', userIds);
+      
+      if (error) throw error;
       
       // Update users status in state
       if (setUsers && users.length > 0) {
@@ -100,10 +113,16 @@ export const useBulkActions = () => {
     setIsActionLoading(true);
     
     try {
-      console.log('Bulk deactivating users:', selectedUsers.map(user => user.id));
+      const userIds = selectedUsers.map(user => user.id);
+      console.log('Bulk deactivating users:', userIds);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Actual API call to Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_active: false })
+        .in('id', userIds);
+      
+      if (error) throw error;
       
       // Update users status in state
       if (setUsers && users.length > 0) {

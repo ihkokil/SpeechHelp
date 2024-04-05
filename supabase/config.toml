@@ -1,1 +1,20 @@
+
 project_id = "yotrueuqjxmgcwlbbyps"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage"]
+
+[db]
+port = 54322
+
+[realtime]
+enabled = true
+
+[studio]
+port = 54323
+
+[functions]
+[functions.admin-user-operations]
+verify_jwt = true
