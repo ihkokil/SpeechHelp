@@ -13,30 +13,17 @@ export const usePermissionActions = (
     try {
       console.log('Permissions updated for user:', updatedUser.id);
       
-      // Update user permissions in database with appropriate type casting
-      // Only update fields that are actually in the profiles table
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          // Use a more specific update object that matches the profiles table structure
-          // Use additional fields from the profiles table schema if needed
-          is_active: updatedUser.is_active,
-          // For admin_role and permissions, we need to ensure the profiles table has these columns
-          // or add them through SQL migrations
-        })
-        .eq('id', updatedUser.id);
+      // Get the session for the current user to retrieve the access token
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
       
-      if (error) throw error;
+      if (!accessToken) {
+        throw new Error('No session found. Please login again.');
+      }
       
-      // Create a separate edge function call to handle admin-specific fields
-      // that don't exist in the profiles table
-      const response = await fetch(`https://yotrueuqjxmgcwlbbyps.supabase.co/functions/v1/admin-user-operations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.auth.getSession().then(res => res.data.session?.access_token)}`
-        },
-        body: JSON.stringify({
+      // Update user permissions using our edge function
+      const { data, error } = await supabase.functions.invoke('admin-user-operations', {
+        body: { 
           action: 'updateUserPermissions',
           userId: updatedUser.id,
           data: {
@@ -44,12 +31,15 @@ export const usePermissionActions = (
             admin_role: updatedUser.admin_role,
             permissions: updatedUser.permissions
           }
-        })
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update permissions');
+      if (error) {
+        console.error('Error invoking admin-user-operations:', error);
+        throw new Error(error.message || 'Failed to update user permissions');
       }
       
       // Update the user in the users array if we have the array and update function

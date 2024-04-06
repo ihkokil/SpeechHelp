@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     
     // Parse request body
-    const { action } = await req.json()
+    const { action, userId, data } = await req.json()
     
     // Check if the request has a valid session
     const authHeader = req.headers.get('Authorization')
@@ -53,21 +53,62 @@ Deno.serve(async (req) => {
 
     switch(action) {
       case 'fetchUsers': {
+        // Log the request
+        console.log('Fetching users with admin privileges')
+        
         // Fetch users from Auth
         const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers()
-        if (authError) throw authError
+        if (authError) {
+          console.error('Error fetching auth users:', authError)
+          throw authError
+        }
         
         // Fetch profiles data
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('*')
         
-        if (profilesError) throw profilesError
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError)
+          throw profilesError
+        }
         
         return new Response(
           JSON.stringify({ 
             authUsers, 
             profiles 
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      
+      case 'updateUserPermissions': {
+        if (!userId || !data) {
+          return new Response(
+            JSON.stringify({ error: 'Missing userId or data' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+        
+        // Update the user's profile with admin permissions data
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            is_admin: data.is_admin,
+            admin_role: data.admin_role,
+            permissions: data.permissions
+          })
+          .eq('id', userId)
+        
+        if (updateError) {
+          console.error('Error updating user permissions:', updateError)
+          throw updateError
+        }
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            message: 'User permissions updated successfully' 
           }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
