@@ -26,26 +26,14 @@ export const useFetchUsers = () => {
       }
       
       // Call our edge function to fetch users with admin privileges
-      const response = await fetch(
-        'https://yotrueuqjxmgcwlbbyps.supabase.co/functions/v1/admin-user-operations',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({
-            action: 'fetchUsers'
-          })
-        }
-      );
+      const { data, error } = await supabase.functions.invoke('admin-user-operations', {
+        body: { action: 'fetchUsers' }
+      });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch users');
+      if (error) {
+        throw error;
       }
       
-      const data = await response.json();
       const { authUsers, profiles } = data;
       
       if (!authUsers || !authUsers.users) {
@@ -56,10 +44,7 @@ export const useFetchUsers = () => {
       // Combine auth users with their profiles
       const combinedUsers = authUsers.users.map(authUser => {
         // Find the profile for this user, or use an empty object if not found
-        const userProfile = profiles?.find(profile => profile.id === authUser.id) || {};
-        
-        // Type assertion to handle missing properties without TypeScript errors
-        const typedProfile = userProfile as any;
+        const profile = profiles?.find(p => p.id === authUser.id) || {};
         
         return {
           id: authUser.id,
@@ -69,13 +54,13 @@ export const useFetchUsers = () => {
           updated_at: authUser.updated_at,
           app_metadata: authUser.app_metadata,
           user_metadata: authUser.user_metadata,
-          is_active: typedProfile.is_active ?? true,
-          is_admin: typedProfile.is_admin || false,
-          admin_role: typedProfile.admin_role,
-          permissions: typedProfile.permissions || [],
-          subscription_status: typedProfile.subscription_status || (typedProfile.subscription_end_date && new Date(typedProfile.subscription_end_date) > new Date() ? 'active' : 'inactive'),
-          subscription_end_date: typedProfile.subscription_end_date,
-          subscription_tier: typedProfile.subscription_plan || 'free',
+          is_active: profile.is_active ?? true,
+          is_admin: profile.is_admin || false,
+          admin_role: profile.admin_role || null,
+          permissions: profile.permissions || [],
+          subscription_status: profile.subscription_end_date && new Date(profile.subscription_end_date) > new Date() ? 'active' : 'inactive',
+          subscription_end_date: profile.subscription_end_date,
+          subscription_tier: profile.subscription_plan || 'free',
         } as User;
       });
       
@@ -85,7 +70,6 @@ export const useFetchUsers = () => {
       console.error('Error fetching users:', err);
       setError(err instanceof Error ? err : new Error(err.toString()));
       
-      // Show toast notification for error
       toast({
         title: 'Error',
         description: 'Failed to fetch users. Please try again.',
