@@ -1,167 +1,130 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.14.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+import { corsHeaders } from '../_shared/cors.ts'
 
-// Define CORS headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://yotrueuqjxmgcwlbbyps.supabase.co'
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
+    // Create Supabase client with service role key for admin operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    
     // Parse request body
-    const { action, userId, userIds, data } = await req.json();
-
-    // Get auth user to verify admin status
-    const authHeader = req.headers.get('Authorization');
+    const { action, userId, data } = await req.json()
+    
+    // Check if the request has a valid session
+    const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Missing Authorization header' }), 
+        JSON.stringify({ error: 'Missing Authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      )
     }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     
-    if (userError || !user) {
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Invalid token or user not found' }), 
+        JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      )
     }
-
-    // Check if user is admin
-    const { data: adminCheck } = await supabaseClient
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .single();
-
-    if (!adminCheck?.is_admin) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - Admin access required' }), 
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
+    
+    // TODO: In a production environment, you'd check if the requesting user has admin privileges
+    
     // Handle different actions
-    let result;
-    switch (action) {
-      case 'deleteUser':
-        // Delete a single user
-        if (!userId) throw new Error('userId is required');
-        
-        result = await supabaseClient.auth.admin.deleteUser(userId);
-        break;
-        
-      case 'bulkDeleteUsers':
-        // Delete multiple users
-        if (!userIds || !Array.isArray(userIds)) throw new Error('userIds array is required');
-        
-        // Use Promise.all to delete users in parallel
-        const deletePromises = userIds.map(id => supabaseClient.auth.admin.deleteUser(id));
-        result = await Promise.all(deletePromises);
-        break;
-        
-      case 'updateUserStatus':
-        // Update user active status
-        if (!userId) throw new Error('userId is required');
-        if (data?.is_active === undefined) throw new Error('is_active field is required');
-        
-        // First update the profile
-        await supabaseClient
-          .from('profiles')
-          .update({ is_active: data.is_active })
-          .eq('id', userId);
-          
-        result = { success: true };
-        break;
-        
-      case 'updateUserPermissions':
-        // Update user admin permissions
-        if (!userId) throw new Error('userId is required');
-        if (!data) throw new Error('permission data is required');
-        
-        await supabaseClient
-          .from('profiles')
-          .update({
-            is_admin: data.is_admin,
-            admin_role: data.admin_role,
-            permissions: data.permissions
-          })
-          .eq('id', userId);
-          
-        result = { success: true };
-        break;
-        
-      case 'extendSubscription':
-        // Extend user subscription
-        if (!userId) throw new Error('userId is required');
-        if (!data?.days) throw new Error('days field is required');
-        
-        // Get current subscription data
-        const { data: profile } = await supabaseClient
-          .from('profiles')
-          .select('subscription_end_date')
-          .eq('id', userId)
-          .single();
-          
-        // Calculate new end date
-        const currentDate = new Date();
-        let endDate = new Date();
-        
-        if (profile?.subscription_end_date) {
-          endDate = new Date(profile.subscription_end_date);
-          if (endDate < currentDate) {
-            endDate = new Date();
-          }
+    switch(action) {
+      case 'fetchUsers': {
+        // Fetch users from Auth
+        const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers()
+        if (authError) {
+          throw authError
         }
         
-        // Add specified days
-        endDate.setDate(endDate.getDate() + data.days);
-        
-        // Update subscription
-        await supabaseClient
+        // Fetch profiles data for each user
+        const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .update({
-            subscription_plan: data.plan || 'premium',
-            subscription_end_date: endDate.toISOString()
-          })
-          .eq('id', userId);
-          
-        result = {
-          success: true,
-          newEndDate: endDate.toISOString()
-        };
-        break;
+          .select('*')
         
+        if (profilesError) {
+          throw profilesError
+        }
+        
+        return new Response(
+          JSON.stringify({ 
+            authUsers: authUsers, 
+            profiles: profiles 
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      
+      case 'updateUserPermissions': {
+        if (!userId || !data) {
+          return new Response(
+            JSON.stringify({ error: 'Missing required fields' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+        
+        // Check if user exists
+        const { data: existingUser, error: userError } = await supabase.auth.admin.getUserById(userId)
+        if (userError || !existingUser) {
+          return new Response(
+            JSON.stringify({ error: 'User not found' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+        
+        // Update user profile with admin fields
+        const { is_admin, admin_role, permissions } = data
+        
+        // Create or update the admin data in the profiles table
+        // We'll use RPC (Remote Procedure Call) to execute a function that handles this properly
+        const { data: updatedProfile, error: updateError } = await supabase.rpc(
+          'update_user_admin_status',
+          { 
+            user_id: userId, 
+            is_admin_status: is_admin || false,
+            admin_role_value: admin_role || null,
+            permissions_value: permissions || []
+          }
+        )
+        
+        if (updateError) {
+          console.error('Error updating user permissions:', updateError)
+          return new Response(
+            JSON.stringify({ error: updateError.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+        
+        return new Response(
+          JSON.stringify({ success: true, data: updatedProfile }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      
+      // Additional action handlers can be added here
+      
       default:
-        throw new Error(`Unsupported action: ${action}`);
+        return new Response(
+          JSON.stringify({ error: 'Invalid action' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
     }
-
-    return new Response(
-      JSON.stringify(result),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-    
   } catch (error) {
-    console.error('Admin user operations error:', error);
-    
+    console.error('Error processing request:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
-});
+})
