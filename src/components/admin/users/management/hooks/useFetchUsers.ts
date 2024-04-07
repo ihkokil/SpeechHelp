@@ -18,36 +18,47 @@ export const useFetchUsers = () => {
       console.log('Fetching users via admin-user-operations function...');
       
       // Get the session for the current user to retrieve the access token
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Error getting session:', sessionError);
+        throw new Error('Authentication error: ' + (sessionError.message || 'Failed to get session'));
+      }
+      
       const accessToken = sessionData?.session?.access_token;
       
       if (!accessToken) {
+        console.error('No access token available');
         throw new Error('No session found. Please login again.');
       }
       
+      console.log('Got access token, invoking admin-user-operations function...');
+      
       // Call our edge function to fetch users with admin privileges
-      const { data, error } = await supabase.functions.invoke('admin-user-operations', {
+      const { data, error: functionError } = await supabase.functions.invoke('admin-user-operations', {
         body: { action: 'fetchUsers' },
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
       });
       
-      if (error) {
-        console.error('Error invoking admin-user-operations:', error);
-        throw new Error(error.message || 'Failed to fetch users');
+      if (functionError) {
+        console.error('Error invoking admin-user-operations:', functionError);
+        throw new Error(functionError.message || 'Failed to fetch users');
       }
       
       if (!data) {
+        console.error('No data returned from function');
         throw new Error('No data returned from function');
       }
       
+      console.log('Received response from admin-user-operations:', data);
+      
       const { authUsers, profiles } = data;
       
-      if (!authUsers || !authUsers.users) {
-        console.log('No users found or empty response');
-        setUsers([]);
-        return;
+      if (!authUsers || !authUsers.users || !Array.isArray(authUsers.users)) {
+        console.error('Invalid response format for authUsers:', authUsers);
+        throw new Error('Invalid response format from server');
       }
       
       // Combine auth users with their profiles
@@ -81,7 +92,7 @@ export const useFetchUsers = () => {
       
       toast({
         title: 'Error',
-        description: 'Failed to fetch users. Please try again.',
+        description: err.message || 'Failed to fetch users. Please try again.',
         variant: 'destructive',
       });
     } finally {
