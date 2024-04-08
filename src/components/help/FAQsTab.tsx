@@ -46,7 +46,7 @@ const FAQsTab = ({ faqs }: FAQsTabProps) => {
     <div className="bg-white shadow-md rounded-lg">
       <div className="px-4 py-5 sm:p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-5">
-          {t('help.frequentlyAskedQuestions', currentLanguage.code)}
+          Frequently Asked Questions
         </h3>
         
         <div className="space-y-4">
