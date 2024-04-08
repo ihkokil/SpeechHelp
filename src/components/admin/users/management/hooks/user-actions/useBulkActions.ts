@@ -2,7 +2,6 @@
 import { useCallback, useState } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 export const useBulkActions = () => {
   const { toast } = useToast();
@@ -11,29 +10,21 @@ export const useBulkActions = () => {
   // Bulk delete multiple users
   const handleBulkDelete = useCallback(async (
     selectedUsers: User[], 
-    users: User[] = [], 
-    setUsers: ((users: User[]) => void) | null = null
+    users: User[], 
+    setUsers: (users: User[]) => void
   ) => {
     if (!selectedUsers.length) return;
     
     setIsActionLoading(true);
     
     try {
-      const userIds = selectedUsers.map(user => user.id);
-      console.log('Bulk deleting users:', userIds);
+      console.log('Bulk deleting users:', selectedUsers.map(user => user.id));
       
-      // Actual API call to Supabase to delete users
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .in('id', userIds);
-      
-      if (error) throw error;
+      // Simulate API call - In a real app, this would be an actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Remove deleted users from state
-      if (setUsers && users.length > 0) {
-        setUsers(users.filter(user => !selectedUsers.some(selectedUser => selectedUser.id === user.id)));
-      }
+      setUsers(users.filter(user => !selectedUsers.some(selectedUser => selectedUser.id === user.id)));
       
       toast({
         title: 'Users Deleted',
@@ -55,35 +46,27 @@ export const useBulkActions = () => {
   // Bulk activate multiple users
   const handleBulkActivate = useCallback(async (
     selectedUsers: User[], 
-    users: User[] = [], 
-    setUsers: ((users: User[]) => void) | null = null
+    users: User[], 
+    setUsers: (users: User[]) => void
   ) => {
     if (!selectedUsers.length) return;
     
     setIsActionLoading(true);
     
     try {
-      const userIds = selectedUsers.map(user => user.id);
-      console.log('Bulk activating users:', userIds);
+      console.log('Bulk activating users:', selectedUsers.map(user => user.id));
       
-      // Actual API call to Supabase
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_active: true })
-        .in('id', userIds);
-      
-      if (error) throw error;
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Update users status in state
-      if (setUsers && users.length > 0) {
-        setUsers(
-          users.map(user => 
-            selectedUsers.some(selectedUser => selectedUser.id === user.id)
-              ? { ...user, is_active: true }
-              : user
-          )
-        );
-      }
+      setUsers(
+        users.map(user => 
+          selectedUsers.some(selectedUser => selectedUser.id === user.id)
+            ? { ...user, is_active: true }
+            : user
+        )
+      );
       
       toast({
         title: 'Users Activated',
@@ -105,35 +88,27 @@ export const useBulkActions = () => {
   // Bulk deactivate multiple users
   const handleBulkDeactivate = useCallback(async (
     selectedUsers: User[], 
-    users: User[] = [], 
-    setUsers: ((users: User[]) => void) | null = null
+    users: User[], 
+    setUsers: (users: User[]) => void
   ) => {
     if (!selectedUsers.length) return;
     
     setIsActionLoading(true);
     
     try {
-      const userIds = selectedUsers.map(user => user.id);
-      console.log('Bulk deactivating users:', userIds);
+      console.log('Bulk deactivating users:', selectedUsers.map(user => user.id));
       
-      // Actual API call to Supabase
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_active: false })
-        .in('id', userIds);
-      
-      if (error) throw error;
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Update users status in state
-      if (setUsers && users.length > 0) {
-        setUsers(
-          users.map(user => 
-            selectedUsers.some(selectedUser => selectedUser.id === user.id)
-              ? { ...user, is_active: false }
-              : user
-          )
-        );
-      }
+      setUsers(
+        users.map(user => 
+          selectedUsers.some(selectedUser => selectedUser.id === user.id)
+            ? { ...user, is_active: false }
+            : user
+        )
+      );
       
       toast({
         title: 'Users Deactivated',

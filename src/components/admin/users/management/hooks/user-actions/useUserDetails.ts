@@ -2,40 +2,37 @@
 import { useCallback } from 'react';
 import { User } from '../../../types';
 
-interface UseUserDetailsParams {
-  setSelectedUser: (user: User | null) => void;
-  setIsDetailsOpen: (isOpen: boolean) => void;
-  setIsPermissionsDialogOpen: (isOpen: boolean) => void;
-}
-
-export const useUserDetails = ({
-  setSelectedUser,
-  setIsDetailsOpen,
-  setIsPermissionsDialogOpen
-}: UseUserDetailsParams) => {
+export const useUserDetails = (
+  setSelectedUser?: (user: User | null) => void,
+  setIsDetailsOpen?: (isOpen: boolean) => void,
+  setIsPermissionsDialogOpen?: (isOpen: boolean) => void
+) => {
+  // View user details
   const handleViewUserDetails = useCallback((user: User) => {
-    console.log('View user details:', user.id);
-    setSelectedUser(user);
-    setIsDetailsOpen(true);
+    console.log('Viewing user details:', user.id);
+    if (setSelectedUser) setSelectedUser(user);
+    if (setIsDetailsOpen) setIsDetailsOpen(true);
   }, [setSelectedUser, setIsDetailsOpen]);
 
+  // Close user details
   const handleCloseUserDetails = useCallback(() => {
-    console.log('Close user details');
-    setIsDetailsOpen(false);
+    if (setIsDetailsOpen) setIsDetailsOpen(false);
+    // We set selected user to null with a delay to prevent UI flickering
     setTimeout(() => {
-      setSelectedUser(null);
-    }, 300);  // Slight delay to allow animations to complete
+      if (setSelectedUser) setSelectedUser(null);
+    }, 300);
   }, [setSelectedUser, setIsDetailsOpen]);
 
+  // Manage user permissions
   const handleManagePermissions = useCallback((user: User) => {
-    console.log('Manage permissions for user:', user.id);
-    setSelectedUser(user);
-    setIsPermissionsDialogOpen(true);
+    console.log('Managing permissions for user:', user.id);
+    if (setSelectedUser) setSelectedUser(user);
+    if (setIsPermissionsDialogOpen) setIsPermissionsDialogOpen(true);
   }, [setSelectedUser, setIsPermissionsDialogOpen]);
 
   return {
     handleViewUserDetails,
     handleCloseUserDetails,
-    handleManagePermissions
+    handleManagePermissions,
   };
 };
