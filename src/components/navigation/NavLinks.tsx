@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import Translate from '@/components/Translate';
@@ -16,13 +17,12 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
       const element = document.getElementById(sectionId);
       if (element) {
         // Adding offset to account for the navbar height plus extra padding
-        // Increased offset for better positioning
         const navbarHeight = 76; // Height of the navbar in pixels
         const extraPadding = {
-          'features': 120,    // More padding for features section
-          'how-it-works': 100, // More padding for how it works section
-          'pricing': 80,      // Adjusted padding for pricing section
-          'contact': 80       // Adjusted padding for contact section
+          'features': 180,     // Increased padding to hide video bottom
+          'how-it-works': 160, // Increased padding to hide features section bottom
+          'pricing': 140,      // Increased padding to show CTA buttons
+          'contact': 160       // Increased padding for better Who We Are section visibility
         };
         
         const offsetPosition = element.getBoundingClientRect().top + 
