@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import WelcomeEmail from './welcome-email.tsx';
+import WelcomeEmail from './welcome-email';
 import { renderToString } from 'react-dom/server';
 import { SubscriptionPlan } from '@/lib/plan_rules.ts';
 
