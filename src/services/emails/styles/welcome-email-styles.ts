@@ -37,8 +37,16 @@ export const h1 = {
   fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
   fontSize: '28px',
   fontWeight: 'bold',
-  margin: '30px 0 15px',
+  margin: '30px 0 5px',
   padding: '0',
+  textAlign: 'center' as const,
+};
+
+export const tagline = {
+  color: '#6E59A5',
+  fontSize: '18px',
+  fontWeight: '500',
+  margin: '0 0 20px',
   textAlign: 'center' as const,
 };
 
@@ -60,6 +68,13 @@ export const subheading = {
 export const ctaSection = {
   margin: '35px 0',
   textAlign: 'center' as const
+};
+
+export const ctaText = {
+  color: '#6E59A5',
+  fontSize: '18px',
+  fontWeight: '500',
+  margin: '0 0 15px',
 };
 
 export const button = {
@@ -121,6 +136,20 @@ export const footerText = {
   fontSize: '16px',
   lineHeight: '1.5',
   margin: '20px 0',
+};
+
+export const socialLinks = {
+  display: 'flex',
+  justifyContent: 'center' as const,
+  margin: '20px 0',
+  gap: '20px',
+};
+
+export const socialLink = {
+  color: '#6E59A5',
+  textDecoration: 'none',
+  fontSize: '14px',
+  fontWeight: '500',
 };
 
 export const footerCopyright = {
