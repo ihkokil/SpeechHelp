@@ -164,7 +164,7 @@ const button = {
 	fontWeight: 'bold',
 	padding: '14px 28px',
 	textDecoration: 'none',
-	textTransform: 'uppercase',
+	textTransform: 'uppercase' as const, // Fix: Use 'as const' to specify the correct type
 	transition: 'background-color 0.3s ease'
 };
 
