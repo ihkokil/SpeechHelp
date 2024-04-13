@@ -34,8 +34,17 @@ const Index = () => {
           if (element) {
             // Scroll to the element with an offset for the navbar
             const navbarHeight = 80; // Approximate navbar height
+            
+            // Adjusted padding values based on section IDs
+            const extraPadding = {
+              'features': 320,
+              'how-it-works': 400,
+              'pricing': 120,
+              'contact': 350
+            };
+            
             const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-            const offsetPosition = elementPosition - navbarHeight;
+            const offsetPosition = elementPosition - navbarHeight - (extraPadding[id as keyof typeof extraPadding] || 40);
             
             window.scrollTo({
               top: offsetPosition,
@@ -72,8 +81,17 @@ const Index = () => {
           const element = document.getElementById(scrollTarget);
           if (element) {
             const navbarHeight = 80;
+            
+            // Adjusted padding values based on section IDs
+            const extraPadding = {
+              'features': 320,
+              'how-it-works': 400,
+              'pricing': 120,
+              'contact': 350
+            };
+            
             const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-            const offsetPosition = elementPosition - navbarHeight;
+            const offsetPosition = elementPosition - navbarHeight - (extraPadding[scrollTarget as keyof typeof extraPadding] || 40);
             
             console.log(`Scrolling to ${scrollTarget} at position ${offsetPosition}`);
             
