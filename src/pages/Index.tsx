@@ -20,7 +20,7 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle navigation with hash - improved to handle direct links better
+  // Handle navigation with hash
   useEffect(() => {
     const handleHashNavigation = () => {
       // Check if there's a hash in the URL
@@ -32,26 +32,17 @@ const Index = () => {
         const scrollTimer = setTimeout(() => {
           const element = document.getElementById(id);
           if (element) {
-            // Scroll to the element with an offset for the navbar
+            // Simple offset for navbar height
             const navbarHeight = 80; // Approximate navbar height
-            
-            // Adjusted padding values based on section IDs
-            const extraPadding = {
-              'features': 320,
-              'how-it-works': 400,
-              'pricing': 120,
-              'contact': 350
-            };
-            
             const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-            const offsetPosition = elementPosition - navbarHeight - (extraPadding[id as keyof typeof extraPadding] || 40);
+            const offsetPosition = elementPosition - navbarHeight;
             
             window.scrollTo({
               top: offsetPosition,
               behavior: 'smooth'
             });
           }
-        }, 600); // Increased delay to ensure everything is loaded
+        }, 600); // Delay to ensure everything is loaded
         
         return () => clearTimeout(scrollTimer);
       }
@@ -81,17 +72,8 @@ const Index = () => {
           const element = document.getElementById(scrollTarget);
           if (element) {
             const navbarHeight = 80;
-            
-            // Adjusted padding values based on section IDs
-            const extraPadding = {
-              'features': 320,
-              'how-it-works': 400,
-              'pricing': 120,
-              'contact': 350
-            };
-            
             const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-            const offsetPosition = elementPosition - navbarHeight - (extraPadding[scrollTarget as keyof typeof extraPadding] || 40);
+            const offsetPosition = elementPosition - navbarHeight;
             
             console.log(`Scrolling to ${scrollTarget} at position ${offsetPosition}`);
             
@@ -128,14 +110,15 @@ const Index = () => {
       <Navbar />
       <main className="flex-1 w-full">
         <Hero />
-        <div id="features" className="w-full">
-          <Features />
-        </div>
-        <div id="how-it-works" className="w-full">
+        {/* Features section */}
+        <Features />
+        {/* How it Works section with ID for scrolling */}
+        <div id="how-it-works" className="w-full pt-2">
           <HowItWorks />
         </div>
         <SpeechGallery />
-        <div id="contact" className="w-full">
+        {/* Contact section with ID for scrolling */}
+        <div id="contact" className="w-full pt-2">
           <ContactForm />
         </div>
       </main>
