@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
@@ -32,8 +31,8 @@ const Index = () => {
         const scrollTimer = setTimeout(() => {
           const element = document.getElementById(id);
           if (element) {
-            // Simple offset for navbar height
-            const navbarHeight = 80; // Approximate navbar height
+            // Fixed navbar height
+            const navbarHeight = 80; 
             const elementPosition = element.getBoundingClientRect().top + window.scrollY;
             const offsetPosition = elementPosition - navbarHeight;
             
@@ -112,10 +111,8 @@ const Index = () => {
         <Hero />
         {/* Features section */}
         <Features />
-        {/* How it Works section with ID for scrolling */}
-        <div id="how-it-works" className="w-full pt-2">
-          <HowItWorks />
-        </div>
+        {/* How it Works section - removed the id here as we moved it inside the component */}
+        <HowItWorks />
         <SpeechGallery />
         {/* Contact section with ID for scrolling */}
         <div id="contact" className="w-full pt-2">
