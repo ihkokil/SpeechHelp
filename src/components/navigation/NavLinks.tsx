@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import Translate from '@/components/Translate';
@@ -21,9 +22,9 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         // Base offset calculation
         let offsetPosition = element.getBoundingClientRect().top + window.scrollY - navbarHeight;
         
-        // Additional small offset for "How it Works" section to position it closer to navbar
+        // Additional offset for "How it Works" section to position it much closer to navbar
         if (sectionId === 'how-it-works') {
-          offsetPosition = offsetPosition - 16; // Reduce by 16px to move it closer
+          offsetPosition = offsetPosition - 40; // Increase the offset to move it even closer to the navbar
         }
         
         window.scrollTo({
