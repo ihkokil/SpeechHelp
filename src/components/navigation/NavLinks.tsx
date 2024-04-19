@@ -24,7 +24,7 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         
         // Additional offset for "How it Works" section to position it directly under navbar
         if (sectionId === 'how-it-works') {
-          offsetPosition = offsetPosition - 120; // Drastically increase the offset to completely eliminate gap
+          offsetPosition = offsetPosition - 200; // Extremely large offset to ensure no content from above is visible
         }
         
         window.scrollTo({
