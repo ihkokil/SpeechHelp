@@ -25,6 +25,8 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         // For "How it Works" section, use a different offset to position it higher
         if (sectionId === 'how-it-works') {
           offsetPosition = offsetPosition - (navbarHeight - 10); // Reduced offset to move section higher
+        } else if (sectionId === 'contact') {
+          offsetPosition = offsetPosition - navbarHeight; // Position the contact header at the top
         } else {
           // For other sections, apply the standard offset
           offsetPosition = offsetPosition - navbarHeight;
