@@ -22,9 +22,9 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         // Get the position of the element
         let offsetPosition = element.getBoundingClientRect().top + window.scrollY;
         
-        // For "How it Works" section, use a different offset to position it higher
+        // For "How it Works" section, use a different offset to position it at the very top
         if (sectionId === 'how-it-works') {
-          offsetPosition = offsetPosition - (navbarHeight - 10); // Reduced offset to move section higher
+          offsetPosition = offsetPosition - 10; // Minimal offset to put header at very top
         } else if (sectionId === 'contact') {
           offsetPosition = offsetPosition - navbarHeight; // Position the contact header at the top
         } else {
