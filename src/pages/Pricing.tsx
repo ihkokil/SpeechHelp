@@ -19,9 +19,8 @@ const Pricing = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1">
-        {/* Removed the top padding to eliminate the gap */}
-        <section className="container mx-auto px-4 md:px-6 pt-4 pb-16 md:pb-24">
-          {/* Reduced padding on PricingHeader to remove gap */}
+        {/* Added additional padding at the top to prevent header from being cut off */}
+        <section className="container mx-auto px-4 md:px-6 pt-24 pb-16 md:pb-24">
           <PricingHeader />
           <PricingPeriodToggle 
             pricingPeriod={pricingPeriod} 
