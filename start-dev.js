@@ -4,118 +4,21 @@
 // This script helps run the locally installed Vite
 const { spawn } = require('child_process');
 const path = require('path');
-const fs = require('fs');
 
-// Path to local vite executable - check multiple possible locations
-const nodeModulesPath = path.join(__dirname, 'node_modules');
-const binPath = path.join(nodeModulesPath, '.bin');
-const vitePath = path.join(binPath, 'vite');
-const viteModulePath = path.join(nodeModulesPath, 'vite');
+// Path to local vite executable
+const vitePath = path.join(__dirname, 'node_modules', '.bin', 'vite');
 
-// Log for debugging
-console.log('\x1b[36mChecking Vite installation...\x1b[0m');
+// Spawn the vite process
+const viteProcess = spawn(vitePath, process.argv.slice(2), { 
+  stdio: 'inherit',
+  shell: true
+});
 
-// Function to attempt running vite with different approaches
-function runVite() {
-  // Check if the vite executable exists in .bin directory
-  if (fs.existsSync(vitePath)) {
-    console.log('\x1b[32mFound local Vite executable at:', vitePath, '\x1b[0m');
-    
-    // Use the local installation
-    const viteProcess = spawn(vitePath, process.argv.slice(2), {
-      stdio: 'inherit',
-      shell: true
-    });
-
-    viteProcess.on('error', handleError);
-    viteProcess.on('close', handleClose);
-    
-    return true;
-  } 
-  // Check if vite is installed as a module
-  else if (fs.existsSync(viteModulePath)) {
-    console.log('\x1b[32mFound Vite module at:', viteModulePath, '\x1b[0m');
-    
-    // Use npx to run the local vite module
-    const viteProcess = spawn('npx', ['vite'].concat(process.argv.slice(2)), {
-      stdio: 'inherit',
-      shell: true
-    });
-
-    viteProcess.on('error', handleError);
-    viteProcess.on('close', handleClose);
-    
-    return true;
-  }
-  
-  return false;
-}
-
-// Error handler for spawn
-function handleError(err) {
-  console.error('\x1b[31mFailed to start Vite:', err, '\x1b[0m');
-  console.log('\x1b[33mPlease ensure you have the required dependencies installed.\x1b[0m');
+viteProcess.on('error', (err) => {
+  console.error('Failed to start Vite:', err);
   process.exit(1);
-}
+});
 
-// Close handler for spawn
-function handleClose(code) {
+viteProcess.on('close', (code) => {
   process.exit(code);
-}
-
-// Attempt to install dependencies automatically if vite is missing
-function installDependencies() {
-  console.log('\x1b[33mAttempting to install project dependencies...\x1b[0m');
-  
-  const npmProcess = spawn('npm', ['install'], {
-    stdio: 'inherit',
-    shell: true
-  });
-  
-  npmProcess.on('error', (err) => {
-    console.error('\x1b[31mFailed to run npm install:', err, '\x1b[0m');
-    console.log('\x1b[33mPlease manually run npm install and try again.\x1b[0m');
-    process.exit(1);
-  });
-  
-  npmProcess.on('close', (code) => {
-    if (code === 0) {
-      console.log('\x1b[32mDependencies installed successfully. Trying to start Vite again...\x1b[0m');
-      // Try running Vite again after installing dependencies
-      if (!runVite()) {
-        fallbackToNpx();
-      }
-    } else {
-      console.error('\x1b[31mnpm install failed with code:', code, '\x1b[0m');
-      fallbackToNpx();
-    }
-  });
-}
-
-// Fallback to using npx as a last resort
-function fallbackToNpx() {
-  console.warn('\x1b[33mLocal Vite not found. Attempting to use npx...\x1b[0m');
-  
-  const viteProcess = spawn('npx', ['vite'].concat(process.argv.slice(2)), {
-    stdio: 'inherit',
-    shell: true
-  });
-
-  viteProcess.on('error', (err) => {
-    console.error('\x1b[31mFailed to start Vite using npx:', err);
-    console.log('\x1b[33mPlease install Vite by running one of these commands:');
-    console.log('npm install vite');
-    console.log('OR');
-    console.log('npm install');
-    console.log('Then try again.\x1b[0m');
-    process.exit(1);
-  });
-
-  viteProcess.on('close', handleClose);
-}
-
-// Main execution
-if (!runVite()) {
-  // Before giving up, try to install dependencies
-  installDependencies();
-}
+});
