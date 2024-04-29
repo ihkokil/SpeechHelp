@@ -1,12 +1,26 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Plus, CalendarIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarIcon } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { speechTypesData } from '@/components/speech/data/speechTypesData';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 
@@ -15,84 +29,99 @@ interface EventFormProps {
 }
 
 const EventForm: React.FC<EventFormProps> = ({ onAddEvent }) => {
-  const [title, setTitle] = useState('');
-  const [speechType, setSpeechType] = useState('business');
-  const [date, setDate] = useState<Date>(new Date());
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [eventDate, setEventDate] = useState<Date | undefined>(undefined);
+  const [eventType, setEventType] = useState<string>('');
+  const [eventTitle, setEventTitle] = useState<string>('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onAddEvent(title.trim(), speechType, date);
-    setTitle('');
-    setSpeechType('business');
-    setDate(new Date());
+
+  const handleAddEvent = () => {
+    if (!eventDate || !eventType) {
+      toast.error(t('errors.missingFields', currentLanguage.code));
+      return;
+    }
+    
+    onAddEvent(eventTitle, eventType, eventDate);
+    
+    // Reset form
+    setEventDate(undefined);
+    setEventType('');
+    setEventTitle('');
   };
-  
+
   return (
-    <form onSubmit={handleSubmit} className="p-4 space-y-3">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Input 
-          placeholder={t('dashboard.eventTitle', currentLanguage.code) || "Event title"} 
-          value={title} 
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        
-        <Select value={speechType} onValueChange={setSpeechType}>
-          <SelectTrigger>
-            <SelectValue placeholder={t('dashboard.speechType', currentLanguage.code) || "Speech type"} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="business">
-              {t('speechTypes.business', currentLanguage.code) || "Business"}
-            </SelectItem>
-            <SelectItem value="wedding">
-              {t('speechTypes.wedding', currentLanguage.code) || "Wedding"}
-            </SelectItem>
-            <SelectItem value="birthday">
-              {t('speechTypes.birthday', currentLanguage.code) || "Birthday"}
-            </SelectItem>
-            <SelectItem value="graduation">
-              {t('speechTypes.graduation', currentLanguage.code) || "Graduation"}
-            </SelectItem>
-            <SelectItem value="motivational">
-              {t('speechTypes.motivational', currentLanguage.code) || "Motivational"}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        
-        <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-          <PopoverTrigger asChild>
-            <Button 
-              variant="outline" 
-              className="text-left justify-start"
-              onClick={(e) => e.preventDefault()}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {format(date, "PPP")}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(date) => { 
-                if (date) {
-                  setDate(date);
-                  setIsCalendarOpen(false);
-                }
-              }}
-              initialFocus
+    <div className="p-4 border-b">
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="event-title" className="block text-sm mb-1">Speech Title</Label>
+            <Input 
+              id="event-title"
+              placeholder="Enter a title"
+              value={eventTitle}
+              onChange={(e) => setEventTitle(e.target.value)}
             />
-          </PopoverContent>
-        </Popover>
+          </div>
+          
+          <div>
+            <Label htmlFor="event-type" className="block text-sm mb-1">Speech Type</Label>
+            <Select
+              value={eventType}
+              onValueChange={setEventType}
+            >
+              <SelectTrigger id="event-type">
+                <SelectValue placeholder="Select Type" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60 overflow-y-auto">
+                {speechTypesData.map((type) => (
+                  <SelectItem key={type.id} value={type.id}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div className="flex items-end space-x-4">
+          <div className="flex-1">
+            <Label htmlFor="event-date" className="block text-sm mb-1">Event Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  id="event-date"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !eventDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {eventDate ? format(eventDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={eventDate}
+                  onSelect={setEventDate}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <Button 
+            onClick={handleAddEvent}
+            className="flex items-center"
+          >
+            <Plus className="mr-1 h-4 w-4" />
+            Add Event
+          </Button>
+        </div>
       </div>
-      
-      <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700">
-        {t('dashboard.addEvent', currentLanguage.code) || "Add Event"}
-      </Button>
-    </form>
+    </div>
   );
 };
 
