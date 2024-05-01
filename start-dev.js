@@ -26,60 +26,103 @@ function runCommand(command) {
   }
 }
 
+// Ensure Vite is installed
+async function ensureViteInstalled() {
+  try {
+    console.log('Checking Vite installation...');
+    
+    // Check if vite is installed
+    if (!isPackageInstalled('vite')) {
+      console.log('Vite not found in node_modules. Installing vite...');
+      try {
+        execSync('npm install vite@latest @vitejs/plugin-react-swc@latest', { stdio: 'inherit' });
+        console.log('Vite installed successfully');
+      } catch (err) {
+        console.error('Failed to install vite:', err);
+        throw new Error('Failed to install Vite');
+      }
+    } else {
+      console.log('Vite is already installed.');
+    }
+    
+    return true;
+  } catch (err) {
+    console.error('Error ensuring Vite installation:', err);
+    return false;
+  }
+}
+
 // Main function to start the dev server
 async function startDevServer() {
   console.log('Starting development server...');
   
-  // Check if vite is installed
-  if (!isPackageInstalled('vite')) {
-    console.log('Vite not found in node_modules. Installing vite...');
-    try {
-      execSync('npm install vite@latest', { stdio: 'inherit' });
-      console.log('Vite installed successfully');
-    } catch (err) {
-      console.error('Failed to install vite:', err);
-      process.exit(1);
-    }
+  // Install Vite if needed
+  const viteReady = await ensureViteInstalled();
+  if (!viteReady) {
+    console.error('Could not ensure Vite installation. Trying to continue anyway...');
   }
 
   // Try different methods to find and run vite
   let viteProcess;
+  let success = false;
   
   // Method 1: Try using local vite path
-  try {
-    const vitePath = path.join(__dirname, 'node_modules', '.bin', 'vite');
-    if (fs.existsSync(vitePath)) {
-      console.log('Starting Vite using local path...');
-      viteProcess = spawn(vitePath, process.argv.slice(2), { 
-        stdio: 'inherit',
-        shell: true
-      });
-    } else {
-      throw new Error('Local Vite executable not found');
-    }
-  } catch (err) {
-    console.log('Could not start Vite using local path, trying alternative methods...');
-    
-    // Method 2: Try using npx
+  if (!success) {
     try {
-      console.log('Starting Vite using npx...');
+      const vitePath = path.join(__dirname, 'node_modules', '.bin', 'vite');
+      if (fs.existsSync(vitePath)) {
+        console.log('Starting Vite using local path...');
+        viteProcess = spawn(vitePath, process.argv.slice(2), { 
+          stdio: 'inherit',
+          shell: true
+        });
+        success = true;
+      } else {
+        console.log('Local Vite executable not found at:', vitePath);
+      }
+    } catch (err) {
+      console.log('Error starting Vite from local path:', err.message);
+    }
+  }
+  
+  // Method 2: Try using npx vite
+  if (!success) {
+    try {
+      console.log('Attempting to start Vite using npx...');
       viteProcess = spawn('npx', ['vite', ...process.argv.slice(2)], { 
         stdio: 'inherit',
         shell: true
       });
+      success = true;
     } catch (err) {
-      console.log('Could not start Vite using npx, trying node API...');
-      
-      // Method 3: Try using node API
-      try {
-        console.log('Starting Vite using Node API...');
-        // Use require to run vite programmatically
-        require('vite').createServer().then(server => server.listen());
-        return; // Exit function if this method works
-      } catch (err) {
-        console.error('All methods to start Vite failed:', err);
-        process.exit(1);
-      }
+      console.log('Error starting Vite using npx:', err.message);
+    }
+  }
+  
+  // Method 3: Try using globally installed vite
+  if (!success) {
+    try {
+      console.log('Attempting to start Vite using global installation...');
+      viteProcess = spawn('vite', process.argv.slice(2), { 
+        stdio: 'inherit',
+        shell: true
+      });
+      success = true;
+    } catch (err) {
+      console.log('Error starting Vite from global installation:', err.message);
+    }
+  }
+
+  // Method 4: Try using node API as last resort
+  if (!success) {
+    try {
+      console.log('Attempting to start Vite using Node API...');
+      // Use require to run vite programmatically
+      require('vite').createServer().then(server => server.listen());
+      return; // Exit function if this method works
+    } catch (err) {
+      console.error('All methods to start Vite failed:', err);
+      process.exit(1);
     }
   }
 
