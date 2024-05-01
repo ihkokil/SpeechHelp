@@ -1,4 +1,3 @@
-
 // Utility functions for working with speech events
 import { SpeechEvent } from './types';
 
@@ -52,9 +51,13 @@ export const getDaysRemaining = (date: Date): number => {
   return Math.max(0, daysDifference); // Ensure we don't show negative days
 };
 
-// Load events from localStorage
-export const loadEventsFromStorage = (): SpeechEvent[] => {
-  const savedEvents = localStorage.getItem('upcomingEvents');
+// Load events from localStorage with user ID separation
+export const loadEventsFromStorage = (userId: string): SpeechEvent[] => {
+  if (!userId) return [];
+  
+  const storageKey = `upcomingEvents_${userId}`;
+  const savedEvents = localStorage.getItem(storageKey);
+  
   if (savedEvents) {
     try {
       const parsedEvents = JSON.parse(savedEvents);
@@ -71,10 +74,13 @@ export const loadEventsFromStorage = (): SpeechEvent[] => {
   return [];
 };
 
-// Save events to localStorage
-export const saveEventsToStorage = (events: SpeechEvent[]): void => {
+// Save events to localStorage with user ID separation
+export const saveEventsToStorage = (events: SpeechEvent[], userId: string): void => {
+  if (!userId) return;
+  
   try {
-    localStorage.setItem('upcomingEvents', JSON.stringify(events));
+    const storageKey = `upcomingEvents_${userId}`;
+    localStorage.setItem(storageKey, JSON.stringify(events));
   } catch (error) {
     console.error('Error saving events to localStorage:', error);
   }
