@@ -1,4 +1,6 @@
 
+#!/usr/bin/env node
+
 const fs = require('fs');
 const { execSync } = require('child_process');
 
@@ -7,20 +9,24 @@ try {
   if (process.platform !== 'win32') {
     console.log('Making all scripts executable...');
     
-    // Make start-dev.sh executable
-    try {
-      execSync('chmod +x start-dev.sh', { stdio: 'inherit' });
-      console.log('Made start-dev.sh executable');
-    } catch (err) {
-      console.error('Failed to make start-dev.sh executable:', err.message);
-    }
+    const scripts = [
+      'start-dev.sh',
+      'setup.js',
+      'start-dev.js',
+      'vite-direct'
+    ];
     
-    // Make setup.js executable
-    try {
-      execSync('chmod +x setup.js', { stdio: 'inherit' });
-      console.log('Made setup.js executable');
-    } catch (err) {
-      console.error('Failed to make setup.js executable:', err.message);
+    for (const script of scripts) {
+      try {
+        if (fs.existsSync(script)) {
+          execSync(`chmod +x ${script}`, { stdio: 'inherit' });
+          console.log(`Made ${script} executable`);
+        } else {
+          console.log(`Script ${script} not found, skipping`);
+        }
+      } catch (err) {
+        console.error(`Failed to make ${script} executable:`, err.message);
+      }
     }
     
     console.log('All scripts are now executable');

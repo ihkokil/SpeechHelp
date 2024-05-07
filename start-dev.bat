@@ -1,39 +1,42 @@
 
 @echo off
+echo Starting development environment...
+
+:: Execute the setup script first to ensure all dependencies are installed
+echo Running setup script to ensure dependencies are installed...
+node setup.js
+
 echo Starting development server...
 
-REM Check if node_modules exists
-if not exist "node_modules" (
-    echo Installing dependencies...
-    call npm install
+:: Method 1: Try using the direct vite copy we created
+if exist "vite-direct.cmd" (
+    echo Starting with direct Vite executable...
+    call vite-direct.cmd %*
+    if %errorlevel% EQU 0 exit /b 0
 )
 
-REM Check if vite exists
-if not exist "node_modules\.bin\vite.cmd" (
-    echo Installing Vite...
-    call npm install vite @vitejs/plugin-react-swc --save-dev
-)
-
-REM Try different methods to run Vite
-echo Attempting to start Vite development server...
-
-REM Method 1: Try using local path
+:: Method 2: Try using local path
 if exist "node_modules\.bin\vite.cmd" (
     echo Starting with local Vite...
-    call node_modules\.bin\vite %*
-    exit /b %errorlevel%
+    call node_modules\.bin\vite.cmd %*
+    if %errorlevel% EQU 0 exit /b 0
 )
 
-REM Method 2: Try using npx
+:: Method 3: Try using npx
 echo Attempting to start Vite using npx...
 call npx vite %*
 if %errorlevel% EQU 0 exit /b 0
 
-REM Method 3: Try using npm run
+:: Method 4: Try using npm run
 echo Attempting to start Vite using npm run...
 call npm run dev
 if %errorlevel% EQU 0 exit /b 0
 
-REM Method 4: Use Node.js to run the start-dev.js script as a last resort
+:: Method 5: Try using global vite
+echo Attempting to start Vite using global installation...
+call vite %*
+if %errorlevel% EQU 0 exit /b 0
+
+:: Method 6: Use Node.js to run the start-dev.js script as a last resort
 echo All direct methods failed, using JavaScript fallback...
 node start-dev.js %*
