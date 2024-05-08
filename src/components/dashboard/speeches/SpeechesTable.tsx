@@ -28,13 +28,24 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   // Debug information about speeches
   useEffect(() => {
     console.log(`SpeechesTable rendering with ${speeches.length} speeches`);
-    console.log('Speech types breakdown:', 
-      speeches.reduce((acc, speech) => {
-        const type = speech.isUpcoming ? 'upcoming' : speech.speech_type;
-        acc[type] = (acc[type] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>)
-    );
+    
+    // Enhanced debug logging
+    const byType = speeches.reduce((acc, speech) => {
+      const type = speech.isUpcoming ? 'upcoming' : speech.speech_type;
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    console.log('Speech types breakdown:', byType);
+    
+    // Detailed breakdown for better debugging
+    console.log('All speeches in table:', speeches.map(s => ({
+      id: s.id.substring(0, 8),
+      title: s.title,
+      type: s.speech_type,
+      isUpcoming: s.isUpcoming,
+      date: s.isUpcoming ? new Date(s.event_date || '').toLocaleDateString() : new Date(s.created_at || '').toLocaleDateString()
+    })));
   }, [speeches]);
   
   const getFormattedDate = (date: string | null) => {
