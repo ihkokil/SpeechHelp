@@ -12,15 +12,13 @@ const Pricing = () => {
   const [pricingPeriod, setPricingPeriod] = useState<PricingPeriod>('monthly');
   
   useEffect(() => {
-    // Scroll to top with no offset when the component mounts
     window.scrollTo(0, 0);
   }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-1">
-        {/* Added additional padding at the top to prevent header from being cut off */}
-        <section className="container mx-auto px-4 md:px-6 pt-24 pb-16 md:pb-24">
+      <main className="flex-1 pt-24 pb-16">
+        <section className="container mx-auto px-4 md:px-6 py-12 md:py-24">
           <PricingHeader />
           <PricingPeriodToggle 
             pricingPeriod={pricingPeriod} 

@@ -2,8 +2,6 @@
 import { useMemo } from 'react';
 import { Speech } from '@/types/speech';
 import { FilterOption, SortOption } from './FilterBar';
-import { useAuth } from '@/contexts/AuthContext';
-import { loadEventsFromStorage } from '../upcoming-speeches/utils';
 
 export const useSpeechesFilter = (
   speeches: Speech[],
@@ -11,8 +9,6 @@ export const useSpeechesFilter = (
   filterType: FilterOption,
   sortBy: SortOption
 ) => {
-  const { user } = useAuth();
-  
   const filteredSpeeches = useMemo(() => {
     // Log input speeches for debugging
     console.log('Original speeches array count:', speeches.length);
@@ -31,22 +27,23 @@ export const useSpeechesFilter = (
     
     console.log('Regular speeches after mapping:', allSpeeches.length);
     
-    // Get upcoming events from localStorage using user-specific key
+    // Get upcoming events from localStorage
     let upcomingEvents: any[] = [];
-    if (user && user.id) {
-      try {
-        upcomingEvents = loadEventsFromStorage(user.id);
-        console.log(`Found ${upcomingEvents.length} upcoming events for user ${user.id}:`, upcomingEvents);
-      } catch (error) {
-        console.error('Error parsing upcoming events:', error);
-        upcomingEvents = [];
+    try {
+      const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
+      if (upcomingEventsJSON) {
+        upcomingEvents = JSON.parse(upcomingEventsJSON);
+        console.log('Found upcoming events in localStorage:', upcomingEvents.length);
       }
+    } catch (error) {
+      console.error('Error parsing upcoming events:', error);
+      upcomingEvents = [];
     }
     
     // Create speech objects for upcoming events
     const upcomingSpeeches = upcomingEvents.map((event) => ({
       id: event.id,
-      user_id: user?.id || '', 
+      user_id: '', 
       title: event.title || 'Untitled Event',
       content: event.notes || '',
       created_at: event.date || '', // Use event date for sorting
@@ -55,8 +52,6 @@ export const useSpeechesFilter = (
       isUpcoming: true,
       event_date: event.date
     }));
-
-    console.log(`Created ${upcomingSpeeches.length} upcoming speech objects`);
 
     // Apply search filter if provided
     let searchFiltered = [...allSpeeches, ...upcomingSpeeches];
@@ -88,8 +83,6 @@ export const useSpeechesFilter = (
       new Map(filtered.map(speech => [speech.id, speech])).values()
     );
     
-    console.log(`Final unique speeches count: ${uniqueSpeeches.length}`);
-    
     // Sort speeches
     return uniqueSpeeches.sort((a, b) => {
       if (sortBy === 'newest') {
@@ -108,7 +101,7 @@ export const useSpeechesFilter = (
         return (b.title || '').localeCompare(a.title || '');
       }
     });
-  }, [speeches, searchQuery, filterType, sortBy, user]);
+  }, [speeches, searchQuery, filterType, sortBy]);
   
   return { filteredSpeeches };
 };

@@ -22,9 +22,9 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         // Get the position of the element
         let offsetPosition = element.getBoundingClientRect().top + window.scrollY;
         
-        // For "How it Works" section, use a different offset to position it at the very top
+        // For "How it Works" section, use a different offset to position it higher
         if (sectionId === 'how-it-works') {
-          offsetPosition = offsetPosition - 10; // Minimal offset to put header at very top
+          offsetPosition = offsetPosition - (navbarHeight - 10); // Reduced offset to move section higher
         } else if (sectionId === 'contact') {
           offsetPosition = offsetPosition - navbarHeight; // Position the contact header at the top
         } else {
@@ -47,18 +47,21 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
   };
 
   const handlePricingClick = () => {
-    // If already on pricing page, scroll to top with enough space to see the header
+    // If already on pricing page, scroll to top
     if (location.pathname === '/pricing') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToTop();
     }
     if (onItemClick) onItemClick();
   };
 
-  const navigateToSectionFromOtherPage = (sectionId: string) => {
-    // Store the section target in sessionStorage, so the homepage can scroll to it on load
-    sessionStorage.setItem('scrollTarget', sectionId);
-    // If onItemClick is provided (for mobile menu closure, etc.), call it
-    if (onItemClick) onItemClick();
+  const handleNavigation = (sectionId: string) => {
+    if (location.pathname === '/') {
+      // If already on homepage, just scroll
+      scrollToSection(sectionId);
+    } else {
+      // If on another page, we'll navigate to home with a hash
+      if (onItemClick) onItemClick();
+    }
   };
 
   const className = isMobile 
@@ -104,7 +107,7 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
     );
   }
 
-  // On other pages, use links with sessionStorage for section targeting
+  // On other pages, use links to homepage with hash
   return (
     <>
       <Link
@@ -115,16 +118,16 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         <Translate text="nav.home" />
       </Link>
       <Link
-        to="/"
+        to="/#features"
         className={className}
-        onClick={() => navigateToSectionFromOtherPage('features')}
+        onClick={onItemClick}
       >
         <Translate text="nav.features" />
       </Link>
       <Link
-        to="/"
+        to="/#how-it-works"
         className={className}
-        onClick={() => navigateToSectionFromOtherPage('how-it-works')}
+        onClick={onItemClick}
       >
         <Translate text="nav.howItWorks" />
       </Link>
@@ -136,9 +139,9 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         <Translate text="nav.pricing" />
       </Link>
       <Link
-        to="/"
+        to="/#contact"
         className={className}
-        onClick={() => navigateToSectionFromOtherPage('contact')}
+        onClick={onItemClick}
       >
         <Translate text="nav.contact" />
       </Link>
