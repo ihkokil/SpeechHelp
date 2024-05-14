@@ -47,22 +47,18 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
   };
 
   const handlePricingClick = () => {
-    // If already on pricing page, scroll to top with no offset
+    // If already on pricing page, scroll to top with enough space to see the header
     if (location.pathname === '/pricing') {
-      // Scroll to the top with enough space to see the header
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     if (onItemClick) onItemClick();
   };
 
-  const handleNavigation = (sectionId: string) => {
-    if (location.pathname === '/') {
-      // If already on homepage, just scroll
-      scrollToSection(sectionId);
-    } else {
-      // If on another page, we'll navigate to home with a hash
-      if (onItemClick) onItemClick();
-    }
+  const navigateToSectionFromOtherPage = (sectionId: string) => {
+    // Store the section target in sessionStorage, so the homepage can scroll to it on load
+    sessionStorage.setItem('scrollTarget', sectionId);
+    // If onItemClick is provided (for mobile menu closure, etc.), call it
+    if (onItemClick) onItemClick();
   };
 
   const className = isMobile 
@@ -108,7 +104,7 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
     );
   }
 
-  // On other pages, use links to homepage with hash
+  // On other pages, use links with sessionStorage for section targeting
   return (
     <>
       <Link
@@ -119,16 +115,16 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         <Translate text="nav.home" />
       </Link>
       <Link
-        to="/#features"
+        to="/"
         className={className}
-        onClick={onItemClick}
+        onClick={() => navigateToSectionFromOtherPage('features')}
       >
         <Translate text="nav.features" />
       </Link>
       <Link
-        to="/#how-it-works"
+        to="/"
         className={className}
-        onClick={onItemClick}
+        onClick={() => navigateToSectionFromOtherPage('how-it-works')}
       >
         <Translate text="nav.howItWorks" />
       </Link>
@@ -140,9 +136,9 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         <Translate text="nav.pricing" />
       </Link>
       <Link
-        to="/#contact"
+        to="/"
         className={className}
-        onClick={onItemClick}
+        onClick={() => navigateToSectionFromOtherPage('contact')}
       >
         <Translate text="nav.contact" />
       </Link>
