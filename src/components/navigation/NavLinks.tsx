@@ -47,10 +47,8 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
   };
 
   const handlePricingClick = () => {
-    // If already on pricing page, scroll to top with enough space to see the header
-    if (location.pathname === '/pricing') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    // Always scroll to top when pricing link is clicked, regardless of current page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     if (onItemClick) onItemClick();
   };
 
