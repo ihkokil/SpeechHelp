@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -13,6 +14,8 @@ import {
 } from "@/components/ui/accordion";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
+import WritingTipArticle from '@/components/help/WritingTipArticle';
+import { articleContent, WritingArticle } from '@/components/help/articleContent';
 
 const allTipsSections = [
   {
@@ -138,6 +141,10 @@ const WritingTips = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
+  // State for the article dialog
+  const [isArticleOpen, setIsArticleOpen] = useState(false);
+  const [currentArticle, setCurrentArticle] = useState<WritingArticle | null>(null);
+  
   useEffect(() => {
     if (!isLoading && !user) {
       navigate('/auth');
@@ -146,6 +153,21 @@ const WritingTips = () => {
 
   const handleClose = () => {
     navigate('/dashboard');
+  };
+
+  // Function to open the full article
+  const openArticle = (articleId: string) => {
+    const article = articleContent.find(a => a.id === articleId);
+    if (article) {
+      setCurrentArticle(article);
+      setIsArticleOpen(true);
+    } else {
+      toast({
+        title: "Article not found",
+        description: "The requested article could not be found.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (isLoading) {
@@ -201,7 +223,10 @@ const WritingTips = () => {
                       <div className="prose max-w-none">
                         {section.content}
                       </div>
-                      <Button className="mt-4 bg-purple-600 hover:bg-purple-700">
+                      <Button 
+                        className="mt-4 bg-purple-600 hover:bg-purple-700"
+                        onClick={() => openArticle(section.id)}
+                      >
                         Read Article
                       </Button>
                     </AccordionContent>
@@ -211,6 +236,13 @@ const WritingTips = () => {
             </div>
           </div>
         </div>
+        
+        {/* Article Dialog */}
+        <WritingTipArticle
+          isOpen={isArticleOpen}
+          onClose={() => setIsArticleOpen(false)}
+          article={currentArticle}
+        />
       </motion.div>
     </div>
   );
