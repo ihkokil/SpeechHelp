@@ -1,28 +1,39 @@
 
 #!/bin/bash
-# This script runs the Vite development server with proper error handling
+# Enhanced script to run Vite development server with better error handling
 
 echo "======================================"
-echo "Vite Development Server Launcher"
+echo "Starting SpeechHelp Development Server"
 echo "======================================"
 
-# Try node script first (most reliable method)
-if command -v node &> /dev/null; then
-    echo "✅ Using Node.js to start Vite..."
-    node start-dev.js
+# First try: Direct NPM install of vite
+echo "Installing Vite locally..."
+npm install --save-dev vite@latest --no-audit --no-fund
+
+# Second try: Check if vite exists in node_modules
+if [ -f "./node_modules/.bin/vite" ]; then
+    echo "✅ Found local Vite installation, starting server..."
+    ./node_modules/.bin/vite
     exit $?
 fi
 
-# If node isn't available, try npm directly
+# Third try: Try with npx
+if command -v npx &> /dev/null; then
+    echo "🔄 Running with npx vite..."
+    npx vite
+    exit $?
+fi
+
+# Fourth try: Try npm run dev
 if command -v npm &> /dev/null; then
-    echo "✅ Running npm install and then npm run dev..."
-    npm install --save-dev vite@latest --no-audit
+    echo "🔄 Running npm run dev..."
     npm run dev
     exit $?
 fi
 
-# Last resort
+# If all else fails
 echo "❌ Could not start development server."
-echo "Please ensure Node.js is installed on your system and try again."
-echo "Or manually run: npm install --save-dev vite && npx vite"
+echo "Please try these commands manually:"
+echo "1. npm install --save-dev vite"
+echo "2. npx vite"
 exit 1
