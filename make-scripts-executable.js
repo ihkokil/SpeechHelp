@@ -5,15 +5,15 @@ const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-// Function to install vite with multiple fallbacks
+// Function to install vite with multiple fallbacks and verification
 function installVite() {
   console.log('📦 Installing Vite...');
   
   // Try different installation methods
   const installMethods = [
-    'npm install vite@latest --no-save',
-    'npm install --save-dev vite@latest --no-audit --no-fund',
-    'npx vite@latest --no-install',
+    'npm install vite@latest --save-dev',  // Install as dev dependency (preferred)
+    'npm install vite@latest --no-save',   // Quick installation without saving
+    'npm install --save-dev vite@latest --no-audit --no-fund',  // More options
     'npm install -g vite'  // Global install as last resort
   ];
   
@@ -34,6 +34,14 @@ function installVite() {
     } catch (error) {
       console.log(`⚠️ Method failed: ${method}`);
     }
+  }
+  
+  // Try to install @vitejs/plugin-react-swc as well, since it's needed
+  try {
+    console.log('📦 Installing @vitejs/plugin-react-swc...');
+    execSync('npm install @vitejs/plugin-react-swc --save-dev', { stdio: 'inherit' });
+  } catch (error) {
+    console.log('⚠️ Failed to install @vitejs/plugin-react-swc');
   }
   
   return false;
@@ -57,6 +65,46 @@ function makeExecutable() {
   return false;
 }
 
+// Create a local vite runner script for compatibility
+function createLocalViteRunner() {
+  try {
+    console.log('📝 Creating local vite runner script...');
+    
+    // Create a simple JS script that runs vite with node
+    const runViteScript = `#!/usr/bin/env node
+
+// Simple script to run vite from node_modules
+const { spawn } = require('child_process');
+const path = require('path');
+
+// Find the path to local vite executable
+const vitePath = path.resolve(__dirname, 'node_modules', '.bin', 'vite');
+const viteProcess = spawn(vitePath, process.argv.slice(2), { 
+  stdio: 'inherit',
+  shell: true
+});
+
+viteProcess.on('error', (err) => {
+  console.error('Failed to start vite:', err);
+  process.exit(1);
+});
+`;
+
+    fs.writeFileSync('run-vite.js', runViteScript);
+    
+    // Make it executable on Unix systems
+    if (process.platform !== 'win32') {
+      execSync('chmod +x run-vite.js', { stdio: 'inherit' });
+    }
+    
+    console.log('✅ Local vite runner script created');
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to create local vite runner:', error.message);
+    return false;
+  }
+}
+
 // Main function
 function main() {
   console.log('====================================');
@@ -65,17 +113,22 @@ function main() {
   
   const viteInstalled = installVite();
   const scriptsExecutable = makeExecutable();
+  const localRunnerCreated = createLocalViteRunner();
   
   console.log('\nSetup summary:');
   console.log(`- Vite installation: ${viteInstalled ? '✅ Success' : '❌ Failed'}`);
   console.log(`- Scripts executable: ${scriptsExecutable ? '✅ Success' : '❌ Failed'}`);
+  console.log(`- Local runner: ${localRunnerCreated ? '✅ Success' : '❌ Failed'}`);
   
   console.log('\n====================================');
   console.log('Next steps:');
   if (process.platform === 'win32') {
     console.log('1. Run: node start-dev.js');
+    console.log('   OR: node run-vite.js');
   } else {
-    console.log('1. Run: ./start-dev.sh  OR  node start-dev.js');
+    console.log('1. Run: ./start-dev.sh');
+    console.log('   OR: node start-dev.js');
+    console.log('   OR: node run-vite.js');
   }
   console.log('====================================');
 }
