@@ -7,19 +7,19 @@ const fs = require('fs');
 
 // Function to install vite with multiple fallbacks
 function installVite() {
-  console.log('Installing Vite...');
+  console.log('📦 Installing Vite...');
   
   // Try different installation methods
   const installMethods = [
-    'npm install --save-dev vite@latest --no-audit --no-fund',
     'npm install vite@latest --no-save',
+    'npm install --save-dev vite@latest --no-audit --no-fund',
     'npx vite@latest --no-install',
     'npm install -g vite'  // Global install as last resort
   ];
   
   for (const method of installMethods) {
     try {
-      console.log(`Trying: ${method}`);
+      console.log(`🔄 Trying: ${method}`);
       execSync(method, { stdio: 'inherit' });
       
       // Check if installation worked by looking for vite binary
@@ -43,7 +43,7 @@ function installVite() {
 function makeExecutable() {
   if (process.platform !== 'win32') {
     try {
-      console.log('Making scripts executable...');
+      console.log('🔐 Making scripts executable...');
       execSync('chmod +x start-dev.sh', { stdio: 'inherit' });
       console.log('✅ Scripts are now executable');
       return true;
