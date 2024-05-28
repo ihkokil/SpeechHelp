@@ -15,9 +15,10 @@ console.log("=== Starting SpeechHelp Development Server ===");
 // Find the appropriate Vite executable
 const isWin = process.platform === 'win32';
 const localVitePath = path.resolve(process.cwd(), 'node_modules', '.bin', isWin ? 'vite.cmd' : 'vite');
+const directVitePath = path.resolve(process.cwd(), 'node_modules', 'vite', 'bin', 'vite.js');
 
 async function ensureViteInstalled() {
-  if (!fs.existsSync(localVitePath)) {
+  if (!fs.existsSync(localVitePath) && !fs.existsSync(directVitePath)) {
     console.log("⚠️ Vite not found, installing now...");
     
     const npmCmd = isWin ? 'npm.cmd' : 'npm';
@@ -42,15 +43,30 @@ async function ensureViteInstalled() {
 async function runVite() {
   await ensureViteInstalled();
   
-  const vitePath = fs.existsSync(localVitePath) ? localVitePath : (isWin ? 'npx.cmd' : 'npx');
-  const viteArgs = fs.existsSync(localVitePath) ? [] : ['vite'];
+  // Choose the best method to run Vite
+  let command, args;
   
-  console.log(`🚀 Running Vite from: ${fs.existsSync(localVitePath) ? localVitePath : 'npx vite'}`);
+  if (fs.existsSync(localVitePath)) {
+    console.log(`🚀 Running Vite from local bin: ${localVitePath}`);
+    command = localVitePath;
+    args = [];
+  } else if (fs.existsSync(directVitePath)) {
+    console.log(`🚀 Running Vite directly from: ${directVitePath}`);
+    command = process.execPath; // node executable
+    args = [directVitePath];
+  } else {
+    console.log('🚀 Running Vite with npx');
+    command = isWin ? 'npx.cmd' : 'npx';
+    args = ['vite'];
+  }
   
-  const viteProcess = spawn(vitePath, [...viteArgs], { 
+  const viteProcess = spawn(command, [...args, ...process.argv.slice(2)], { 
     stdio: 'inherit',
     shell: true,
-    env: { ...process.env, PATH: `${process.cwd()}/node_modules/.bin:${process.env.PATH}` }
+    env: { 
+      ...process.env, 
+      PATH: `${process.cwd()}/node_modules/.bin:${process.env.PATH}` 
+    }
   });
   
   viteProcess.on('error', (err) => {
