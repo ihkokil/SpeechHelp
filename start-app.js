@@ -6,7 +6,7 @@
  * Works across all platforms and environments
  */
 
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -17,7 +17,6 @@ const colors = {
   green: "\x1b[32m",
   yellow: "\x1b[33m",
   blue: "\x1b[34m",
-  magenta: "\x1b[35m",
   cyan: "\x1b[36m"
 };
 
@@ -25,102 +24,92 @@ console.log(`${colors.cyan}========================================${colors.rese
 console.log(`${colors.cyan}   Starting SpeechHelp Application      ${colors.reset}`);
 console.log(`${colors.cyan}========================================${colors.reset}`);
 
-// Check for Vite in different locations
-const isWin = process.platform === 'win32';
-const viteLocations = [
-  path.join(process.cwd(), 'node_modules', '.bin', isWin ? 'vite.cmd' : 'vite'),  // Local project installation
-  path.resolve(__dirname, 'node_modules', '.bin', isWin ? 'vite.cmd' : 'vite'),   // In case script is run from different directory
-];
-
-async function findViteAndRun() {
-  // Step 1: Check if Vite is directly available in any of our locations
-  for (const vitePath of viteLocations) {
-    if (fs.existsSync(vitePath)) {
-      console.log(`${colors.green}✓ Found local Vite at: ${vitePath}${colors.reset}`);
-      try {
-        return runViteProcess(vitePath);
-      } catch (error) {
-        console.log(`${colors.yellow}⚠️ Error running ${vitePath}: ${error.message}${colors.reset}`);
-      }
-    }
-  }
-
-  // Step 2: Try with npx
-  console.log(`${colors.yellow}⚠️ Local Vite not found, trying with npx...${colors.reset}`);
-  try {
-    const npxCommand = isWin ? 'npx.cmd' : 'npx';
-    return runViteProcess(npxCommand, ['vite']);
-  } catch (error) {
-    console.log(`${colors.red}✗ Failed to run with npx: ${error.message}${colors.reset}`);
-  }
-
-  // Step 3: Try to install Vite and then run it
-  console.log(`${colors.yellow}⚠️ Trying to install Vite and run...${colors.reset}`);
-  try {
-    const npmCommand = isWin ? 'npm.cmd' : 'npm';
-    const installProcess = spawn(npmCommand, ['install', 'vite', '@vitejs/plugin-react-swc', '--save-dev'], { 
+// Function to run command with proper error handling
+async function runCommand(command, args = [], options = {}) {
+  return new Promise((resolve, reject) => {
+    console.log(`${colors.blue}▶ Running: ${command} ${args.join(' ')}${colors.reset}`);
+    
+    const process = spawn(command, args, { 
       stdio: 'inherit',
-      shell: true
+      shell: true,
+      ...options
     });
     
-    await new Promise((resolve, reject) => {
-      installProcess.on('close', code => {
-        if (code !== 0) {
-          console.log(`${colors.yellow}⚠️ Installation exited with code ${code}${colors.reset}`);
-        }
-        resolve();
-      });
-      
-      installProcess.on('error', err => reject(err));
+    process.on('error', (err) => {
+      console.error(`${colors.red}✗ Error: ${err.message}${colors.reset}`);
+      reject(err);
     });
     
-    // Check again for Vite after installation
-    for (const vitePath of viteLocations) {
-      if (fs.existsSync(vitePath)) {
-        console.log(`${colors.green}✓ Successfully installed Vite at: ${vitePath}${colors.reset}`);
-        return runViteProcess(vitePath);
+    process.on('close', (code) => {
+      if (code !== 0) {
+        console.log(`${colors.yellow}⚠️ Process exited with code ${code}${colors.reset}`);
       }
+      resolve(code === 0);
+    });
+  });
+}
+
+// All possible locations where Vite might be
+async function findAndRunVite() {
+  const isWin = process.platform === 'win32';
+  
+  // Method 1: Try local node_modules/.bin/vite
+  const localVitePath = path.join(process.cwd(), 'node_modules', '.bin', isWin ? 'vite.cmd' : 'vite');
+  if (fs.existsSync(localVitePath)) {
+    console.log(`${colors.green}✓ Found local Vite at: ${localVitePath}${colors.reset}`);
+    if (await runCommand(localVitePath, process.argv.slice(2), {
+      env: { ...process.env, PATH: `${process.cwd()}/node_modules/.bin:${process.env.PATH}` }
+    })) {
+      return true;
     }
+  }
+  
+  // Method 2: Try with npx
+  console.log(`${colors.yellow}⚠️ Local Vite not found or failed, trying with npx...${colors.reset}`);
+  if (await runCommand(isWin ? 'npx.cmd' : 'npx', ['vite', ...process.argv.slice(2)])) {
+    return true;
+  }
+  
+  // Method 3: Try to install and then run
+  console.log(`${colors.yellow}⚠️ Trying to install Vite and dependencies...${colors.reset}`);
+  
+  try {
+    console.log(`${colors.blue}▶ Running npm install${colors.reset}`);
+    execSync('npm install', { stdio: 'inherit' });
     
-    // If still not found, use npx as last resort
-    return runViteProcess(isWin ? 'npx.cmd' : 'npx', ['vite']);
+    console.log(`${colors.blue}▶ Installing Vite explicitly${colors.reset}`);
+    execSync('npm install vite @vitejs/plugin-react-swc --save-dev', { stdio: 'inherit' });
     
+    // Try local installation again
+    if (fs.existsSync(localVitePath)) {
+      console.log(`${colors.green}✓ Vite installed successfully${colors.reset}`);
+      return await runCommand(localVitePath, process.argv.slice(2), {
+        env: { ...process.env, PATH: `${process.cwd()}/node_modules/.bin:${process.env.PATH}` }
+      });
+    }
   } catch (error) {
-    console.log(`${colors.red}✗ Failed to install and run Vite: ${error.message}${colors.reset}`);
+    console.log(`${colors.red}✗ Installation failed: ${error.message}${colors.reset}`);
   }
   
   return false;
 }
 
-function runViteProcess(command, args = []) {
-  return new Promise((resolve, reject) => {
-    // If command is a path to vite and not npx, don't add additional args
-    const finalArgs = args.length ? args.concat(process.argv.slice(2)) : process.argv.slice(2);
-    
-    console.log(`${colors.blue}▶ Running: ${command} ${finalArgs.join(' ')}${colors.reset}`);
-    
-    const viteProcess = spawn(command, finalArgs, { 
-      stdio: 'inherit',
-      shell: true,
-      env: { ...process.env, PATH: `${process.cwd()}/node_modules/.bin:${process.env.PATH}` } // Add node_modules/.bin to PATH
-    });
-    
-    viteProcess.on('error', (err) => {
-      console.error(`${colors.red}✗ Error starting process: ${err.message}${colors.reset}`);
-      reject(err);
-    });
-    
-    viteProcess.on('close', (code) => {
-      if (code !== 0) {
-        console.log(`\n${colors.yellow}⚠️ Process exited with code ${code}${colors.reset}`);
-      }
-      resolve(true);
-    });
-  });
+// Main function
+async function main() {
+  if (await findAndRunVite()) {
+    console.log(`${colors.green}✓ Application started successfully${colors.reset}`);
+  } else {
+    console.error(`${colors.red}✗ All attempts to start the application failed${colors.reset}`);
+    console.log(`${colors.yellow}Try running these commands manually:${colors.reset}`);
+    console.log(`  1. npm install`);
+    console.log(`  2. npm install vite @vitejs/plugin-react-swc --save-dev`);
+    console.log(`  3. npx vite`);
+    process.exit(1);
+  }
 }
 
 // Run the main function
-findViteAndRun().catch(err => {
+main().catch(err => {
   console.error(`${colors.red}Fatal error:${colors.reset}`, err);
   process.exit(1);
 });
