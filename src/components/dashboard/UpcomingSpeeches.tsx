@@ -7,6 +7,7 @@ import { Speech } from '@/types/speech';
 import EventForm from './upcoming-speeches/EventForm';
 import EventList from './upcoming-speeches/EventList';
 import { useUpcomingEvents } from './upcoming-speeches/useUpcomingEvents';
+import { useAuth } from '@/contexts/AuthContext'; // Add auth context import
 
 interface UpcomingSpeechesProps {
   speeches?: Speech[];
@@ -15,6 +16,8 @@ interface UpcomingSpeechesProps {
 const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const { user } = useAuth(); // Get current user
+  
   const { 
     upcomingEvents, 
     addEvent, 
@@ -22,6 +25,12 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
     viewAllEvents,
     loadEvents
   } = useUpcomingEvents(speeches);
+
+  // Render nothing if no user is authenticated
+  if (!user) {
+    console.log('No user authenticated, not rendering upcoming speeches');
+    return null;
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm">
