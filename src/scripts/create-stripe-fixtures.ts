@@ -1,3 +1,4 @@
+
 import { config } from 'dotenv';
 import { resolve } from 'path';
 import Stripe from 'stripe';
@@ -14,7 +15,7 @@ if (!stripeSecretKey) {
 }
 
 const stripe = new Stripe(stripeSecretKey, {
-	apiVersion: '2025-03-31.basil', // Using the latest API version
+	apiVersion: '2025-04-30.basil', // Updated to the latest API version
 });
 
 async function main() {
