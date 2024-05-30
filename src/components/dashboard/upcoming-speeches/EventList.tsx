@@ -25,11 +25,17 @@ const EventList: React.FC<EventListProps> = ({ events, onCreateSpeech, refreshEv
     );
   }
   
+  // Ensure dates are properly handled before sorting
+  const sortedEvents = [...events]
+    .map(event => ({
+      ...event,
+      date: event.date instanceof Date ? event.date : new Date(event.date)
+    }))
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+  
   return (
     <div className="divide-y max-h-80 overflow-y-auto">
-      {events
-        .sort((a, b) => a.date.getTime() - b.date.getTime())
-        .map((speech) => (
+      {sortedEvents.map((speech) => (
         <div key={speech.id} className="p-4 flex items-center justify-between">
           <div className="flex-1">
             <h3 className="font-medium text-gray-900">{speech.title}</h3>

@@ -15,7 +15,7 @@ if (!stripeSecretKey) {
 }
 
 const stripe = new Stripe(stripeSecretKey, {
-	apiVersion: '2023-10-16', // Updated to a valid API version
+	apiVersion: '2025-04-30.basil', // Updated to the expected API version
 });
 
 async function main() {

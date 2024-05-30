@@ -40,7 +40,7 @@ function installVite() {
     console.log("Trying to install Vite with npm...");
     execSync('npm install vite@latest @vitejs/plugin-react-swc@latest --no-save', { 
       stdio: 'inherit',
-      timeout: 60000 // 60 second timeout
+      timeout: 120000 // 2 minute timeout
     });
     console.log("✅ Vite installed successfully with npm.");
     return true;
@@ -50,7 +50,7 @@ function installVite() {
     // Try with npx as fallback
     try {
       console.log("🔄 Trying with npx...");
-      execSync('npx --yes vite@latest', { stdio: 'inherit', timeout: 30000 });
+      execSync('npx --yes vite@latest', { stdio: 'inherit', timeout: 60000 });
       console.log("✅ Vite available through npx.");
       return true;
     } catch (npxError) {
