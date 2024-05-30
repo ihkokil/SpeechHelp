@@ -33,12 +33,12 @@ try {
     if (!packageJson.scripts) packageJson.scripts = {};
     
     if (!packageJson.scripts.start) {
-      packageJson.scripts.start = 'node start-dev.js';
+      packageJson.scripts.start = 'vite';
       modified = true;
     }
     
-    if (!packageJson.scripts['start:dev']) {
-      packageJson.scripts['start:dev'] = 'node start-dev.js';
+    if (!packageJson.scripts.dev) {
+      packageJson.scripts.dev = 'vite';
       modified = true;
     }
     
