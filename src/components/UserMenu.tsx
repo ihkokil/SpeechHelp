@@ -81,33 +81,34 @@ const UserMenu = () => {
           <p className="text-xs text-gray-500 truncate">{user.email}</p>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <button className="w-full flex cursor-default items-center" onClick={() => navigate('/dashboard')}>
-            <LayoutDashboardIcon className="h-4 w-4 mr-2" />
-            Dashboard
-          </button>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => navigate('/dashboard')}
+        >
+          <LayoutDashboardIcon className="h-4 w-4 mr-2" />
+          Dashboard
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <button className="w-full flex cursor-default items-center" onClick={() => navigate('/settings')}>
-            <Settings className="h-4 w-4 mr-2" />
-            Account Settings
-          </button>
+        <DropdownMenuItem 
+          className="cursor-pointer"
+          onClick={() => navigate('/settings')}
+        >
+          <Settings className="h-4 w-4 mr-2" />
+          Account Settings
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <button className="w-full flex cursor-default items-center" onClick={() => navigate('/help')}>
-            <HelpCircle className="h-4 w-4 mr-2" />
-            Help & Support
-          </button>
+        <DropdownMenuItem 
+          className="cursor-pointer"
+          onClick={() => navigate('/help')}
+        >
+          <HelpCircle className="h-4 w-4 mr-2" />
+          Help & Support
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <button 
-            className="w-full flex cursor-default items-center text-red-600 focus:text-red-600"
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Log Out
-          </button>
+        <DropdownMenuItem
+          className="cursor-pointer text-red-600 focus:text-red-600"
+          onClick={handleSignOut}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Log Out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
