@@ -1,79 +1,64 @@
 
 import React from 'react';
-import { ButtonCustom } from '@/components/ui/button-custom';
-import { ArrowUp, ArrowDown, FileText, Laugh } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
-import Translate from '@/components/Translate';
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Pencil, Wand2 } from "lucide-react";
+import { useTranslation } from '@/translations';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface QuickSpeechModifiersProps {
   onModify: (modifierType: string) => void;
-  isProcessing?: boolean;
+  isProcessing: boolean;
 }
 
-const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({ 
-  onModify,
-  isProcessing = false 
-}) => {
-  const { toast } = useToast();
-  
-  const handleModify = (type: string) => {
-    if (isProcessing) {
-      toast({
-        title: "Processing in Progress",
-        description: "Please wait until the current modification is complete.",
-        variant: "warning"
-      });
-      return;
-    }
-    
-    onModify(type);
-  };
-  
+const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({ onModify, isProcessing }) => {
+  const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
+
   return (
-    <div className="flex flex-wrap gap-2 mt-4">
-      <ButtonCustom
+    <div className="flex flex-wrap gap-2 mb-2">
+      <Button
         variant="outline"
         size="sm"
-        onClick={() => handleModify('longer')}
+        onClick={() => onModify('longer')}
         disabled={isProcessing}
-        className="flex items-center gap-1 text-xs"
+        className="flex items-center text-sm"
       >
-        <ArrowUp className="h-3.5 w-3.5" />
-        <Translate text="speechLab.makeLonger" fallback="Make it longer" />
-      </ButtonCustom>
+        <Wand2 className="h-3.5 w-3.5 mr-1" />
+        {t('speechLab.makeLonger', currentLanguage.code)}
+      </Button>
       
-      <ButtonCustom
+      <Button
         variant="outline"
         size="sm"
-        onClick={() => handleModify('shorter')}
+        onClick={() => onModify('shorter')}
         disabled={isProcessing}
-        className="flex items-center gap-1 text-xs"
+        className="flex items-center text-sm"
       >
-        <ArrowDown className="h-3.5 w-3.5" />
-        <Translate text="speechLab.makeShorter" fallback="Make it shorter" />
-      </ButtonCustom>
+        <Wand2 className="h-3.5 w-3.5 mr-1" />
+        {t('speechLab.makeShorter', currentLanguage.code)}
+      </Button>
       
-      <ButtonCustom
+      <Button
         variant="outline"
         size="sm"
-        onClick={() => handleModify('formal')}
+        onClick={() => onModify('formal')}
         disabled={isProcessing}
-        className="flex items-center gap-1 text-xs"
+        className="flex items-center text-sm"
       >
-        <FileText className="h-3.5 w-3.5" />
-        <Translate text="speechLab.makeFormal" fallback="Make it formal" />
-      </ButtonCustom>
+        <Pencil className="h-3.5 w-3.5 mr-1" />
+        {t('speechLab.makeFormal', currentLanguage.code)}
+      </Button>
       
-      <ButtonCustom
+      <Button
         variant="outline"
         size="sm"
-        onClick={() => handleModify('humor')}
+        onClick={() => onModify('humor')}
         disabled={isProcessing}
-        className="flex items-center gap-1 text-xs"
+        className="flex items-center text-sm"
       >
-        <Laugh className="h-3.5 w-3.5" />
-        <Translate text="speechLab.addHumor" fallback="Add more humor" />
-      </ButtonCustom>
+        <ArrowRight className="h-3.5 w-3.5 mr-1" />
+        {t('speechLab.addHumor', currentLanguage.code)}
+      </Button>
     </div>
   );
 };

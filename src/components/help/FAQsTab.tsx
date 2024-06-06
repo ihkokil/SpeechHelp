@@ -1,6 +1,6 @@
 
-import { Disclosure } from '@headlessui/react';
-import { ChevronUpIcon } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDownIcon } from 'lucide-react';
 import { useTranslation } from '@/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -14,6 +14,7 @@ export interface FAQsTabProps {
 const FAQsTab = ({ faqs }: FAQsTabProps) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
   
   // Default FAQs
   const defaultFaqs = [
@@ -42,34 +43,42 @@ const FAQsTab = ({ faqs }: FAQsTabProps) => {
   // Use provided FAQs or default to our standard set
   const displayFaqs = faqs || defaultFaqs;
 
+  const toggleQuestion = (index: number) => {
+    if (openIndex === index) {
+      setOpenIndex(null);
+    } else {
+      setOpenIndex(index);
+    }
+  };
+
   return (
-    <div className="bg-white shadow-md rounded-lg">
-      <div className="px-4 py-5 sm:p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-5">
-          Frequently Asked Questions
-        </h3>
-        
-        <div className="space-y-4">
-          {displayFaqs.map((faq, index) => (
-            <Disclosure key={index} as="div" className="border border-gray-200 rounded-lg">
-              {({ open }) => (
-                <>
-                  <Disclosure.Button className="flex justify-between items-center w-full px-4 py-3 text-left text-sm font-medium text-purple-900 bg-purple-50 hover:bg-purple-100 rounded-lg focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
-                    <span>{faq.question}</span>
-                    <ChevronUpIcon
-                      className={`${
-                        open ? 'transform rotate-180' : ''
-                      } w-5 h-5 text-purple-500`}
-                    />
-                  </Disclosure.Button>
-                  <Disclosure.Panel className="px-4 py-3 text-sm text-gray-600">
-                    {faq.answer}
-                  </Disclosure.Panel>
-                </>
-              )}
-            </Disclosure>
-          ))}
-        </div>
+    <div>
+      <h3 className="text-lg font-medium text-gray-900 mb-5">
+        Frequently Asked Questions
+      </h3>
+      
+      <div className="space-y-4">
+        {displayFaqs.map((faq, index) => (
+          <div key={index} className="border border-gray-100 rounded-lg">
+            <button
+              className={`flex justify-between items-center w-full px-4 py-3 text-left text-sm font-medium text-purple-900 bg-purple-50 hover:bg-purple-100 rounded-lg focus:outline-none`}
+              onClick={() => toggleQuestion(index)}
+            >
+              <span>{faq.question}</span>
+              <ChevronDownIcon
+                className={`w-5 h-5 text-purple-500 transform ${
+                  openIndex === index ? 'rotate-180' : ''
+                } transition-transform`}
+              />
+            </button>
+            
+            {openIndex === index && (
+              <div className="px-4 py-3 text-sm text-gray-600">
+                {faq.answer}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

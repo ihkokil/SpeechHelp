@@ -1,18 +1,19 @@
 
 import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HelpCircle, BookOpen, MessageSquare, FileText } from 'lucide-react';
 import { useTranslation } from '@/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
-import SearchBar from '@/components/help/SearchBar';
+import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 import FAQsTab from '@/components/help/FAQsTab';
 import GuidesTab from '@/components/help/GuidesTab';
 import ContactTab from '@/components/help/ContactTab';
 import ResourcesTab from '@/components/help/ResourcesTab';
-import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const HelpSupport = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('faq');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
 
@@ -42,66 +43,83 @@ const HelpSupport = () => {
 
   return (
     <SpeechLabLayout>
-      <div className="max-w-6xl mx-auto px-4 py-8 mt-8">
-        <div className="mb-8">
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <header className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Help & Support</h1>
           <p className="text-gray-600 mt-1">Find answers to common questions or contact our support team</p>
-        </div>
+        </header>
 
-        <div className="mb-8">
-          <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-        </div>
-
-        <Tabs defaultValue="faq" className="space-y-8">
-          <div className="bg-white p-4 rounded-xl shadow-md">
-            <TabsList className="flex w-full max-w-2xl rounded-lg overflow-hidden h-16 p-1.5 bg-gray-100">
-              <TabsTrigger 
-                value="faq" 
-                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
-              >
-                <HelpCircle className="h-5 w-5" />
-                <span className="text-sm font-medium">FAQs</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="guides" 
-                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
-              >
-                <BookOpen className="h-5 w-5" />
-                <span className="text-sm font-medium">Guides</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="contact" 
-                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
-              >
-                <MessageSquare className="h-5 w-5" />
-                <span className="text-sm font-medium">Contact Us</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="resources" 
-                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
-              >
-                <FileText className="h-5 w-5" />
-                <span className="text-sm font-medium">Resources</span>
-              </TabsTrigger>
-            </TabsList>
+        <div className="flex gap-4 mb-6">
+          <div className="flex-1">
+            <Input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search for help topics..." 
+              className="w-full h-10 px-4 rounded-lg border border-gray-200"
+            />
           </div>
+          <Button className="bg-purple-600 hover:bg-purple-700 h-10">Search</Button>
+        </div>
 
-          <TabsContent value="faq" className="bg-white p-6 rounded-xl shadow-sm mt-6">
-            <FAQsTab faqs={faqs} />
-          </TabsContent>
+        <div className="bg-white rounded-xl shadow-sm mb-6">
+          <div className="flex flex-wrap">
+            <button
+              onClick={() => setActiveTab('faq')}
+              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+                activeTab === 'faq' 
+                  ? 'bg-purple-500 text-white rounded-t-xl' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <HelpCircle className="h-5 w-5 mb-1" />
+              <span className="text-sm">FAQs</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('guides')}
+              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+                activeTab === 'guides' 
+                  ? 'bg-purple-500 text-white' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <BookOpen className="h-5 w-5 mb-1" />
+              <span className="text-sm">Guides</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('contact')}
+              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+                activeTab === 'contact' 
+                  ? 'bg-purple-500 text-white' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <MessageSquare className="h-5 w-5 mb-1" />
+              <span className="text-sm">Contact Us</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('resources')}
+              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+                activeTab === 'resources' 
+                  ? 'bg-purple-500 text-white rounded-t-xl' 
+                  : 'text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <FileText className="h-5 w-5 mb-1" />
+              <span className="text-sm">Resources</span>
+            </button>
+          </div>
+        </div>
 
-          <TabsContent value="guides" className="bg-white p-6 rounded-xl shadow-sm mt-6">
-            <GuidesTab />
-          </TabsContent>
-
-          <TabsContent value="contact" className="bg-white p-6 rounded-xl shadow-sm mt-6">
-            <ContactTab />
-          </TabsContent>
-
-          <TabsContent value="resources" className="bg-white p-6 rounded-xl shadow-sm mt-6">
-            <ResourcesTab />
-          </TabsContent>
-        </Tabs>
+        <div className="bg-white p-6 rounded-xl shadow-sm">
+          {activeTab === 'faq' && <FAQsTab faqs={faqs} />}
+          {activeTab === 'guides' && <GuidesTab />}
+          {activeTab === 'contact' && <ContactTab />}
+          {activeTab === 'resources' && <ResourcesTab />}
+        </div>
       </div>
     </SpeechLabLayout>
   );
