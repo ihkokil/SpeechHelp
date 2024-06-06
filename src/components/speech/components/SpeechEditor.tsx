@@ -28,7 +28,14 @@ const SpeechEditor: React.FC<SpeechEditorProps> = ({
   const [isModifying, setIsModifying] = useState(false);
 
   const modifySpeech = async (modifierType: string) => {
-    if (!content.trim()) return;
+    if (!content.trim()) {
+      toast({
+        title: "No Content",
+        description: "Please add some speech content first before applying modifications.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsModifying(true);
     
@@ -52,6 +59,8 @@ const SpeechEditor: React.FC<SpeechEditorProps> = ({
           instruction = "Improve this speech.";
       }
       
+      console.log(`Modifying speech with instruction: ${instruction}`);
+      
       // Try to modify the speech using Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('openai-gen', {
         body: {
@@ -61,7 +70,17 @@ const SpeechEditor: React.FC<SpeechEditorProps> = ({
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error from Supabase function:', error);
+        throw error;
+      }
+      
+      if (!data || !data.speech) {
+        console.error('Invalid response format:', data);
+        throw new Error('Invalid response from modification service');
+      }
+      
+      console.log('Received modified speech from service');
       
       // Create a synthetic event to update the content
       const syntheticEvent = {

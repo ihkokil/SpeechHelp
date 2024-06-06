@@ -7,5 +7,6 @@ export const speechLab = {
   'speechLab.makeLonger': 'Hacerlo más largo',
   'speechLab.makeShorter': 'Hacerlo más corto',
   'speechLab.makeFormal': 'Hacerlo más formal',
-  'speechLab.addHumor': 'Agregar más humor'
+  'speechLab.addHumor': 'Agregar más humor',
+  'speechLab.content': 'Contenido del discurso'
 };

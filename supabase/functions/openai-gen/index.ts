@@ -56,6 +56,12 @@ serve(async (req) => {
 
 		// Parse request body
 		const requestData = await req.json() as RequestBody;
+		console.log('Received request:', JSON.stringify({
+			isModification: requestData.isModification,
+			hasInstruction: !!requestData.instruction,
+			hasExistingSpeech: !!requestData.existingSpeech,
+			speechTitle: requestData.speechTitle
+		}));
 		
 		// Check if this is a modification request or a new speech generation
 		if (requestData.isModification && requestData.existingSpeech && requestData.instruction) {
@@ -86,6 +92,7 @@ async function handleSpeechModification(
 	apiKey: string
 ): Promise<Response> {
 	const { existingSpeech, instruction } = requestData;
+	console.log('Starting speech modification process');
 
 	// Create the system message for speech modification
 	const systemMessage: OpenAIMessage = {
@@ -115,6 +122,7 @@ ${existingSpeech}
 		max_tokens: 4000,
 	};
 
+	console.log('Sending modification request to OpenAI');
 	// Call OpenAI API
 	const response = await fetch(API_URL, {
 		method: 'POST',
@@ -127,6 +135,7 @@ ${existingSpeech}
 
 	if (!response.ok) {
 		const errorData = await response.json();
+		console.error('OpenAI API error:', errorData);
 		return new Response(
 			JSON.stringify({ error: `OpenAI API error: ${errorData.error?.message || 'Unknown error'}` }),
 			{
@@ -141,6 +150,7 @@ ${existingSpeech}
 
 	const data = await response.json();
 	const modifiedSpeech = data.choices[0].message.content.trim();
+	console.log('Successfully modified speech');
 
 	// Return the modified speech
 	return new Response(
@@ -162,6 +172,7 @@ async function handleSpeechGeneration(
 	apiKey: string
 ): Promise<Response> {
 	const { speechTitle, speechType, speechDetails } = requestData;
+	console.log('Starting new speech generation process');
 
 	if (!speechTitle) {
 		return new Response(
@@ -200,6 +211,7 @@ async function handleSpeechGeneration(
 		max_tokens: 4000, // Allow for a substantial speech
 	};
 
+	console.log('Sending generation request to OpenAI');
 	// Call OpenAI API
 	const response = await fetch(API_URL, {
 		method: 'POST',
@@ -227,6 +239,7 @@ async function handleSpeechGeneration(
 
 	const data = await response.json();
 	const generatedSpeech = data.choices[0].message.content.trim();
+	console.log('Successfully generated new speech');
 
 	// Return the generated speech
 	return new Response(
@@ -260,7 +273,7 @@ function createPromptFromDetails(
 `;
 
 	// Add all user-provided questionnaire answers
-	Object.entries(speechDetails).forEach(([question, answer]) => {
+	Object.entries(speechDetails || {}).forEach(([question, answer]) => {
 		if (answer && answer.trim()) {
 			prompt += `- ${question}: ${answer}\n`;
 		}
