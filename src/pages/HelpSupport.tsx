@@ -8,7 +8,7 @@ import FAQsTab from '@/components/help/FAQsTab';
 import GuidesTab from '@/components/help/GuidesTab';
 import ContactTab from '@/components/help/ContactTab';
 import ResourcesTab from '@/components/help/ResourcesTab';
-import { ButtonCustom } from '@/components/ui/button-custom';
+import SearchBar from '@/components/help/SearchBar';
 
 const HelpSupport = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,24 +48,15 @@ const HelpSupport = () => {
           <p className="text-gray-600 mt-1">Find answers to common questions or contact our support team</p>
         </header>
 
-        <div className="flex gap-4 mb-6">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search for help topics..."
-            className="flex-1 h-10 px-4 border border-gray-200 rounded-md"
-          />
-          <ButtonCustom variant="pink" size="default" className="px-6">Search</ButtonCustom>
-        </div>
+        <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-        <div className="bg-white rounded-xl shadow-sm mb-6">
+        <div className="bg-white rounded-xl shadow-sm mb-6 mt-6">
           <div className="flex flex-wrap">
             <button
               onClick={() => setActiveTab('faq')}
               className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'faq' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-[#b84c9f] text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -77,7 +68,7 @@ const HelpSupport = () => {
               onClick={() => setActiveTab('guides')}
               className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'guides' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-[#b84c9f] text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -89,7 +80,7 @@ const HelpSupport = () => {
               onClick={() => setActiveTab('contact')}
               className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'contact' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-[#b84c9f] text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -101,7 +92,7 @@ const HelpSupport = () => {
               onClick={() => setActiveTab('resources')}
               className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'resources' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-[#b84c9f] text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
