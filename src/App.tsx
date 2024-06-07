@@ -28,8 +28,8 @@ import Test from "./pages/Test";
 import Account from "./pages/Account";
 
 // Create a new query client instance
-import { createQueryClient } from "@tanstack/react-query";
-const queryClient = createQueryClient();
+import { QueryClient } from "@tanstack/react-query";
+const queryClient = new QueryClient();
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
