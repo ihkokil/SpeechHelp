@@ -54,7 +54,7 @@ const HelpSupport = () => {
           <div className="flex flex-wrap">
             <button
               onClick={() => setActiveTab('faq')}
-              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-t-xl ${
                 activeTab === 'faq' 
                   ? 'bg-[#b84c9f] text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
@@ -66,7 +66,7 @@ const HelpSupport = () => {
             
             <button
               onClick={() => setActiveTab('guides')}
-              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 ${
                 activeTab === 'guides' 
                   ? 'bg-[#b84c9f] text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
@@ -78,7 +78,7 @@ const HelpSupport = () => {
             
             <button
               onClick={() => setActiveTab('contact')}
-              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 ${
                 activeTab === 'contact' 
                   ? 'bg-[#b84c9f] text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
@@ -90,7 +90,7 @@ const HelpSupport = () => {
             
             <button
               onClick={() => setActiveTab('resources')}
-              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-t-xl ${
                 activeTab === 'resources' 
                   ? 'bg-[#b84c9f] text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
