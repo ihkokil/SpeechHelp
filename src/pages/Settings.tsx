@@ -30,50 +30,50 @@ const Settings = () => {
           <div className="flex flex-wrap">
             <button
               onClick={() => setActiveTab('profile')}
-              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'profile' 
-                  ? 'bg-purple-500 text-white rounded-t-xl' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <User className="h-5 w-5 mb-1" />
-              <span className="text-sm">Profile</span>
+              <User className="h-5 w-5 mr-2" />
+              <span>Profile</span>
             </button>
             
             <button
               onClick={() => setActiveTab('billing')}
-              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'billing' 
-                  ? 'bg-purple-500 text-white' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <CreditCard className="h-5 w-5 mb-1" />
-              <span className="text-sm">Billing</span>
+              <CreditCard className="h-5 w-5 mr-2" />
+              <span>Billing</span>
             </button>
             
             <button
               onClick={() => setActiveTab('notifications')}
-              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'notifications' 
-                  ? 'bg-purple-500 text-white' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <Bell className="h-5 w-5 mb-1" />
-              <span className="text-sm">Notifications</span>
+              <Bell className="h-5 w-5 mr-2" />
+              <span>Notifications</span>
             </button>
             
             <button
               onClick={() => setActiveTab('security')}
-              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'security' 
-                  ? 'bg-purple-500 text-white rounded-t-xl' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <Shield className="h-5 w-5 mb-1" />
-              <span className="text-sm">Security</span>
+              <Shield className="h-5 w-5 mr-2" />
+              <span>Security</span>
             </button>
           </div>
         </div>

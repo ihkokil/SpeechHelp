@@ -8,8 +8,7 @@ import FAQsTab from '@/components/help/FAQsTab';
 import GuidesTab from '@/components/help/GuidesTab';
 import ContactTab from '@/components/help/ContactTab';
 import ResourcesTab from '@/components/help/ResourcesTab';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { ButtonCustom } from '@/components/ui/button-custom';
 
 const HelpSupport = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,66 +49,64 @@ const HelpSupport = () => {
         </header>
 
         <div className="flex gap-4 mb-6">
-          <div className="flex-1">
-            <Input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search for help topics..." 
-              className="w-full h-10 px-4 rounded-lg border border-gray-200"
-            />
-          </div>
-          <Button className="bg-purple-600 hover:bg-purple-700 h-10">Search</Button>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search for help topics..."
+            className="flex-1 h-10 px-4 border border-gray-200 rounded-md"
+          />
+          <ButtonCustom variant="pink" size="default" className="px-6">Search</ButtonCustom>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm mb-6">
           <div className="flex flex-wrap">
             <button
               onClick={() => setActiveTab('faq')}
-              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'faq' 
-                  ? 'bg-purple-500 text-white rounded-t-xl' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <HelpCircle className="h-5 w-5 mb-1" />
-              <span className="text-sm">FAQs</span>
+              <HelpCircle className="h-5 w-5 mr-2" />
+              <span>FAQs</span>
             </button>
             
             <button
               onClick={() => setActiveTab('guides')}
-              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'guides' 
-                  ? 'bg-purple-500 text-white' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <BookOpen className="h-5 w-5 mb-1" />
-              <span className="text-sm">Guides</span>
+              <BookOpen className="h-5 w-5 mr-2" />
+              <span>Guides</span>
             </button>
             
             <button
               onClick={() => setActiveTab('contact')}
-              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'contact' 
-                  ? 'bg-purple-500 text-white' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <MessageSquare className="h-5 w-5 mb-1" />
-              <span className="text-sm">Contact Us</span>
+              <MessageSquare className="h-5 w-5 mr-2" />
+              <span>Contact Us</span>
             </button>
             
             <button
               onClick={() => setActiveTab('resources')}
-              className={`flex flex-col items-center justify-center py-4 px-6 flex-1 ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'resources' 
-                  ? 'bg-purple-500 text-white rounded-t-xl' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <FileText className="h-5 w-5 mb-1" />
-              <span className="text-sm">Resources</span>
+              <FileText className="h-5 w-5 mr-2" />
+              <span>Resources</span>
             </button>
           </div>
         </div>

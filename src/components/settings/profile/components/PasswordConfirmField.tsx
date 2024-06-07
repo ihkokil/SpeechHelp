@@ -1,47 +1,39 @@
 
-import { UseFormReturn } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/components/ui/form';
+import React from 'react';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { UseFormReturn } from 'react-hook-form';
 import { ProfileFormValues } from '../types';
-import { Lock } from 'lucide-react';
+import { ButtonCustom } from '@/components/ui/button-custom';
 
 interface PasswordConfirmFieldProps {
   form: UseFormReturn<ProfileFormValues>;
   isEmailChanged: boolean;
 }
 
-const PasswordConfirmField = ({ form, isEmailChanged }: PasswordConfirmFieldProps) => {
+const PasswordConfirmField: React.FC<PasswordConfirmFieldProps> = ({ form, isEmailChanged }) => {
   if (!isEmailChanged) return null;
-
+  
   return (
-    <FormField
-      control={form.control}
-      name="password"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel className="text-pink-600">Password Confirmation</FormLabel>
-          <FormDescription>
-            Please enter your current password to confirm email change
-          </FormDescription>
-          <FormControl>
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <Lock className="h-4 w-4 text-gray-500" />
-              </div>
-              <Input 
-                {...field} 
-                type="password" 
-                placeholder="Enter your current password"
-                className="pl-10"
-                data-focus-visible="true"
-                required={isEmailChanged}
+    <div className="space-y-4">
+      <FormField
+        control={form.control}
+        name="password"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Confirm your password</FormLabel>
+            <FormControl>
+              <Input
+                type="password"
+                placeholder="Enter your current password to confirm changes"
+                {...field}
               />
-            </div>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
   );
 };
 
