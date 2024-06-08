@@ -29,7 +29,7 @@ const SearchBar = ({ searchQuery, setSearchQuery }: SearchBarProps) => {
         onChange={(e) => setSearchQuery(e.target.value)}
         className="flex-1"
       />
-      <ButtonCustom type="submit" variant="pink">Search</ButtonCustom>
+      <ButtonCustom type="submit" variant="premium">Search</ButtonCustom>
     </form>
   );
 };

@@ -32,7 +32,7 @@ const Settings = () => {
               onClick={() => setActiveTab('profile')}
               className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'profile' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -44,7 +44,7 @@ const Settings = () => {
               onClick={() => setActiveTab('billing')}
               className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'billing' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -56,7 +56,7 @@ const Settings = () => {
               onClick={() => setActiveTab('notifications')}
               className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'notifications' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -68,7 +68,7 @@ const Settings = () => {
               onClick={() => setActiveTab('security')}
               className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'security' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
