@@ -30,9 +30,9 @@ const Settings = () => {
           <div className="flex flex-wrap">
             <button
               onClick={() => setActiveTab('profile')}
-              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-t-xl transition-colors ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'profile' 
-                  ? 'bg-[#b84c9f] text-white' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -42,9 +42,9 @@ const Settings = () => {
             
             <button
               onClick={() => setActiveTab('billing')}
-              className={`flex items-center justify-center py-4 px-8 flex-1 transition-colors ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'billing' 
-                  ? 'bg-[#b84c9f] text-white' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -54,9 +54,9 @@ const Settings = () => {
             
             <button
               onClick={() => setActiveTab('notifications')}
-              className={`flex items-center justify-center py-4 px-8 flex-1 transition-colors ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'notifications' 
-                  ? 'bg-[#b84c9f] text-white' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -66,9 +66,9 @@ const Settings = () => {
             
             <button
               onClick={() => setActiveTab('security')}
-              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-t-xl transition-colors ${
+              className={`flex items-center justify-center py-4 px-8 flex-1 rounded-none transition-colors ${
                 activeTab === 'security' 
-                  ? 'bg-[#b84c9f] text-white' 
+                  ? 'bg-pink-500 text-white' 
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
