@@ -4,11 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Download, Lock } from 'lucide-react';
 import { speechTypesData } from '@/components/speech/data/speechTypesData';
 import { questionnaires } from '@/components/speech/questionnaires';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { createPdfFromContent } from '@/components/speech/utils/pdfGenerator';
 import ResourceCard from './ResourceCard';
 import PasswordDialog from './PasswordDialog';
 import { createTemplateContent } from './utils/templateFormatter';
+import { ButtonCustom } from '@/components/ui/button-custom';
 
 // Type for password form values from PasswordDialog
 type PasswordFormValues = {
@@ -115,12 +116,14 @@ const ResourcesTab = () => {
             title="Speech Writing Templates"
             description="Download templates with the latest questionnaires"
             items={speechTemplateItems}
+            gradientClasses="bg-gradient-to-r from-pink-50 to-purple-50"
           />
 
           <ResourceCard
             title="External Resources"
             description="Valuable resources from around the web"
             items={externalResourceItems}
+            gradientClasses="bg-gradient-to-r from-pink-50 to-purple-50"
           />
         </div>
         

@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { ButtonCustom } from '@/components/ui/button-custom';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Mail, Phone, MessageSquare } from 'lucide-react';
+import { Mail, Phone, MessageSquare, Send } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const ContactTab = () => {
@@ -110,7 +110,10 @@ const ContactTab = () => {
               required 
             />
           </div>
-          <Button type="submit" className="w-full md:w-auto">Send Message</Button>
+          <ButtonCustom type="submit" variant="premium" className="w-full md:w-auto flex items-center gap-2">
+            <Send className="h-4 w-4" />
+            Send Message
+          </ButtonCustom>
         </form>
       </CardContent>
     </Card>

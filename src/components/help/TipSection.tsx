@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { ButtonCustom } from '@/components/ui/button-custom';
 import {
   AccordionItem,
   AccordionTrigger,
@@ -30,12 +30,13 @@ const TipSection: React.FC<TipSectionProps> = ({ section, openArticle }) => {
         <div className="prose max-w-none">
           {section.content}
         </div>
-        <Button 
-          className="mt-4 bg-purple-600 hover:bg-purple-700"
+        <ButtonCustom 
+          className="mt-4"
+          variant="premium"
           onClick={() => openArticle(section.id)}
         >
           Read Article
-        </Button>
+        </ButtonCustom>
       </AccordionContent>
     </AccordionItem>
   );

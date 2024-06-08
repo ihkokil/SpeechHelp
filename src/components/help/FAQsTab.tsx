@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ChevronDownIcon } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useTranslation } from '@/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -61,19 +61,23 @@ const FAQsTab = ({ faqs }: FAQsTabProps) => {
         {displayFaqs.map((faq, index) => (
           <div key={index} className="border border-gray-100 rounded-lg">
             <button
-              className={`flex justify-between items-center w-full px-4 py-3 text-left text-sm font-medium text-purple-900 bg-purple-50 hover:bg-purple-100 rounded-lg focus:outline-none`}
+              className={`flex justify-between items-center w-full px-4 py-3 text-left text-sm font-medium ${
+                openIndex === index 
+                ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-t-lg' 
+                : 'text-purple-900 bg-purple-50 hover:bg-purple-100 rounded-lg'
+              } focus:outline-none`}
               onClick={() => toggleQuestion(index)}
             >
               <span>{faq.question}</span>
-              <ChevronDownIcon
-                className={`w-5 h-5 text-purple-500 transform ${
+              <ChevronDown
+                className={`w-5 h-5 ${openIndex === index ? 'text-white' : 'text-purple-500'} transform ${
                   openIndex === index ? 'rotate-180' : ''
                 } transition-transform`}
               />
             </button>
             
             {openIndex === index && (
-              <div className="px-4 py-3 text-sm text-gray-600">
+              <div className="px-4 py-3 text-sm text-gray-600 border border-t-0 border-gray-100 rounded-b-lg">
                 {faq.answer}
               </div>
             )}
