@@ -9,7 +9,7 @@ import { createPdfFromContent } from '@/components/speech/utils/pdfGenerator';
 import ResourceCard from './ResourceCard';
 import PasswordDialog from './PasswordDialog';
 import { createTemplateContent } from './utils/templateFormatter';
-import { ButtonCustom } from '@/components/ui/button-custom';
+import { Button } from '@/components/ui/button';
 
 // Type for password form values from PasswordDialog
 type PasswordFormValues = {
@@ -73,8 +73,8 @@ const ResourcesTab = () => {
     buttonLabel: "Download",
     buttonIcon: (
       <>
-        <Lock className="h-3.5 w-3.5 mr-1 text-pink-500" />
-        <Download className="h-3.5 w-3.5 mr-1 text-pink-500" />
+        <Lock className="h-3.5 w-3.5 mr-1" />
+        <Download className="h-3.5 w-3.5 mr-1" />
       </>
     )
   }));

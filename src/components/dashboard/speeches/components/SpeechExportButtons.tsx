@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Speech } from '@/types/speech';
-import { ButtonCustom } from '@/components/ui/button-custom';
+import { Button } from '@/components/ui/button';
 import { Download, Printer } from 'lucide-react';
 import Translate from '@/components/Translate';
 import { useExportFunctions } from '../utils/exportUtils';
@@ -30,22 +30,22 @@ const SpeechExportButtons: React.FC<SpeechExportButtonsProps> = ({
 
   return (
     <div className="flex flex-wrap gap-2">
-      <ButtonCustom 
+      <Button 
         variant="outline" 
         size={size}
         onClick={handleDownload}
       >
         <Download className="h-4 w-4 mr-2" />
         <Translate text="common.download" fallback="Download as PDF" />
-      </ButtonCustom>
-      <ButtonCustom 
+      </Button>
+      <Button 
         variant="outline" 
         size={size}
         onClick={handlePrint}
       >
         <Printer className="h-4 w-4 mr-2" />
         <Translate text="common.print" fallback="Print" />
-      </ButtonCustom>
+      </Button>
     </div>
   );
 };

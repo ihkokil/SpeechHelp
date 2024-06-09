@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Speech } from '@/types/speech';
 import { Badge } from '@/components/ui/badge';
-import { ButtonCustom } from '@/components/ui/button-custom';
+import { Button } from '@/components/ui/button';
 import { format, parseISO } from 'date-fns';
 import { getSpeechTypeLabel, getTypeColor } from './speech-utils';
 import { useTranslation } from '@/translations';
@@ -67,21 +67,21 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
         />
         
         <DialogFooter className="mt-4">
-          <ButtonCustom 
+          <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}
           >
             <Translate text="common.close" />
-          </ButtonCustom>
-          <ButtonCustom 
-            variant="default" 
+          </Button>
+          <Button 
+            variant="magenta" 
             onClick={() => {
               onOpenChange(false);
               onEditClick(speech);
             }}
           >
             <Translate text="common.edit" />
-          </ButtonCustom>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

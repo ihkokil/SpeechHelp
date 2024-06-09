@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ButtonCustom } from '@/components/ui/button-custom';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { Search } from 'lucide-react';
@@ -30,10 +30,10 @@ const SearchBar = ({ searchQuery, setSearchQuery }: SearchBarProps) => {
         onChange={(e) => setSearchQuery(e.target.value)}
         className="flex-1"
       />
-      <ButtonCustom type="submit" variant="premium" className="flex items-center gap-2">
+      <Button type="submit" variant="magenta" className="flex items-center gap-2">
         <Search className="h-4 w-4" />
         Search
-      </ButtonCustom>
+      </Button>
     </form>
   );
 };
