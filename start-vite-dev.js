@@ -1,5 +1,5 @@
 
-#!/usr/bin/env node
+// #!/usr/bin/env node
 
 // Enhanced script to ensure Vite is installed and runs properly
 const { spawnSync, execSync } = require('child_process');
