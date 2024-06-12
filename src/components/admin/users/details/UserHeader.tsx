@@ -3,7 +3,6 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { User } from '../types';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface UserHeaderProps {
   user: User;
@@ -61,18 +60,11 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ user }) => {
         <AvatarImage src={`https://gravatar.com/avatar/${getEmailHash(user.email)}?d=mp`} />
         <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
       </Avatar>
-      <div className="overflow-hidden">
-        <h3 className="text-xl font-semibold truncate">
+      <div>
+        <h3 className="text-xl font-semibold">
           {getUserFullName(user)}
         </h3>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <p className="text-sm text-muted-foreground truncate max-w-[200px]">{user.email}</p>
-            </TooltipTrigger>
-            <TooltipContent>{user.email}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <p className="text-sm text-muted-foreground">{user.email}</p>
         <div className="mt-2">
           <Badge variant={user.is_active !== false ? 'default' : 'secondary'}>
             {user.is_active !== false ? 'Active' : 'Inactive'}

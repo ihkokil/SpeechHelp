@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Settings, User } from 'lucide-react';
@@ -11,7 +12,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const AdminUserMenu = () => {
   const { adminUser, signOut } = useAdminAuth();
@@ -37,16 +37,9 @@ const AdminUserMenu = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" forceMount>
         <div className="flex items-center justify-start gap-2 p-2">
-          <div className="flex flex-col space-y-1 leading-none overflow-hidden">
-            <p className="font-medium truncate">{adminUser?.username}</p>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <p className="text-xs text-gray-500 truncate max-w-[150px]">{adminUser?.email}</p>
-                </TooltipTrigger>
-                <TooltipContent>{adminUser?.email || ''}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+          <div className="flex flex-col space-y-1 leading-none">
+            <p className="font-medium">{adminUser?.username}</p>
+            <p className="text-xs text-gray-500">{adminUser?.email}</p>
           </div>
         </div>
         <DropdownMenuSeparator />
