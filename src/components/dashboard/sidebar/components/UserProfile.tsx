@@ -1,6 +1,6 @@
 
 import { useAuth } from '@/contexts/AuthContext';
-import { Tooltip } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const UserProfile = () => {
   const { user } = useAuth();
@@ -19,9 +19,14 @@ export const UserProfile = () => {
         </div>
         <div className="ml-3 overflow-hidden">
           <p className="text-sm font-medium text-gray-900 truncate">{fullName}</p>
-          <Tooltip content={user?.email || ''}>
-            <p className="text-xs text-gray-500 truncate max-w-[150px]">{user?.email}</p>
-          </Tooltip>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p className="text-xs text-gray-500 truncate max-w-[150px]">{user?.email}</p>
+              </TooltipTrigger>
+              <TooltipContent>{user?.email || ''}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Link } from 'react-router-dom';
@@ -17,7 +16,7 @@ import {
   LogOut 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Tooltip } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const UserMenu = () => {
   const { user, signOut, isLoading } = useAuth();
@@ -79,9 +78,14 @@ const UserMenu = () => {
       <DropdownMenuContent align="end" className="w-56">
         <div className="px-2 py-1.5">
           <p className="text-sm font-bold truncate">{fullName}</p>
-          <Tooltip content={user.email || ''}>
-            <p className="text-xs text-gray-500 truncate max-w-[210px] overflow-hidden">{user.email}</p>
-          </Tooltip>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p className="text-xs text-gray-500 truncate max-w-[210px] overflow-hidden">{user.email}</p>
+              </TooltipTrigger>
+              <TooltipContent>{user.email || ''}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
