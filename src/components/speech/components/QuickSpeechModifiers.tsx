@@ -105,7 +105,7 @@ const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({
             size="sm"
             disabled={isProcessing || !customInstruction.trim()}
           >
-            {t('common.apply', currentLanguage.code) || "Apply"}
+            {t('speechLab.apply', currentLanguage.code) || "Apply"}
           </Button>
         </form>
       )}
