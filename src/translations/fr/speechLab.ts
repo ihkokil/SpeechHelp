@@ -9,5 +9,7 @@ export const speechLab = {
   'speechLab.makeShorter': 'Rendre plus court',
   'speechLab.makeFormal': 'Rendre plus formel', 
   'speechLab.addHumor': 'Ajouter plus d\'humour',
+  'speechLab.customInstruction': 'Instruction personnalisée',
+  'speechLab.customInstructionPlaceholder': 'Comment souhaitez-vous modifier votre discours?',
   'speechLab.content': 'Contenu du discours'
 };
