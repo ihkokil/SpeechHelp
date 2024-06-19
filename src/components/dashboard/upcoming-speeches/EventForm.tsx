@@ -35,6 +35,10 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent }) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
 
+  // Get today's date at the start of the day (midnight) for disabling past dates
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const handleAddEvent = () => {
     if (!eventDate || !eventType) {
       toast.error(t('errors.missingFields', currentLanguage.code));
@@ -107,6 +111,7 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent }) => {
                   onSelect={setEventDate}
                   initialFocus
                   className="p-3 pointer-events-auto"
+                  disabled={(date) => date < today}
                 />
               </PopoverContent>
             </Popover>
