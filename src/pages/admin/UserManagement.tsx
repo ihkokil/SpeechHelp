@@ -44,6 +44,8 @@ const UserManagement = () => {
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
+    handleEditUser,
+    handleSendEmail,
     cleanup,
     addUser
   } = useUserManagement();
@@ -111,6 +113,8 @@ const UserManagement = () => {
             handleBulkActivate={handleBulkActivate}
             handleBulkDeactivate={handleBulkDeactivate}
             handleDeleteUser={handleDeleteUser}
+            handleEditUser={handleEditUser}
+            handleSendEmail={handleSendEmail}
           />
         </CardContent>
       </Card>

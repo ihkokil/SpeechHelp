@@ -3,9 +3,9 @@ import React from 'react';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { User } from '../../types';
+import { User } from '@/components/admin/users/types';
 import UserActionMenu from './UserActionMenu';
-import { formatDate, getUserName, getUserPhone } from '../utils/userDisplayUtils';
+import { formatDateRelative, formatUserDisplayName } from '../utils/userDisplayUtils';
 
 interface UserTableRowProps {
   user: User;
@@ -16,6 +16,8 @@ interface UserTableRowProps {
   onToggleUserActive: (userId: string, isActive: boolean) => void;
   onExtendSubscription: (userId: string) => void;
   onDeleteUser: (userId: string) => void;
+  onEditUser?: (user: User) => void;
+  onSendEmail?: (user: User) => void;
 }
 
 const UserTableRow: React.FC<UserTableRowProps> = ({
@@ -26,72 +28,68 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   onManagePermissions,
   onToggleUserActive,
   onExtendSubscription,
-  onDeleteUser
+  onDeleteUser,
+  onEditUser,
+  onSendEmail
 }) => {
-  const fullName = getUserName(user);
-  
-  // Handle checkbox click with proper propagation stopping
-  const handleCheckboxClick = (e: React.MouseEvent) => {
+  const handleRowClick = () => {
+    onViewDetails(user);
+  };
+
+  const handleCheckboxChange = (e: React.MouseEvent) => {
     e.stopPropagation();
     onToggleSelection(user);
   };
-  
-  // Handle row click for selection
-  const handleRowClick = () => {
-    onToggleSelection(user);
-  };
-  
+
   return (
-    <TableRow key={user.id} onClick={handleRowClick} className="cursor-pointer hover:bg-muted/20">
-      <TableCell className="p-4">
+    <TableRow 
+      className={`${isSelected ? 'bg-muted/50' : ''} cursor-pointer hover:bg-muted/50`}
+      onClick={handleRowClick}
+    >
+      <TableCell className="w-12">
         <Checkbox 
           checked={isSelected} 
-          onClick={handleCheckboxClick}
-          className="checkbox"
+          onCheckedChange={() => onToggleSelection(user)}
+          onClick={handleCheckboxChange}
         />
       </TableCell>
       <TableCell className="font-medium">
-        <div className="flex items-center">
-          <span>{fullName}</span>
-          {user.is_admin && (
-            <Badge variant="outline" className="ml-2 bg-purple-100 text-purple-800 border-purple-300">
-              Admin
-            </Badge>
-          )}
-        </div>
+        {formatUserDisplayName(user)}
       </TableCell>
       <TableCell>{user.email}</TableCell>
-      <TableCell>{getUserPhone(user)}</TableCell>
       <TableCell>
-        <Badge 
-          variant="outline" 
-          className={`min-w-[70px] justify-center inline-flex ${
-            user.subscription_status === 'active' 
-              ? 'bg-blue-100 text-blue-800 border-blue-300' 
-              : ''
-          }`}
-        >
-          {user.subscription_tier || 'free'}
-        </Badge>
+        {user.is_active !== false ? (
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
+        ) : (
+          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Inactive</Badge>
+        )}
       </TableCell>
-      <TableCell>{formatDate(user.created_at)}</TableCell>
-      <TableCell>{formatDate(user.last_sign_in_at)}</TableCell>
       <TableCell>
-        <Badge 
-          variant={user.is_active !== false ? 'default' : 'secondary'}
-          className={user.is_active !== false ? 'bg-green-500' : ''}
-        >
-          {user.is_active !== false ? 'active' : 'inactive'}
-        </Badge>
+        {user.is_admin ? (
+          <Badge className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200">
+            Admin
+          </Badge>
+        ) : user.subscription_tier === 'premium' ? (
+          <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">
+            Premium
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-gray-600">
+            Free
+          </Badge>
+        )}
       </TableCell>
-      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-        <UserActionMenu 
+      <TableCell>{formatDateRelative(user.created_at || '')}</TableCell>
+      <TableCell className="text-right">
+        <UserActionMenu
           user={user}
           onViewDetails={onViewDetails}
           onManagePermissions={onManagePermissions}
           onToggleUserActive={onToggleUserActive}
           onExtendSubscription={onExtendSubscription}
           onDeleteUser={onDeleteUser}
+          onEditUser={onEditUser}
+          onSendEmail={onSendEmail}
         />
       </TableCell>
     </TableRow>
