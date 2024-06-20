@@ -1,12 +1,21 @@
 
 import { User } from '../../types';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
 import countries from '@/data/countries';
 
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Never';
   return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+};
+
+export const formatDateRelative = (dateString: string | null) => {
+  if (!dateString) return 'Never';
+  try {
+    return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+  } catch (error) {
+    return 'Invalid date';
+  }
 };
 
 export const getUserName = (user: User) => {
@@ -30,6 +39,10 @@ export const getUserName = (user: User) => {
   }
   
   return 'No name provided';
+};
+
+export const formatUserDisplayName = (user: User) => {
+  return getUserName(user);
 };
 
 export const getUserPhone = (user: User) => {
