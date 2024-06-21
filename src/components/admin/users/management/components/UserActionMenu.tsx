@@ -90,40 +90,40 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+        <Button variant="ghost" size="icon" className="h-8 w-8 p-0" aria-label="User actions">
           <MoreVertical className="h-4 w-4" />
           <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
-        <DropdownMenuItem onClick={handleViewDetails}>
+        <DropdownMenuItem onClick={handleViewDetails} id={`view-details-${user.id}`}>
           <Eye className="mr-2 h-4 w-4" />
           <span>View Details</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleEditUser}>
+        <DropdownMenuItem onClick={handleEditUser} id={`edit-user-${user.id}`}>
           <Edit className="mr-2 h-4 w-4" />
           <span>Edit User</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleManagePermissions}>
+        <DropdownMenuItem onClick={handleManagePermissions} id={`manage-permissions-${user.id}`}>
           <Shield className="mr-2 h-4 w-4" />
           <span>Manage Permissions</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleExtendSubscription}>
+        <DropdownMenuItem onClick={handleExtendSubscription} id={`extend-subscription-${user.id}`}>
           <Clock className="mr-2 h-4 w-4" />
           <span>Extend Subscription</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSendEmail}>
+        <DropdownMenuItem onClick={handleSendEmail} id={`send-email-${user.id}`}>
           <Mail className="mr-2 h-4 w-4" />
           <span>Send Email</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {user.is_active !== false ? (
-          <DropdownMenuItem onClick={handleToggleUserActive}>
+          <DropdownMenuItem onClick={handleToggleUserActive} id={`deactivate-user-${user.id}`}>
             <UserMinus className="mr-2 h-4 w-4" />
             <span>Deactivate User</span>
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuItem onClick={handleToggleUserActive}>
+          <DropdownMenuItem onClick={handleToggleUserActive} id={`activate-user-${user.id}`}>
             <UserCheck className="mr-2 h-4 w-4" />
             <span>Activate User</span>
           </DropdownMenuItem>
@@ -132,6 +132,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         <DropdownMenuItem 
           className="text-red-600 focus:text-red-700 focus:bg-red-50"
           onClick={handleDeleteUser}
+          id={`delete-user-${user.id}`}
         >
           <UserMinus className="mr-2 h-4 w-4" />
           <span>Delete User</span>

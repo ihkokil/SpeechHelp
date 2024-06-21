@@ -24,7 +24,7 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
         console.log("StateSelector field value:", field.value);
         return (
           <FormItem>
-            <FormLabel>State / Province</FormLabel>
+            <FormLabel htmlFor="user-state">State / Province</FormLabel>
             <FormControl>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
@@ -37,8 +37,10 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
                   }}
                   value={field.value || ''}
                   defaultValue={field.value || ''}
+                  name="state"
                 >
                   <SelectTrigger 
+                    id="user-state"
                     className="w-full pl-10 focus:border-pink-500" 
                     data-focus-visible="true"
                   >
