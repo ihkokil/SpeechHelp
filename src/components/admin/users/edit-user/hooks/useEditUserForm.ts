@@ -12,6 +12,7 @@ const formSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   role: z.string(),
   isActive: z.boolean().default(true),
+  id: z.string().uuid().optional(), // Add ID field for form state
 });
 
 // Form values type
@@ -44,6 +45,7 @@ export const useEditUserForm = ({
   // Set form values from user object
   const setFormValues = useCallback((user: User) => {
     form.reset({
+      id: user.id,
       name: user.user_metadata?.full_name || '',
       email: user.email || '',
       role: user.app_metadata?.role || 'user',
@@ -55,8 +57,8 @@ export const useEditUserForm = ({
   const handleSubmit = useCallback(async (values: FormValues) => {
     setIsSubmitting(true);
     try {
-      // Get the user ID from the form state (assuming it's stored somewhere)
-      const userId = form.getValues('id');
+      // Get the user ID from the form state
+      const userId = values.id;
       
       if (!userId) {
         toast({
@@ -123,7 +125,7 @@ export const useEditUserForm = ({
     } finally {
       setIsSubmitting(false);
     }
-  }, [form, onOpenChange, onUserUpdated, toast]);
+  }, [onOpenChange, onUserUpdated, toast]);
   
   // Handle dialog close
   const handleDialogClose = useCallback((open: boolean) => {

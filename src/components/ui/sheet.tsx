@@ -33,12 +33,74 @@ const sheetVariants = cva(
   {
     variants: {
       side: {
-        top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
-        bottom:
-          "inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
-        right:
-          "inset-y-0 right-0 h-full w-3/4  border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
+        top: {
+          "inset": "0",
+          "bottom": "auto",
+          "width": "100%",
+          "border-bottom": "1px solid var(--border)",
+          "transform": "translateY(-100%)",
+          "padding-top": "var(--viewport-padding)",
+          "padding-bottom": "0",
+          "padding-left": "0",
+          "padding-right": "0",
+          "&[data-state=\"open\"]": {
+            "transform": "translateY(0)",
+          },
+          "&[data-state=\"closed\"]": {
+            "transform": "translateY(-100%)",
+          },
+        },
+        right: {
+          "inset": "0",
+          "left": "auto",
+          "width": "min(100%, var(--sheet-width, 350px))",
+          "border-left": "1px solid var(--border)",
+          "transform": "translateX(100%)",
+          "padding-left": "0",
+          "padding-right": "var(--viewport-padding)",
+          "padding-top": "0",
+          "padding-bottom": "0",
+          "&[data-state=\"open\"]": {
+            "transform": "translateX(0)",
+          },
+          "&[data-state=\"closed\"]": {
+            "transform": "translateX(100%)",
+          },
+        },
+        bottom: {
+          "inset": "0",
+          "top": "auto",
+          "width": "100%",
+          "border-top": "1px solid var(--border)",
+          "transform": "translateY(100%)",
+          "padding-top": "0",
+          "padding-bottom": "var(--viewport-padding)",
+          "padding-left": "0",
+          "padding-right": "0",
+          "&[data-state=\"open\"]": {
+            "transform": "translateY(0)",
+          },
+          "&[data-state=\"closed\"]": {
+            "transform": "translateY(100%)",
+          },
+        },
+        left: {
+          "inset": "0",
+          "right": "auto",
+          "width": "min(100%, var(--sheet-width, 350px))",
+          "border-right": "1px solid var(--border)",
+          "transform": "translateX(-100%)",
+          "padding-left": "var(--viewport-padding)",
+          "padding-right": "0",
+          "padding-top": "0",
+          "padding-bottom": "0",
+          "&[data-state=\"open\"]": {
+            "transform": "translateX(0)",
+          },
+          "&[data-state=\"closed\"]": {
+            "transform": "translateX(-100%)",
+          },
+        },
       },
     },
     defaultVariants: {
@@ -128,4 +190,3 @@ export {
   Sheet, SheetClose,
   SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetOverlay, SheetPortal, SheetTitle, SheetTrigger
 }
-

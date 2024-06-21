@@ -19,7 +19,7 @@ export const NameField: React.FC<NameFieldProps> = ({ form }) => (
       <FormItem>
         <FormLabel htmlFor="user-name">Full Name</FormLabel>
         <FormControl>
-          <Input id="user-name" placeholder="John Doe" {...field} />
+          <Input id="user-name" placeholder="John Doe" {...field} name="name" />
         </FormControl>
         <FormMessage />
       </FormItem>
@@ -35,7 +35,7 @@ export const EmailField: React.FC<NameFieldProps> = ({ form }) => (
       <FormItem>
         <FormLabel htmlFor="user-email">Email</FormLabel>
         <FormControl>
-          <Input id="user-email" type="email" placeholder="john.doe@example.com" {...field} />
+          <Input id="user-email" type="email" placeholder="john.doe@example.com" {...field} name="email" />
         </FormControl>
         <FormMessage />
       </FormItem>
@@ -51,7 +51,7 @@ export const PasswordField: React.FC<NameFieldProps> = ({ form }) => (
       <FormItem>
         <FormLabel htmlFor="user-password">Password</FormLabel>
         <FormControl>
-          <Input id="user-password" type="password" placeholder="••••••••" {...field} />
+          <Input id="user-password" type="password" placeholder="••••••••" {...field} name="password" />
         </FormControl>
         <FormDescription>
           Password must be at least 8 characters and include uppercase, lowercase, and numbers.

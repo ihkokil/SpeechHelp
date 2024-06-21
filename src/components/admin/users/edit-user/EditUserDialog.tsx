@@ -36,6 +36,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
   // Set form values when user changes
   useEffect(() => {
     if (user && open) {
+      console.log("Setting form values for user:", user);
       setFormValues(user);
     }
   }, [user, open, setFormValues]);
@@ -71,12 +72,15 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
         handleDialogClose(newOpen);
       }}
     >
-      <DialogContent className="sm:max-w-[525px]" onInteractOutside={(e) => {
-        // Prevent close when clicking outside while submitting
-        if (isSubmitting) {
-          e.preventDefault();
-        }
-      }}>
+      <DialogContent 
+        className="sm:max-w-[525px]" 
+        onInteractOutside={(e) => {
+          // Prevent close when clicking outside while submitting
+          if (isSubmitting) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
           <DialogDescription>
