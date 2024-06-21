@@ -20,8 +20,11 @@ export const DrawerContent: React.FC<DrawerContentProps> = ({
   userJoinedDays,
   totalActivityTime
 }) => {
-  // Ensure onClose does something
-  const handleClose = () => {
+  // Wrap onClose in a function that accepts an event to prevent immediate closure
+  const handleClose = (e: React.MouseEvent) => {
+    // Prevent event propagation that might trigger other closures
+    e.preventDefault();
+    e.stopPropagation();
     console.log("DrawerContent: Closing drawer");
     onClose();
   };

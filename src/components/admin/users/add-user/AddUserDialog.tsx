@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '../types';
@@ -32,9 +32,41 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({
 
   console.log("AddUserDialog rendered, open state:", open);
   
+  // Prevent closing while submitting
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isSubmitting) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    
+    if (isSubmitting) {
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isSubmitting]);
+  
   return (
-    <Dialog open={open} onOpenChange={handleDialogClose}>
-      <DialogContent className="sm:max-w-[525px]">
+    <Dialog 
+      open={open} 
+      onOpenChange={(newOpen) => {
+        // Only allow dialog to close if we're not submitting
+        if (isSubmitting && !newOpen) {
+          return;
+        }
+        handleDialogClose(newOpen);
+      }}
+    >
+      <DialogContent className="sm:max-w-[525px]" onInteractOutside={(e) => {
+        // Prevent close when clicking outside while submitting
+        if (isSubmitting) {
+          e.preventDefault();
+        }
+      }}>
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>
           <DialogDescription>

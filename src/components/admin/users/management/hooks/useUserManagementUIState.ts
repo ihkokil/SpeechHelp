@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { User } from '../../types';
 
 export const useUserManagementUIState = () => {
@@ -14,18 +14,43 @@ export const useUserManagementUIState = () => {
   // Selected user for dialogs or detailed view
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
-  // Function to reset all UI state
-  const resetUIState = () => {
-    setIsDeleteDialogOpen(false);
-    setIsAddUserDialogOpen(false);
-    setIsPermissionsDialogOpen(false);
-    setIsDetailsOpen(false);
-    setIsEditUserDialogOpen(false);
-    setIsEmailDialogOpen(false);
-    setSelectedUser(null);
-  };
+  // Function to safely set details open (with user validation)
+  const safelyOpenDetails = useCallback((open: boolean, user: User | null) => {
+    if (open && !user) {
+      console.warn("Attempted to open details without a selected user");
+      return false;
+    }
+    setIsDetailsOpen(open);
+    return open;
+  }, []);
+  
+  // Function to safely select a user (with logging)
+  const safelySelectUser = useCallback((user: User | null) => {
+    console.log("Setting selected user:", user ? user.id : "null");
+    setSelectedUser(user);
+  }, []);
+  
+  // Function to reset all UI state with optional delay
+  const resetUIState = useCallback((delay: number = 0) => {
+    const resetFunc = () => {
+      setIsDeleteDialogOpen(false);
+      setIsAddUserDialogOpen(false);
+      setIsPermissionsDialogOpen(false);
+      setIsDetailsOpen(false);
+      setIsEditUserDialogOpen(false);
+      setIsEmailDialogOpen(false);
+      setSelectedUser(null);
+    };
+    
+    if (delay > 0) {
+      setTimeout(resetFunc, delay);
+    } else {
+      resetFunc();
+    }
+  }, []);
 
   console.log("useUserManagementUIState - isAddUserDialogOpen:", isAddUserDialogOpen);
+  console.log("useUserManagementUIState - isDetailsOpen:", isDetailsOpen);
 
   return {
     // Dialog and drawer states
@@ -36,7 +61,7 @@ export const useUserManagementUIState = () => {
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
     isDetailsOpen,
-    setIsDetailsOpen,
+    setIsDetailsOpen: (open: boolean) => safelyOpenDetails(open, selectedUser),
     isEditUserDialogOpen,
     setIsEditUserDialogOpen,
     isEmailDialogOpen,
@@ -44,7 +69,7 @@ export const useUserManagementUIState = () => {
     
     // Selected user state
     selectedUser,
-    setSelectedUser,
+    setSelectedUser: safelySelectUser,
     
     // Helper functions
     resetUIState
