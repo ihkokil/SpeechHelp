@@ -77,6 +77,7 @@ export const useEditUserForm = ({
           full_name: values.name,
         },
         app_metadata: {
+          // Fix the error: create a proper app_metadata object with a role property
           role: values.role,
         },
       });
