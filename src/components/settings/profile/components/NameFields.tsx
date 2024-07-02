@@ -1,34 +1,25 @@
 
-import { UseFormReturn } from 'react-hook-form';
+import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { ProfileFormValues } from '../types';
-import { User } from 'lucide-react';
+import { UseFormReturn } from 'react-hook-form';
 
-interface NameFieldsProps {
-  form: UseFormReturn<ProfileFormValues>;
+export interface NameFieldProps {
+  form: UseFormReturn<any>;
+  disabled?: boolean;
 }
 
-const NameFields = ({ form }: NameFieldsProps) => {
+export const NameFields: React.FC<NameFieldProps> = ({ form, disabled = false }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         control={form.control}
-        name="firstName"
+        name="first_name"
         render={({ field }) => (
           <FormItem>
             <FormLabel>First Name</FormLabel>
             <FormControl>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                  <User className="h-4 w-4 text-gray-500" />
-                </div>
-                <Input 
-                  {...field} 
-                  placeholder="First Name" 
-                  className="pl-10"
-                />
-              </div>
+              <Input placeholder="John" {...field} disabled={disabled} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -36,21 +27,12 @@ const NameFields = ({ form }: NameFieldsProps) => {
       />
       <FormField
         control={form.control}
-        name="lastName"
+        name="last_name"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Last Name</FormLabel>
             <FormControl>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                  <User className="h-4 w-4 text-gray-500" />
-                </div>
-                <Input 
-                  {...field} 
-                  placeholder="Last Name" 
-                  className="pl-10"
-                />
-              </div>
+              <Input placeholder="Doe" {...field} disabled={disabled} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -59,5 +41,3 @@ const NameFields = ({ form }: NameFieldsProps) => {
     </div>
   );
 };
-
-export default NameFields;
