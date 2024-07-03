@@ -36,10 +36,10 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
           />
         </TableHead>
         <TableHead className="w-[250px]">User</TableHead>
-        <TableHead>Email</TableHead>
+        <TableHead className="hidden md:table-cell">Email</TableHead>
         <TableHead className="hidden md:table-cell">Phone</TableHead>
         <TableHead className="hidden md:table-cell">Plan</TableHead>
-        <TableHead className="hidden lg:table-cell">Joined</TableHead>
+        <TableHead className="hidden md:table-cell">Joined</TableHead>
         <TableHead className="hidden lg:table-cell">Last Sign In</TableHead>
         <TableHead className="hidden md:table-cell">Status</TableHead>
         <TableHead>
