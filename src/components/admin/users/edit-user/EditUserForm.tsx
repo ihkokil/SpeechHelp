@@ -1,59 +1,86 @@
 
 import React from 'react';
-import { Form } from '@/components/ui/form';
-import { DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import { UseFormReturn } from 'react-hook-form';
-import { FormValues } from './hooks/useEditUserForm';
-import { 
-  NameField, 
-  EmailField,
-  RoleField, 
-  ActiveStatusField 
-} from '../add-user/FormFields';
+import { Form, FormField } from '@/components/ui/form';
+import { User } from '@/components/admin/users/types';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { EmailField } from '@/components/settings/profile/components/EmailField';
+import { NameFields } from '@/components/settings/profile/components/NameFields';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+
+// Define form schema
+const formSchema = z.object({
+  name: z.string().optional(),
+  role: z.string().optional(),
+  email: z.string().email().optional(),
+  isActive: z.boolean().optional(),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface EditUserFormProps {
-  form: UseFormReturn<FormValues>;
-  isSubmitting: boolean;
-  onSubmit: (values: FormValues) => Promise<void>;
-  onCancel: () => void;
+  user: User;
+  onSubmit: (values: FormValues) => void;
+  isLoading?: boolean;
 }
 
-const EditUserForm: React.FC<EditUserFormProps> = ({ 
-  form, 
-  isSubmitting, 
-  onSubmit, 
-  onCancel 
-}) => {
+const EditUserForm: React.FC<EditUserFormProps> = ({ user, onSubmit, isLoading = false }) => {
+  const { toast } = useToast();
+  
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: user.user_metadata?.name || '',
+      role: user.admin_role || '',
+      email: user.email || '',
+      isActive: user.is_active !== false,
+    },
+  });
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <NameField form={form} />
-        <EmailField form={form} disabled />
-        <RoleField form={form} />
-        <ActiveStatusField form={form} />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <NameFields 
+          form={form} 
+          isNameSingle={true}
+        />
         
-        <DialogFooter className="mt-6">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Changes'
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <EmailField 
+              field={field}
+              disabled={isLoading}
+            />
+          )}
+        />
+        
+        <div className="flex items-center space-x-2">
+          <FormField
+            control={form.control}
+            name="isActive"
+            render={({ field }) => (
+              <Switch 
+                checked={field.value}
+                onCheckedChange={field.onChange}
+                disabled={isLoading}
+                id="user-active-status"
+              />
             )}
+          />
+          <Label htmlFor="user-active-status">User is active</Label>
+        </div>
+        
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Updating...' : 'Update User'}
           </Button>
-        </DialogFooter>
+        </div>
       </form>
     </Form>
   );

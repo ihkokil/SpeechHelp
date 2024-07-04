@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { User } from '@/components/admin/users/types';
 import UserActionMenu from './UserActionMenu';
-import { formatDateRelative, formatUserDisplayName } from '../utils/userDisplayUtils';
+import { formatDateRelative, formatUserDisplayName, getUserPhone } from '../utils/userDisplayUtils';
 
 interface UserTableRowProps {
   user: User;
@@ -57,14 +57,10 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
         {formatUserDisplayName(user)}
       </TableCell>
       <TableCell>{user.email}</TableCell>
-      <TableCell>
-        {user.is_active !== false ? (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
-        ) : (
-          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Inactive</Badge>
-        )}
+      <TableCell className="hidden md:table-cell">
+        {getUserPhone(user)}
       </TableCell>
-      <TableCell>
+      <TableCell className="hidden md:table-cell">
         {user.is_admin ? (
           <Badge className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200">
             Admin
@@ -79,8 +75,20 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
           </Badge>
         )}
       </TableCell>
-      <TableCell>{formatDateRelative(user.created_at || '')}</TableCell>
-      <TableCell className="text-right">
+      <TableCell className="hidden md:table-cell">
+        {formatDateRelative(user.created_at || '')}
+      </TableCell>
+      <TableCell className="hidden lg:table-cell">
+        {formatDateRelative(user.last_sign_in_at || '')}
+      </TableCell>
+      <TableCell className="hidden md:table-cell">
+        {user.is_active !== false ? (
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
+        ) : (
+          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Inactive</Badge>
+        )}
+      </TableCell>
+      <TableCell>
         <UserActionMenu
           user={user}
           onViewDetails={onViewDetails}
