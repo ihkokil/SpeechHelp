@@ -11,6 +11,9 @@ import NameFields from '@/components/settings/profile/components/NameFields';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Mail } from 'lucide-react';
+import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
+import { Input } from '@/components/ui/input';
 
 // Define form schema
 const formSchema = z.object({
@@ -18,6 +21,7 @@ const formSchema = z.object({
   role: z.string().optional(),
   email: z.string().email().optional(),
   isActive: z.boolean().optional(),
+  phone: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -27,13 +31,15 @@ interface EditUserFormProps {
   onSubmit: (values: FormValues) => void;
   isLoading?: boolean;
   onCancel?: () => void;
+  onSendPasswordReset?: (email: string) => void;
 }
 
 const EditUserForm: React.FC<EditUserFormProps> = ({ 
   user, 
   onSubmit, 
   isLoading = false,
-  onCancel 
+  onCancel,
+  onSendPasswordReset
 }) => {
   const { toast } = useToast();
   
@@ -44,8 +50,15 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
       role: user.admin_role || '',
       email: user.email || '',
       isActive: user.is_active !== false,
+      phone: user.user_metadata?.phone || '',
     },
   });
+
+  const handleSendPasswordReset = () => {
+    if (onSendPasswordReset && user.email) {
+      onSendPasswordReset(user.email);
+    }
+  };
 
   return (
     <Form {...form}>
@@ -65,6 +78,24 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
             />
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                placeholder="Phone number"
+                value={field.value || ''}
+                onChange={field.onChange}
+                disabled={isLoading}
+                className="w-full"
+              />
+            </div>
+          )}
+        />
         
         <div className="flex items-center space-x-2">
           <FormField
@@ -81,6 +112,17 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
           />
           <Label htmlFor="user-active-status">User is active</Label>
         </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleSendPasswordReset}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2"
+        >
+          <Mail className="h-4 w-4" />
+          Send Password Reset Link
+        </Button>
         
         <div className="flex justify-end gap-2 pt-4">
           {onCancel && (

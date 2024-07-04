@@ -24,7 +24,8 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
     isSubmitting, 
     handleSubmit, 
     handleDialogClose, 
-    resetForm 
+    resetForm,
+    handleSendPasswordReset 
   } = useEditUserForm({ 
     onOpenChange, 
     onUserUpdated, 
@@ -81,7 +82,8 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
         <EditUserForm 
           user={user}
           isLoading={isSubmitting}  
-          onSubmit={handleSubmit} 
+          onSubmit={handleSubmit}
+          onSendPasswordReset={handleSendPasswordReset}
           onCancel={() => {
             if (!isSubmitting) {
               resetForm();
