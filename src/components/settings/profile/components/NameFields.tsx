@@ -6,10 +6,38 @@ import { ProfileFormValues } from '../types';
 import { User } from 'lucide-react';
 
 interface NameFieldsProps {
-  form: UseFormReturn<ProfileFormValues>;
+  form: UseFormReturn<any>;
+  isNameSingle?: boolean;
 }
 
-const NameFields = ({ form }: NameFieldsProps) => {
+const NameFields = ({ form, isNameSingle = false }: NameFieldsProps) => {
+  if (isNameSingle) {
+    return (
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Name</FormLabel>
+            <FormControl>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                  <User className="h-4 w-4 text-gray-500" />
+                </div>
+                <Input 
+                  {...field} 
+                  placeholder="Full Name" 
+                  className="pl-10"
+                />
+              </div>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField

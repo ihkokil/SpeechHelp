@@ -21,7 +21,6 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
 }) => {
   const { toast } = useToast();
   const { 
-    form, 
     isSubmitting, 
     handleSubmit, 
     handleDialogClose, 
@@ -33,18 +32,6 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
     initialUser: user
   });
 
-  // Initialize form with user data when the dialog opens with a user
-  useEffect(() => {
-    if (user && open) {
-      form.reset({
-        email: user.email,
-        name: user.user_metadata?.name || '',
-        role: user.is_admin ? (user.admin_role || 'admin') : 'user',
-        isActive: user.is_active !== false,
-      });
-    }
-  }, [user, open, form]);
-  
   // Prevent closing while submitting
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -92,8 +79,8 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
         </DialogHeader>
         
         <EditUserForm 
-          form={form} 
-          isSubmitting={isSubmitting} 
+          user={user}
+          isLoading={isSubmitting}  
           onSubmit={handleSubmit} 
           onCancel={() => {
             if (!isSubmitting) {
