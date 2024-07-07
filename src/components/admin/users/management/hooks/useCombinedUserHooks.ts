@@ -53,7 +53,7 @@ export const useCombinedUserHooks = () => {
     clearSelection
   } = useUserSelection();
   
-  // User actions
+  // User actions - pass users and setUsers to enable wrapper functions
   const {
     handleEditUser,
     handleSendEmail,
@@ -69,7 +69,7 @@ export const useCombinedUserHooks = () => {
     handleManagePermissions: baseHandleManagePermissions,
     handlePermissionsUpdated: baseHandlePermissionsUpdated,
     isActionLoading
-  } = useUserActions();
+  } = useUserActions(users, setUsers);
   
   // Wrap functions to include necessary state
   const handleViewUserDetails = useCallback((user: User) => {
