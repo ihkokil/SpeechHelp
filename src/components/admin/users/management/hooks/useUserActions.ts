@@ -4,13 +4,16 @@ import { User } from '../../types';
 import { useBulkActions } from './user-actions/useBulkActions';
 import { useIndividualUserActions } from './user-actions/useIndividualUserActions';
 import { useToast } from '@/hooks/use-toast';
-import { usePermissionActions } from './user-actions/usePermissionActions';
-import { useUserDetails } from './user-actions/useUserDetails';
 
-export const useUserActions = (users = [], setUsers = null) => {
+export const useUserActions = () => {
   const { toast } = useToast();
   // Create internal state for tracking action loading
   const [isActionLoading, setIsActionLoading] = useState(false);
+  
+  // Create local states for user details and permissions dialogs
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   
   // Initialize hooks with necessary parameters
   const { 
@@ -25,45 +28,74 @@ export const useUserActions = (users = [], setUsers = null) => {
     handleDeleteUser
   } = useIndividualUserActions();
   
-  // Import user details and permission actions
-  const { 
-    handleViewUserDetails,
-    handleCloseUserDetails,
-    handleManagePermissions
-  } = useUserDetails();
-  
-  const { 
-    handlePermissionsUpdated 
-  } = usePermissionActions();
-  
-  // Handle editing user
-  const handleEditUser = useCallback((user: User) => {
-    console.log('useUserActions: Edit user called for user:', user.id);
+  // View user details handler
+  const handleViewUserDetails = useCallback((user: User) => {
+    console.log("useUserActions: View details called for user:", user.id);
+    setSelectedUser(user);
+    setIsDetailsOpen(true);
   }, []);
   
-  // Handle sending email
-  const handleSendEmail = useCallback((user: User) => {
-    console.log('useUserActions: Send email called for user:', user.id);
+  // Close user details handler
+  const handleCloseUserDetails = useCallback(() => {
+    console.log("useUserActions: Close details called");
+    setIsDetailsOpen(false);
+    setTimeout(() => {
+      setSelectedUser(null);
+    }, 300);
+  }, []);
+  
+  // Manage user permissions handler
+  const handleManagePermissions = useCallback((user: User) => {
+    console.log("useUserActions: Manage permissions called for user:", user.id);
+    setSelectedUser(user);
+    setIsPermissionsDialogOpen(true);
+  }, []);
+  
+  // Handle permissions updated
+  const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[] = [], setUsers: ((users: User[]) => void) | null = null) => {
+    console.log('Permissions updated for user:', updatedUser.id);
+    
+    // Update the user in the users array if setUsers is provided
+    if (setUsers && users.length > 0) {
+      setUsers(
+        users.map(user => 
+          user.id === updatedUser.id ? updatedUser : user
+        )
+      );
+    }
+    
+    // Show a success toast
     toast({
-      title: 'Email Function',
-      description: `Email dialog for ${user.email} would open here.`,
+      title: 'Permissions Updated',
+      description: `${updatedUser.email}'s admin permissions have been updated.`,
     });
+    
+    // Close the dialog
+    setIsPermissionsDialogOpen(false);
   }, [toast]);
   
-  // Handle deleting users
+  // Handle deleting users (plural for backward compatibility)
   const handleDeleteUsers = useCallback(async (
     selectedUsers: User[], 
-    users: User[], 
-    setUsers: (users: User[]) => void
+    users: User[] = [], 
+    setUsers: ((users: User[]) => void) | null = null
   ) => {
     console.log('Deleting users:', selectedUsers.map(user => user.id));
     setIsActionLoading(true);
     try {
       // If only one user, use the single user delete method
       if (selectedUsers.length === 1) {
-        await handleDeleteUser(selectedUsers[0].id, users, setUsers);
+        if (setUsers && users.length > 0) {
+          await handleDeleteUser(selectedUsers[0].id, users, setUsers);
+        } else {
+          await handleDeleteUser(selectedUsers[0].id, [], null);
+        }
       } else {
-        await handleBulkDelete(selectedUsers, users, setUsers);
+        if (setUsers && users.length > 0) {
+          await handleBulkDelete(selectedUsers, users, setUsers);
+        } else {
+          await handleBulkDelete(selectedUsers, [], null);
+        }
       }
     } catch (error) {
       console.error('Error deleting users:', error);
@@ -79,22 +111,30 @@ export const useUserActions = (users = [], setUsers = null) => {
   
   // Return all actions and state
   return {
-    // Actions
-    handleEditUser,
-    handleSendEmail,
+    // User CRUD operations
     handleDeleteUsers,
     handleDeleteUser,
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
+    
+    // User subscription and status operations
     handleToggleUserStatus,
     handleToggleUserSubscription,
+    
+    // User details operations
     handleViewUserDetails,
     handleCloseUserDetails,
     handleManagePermissions,
+    
+    // Permission operations
     handlePermissionsUpdated,
     
     // States
-    isActionLoading
+    isActionLoading,
+    selectedUser,
+    isDetailsOpen,
+    isPermissionsDialogOpen,
+    setIsPermissionsDialogOpen
   };
 };

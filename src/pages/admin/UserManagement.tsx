@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -109,7 +110,7 @@ const UserManagement = () => {
           />
           
           <UserTable 
-            users={users}
+            users={filteredUsers}
             isLoading={isLoading}
             selectedUsers={selectedUsers}
             toggleUserSelection={toggleUserSelection}
