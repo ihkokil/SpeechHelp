@@ -36,9 +36,10 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     onViewDetails(user);
   };
 
-  const handleCheckboxChange = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onToggleSelection(user);
+  const handleCheckboxClick = (event: React.MouseEvent) => {
+    // Stop the event from bubbling up to the row
+    event.stopPropagation();
+    // We don't call onToggleSelection here since it will be called by onCheckedChange
   };
 
   return (
@@ -46,12 +47,13 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       className={`${isSelected ? 'bg-muted/50' : ''} cursor-pointer hover:bg-muted/50`}
       onClick={handleRowClick}
     >
-      <TableCell className="w-12">
-        <Checkbox 
-          checked={isSelected} 
-          onCheckedChange={() => onToggleSelection(user)}
-          onClick={handleCheckboxChange}
-        />
+      <TableCell className="w-12" onClick={handleCheckboxClick}>
+        <div onClick={(e) => e.stopPropagation()}>
+          <Checkbox 
+            checked={isSelected} 
+            onCheckedChange={() => onToggleSelection(user)}
+          />
+        </div>
       </TableCell>
       <TableCell className="font-medium">
         {formatUserDisplayName(user)}
