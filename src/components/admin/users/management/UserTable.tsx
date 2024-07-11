@@ -67,7 +67,6 @@ export const UserTable: React.FC<UserTableProps> = ({
           isAllSelected={isAllSelected}
           disabled={isLoading || filteredUsers.length === 0}
           selectedCount={selectedUsers.length}
-          onBulkDelete={handleBulkDelete}
         />
         <TableBody>
           {isLoading ? (
