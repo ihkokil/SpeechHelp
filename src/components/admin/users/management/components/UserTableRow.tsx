@@ -36,10 +36,10 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     onViewDetails(user);
   };
 
-  const handleCheckboxClick = (event: React.MouseEvent) => {
-    // Stop the event from bubbling up to the row
-    event.stopPropagation();
-    // We don't call onToggleSelection here since it will be called by onCheckedChange
+  // Create a specialized handler for the checkbox cell
+  const handleCheckboxCellClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleSelection(user);
   };
 
   return (
@@ -47,11 +47,16 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       className={`${isSelected ? 'bg-muted/50' : ''} cursor-pointer hover:bg-muted/50`}
       onClick={handleRowClick}
     >
-      <TableCell className="w-12" onClick={handleCheckboxClick}>
-        <div onClick={(e) => e.stopPropagation()}>
+      {/* Make the entire cell clickable for the checkbox, and stop propagation */}
+      <TableCell 
+        className="w-12 relative" 
+        onClick={handleCheckboxCellClick}
+      >
+        {/* Position the checkbox absolutely to make the entire cell clickable */}
+        <div className="flex items-center justify-center">
           <Checkbox 
-            checked={isSelected} 
-            onCheckedChange={() => onToggleSelection(user)}
+            checked={isSelected}
+            // We don't need onCheckedChange here since the cell click will handle it
           />
         </div>
       </TableCell>
@@ -91,16 +96,18 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
         )}
       </TableCell>
       <TableCell>
-        <UserActionMenu
-          user={user}
-          onViewDetails={onViewDetails}
-          onManagePermissions={onManagePermissions}
-          onToggleUserActive={onToggleUserActive}
-          onExtendSubscription={onExtendSubscription}
-          onDeleteUser={onDeleteUser}
-          onEditUser={onEditUser}
-          onSendEmail={onSendEmail}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <UserActionMenu
+            user={user}
+            onViewDetails={onViewDetails}
+            onManagePermissions={onManagePermissions}
+            onToggleUserActive={onToggleUserActive}
+            onExtendSubscription={onExtendSubscription}
+            onDeleteUser={onDeleteUser}
+            onEditUser={onEditUser}
+            onSendEmail={onSendEmail}
+          />
+        </div>
       </TableCell>
     </TableRow>
   );
