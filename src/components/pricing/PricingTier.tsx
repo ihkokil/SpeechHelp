@@ -1,5 +1,5 @@
+
 import React, { useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import PricingFeature from './PricingFeature';
@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '../speech/hooks/useProfile';
 import { SubscriptionPlan } from '@/lib/plan_rules';
+import { useNavigate } from 'react-router-dom';
 
 type PricingPeriod = 'monthly' | 'yearly';
 
@@ -38,30 +39,52 @@ const PricingTier: React.FC<PricingTierProps> = ({
 	const { toast } = useToast();
 	const { user } = useAuth();
 	const { updateProfile } = useProfile();
+	const navigate = useNavigate();
 
 	const handleStripeCheckout = useCallback(async () => {
 		try {
 			// If this is the free tier, do nothing
 			if (name === 'Basic / Free Trial') {
+				if (!user) {
+					navigate('/auth');
+					return;
+				}
+				
 				await updateProfile({
 					subscription_plan: planType,
 					subscription_start_date: new Date().toISOString(),
 					subscription_end_date: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
 				});
+				
+				toast({
+					title: 'Free Trial Activated',
+					description: 'You have successfully activated your 7-day free trial.',
+				});
+				
+				navigate('/dashboard');
 				return;
 			}
 
+			// If user is not logged in, redirect to auth page
+			if (!user) {
+				toast({
+					title: 'Login Required',
+					description: 'Please sign in to subscribe to this plan.',
+				});
+				navigate('/auth');
+				return;
+			}
 
-			// // Create checkout session with our Supabase function
+			// Create checkout session with our Supabase function
 			const { url } = await createCheckoutSession({
 				plan: planType,
 				priceId: pricingPeriod === 'monthly' ? price.monthly.productId : price.yearly.productId,
 				userId: user?.id,
-				returnUrl: `${window.location.origin}/account`,
+				returnUrl: `${window.location.origin}/checkout/success`,
 				pricingPeriod,
 			});
 
-			// // Redirect to Stripe Checkout
+			// Redirect to Stripe Checkout
 			window.location.href = url;
 		} catch (error) {
 			console.error('Checkout error:', error);
@@ -71,7 +94,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
 				variant: 'destructive',
 			});
 		}
-	}, [name, pricingPeriod, user, toast]);
+	}, [name, pricingPeriod, user, toast, navigate]);
 
 	return (
 		<Card className="border border-gray-200 rounded-xl h-full overflow-hidden hover:shadow-lg transition-shadow">

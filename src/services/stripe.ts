@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 interface CheckoutParams {
@@ -31,7 +32,6 @@ export async function createCheckoutSession({
 
 		console.log('Checkout session created:', data);
 
-
 		if (error) {
 			console.error('Error creating checkout session:', error);
 			throw new Error(error.message);
@@ -63,4 +63,28 @@ export function getPriceId(productId: string, interval: 'monthly' | 'yearly'): s
 		default:
 			return 'price_basic_free';
 	}
-} 
+}
+
+/**
+ * Verifies a Stripe checkout session to confirm payment status
+ */
+export async function verifyCheckoutSession(sessionId: string) {
+	try {
+		console.log('Verifying checkout session:', sessionId);
+
+		const { data, error } = await supabase.functions.invoke('stripe-verify', {
+			body: { sessionId },
+		});
+
+		if (error) {
+			console.error('Error verifying checkout session:', error);
+			throw new Error(error.message);
+		}
+
+		console.log('Checkout verification result:', data);
+		return data;
+	} catch (error) {
+		console.error('Error in verifyCheckoutSession:', error);
+		throw error;
+	}
+}
