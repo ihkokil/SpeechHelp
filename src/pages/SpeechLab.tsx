@@ -1,8 +1,7 @@
-
 import React from 'react';
 import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 import SpeechLabContent from '@/components/speech/SpeechLabContent';
-import { LimitType } from '@/lib/plan_rules';
+import { LimitType, SubscriptionPlan } from '@/lib/plan_rules';
 import { FeatureAccess } from '@/components/plan/FeatureAccess';
 
 const SpeechLab = () => {
