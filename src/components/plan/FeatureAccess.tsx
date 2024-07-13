@@ -1,3 +1,4 @@
+
 import React, { ReactNode } from 'react';
 import { usePlanLimits } from '@/hooks/usePlanLimits';
 import { LimitType, SubscriptionPlan, PLAN_RULES } from '@/lib/plan_rules';
@@ -79,14 +80,23 @@ export function FeatureAccess({
 	featureName = 'this feature',
 	limitMessage,
 	limitDescription,
-	upgradeUrl,
+	upgradeUrl = '/pricing',
 	showUpgradeButton = true,
 	blockClassName,
 }: FeatureAccessProps) {
 	const planLimits = usePlanLimits();
 
+	// Show loading state if we're still loading plan data
+	if (planLimits.loadingPlanLimits) {
+		return (
+			<div className="flex justify-center items-center py-8">
+				<Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+				<span className="ml-2 text-gray-600">Checking plan access...</span>
+			</div>
+		);
+	}
 
-	// 0. Check if the user is active
+	// Check if the user is active
 	if (!planLimits.isActive) {
 		return (
 			<PlanLimitBlock
@@ -102,7 +112,7 @@ export function FeatureAccess({
 		);
 	}
 
-	// 1. Check feature availability if specified
+	// Check feature availability if specified
 	if (feature) {
 		const hasFeatureAccess = planLimits.isFeatureAvailable(feature) as boolean;
 		if (!hasFeatureAccess) {
@@ -124,7 +134,7 @@ export function FeatureAccess({
 		}
 	}
 
-	// 2. Check limit if specified
+	// Check limit if specified
 	if (limitType) {
 		const hasReachedLimit = planLimits.hasReachedLimit(limitType);
 		if (hasReachedLimit) {
@@ -145,7 +155,7 @@ export function FeatureAccess({
 		}
 	}
 
-	// 3. Check minimum plan if specified
+	// Check minimum plan if specified
 	if (minimumPlan) {
 		const planOrder = [
 			SubscriptionPlan.FREE_TRIAL,
@@ -175,11 +185,6 @@ export function FeatureAccess({
 		}
 	}
 
-	if (planLimits.loadingPlanLimits) {
-		return <div className="flex justify-center items-center h-full">
-			<Loader2 className="h-4 w-4 animate-spin" />
-		</div>
-	}
 	// All checks passed, render the children
 	return <>{children}</>;
 }
@@ -187,7 +192,11 @@ export function FeatureAccess({
 /**
  * Helper function to determine the minimum plan required for a specific feature
  */
-function getMinimumPlanForFeature(feature: 'aiAnalysis' | 'teamCollaboration' | 'customBranding'): SubscriptionPlan {
+function getMinimumPlanForFeature(feature?: 'aiAnalysis' | 'teamCollaboration' | 'customBranding'): SubscriptionPlan {
+	if (!feature) {
+		return SubscriptionPlan.PREMIUM; // Default fallback
+	}
+	
 	// aiAnalysis is available on all plans
 	if (feature === 'aiAnalysis') {
 		return SubscriptionPlan.FREE_TRIAL;
@@ -204,4 +213,4 @@ function getMinimumPlanForFeature(feature: 'aiAnalysis' | 'teamCollaboration' | 
 	}
 
 	return SubscriptionPlan.PREMIUM; // Default fallback
-} 
+}

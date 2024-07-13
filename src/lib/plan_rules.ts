@@ -1,26 +1,3 @@
-/*
- * Regarding the respective plans we have, indeed, we would need to setup 
- * some type of user "permission" structure/system which recognizes the 
- * users selected plan, and then makes the system function accordingly... 
- * 
- * In other words (for example; if they select a free trial, the system 
- * needs to automatically "deactivate" the users account after 7 days and 
- * only allow a single speech etc., unless they upgrade their plan, if 
- * they select the premium plan, the system needs to only allow three (3) 
- * speeches per month etc. So indeed, I assume some type of permission/
- * restriction system should be implemented.
- * 
- * This said, I'm wondering (in your opinion), if we are perhaps making 
- * it too complicated? For your reference, I have attached the payment 
- * plan (though this may actually be too simple [so to speak] and maybe 
- * we should shoot for something in between what we have and their plan 
- * system), of a SaaS company that developed something similar.
- * 
- * FYI... if you want to check out their system, I have an account that 
- * you can use to review the Verble application, as follows:
- * 
- * URL: https://www.create.verble.app/login/
- */
 
 /**
  * Enum representing available subscription plans
@@ -136,8 +113,7 @@ export function isSubscriptionActive(subscription: UserSubscription): boolean {
 		const trialDays = PLAN_RULES[SubscriptionPlan.FREE_TRIAL].limits[LimitType.ACTIVE_DAYS];
 		const trialEndDate = new Date(subscription.startDate);
 		trialEndDate.setDate(trialEndDate.getDate() + trialDays);
-		console.log('trialEndDate', trialEndDate);
-
+		
 		return now < trialEndDate;
 	}
 
@@ -171,7 +147,7 @@ export function canCreateSpeech(subscription: UserSubscription): {
 	if (subscription.usageStats.speechesUsed >= speechLimit) {
 		return {
 			allowed: false,
-			reason: `You've reached your limit of ${speechLimit} speeches for your ${PLAN_RULES[subscription.planType].displayName}.`,
+			reason: `You've reached your limit of ${speechLimit} speeches for your ${PLAN_RULES[subscription.planType].displayName} plan.`,
 		};
 	}
 
