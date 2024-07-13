@@ -47,6 +47,7 @@ const UserManagement = () => {
     handleBulkDeactivate,
     handleEditUser,
     handleSendEmail,
+    handleUpdateSubscription,
     cleanup,
     addUser,
     isEditUserDialogOpen,
@@ -128,6 +129,7 @@ const UserManagement = () => {
             handleDeleteUser={handleDeleteUser}
             handleEditUser={handleEditUser}
             handleSendEmail={handleSendEmail}
+            handleUpdateSubscription={handleUpdateSubscription}
           />
         </CardContent>
       </Card>
