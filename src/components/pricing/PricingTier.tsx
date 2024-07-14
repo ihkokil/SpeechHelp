@@ -1,3 +1,4 @@
+
 import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -41,18 +42,42 @@ const PricingTier: React.FC<PricingTierProps> = ({
 
 	const handleStripeCheckout = useCallback(async () => {
 		try {
-			// If this is the free tier, do nothing
-			if (name === 'Basic / Free Trial') {
+			// Handle free tier separately
+			if (planType === SubscriptionPlan.FREE_TRIAL) {
+				if (!user) {
+					// Redirect to signup for non-authenticated users
+					window.location.href = '/signup?plan=free_trial';
+					return;
+				}
+				
+				// Set up free trial for authenticated users
+				const trialEndDate = new Date();
+				trialEndDate.setDate(trialEndDate.getDate() + 7); // 7-day trial
+				
 				await updateProfile({
 					subscription_plan: planType,
 					subscription_start_date: new Date().toISOString(),
-					subscription_end_date: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+					subscription_end_date: trialEndDate.toISOString(),
 				});
+				
+				toast({
+					title: "Free Trial Activated",
+					description: "Your 7-day free trial has started. Enjoy Speech Help!",
+				});
+				
+				// Redirect to dashboard
+				window.location.href = '/dashboard';
 				return;
 			}
 
+			// Handle paid plans
+			if (!user) {
+				// Redirect to signup for non-authenticated users
+				window.location.href = `/signup?plan=${planType.toLowerCase()}`;
+				return;
+			}
 
-			// // Create checkout session with our Supabase function
+			// Create checkout session with Supabase function
 			const { url } = await createCheckoutSession({
 				plan: planType,
 				priceId: pricingPeriod === 'monthly' ? price.monthly.productId : price.yearly.productId,
@@ -61,7 +86,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
 				pricingPeriod,
 			});
 
-			// // Redirect to Stripe Checkout
+			// Redirect to Stripe Checkout
 			window.location.href = url;
 		} catch (error) {
 			console.error('Checkout error:', error);
@@ -71,7 +96,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
 				variant: 'destructive',
 			});
 		}
-	}, [name, pricingPeriod, user, toast]);
+	}, [name, planType, pricingPeriod, user, price, toast, updateProfile]);
 
 	return (
 		<Card className="border border-gray-200 rounded-xl h-full overflow-hidden hover:shadow-lg transition-shadow">
@@ -81,10 +106,10 @@ const PricingTier: React.FC<PricingTierProps> = ({
 					<span className="text-4xl font-bold text-purple-600">
 						{pricingPeriod === 'monthly' ? price.monthly.price : price.yearly.price}
 					</span>
-					{pricingPeriod === 'monthly' && name !== 'Basic / Free Trial' && (
+					{pricingPeriod === 'monthly' && planType !== SubscriptionPlan.FREE_TRIAL && (
 						<span className="text-gray-500 ml-2">/month</span>
 					)}
-					{pricingPeriod === 'yearly' && name !== 'Basic / Free Trial' && (
+					{pricingPeriod === 'yearly' && planType !== SubscriptionPlan.FREE_TRIAL && (
 						<span className="text-gray-500 ml-2">/year</span>
 					)}
 				</div>
@@ -101,21 +126,12 @@ const PricingTier: React.FC<PricingTierProps> = ({
 					))}
 				</ul>
 
-				{name === 'Basic / Free Trial' ? (
-					<Button
-						className="w-full bg-gradient-to-r mt-auto from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-						onClick={handleStripeCheckout}
-					>
-						Start Free Trial
-					</Button>
-				) : (
-					<Button
-						className="w-full bg-gradient-to-r mt-auto from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-						onClick={handleStripeCheckout}
-					>
-						Choose Plan
-					</Button>
-				)}
+				<Button
+					className="w-full bg-gradient-to-r mt-auto from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+					onClick={handleStripeCheckout}
+				>
+					{planType === SubscriptionPlan.FREE_TRIAL ? 'Start Free Trial' : 'Choose Plan'}
+				</Button>
 			</div>
 		</Card>
 	);

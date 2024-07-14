@@ -68,10 +68,12 @@ export const useSpeechSave = ({
 				});
 			} else {
 				if (user) {
-					// Fix: Extract the speech ID from the response instead of assigning the whole array
+					// Extract the speech ID correctly from the response
 					const speechResponse = await speechService.saveSpeech(user.id, title, contentToSave, speechType);
-					if (speechResponse && speechResponse[0]) {
+					if (speechResponse && Array.isArray(speechResponse) && speechResponse.length > 0) {
 						setSpeechId(speechResponse[0].id);
+					} else if (speechResponse && speechResponse.id) {
+						setSpeechId(speechResponse.id);
 					}
 					
 					toast({

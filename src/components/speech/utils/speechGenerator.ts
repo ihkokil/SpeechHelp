@@ -1,3 +1,4 @@
+
 import { SpeechDetails } from '../hooks/useSpeechLabState';
 import { parseDurationToMinutes } from './durationUtils';
 import { enhanceSpeechForDuration } from './speechEnhancer';
@@ -30,6 +31,11 @@ const generateSpeechWithSupabaseFunction = async (
 		if (error) {
 			console.error('Supabase function error:', error);
 			throw new Error(`Failed to generate speech: ${error.message}`);
+		}
+
+		if (!data || !data.speech) {
+			console.error('Invalid response from Supabase function:', data);
+			throw new Error('Invalid response format from AI service');
 		}
 
 		return data.speech;
