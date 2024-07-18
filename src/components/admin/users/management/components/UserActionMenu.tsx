@@ -110,7 +110,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleExtendSubscription} id={`extend-subscription-${user.id}`}>
           <Clock className="mr-2 h-4 w-4" />
-          <span>Extend Subscription</span>
+          <span>Manage Subscription</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSendEmail} id={`send-email-${user.id}`}>
           <Mail className="mr-2 h-4 w-4" />
