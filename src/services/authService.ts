@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import WelcomeEmail from './welcome-email';
 import { renderToString } from 'react-dom/server';
@@ -64,6 +65,10 @@ export const signUp = async (
 				message: "Welcome to SpeechHelp! Please check your email to confirm your account."
 			}
 		});
+		
+		// Sign out immediately after signup to prevent automatic login
+		await supabase.auth.signOut();
+		
 		showToast({
 			title: "Sign up successful",
 			description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
@@ -78,11 +83,6 @@ export const signUp = async (
 		});
 		throw res.error;
 	}
-
-	showToast({
-		title: "Sign up successful",
-		description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
-	});
 };
 
 export const signOut = async (showToast: ShowToastFunction) => {
