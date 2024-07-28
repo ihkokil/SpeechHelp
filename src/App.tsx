@@ -44,13 +44,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 	return <>{children}</>;
 };
 
-// Layout component for pages that need navbar
-const NavbarLayout = ({ children }: { children: React.ReactNode }) => {
+// Layout component for pages that need navbar with Auth context
+const AuthNavbarLayout = ({ children }: { children: React.ReactNode }) => {
 	return (
-		<>
+		<AuthProvider>
 			<Navbar />
 			{children}
-		</>
+		</AuthProvider>
 	);
 };
 
@@ -64,10 +64,10 @@ const App = () => (
 						<Sonner />
 						<BrowserRouter>
 							<Routes>
-								<Route path="/" element={<NavbarLayout><Index /></NavbarLayout>} />
-								<Route path="/test" element={<NavbarLayout><Test /></NavbarLayout>} />
-								<Route path="/pricing" element={<NavbarLayout><Pricing /></NavbarLayout>} />
-								<Route path="/auth" element={<NavbarLayout><Auth /></NavbarLayout>} />
+								<Route path="/" element={<AuthNavbarLayout><Index /></AuthNavbarLayout>} />
+								<Route path="/test" element={<AuthNavbarLayout><Test /></AuthNavbarLayout>} />
+								<Route path="/pricing" element={<AuthNavbarLayout><Pricing /></AuthNavbarLayout>} />
+								<Route path="/auth" element={<AuthNavbarLayout><Auth /></AuthNavbarLayout>} />
 								<Route
 									path="/account"
 									element={
@@ -139,7 +139,7 @@ const App = () => (
 								</Route>
 
 								{/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-								<Route path="*" element={<NavbarLayout><NotFound /></NavbarLayout>} />
+								<Route path="*" element={<AuthNavbarLayout><NotFound /></AuthNavbarLayout>} />
 							</Routes>
 						</BrowserRouter>
 					</AdminAuthProvider>
