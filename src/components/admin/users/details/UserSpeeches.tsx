@@ -1,57 +1,26 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { User, Speech } from '@/components/admin/users/types';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Eye, FileText, Loader2 } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { User, Speech } from '@/components/admin/users/types';
 
 interface UserSpeechesProps {
   user: User;
+  speeches?: Speech[];
+  isLoadingSpeeches?: boolean;
 }
 
-export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
-  const [speeches, setSpeeches] = useState<Speech[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-
-  useEffect(() => {
-    fetchUserSpeeches();
-  }, [user.id]);
-
-  const fetchUserSpeeches = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('speeches')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-        
-      if (error) {
-        console.error('Error fetching user speeches:', error);
-      } else {
-        setSpeeches(data || []);
-      }
-    } catch (error) {
-      console.error('Exception fetching user speeches:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+export const UserSpeeches: React.FC<UserSpeechesProps> = ({ 
+  user, 
+  speeches = [], 
+  isLoadingSpeeches = false 
+}) => {
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
-  };
-
-  const handleViewSpeech = (speech: Speech) => {
-    setSelectedSpeech(speech);
-    // Implement view dialog functionality if needed
   };
 
   return (
@@ -63,7 +32,7 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isLoadingSpeeches ? (
           <div className="flex justify-center items-center h-40">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
@@ -81,7 +50,6 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
                   <TableHead>Type</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Modified</TableHead>
-                  <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -93,16 +61,6 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
                     </TableCell>
                     <TableCell>{formatDate(speech.created_at)}</TableCell>
                     <TableCell>{speech.updated_at ? formatDate(speech.updated_at) : '-'}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleViewSpeech(speech)}
-                      >
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">View</span>
-                      </Button>
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

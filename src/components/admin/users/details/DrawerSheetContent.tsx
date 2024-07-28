@@ -89,7 +89,11 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
           </TabsContent>
           
           <TabsContent value="speeches" className="space-y-4 pt-4">
-            <UserSpeeches user={user} />
+            <UserSpeeches 
+              user={user} 
+              speeches={speeches} 
+              isLoadingSpeeches={isLoadingSpeeches}
+            />
           </TabsContent>
           
           <TabsContent value="billing" className="pt-4">

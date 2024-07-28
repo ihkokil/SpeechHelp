@@ -25,8 +25,6 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     setIsLoadingSpeeches(true);
     try {
       console.log('Fetching speeches for user:', userId);
-      // Delay fetch to ensure we don't have race conditions
-      await new Promise(resolve => setTimeout(resolve, 100));
       
       const { data, error } = await supabase
         .from('speeches')
@@ -63,7 +61,14 @@ export const useUserDetails = (user: User | null, open: boolean) => {
   // Calculate activity time based on speeches
   const calculateTotalActivityTime = useCallback((speeches: Speech[]) => {
     // Estimate total activity time based on speeches (5 minutes per speech as a rough estimate)
-    setTotalActivityTime(5 * speeches.length);
+    const totalTime = speeches.reduce((total, speech) => {
+      // Estimate time based on content length - longer speeches take more time
+      const contentLength = speech.content?.length || 0;
+      const estimatedMinutes = Math.max(5, Math.floor(contentLength / 500)); // 1 min per 500 chars, min 5 mins
+      return total + estimatedMinutes;
+    }, 0);
+    
+    setTotalActivityTime(totalTime);
   }, []);
 
   // Reset states and fetch data when the drawer opens with a user
@@ -75,9 +80,6 @@ export const useUserDetails = (user: User | null, open: boolean) => {
       // When opening drawer with a user, reset state and fetch data
       if (isMounted) {
         resetState();
-      }
-      
-      if (isMounted) {
         calculateUserStats(user);
         fetchUserSpeeches(user.id);
       }
