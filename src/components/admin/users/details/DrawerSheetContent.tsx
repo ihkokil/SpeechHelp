@@ -2,7 +2,7 @@
 import React from 'react';
 import { SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User, CreditCard, ScrollText, Clock, Shield, PieChart } from 'lucide-react';
+import { User as UserIcon, CreditCard, ScrollText, Clock, Shield, PieChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserHeader } from './UserHeader';
 import { UserProfile } from './UserProfile';
@@ -11,12 +11,12 @@ import { UserBilling } from './UserBilling';
 import { UserStatistics } from './UserStatistics';
 import { UserActivity } from './UserActivity';
 import { UserPermissions } from './UserPermissions';
-import { User as UserType } from '../types';
+import { User as UserType, Speech } from '../types';
 
 interface DrawerSheetContentProps {
   user: UserType;
   onClose: (e: React.MouseEvent) => void;
-  speeches: any[];
+  speeches: Speech[];
   isLoadingSpeeches: boolean;
   userJoinedDays: number;
   totalActivityTime: number;
@@ -36,6 +36,15 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
     e.stopPropagation();
     onClose(e);
   };
+
+  // Log the data being passed to the component
+  console.log("DrawerSheetContent rendering with:", {
+    userId: user.id,
+    speechesCount: speeches?.length,
+    isLoadingSpeeches,
+    userJoinedDays,
+    totalActivityTime
+  });
 
   return (
     <>
@@ -59,7 +68,7 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="profile">
-              <User className="mr-2 h-4 w-4" />
+              <UserIcon className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
             <TabsTrigger value="speeches">

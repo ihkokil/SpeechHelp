@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { User, Speech } from '@/components/admin/users/types';
+import { Button } from '@/components/ui/button';
 
 interface UserSpeechesProps {
   user: User;
@@ -20,8 +21,21 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
   isLoadingSpeeches = false 
 }) => {
   const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+    try {
+      return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+    } catch (e) {
+      console.error("Error formatting date:", dateString, e);
+      return "Invalid date";
+    }
   };
+
+  // Debug logging
+  console.log("UserSpeeches rendering with:", { 
+    userId: user.id,
+    speechesCount: speeches?.length,
+    isLoading: isLoadingSpeeches,
+    speeches: speeches
+  });
 
   return (
     <Card>
@@ -40,6 +54,7 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
           <div className="text-center py-8 text-muted-foreground">
             <FileText className="h-12 w-12 mx-auto opacity-20 mb-2" />
             <p>No speeches found for this user.</p>
+            <p className="text-sm mt-2">This user hasn't created any speeches yet.</p>
           </div>
         ) : (
           <ScrollArea className="h-[350px]">
