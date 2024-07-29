@@ -150,7 +150,7 @@ export const useSubscriptionActions = (
     users: User[],
     setUsers: (users: User[]) => void
   ) => {
-    if (!userId) return null;
+    if (!userId) return;
     
     if (setActionLoading) setActionLoading(true);
     
@@ -163,20 +163,14 @@ export const useSubscriptionActions = (
         .update({ 
           subscription_plan: planType,
           subscription_tier: planType,
-          subscription_end_date: endDate.toISOString(),
-          updated_at: new Date().toISOString()
+          subscription_end_date: endDate.toISOString() 
         })
         .eq('id', userId)
-        .select();
+        .select()
+        .single();
       
       if (error) {
-        console.error("Database error:", error);
         throw error;
-      }
-      
-      if (!data || data.length === 0) {
-        console.error("No data returned from update");
-        throw new Error("Failed to update subscription - no data returned");
       }
       
       // Update local state
@@ -193,14 +187,23 @@ export const useSubscriptionActions = (
         )
       );
       
-      return data[0];
+      toast({
+        title: 'Subscription Updated',
+        description: `User's subscription has been updated to ${planType} ending on ${endDate.toLocaleDateString()}.`,
+      });
+      
+      return data;
     } catch (error) {
       console.error('Error updating subscription:', error);
-      throw error; // Let the component handle the error
+      toast({
+        title: 'Error',
+        description: 'Failed to update subscription. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       if (setActionLoading) setActionLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   return {
     handleToggleUserStatus,
