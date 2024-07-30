@@ -156,33 +156,53 @@ export const useSubscriptionActions = (
     users: User[],
     setUsers: (users: User[]) => void
   ) => {
-    if (!userId) return null;
+    if (!userId) {
+      console.error('No userId provided to handleUpdateUserSubscription');
+      return null;
+    }
     
     if (setActionLoading) setActionLoading(true);
     
     try {
-      console.log(`Updating user subscription: ${userId} to plan ${planType} until ${endDate.toISOString()}`);
-      
-      // First check if the plan type is valid
+      // Validate inputs to avoid errors
       if (!Object.values(SubscriptionPlan).includes(planType)) {
         console.error(`Invalid plan type: ${planType}`);
         throw new Error(`Invalid plan type: ${planType}`);
       }
+
+      if (!endDate || isNaN(endDate.getTime())) {
+        console.error('Invalid end date provided:', endDate);
+        throw new Error('Please select a valid end date');
+      }
+
+      // Make sure the date is in the future
+      const now = new Date();
+      if (endDate <= now) {
+        console.error('End date must be in the future:', endDate);
+        throw new Error('End date must be in the future');
+      }
+      
+      console.log(`Updating user subscription: ${userId} to plan ${planType} until ${endDate.toISOString()}`);
       
       // Format the end date correctly to avoid timezone issues
       const formattedEndDate = endDate.toISOString();
       console.log(`Formatted end date: ${formattedEndDate}`);
       
-      // Update subscription in the database with all required fields
+      // Create update payload with all required fields
+      const updatePayload = {
+        subscription_plan: planType,
+        subscription_tier: planType,
+        subscription_status: 'active',
+        subscription_end_date: formattedEndDate,
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('Update payload:', updatePayload);
+      
+      // Update subscription in the database
       const { data, error } = await supabase
         .from('profiles')
-        .update({ 
-          subscription_plan: planType,
-          subscription_tier: planType,
-          subscription_status: 'active',
-          subscription_end_date: formattedEndDate,
-          updated_at: new Date().toISOString()
-        })
+        .update(updatePayload)
         .eq('id', userId)
         .select();
       
@@ -216,6 +236,7 @@ export const useSubscriptionActions = (
       toast({
         title: 'Subscription Updated',
         description: `User's subscription has been updated to ${planType} ending on ${endDate.toLocaleDateString()}.`,
+        variant: 'success',
       });
       
       return data[0];

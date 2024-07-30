@@ -25,7 +25,7 @@ import { SubscriptionPlan, PLAN_RULES } from '@/lib/plan_rules';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUserManagementData } from '../management/hooks/useUserManagementData';
 import { AlertCircle } from 'lucide-react';
 
@@ -47,6 +47,19 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
   const { users, setUsers } = useUserManagementData();
   const { handleUpdateUserSubscription } = useSubscriptionActions(setIsActionLoading);
 
+  // Reset state when user changes or modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedPlan(
+        (user.subscription_tier as SubscriptionPlan) || SubscriptionPlan.FREE_TRIAL
+      );
+      setSelectedDate(
+        user.subscription_end_date ? new Date(user.subscription_end_date) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      );
+      setErrorMessage(null);
+    }
+  }, [user, isOpen]);
+  
   // Get all available plan types
   const planOptions = Object.values(SubscriptionPlan);
   
@@ -77,11 +90,14 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     setIsActionLoading(true);
     
     try {
-      console.log(`Attempting to update subscription to ${selectedPlan} until ${selectedDate.toISOString()}`);
+      console.log(`Attempting to update subscription for user ${user.id} to ${selectedPlan} until ${selectedDate.toISOString()}`);
+      console.log('Current user data:', user);
+      console.log('Available users in state:', users.length);
       
       // Ensure the date is in the future
       if (selectedDate <= new Date()) {
         setErrorMessage("Please select a date in the future.");
+        setIsActionLoading(false);
         return;
       }
       

@@ -1,3 +1,4 @@
+
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import Stripe from 'https://esm.sh/stripe@13.2.0?target=deno';
@@ -105,6 +106,7 @@ serve(async (req) => {
 				const userId = session.client_reference_id;
 				const customerId = session.customer;
 				const subscriptionId = session.subscription;
+				const planType = session.metadata?.plan || 'premium';
 
 				if (!userId) {
 					log('Warning: No userId (client_reference_id) found in session');
@@ -114,12 +116,26 @@ serve(async (req) => {
 					// Update user's subscription in the database
 					log(`Updating user ${userId} subscription data in profiles table`);
 
+					// Get subscription details to get proper end date
+					let subscriptionEndDate = null;
+					if (subscriptionId) {
+						try {
+							const subscriptionDetails = await stripe.subscriptions.retrieve(subscriptionId);
+							subscriptionEndDate = new Date(subscriptionDetails.current_period_end * 1000).toISOString();
+							log('Retrieved subscription end date:', subscriptionEndDate);
+						} catch (subError) {
+							log('Error retrieving subscription details:', subError);
+						}
+					}
+
 					const updateData = {
 						stripe_customer_id: customerId,
 						stripe_subscription_id: subscriptionId,
-						subscription_plan: session.metadata?.plan || null,
-						subscription_start_date: session.created,
-						subscription_end_date: session.current_period_end,
+						subscription_plan: planType,
+						subscription_tier: planType,
+						subscription_status: 'active',
+						subscription_start_date: new Date().toISOString(),
+						subscription_end_date: subscriptionEndDate,
 						is_active: true,
 					};
 
@@ -156,6 +172,7 @@ serve(async (req) => {
 
 				// Get the customer ID from the subscription
 				const customerId = subscription.customer;
+				const subscriptionEndDate = new Date(subscription.current_period_end * 1000).toISOString();
 
 				// Update the subscription status
 				log(`Finding user with Stripe customer ID: ${customerId}`);
@@ -177,12 +194,29 @@ serve(async (req) => {
 				const userId = users[0].id;
 				log(`Found user ${userId} with customer ID ${customerId}`);
 
+				// Get subscription items to determine plan type
+				let planType = 'premium'; // default
+				try {
+					if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
+						const product = await stripe.products.retrieve(subscription.items.data[0].price.product as string);
+						if (product.metadata && product.metadata.plan_type) {
+							planType = product.metadata.plan_type;
+							log(`Found plan type from product metadata: ${planType}`);
+						}
+					}
+				} catch (prodError) {
+					log('Error retrieving product details:', prodError);
+				}
+
 				// Update subscription status based on the Stripe status
-				log(`Updating subscription status to '${subscription.status}' for user ${userId}`);
+				log(`Updating subscription status to '${subscription.status}' and plan to '${planType}' for user ${userId}`);
 				const { error: updateError } = await supabase
 					.from('profiles')
 					.update({
 						subscription_status: subscription.status,
+						subscription_plan: planType,
+						subscription_tier: planType,
+						subscription_end_date: subscriptionEndDate,
 						updated_at: new Date().toISOString(),
 					})
 					.eq('id', userId);
@@ -230,6 +264,8 @@ serve(async (req) => {
 					.from('profiles')
 					.update({
 						subscription_status: 'canceled',
+						subscription_plan: 'free_trial',
+						subscription_tier: 'free_trial',
 						updated_at: new Date().toISOString(),
 					})
 					.eq('id', userId);
@@ -269,4 +305,4 @@ serve(async (req) => {
 			}
 		);
 	}
-}); 
+});
