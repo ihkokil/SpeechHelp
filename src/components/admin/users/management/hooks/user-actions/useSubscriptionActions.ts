@@ -100,13 +100,17 @@ export const useSubscriptionActions = (
         .from('profiles')
         .update({ 
           subscription_plan: 'premium', 
-          subscription_end_date: endDate.toISOString() 
+          subscription_tier: 'premium',
+          subscription_status: 'active',
+          subscription_end_date: endDate.toISOString(),
+          updated_at: new Date().toISOString()
         })
         .eq('id', userId)
         .select()
         .single();
       
       if (error) {
+        console.error('Error updating subscription:', error);
         throw error;
       }
       
@@ -117,6 +121,7 @@ export const useSubscriptionActions = (
             ? { 
                 ...user, 
                 subscription_status: 'active',
+                subscription_plan: 'premium',
                 subscription_tier: 'premium',
                 subscription_end_date: endDate.toISOString() 
               } 
@@ -137,6 +142,7 @@ export const useSubscriptionActions = (
         description: 'Failed to update subscription. Please try again.',
         variant: 'destructive',
       });
+      return null;
     } finally {
       if (setActionLoading) setActionLoading(false);
     }
@@ -150,31 +156,47 @@ export const useSubscriptionActions = (
     users: User[],
     setUsers: (users: User[]) => void
   ) => {
-    if (!userId) return;
+    if (!userId) return null;
     
     if (setActionLoading) setActionLoading(true);
     
     try {
       console.log(`Updating user subscription: ${userId} to plan ${planType} until ${endDate.toISOString()}`);
       
-      // Update subscription status in the database with all required fields
+      // First check if the plan type is valid
+      if (!Object.values(SubscriptionPlan).includes(planType)) {
+        console.error(`Invalid plan type: ${planType}`);
+        throw new Error(`Invalid plan type: ${planType}`);
+      }
+      
+      // Format the end date correctly to avoid timezone issues
+      const formattedEndDate = endDate.toISOString();
+      console.log(`Formatted end date: ${formattedEndDate}`);
+      
+      // Update subscription in the database with all required fields
       const { data, error } = await supabase
         .from('profiles')
         .update({ 
           subscription_plan: planType,
-          subscription_tier: planType, // Ensure subscription_tier is also set
-          subscription_status: 'active', // Set status explicitly
-          subscription_end_date: endDate.toISOString(),
-          updated_at: new Date().toISOString() // Update the timestamp
+          subscription_tier: planType,
+          subscription_status: 'active',
+          subscription_end_date: formattedEndDate,
+          updated_at: new Date().toISOString()
         })
         .eq('id', userId)
-        .select()
-        .single();
+        .select();
       
       if (error) {
         console.error('Database error updating subscription:', error);
         throw error;
       }
+      
+      if (!data || data.length === 0) {
+        console.error('No data returned after update');
+        throw new Error('No data returned after update');
+      }
+      
+      console.log('Update successful, returned data:', data);
       
       // Update local state with all updated fields
       setUsers(
@@ -185,7 +207,7 @@ export const useSubscriptionActions = (
                 subscription_plan: planType,
                 subscription_tier: planType,
                 subscription_status: 'active',
-                subscription_end_date: endDate.toISOString() 
+                subscription_end_date: formattedEndDate
               } 
             : user
         )
@@ -196,12 +218,19 @@ export const useSubscriptionActions = (
         description: `User's subscription has been updated to ${planType} ending on ${endDate.toLocaleDateString()}.`,
       });
       
-      return data;
+      return data[0];
     } catch (error) {
       console.error('Error updating subscription:', error);
+      
+      // More specific error message based on the error
+      let errorMessage = 'Failed to update subscription. Please try again.';
+      if (error instanceof Error) {
+        errorMessage = `Error: ${error.message}`;
+      }
+      
       toast({
         title: 'Error',
-        description: 'Failed to update subscription. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
       return null;
