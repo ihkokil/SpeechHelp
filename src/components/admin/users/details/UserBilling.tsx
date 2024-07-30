@@ -70,14 +70,19 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     
     setIsActionLoading(true);
     try {
-      await handleUpdateUserSubscription(
+      const result = await handleUpdateUserSubscription(
         user.id, 
         selectedPlan, 
         selectedDate, 
         users, 
         setUsers
       );
-      setIsOpen(false);
+      
+      if (result) {
+        setIsOpen(false);
+      }
+    } catch (error) {
+      console.error('Error in handleUpdateSubscription:', error);
     } finally {
       setIsActionLoading(false);
     }
