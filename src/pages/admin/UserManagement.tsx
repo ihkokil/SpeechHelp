@@ -9,6 +9,7 @@ import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawe
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
 import EditUserDialog from '@/components/admin/users/edit-user/EditUserDialog';
 import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
+import SubscriptionDialog from '@/components/admin/users/management/components/SubscriptionDialog';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/components/admin/users/types';
 
@@ -30,6 +31,8 @@ const UserManagement = () => {
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
+    isSubscriptionDialogOpen,
+    setIsSubscriptionDialogOpen,
     filteredUsers,
     fetchUsers,
     toggleUserSelection,
@@ -41,6 +44,7 @@ const UserManagement = () => {
     handleCloseUserDetails,
     handleToggleUserSubscription,
     handleManagePermissions,
+    handleManageSubscription,
     handlePermissionsUpdated,
     handleBulkDelete,
     handleBulkActivate,
@@ -118,7 +122,7 @@ const UserManagement = () => {
             handleViewUserDetails={handleViewUserDetails}
             handleManagePermissions={handleManagePermissions}
             handleToggleUserStatus={handleToggleUserStatus}
-            handleToggleUserSubscription={handleToggleUserSubscription}
+            handleToggleUserSubscription={handleManageSubscription}
             setSelectedUsers={setSelectedUsers}
             setIsDeleteDialogOpen={setIsDeleteDialogOpen}
             searchTerm={searchTerm}
@@ -169,6 +173,14 @@ const UserManagement = () => {
           open={isPermissionsDialogOpen}
           onOpenChange={setIsPermissionsDialogOpen}
           onPermissionsUpdated={(updatedUser) => handlePermissionsUpdated(updatedUser)}
+        />
+      )}
+
+      {isSubscriptionDialogOpen && selectedUser && (
+        <SubscriptionDialog
+          user={selectedUser}
+          open={isSubscriptionDialogOpen}
+          onOpenChange={setIsSubscriptionDialogOpen}
         />
       )}
     </div>
