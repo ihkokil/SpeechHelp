@@ -14,9 +14,14 @@ export const useUserManagement = () => {
     users, 
     setUsers, 
     isLoading, 
-    fetchUsers, 
-    addUser 
+    fetchUsers,
+    error 
   } = useFetchUsers();
+  
+  // Add user function for adding new users
+  const addUser = useCallback((newUser: User) => {
+    setUsers(prevUsers => [...prevUsers, newUser]);
+  }, [setUsers]);
   
   // User selection state
   const {
@@ -99,6 +104,39 @@ export const useUserManagement = () => {
     resetUIState();
   }, [setSelectedUsers, resetUIState]);
   
+  // Wrapper functions to match expected signatures in UserManagement.tsx
+  const handleToggleUserStatusWrapper = useCallback((userId: string, isActive: boolean) => {
+    handleToggleUserStatus(userId, isActive, users, setUsers);
+  }, [handleToggleUserStatus, users, setUsers]);
+  
+  const handleBulkDeleteWrapper = useCallback(() => {
+    if (selectedUsers.length > 0) {
+      handleBulkDelete(selectedUsers, users, setUsers);
+    }
+  }, [selectedUsers, handleBulkDelete, users, setUsers]);
+  
+  const handleBulkActivateWrapper = useCallback(() => {
+    if (selectedUsers.length > 0) {
+      handleBulkActivate(selectedUsers, users, setUsers);
+    }
+  }, [selectedUsers, handleBulkActivate, users, setUsers]);
+  
+  const handleBulkDeactivateWrapper = useCallback(() => {
+    if (selectedUsers.length > 0) {
+      handleBulkDeactivate(selectedUsers, users, setUsers);
+    }
+  }, [selectedUsers, handleBulkDeactivate, users, setUsers]);
+  
+  const handleDeleteUserWrapper = useCallback((userId: string) => {
+    handleDeleteUser(userId, users, setUsers);
+  }, [handleDeleteUser, users, setUsers]);
+  
+  const handleDeleteUsersWrapper = useCallback(() => {
+    if (selectedUsers.length > 0) {
+      handleDeleteUsers(selectedUsers, users, setUsers);
+    }
+  }, [selectedUsers, handleDeleteUsers, users, setUsers]);
+  
   return {
     // Data
     users,
@@ -127,22 +165,22 @@ export const useUserManagement = () => {
     isSubscriptionDialogOpen,
     setIsSubscriptionDialogOpen,
     
-    // Actions
+    // Actions with proper signatures
     fetchUsers,
     toggleUserSelection,
     toggleAllUsers,
-    handleDeleteUsers,
-    handleDeleteUser,
-    handleToggleUserStatus,
+    handleDeleteUsers: handleDeleteUsersWrapper,
+    handleDeleteUser: handleDeleteUserWrapper,
+    handleToggleUserStatus: handleToggleUserStatusWrapper,
     handleViewUserDetails,
     handleCloseUserDetails,
     handleToggleUserSubscription,
     handleManagePermissions,
     handleManageSubscription,
     handlePermissionsUpdated,
-    handleBulkDelete,
-    handleBulkActivate,
-    handleBulkDeactivate,
+    handleBulkDelete: handleBulkDeleteWrapper,
+    handleBulkActivate: handleBulkActivateWrapper,
+    handleBulkDeactivate: handleBulkDeactivateWrapper,
     handleEditUser,
     handleSendEmail,
     handleUpdateUserSubscription,
