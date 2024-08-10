@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
@@ -204,20 +203,26 @@ export const useSubscriptionActions = (
       
       console.log('Update successful, data:', data);
       
-      // Update local state
-      setUsers(
-        users.map(user => 
-          user.id === userId 
-            ? { 
-                ...user, 
-                subscription_plan: planType,
-                subscription_tier: planType,
-                subscription_status: planType === SubscriptionPlan.FREE_TRIAL ? 'trial' : 'active',
-                subscription_end_date: formattedEndDate
-              } 
-            : user
-        )
-      );
+      // Create a clean array of updated users with explicit typing
+      const userUpdates: User[] = [];
+      for (const user of users) {
+        if (user.id === userId) {
+          // Create the updated user object
+          userUpdates.push({
+            ...user,
+            subscription_plan: planType,
+            subscription_tier: planType,
+            subscription_status: planType === SubscriptionPlan.FREE_TRIAL ? 'trial' : 'active',
+            subscription_end_date: formattedEndDate
+          });
+        } else {
+          // Keep unchanged users
+          userUpdates.push(user);
+        }
+      }
+      
+      // Update state with the new array
+      setUsers(userUpdates);
       
       toast({
         title: 'Subscription Updated',
@@ -292,21 +297,26 @@ export const useSubscriptionActions = (
         throw new Error('No data returned after update');
       }
       
-      // Create a new array to avoid type recursion issues
-      const updatedUsers = users.map(user => 
-        user.id === userId 
-          ? { 
-              ...user, 
-              subscription_plan: SubscriptionPlan.PRO,
-              subscription_tier: SubscriptionPlan.PRO,
-              subscription_status: 'active',
-              subscription_end_date: endDate.toISOString()
-            } 
-          : user
-      );
+      // Create a clean array of updated users with explicit typing
+      const userUpdates: User[] = [];
+      for (const user of users) {
+        if (user.id === userId) {
+          // Create the updated user object
+          userUpdates.push({
+            ...user,
+            subscription_plan: SubscriptionPlan.PRO,
+            subscription_tier: SubscriptionPlan.PRO,
+            subscription_status: 'active',
+            subscription_end_date: endDate.toISOString()
+          });
+        } else {
+          // Keep unchanged users
+          userUpdates.push(user);
+        }
+      }
       
-      // Update local state with the new array
-      setUsers(updatedUsers);
+      // Update state with the new array
+      setUsers(userUpdates);
       
       toast({
         title: 'User Set to Pro Plan',
