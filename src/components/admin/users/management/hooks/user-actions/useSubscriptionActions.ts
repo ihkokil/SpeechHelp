@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
@@ -94,7 +95,6 @@ export const useSubscriptionActions = (
       const { data, error } = await supabase
         .from('profiles')
         .update({ 
-          subscription_plan: SubscriptionPlan.PREMIUM, 
           subscription_tier: SubscriptionPlan.PREMIUM,
           subscription_status: 'active',
           subscription_end_date: endDate.toISOString(),
@@ -109,19 +109,19 @@ export const useSubscriptionActions = (
       }
       
       // Update local state
-      setUsers(
-        users.map(user => 
-          user.id === userId 
-            ? { 
-                ...user, 
-                subscription_status: 'active',
-                subscription_plan: SubscriptionPlan.PREMIUM,
-                subscription_tier: SubscriptionPlan.PREMIUM,
-                subscription_end_date: endDate.toISOString() 
-              } 
-            : user
-        )
-      );
+      const updatedUsers = users.map(user => {
+        if (user.id === userId) {
+          return { 
+            ...user, 
+            subscription_status: 'active',
+            subscription_tier: SubscriptionPlan.PREMIUM,
+            subscription_end_date: endDate.toISOString() 
+          };
+        }
+        return user;
+      });
+      
+      setUsers(updatedUsers);
       
       toast({
         title: 'Subscription Updated',
@@ -175,7 +175,6 @@ export const useSubscriptionActions = (
       
       // Create update payload
       const updatePayload = {
-        subscription_plan: planType,
         subscription_tier: planType,
         subscription_status: planType === SubscriptionPlan.FREE_TRIAL ? 'trial' : 'active',
         subscription_end_date: formattedEndDate,
@@ -204,25 +203,20 @@ export const useSubscriptionActions = (
       console.log('Update successful, data:', data);
       
       // Create a clean array of updated users with explicit typing
-      const userUpdates: User[] = [];
-      for (const user of users) {
+      const updatedUsers = users.map(user => {
         if (user.id === userId) {
-          // Create the updated user object
-          userUpdates.push({
+          return {
             ...user,
-            subscription_plan: planType,
             subscription_tier: planType,
             subscription_status: planType === SubscriptionPlan.FREE_TRIAL ? 'trial' : 'active',
             subscription_end_date: formattedEndDate
-          });
-        } else {
-          // Keep unchanged users
-          userUpdates.push(user);
+          };
         }
-      }
+        return user;
+      });
       
       // Update state with the new array
-      setUsers(userUpdates);
+      setUsers(updatedUsers);
       
       toast({
         title: 'Subscription Updated',
@@ -279,7 +273,6 @@ export const useSubscriptionActions = (
       const { data, error } = await supabase
         .from('profiles')
         .update({
-          subscription_plan: SubscriptionPlan.PRO,
           subscription_tier: SubscriptionPlan.PRO,
           subscription_status: 'active',
           subscription_end_date: endDate.toISOString(),
@@ -297,26 +290,21 @@ export const useSubscriptionActions = (
         throw new Error('No data returned after update');
       }
       
-      // Create a clean array of updated users with explicit typing
-      const userUpdates: User[] = [];
-      for (const user of users) {
+      // Create a copy of users array to avoid reference issues
+      const updatedUsers = users.map(user => {
         if (user.id === userId) {
-          // Create the updated user object
-          userUpdates.push({
+          return {
             ...user,
-            subscription_plan: SubscriptionPlan.PRO,
             subscription_tier: SubscriptionPlan.PRO,
             subscription_status: 'active',
             subscription_end_date: endDate.toISOString()
-          });
-        } else {
-          // Keep unchanged users
-          userUpdates.push(user);
+          };
         }
-      }
+        return user;
+      });
       
       // Update state with the new array
-      setUsers(userUpdates);
+      setUsers(updatedUsers);
       
       toast({
         title: 'User Set to Pro Plan',
