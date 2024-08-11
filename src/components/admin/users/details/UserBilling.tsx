@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { format } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -25,8 +25,8 @@ import { SubscriptionPlan, PLAN_RULES } from '@/lib/plan_rules';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 import { useUserManagementData } from '../management/hooks/useUserManagementData';
-import { Badge } from '@/components/ui/badge';
 
 interface UserBillingProps {
   user: User;
@@ -41,25 +41,10 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     user.subscription_end_date ? new Date(user.subscription_end_date) : undefined
   );
   const [isActionLoading, setIsActionLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const { users, setUsers } = useUserManagementData();
   const { handleUpdateUserSubscription } = useSubscriptionActions(setIsActionLoading);
 
-  // Reset state when user changes or modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedPlan(
-        (user.subscription_tier as SubscriptionPlan) || SubscriptionPlan.FREE_TRIAL
-      );
-      // Set default date to 30 days from now if no existing end date
-      setSelectedDate(
-        user.subscription_end_date ? new Date(user.subscription_end_date) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      );
-      setErrorMessage(null);
-    }
-  }, [user, isOpen]);
-  
   // Get all available plan types
   const planOptions = Object.values(SubscriptionPlan);
   
@@ -79,60 +64,20 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     return plan ? PLAN_RULES[plan].displayName : planType || 'Free Plan';
   };
 
-  // Get plan badge color
-  const getPlanBadgeColor = (planType: string) => {
-    switch(planType) {
-      case SubscriptionPlan.FREE_TRIAL:
-        return 'bg-gray-200 text-gray-800';
-      case SubscriptionPlan.PREMIUM:
-        return 'bg-blue-100 text-blue-800';
-      case SubscriptionPlan.PRO:
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-200 text-gray-800';
-    }
-  };
-
   // Handle subscription update
   const handleUpdateSubscription = async () => {
-    if (!selectedDate) {
-      setErrorMessage("Please select an end date for the subscription.");
-      return;
-    }
+    if (!selectedDate) return;
     
-    setErrorMessage(null);
     setIsActionLoading(true);
-    
     try {
-      // Ensure the date is in the future
-      if (selectedDate <= new Date()) {
-        setErrorMessage("Please select a date in the future.");
-        setIsActionLoading(false);
-        return;
-      }
-      
-      // Make sure we have a valid subscription plan
-      if (!Object.values(SubscriptionPlan).includes(selectedPlan)) {
-        setErrorMessage(`Invalid plan type: ${selectedPlan}`);
-        setIsActionLoading(false);
-        return;
-      }
-      
-      const result = await handleUpdateUserSubscription(
+      await handleUpdateUserSubscription(
         user.id, 
         selectedPlan, 
         selectedDate, 
         users, 
         setUsers
       );
-      
-      if (result) {
-        setIsOpen(false);
-      } else {
-        setErrorMessage("Failed to update subscription. Please try again.");
-      }
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "An unknown error occurred");
+      setIsOpen(false);
     } finally {
       setIsActionLoading(false);
     }
@@ -142,28 +87,20 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Subscription Information</span>
-            <Badge 
-              className={cn("ml-2", getPlanBadgeColor(user.subscription_tier || ''))}
-            >
-              {getPlanDisplayName(user.subscription_tier || '')}
-            </Badge>
-          </CardTitle>
+          <CardTitle>Subscription Information</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div>
+              <p className="text-sm font-medium text-muted-foreground">Current Plan</p>
+              <p className="text-sm">
+                {getPlanDisplayName(user.subscription_tier || '')}
+              </p>
+            </div>
+            <div>
               <p className="text-sm font-medium text-muted-foreground">Status</p>
-              <p className="text-sm flex items-center">
-                {subscriptionStatus === 'Active' ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-1" />
-                    <span className="text-green-600">Active</span>
-                  </>
-                ) : (
-                  <span className="text-gray-500">Inactive</span>
-                )}
+              <p className="text-sm">
+                {subscriptionStatus}
               </p>
             </div>
             <div>
@@ -236,13 +173,6 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
                     </Popover>
                   </div>
                 </div>
-                
-                {errorMessage && (
-                  <div className="bg-red-50 p-3 rounded-md flex items-start gap-2 text-red-700 text-sm">
-                    <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    <span>{errorMessage}</span>
-                  </div>
-                )}
               </div>
               <DialogFooter>
                 <Button 
@@ -260,32 +190,11 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Subscription Plans</CardTitle>
+          <CardTitle>Billing History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {Object.values(SubscriptionPlan).map((plan) => (
-              <div key={plan} className={cn(
-                "p-4 border rounded-lg",
-                user.subscription_tier === plan ? "border-blue-500 bg-blue-50" : ""
-              )}>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-semibold">{PLAN_RULES[plan].displayName}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {plan === SubscriptionPlan.FREE_TRIAL 
-                        ? 'Limited features, 7-day access' 
-                        : plan === SubscriptionPlan.PREMIUM 
-                          ? 'Standard features, unlimited access' 
-                          : 'All features, priority support'}
-                    </p>
-                  </div>
-                  <Badge className={getPlanBadgeColor(plan)}>
-                    {user.subscription_tier === plan ? 'Current Plan' : ''}
-                  </Badge>
-                </div>
-              </div>
-            ))}
+          <div className="rounded-md bg-muted/50 p-6 text-center">
+            <p className="text-muted-foreground">No billing records available.</p>
           </div>
         </CardContent>
       </Card>

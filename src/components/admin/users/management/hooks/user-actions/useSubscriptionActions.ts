@@ -22,6 +22,8 @@ export const useSubscriptionActions = (
     if (setActionLoading) setActionLoading(true);
     
     try {
+      console.log(`Toggling user status: ${userId} to ${!isActive}`);
+      
       // Update the user's active status in the database
       const { data, error } = await supabase
         .from('profiles')
@@ -61,18 +63,20 @@ export const useSubscriptionActions = (
     }
   }, [toast]);
 
-  // Extend user subscription by specified number of days
+  // Toggle user subscription status with days
   const handleToggleUserSubscription = useCallback(async (
     userId: string, 
     days: number = 30, 
     users: User[],
     setUsers: (users: User[]) => void
   ) => {
-    if (!userId) return null;
+    if (!userId) return;
     
     if (setActionLoading) setActionLoading(true);
     
     try {
+      console.log(`Toggling user subscription: ${userId} for ${days} days`);
+      
       // Get current user
       const user = users.find(u => u.id === userId);
       if (!user) throw new Error('User not found');
@@ -95,11 +99,8 @@ export const useSubscriptionActions = (
       const { data, error } = await supabase
         .from('profiles')
         .update({ 
-          subscription_plan: SubscriptionPlan.PREMIUM, 
-          subscription_tier: SubscriptionPlan.PREMIUM,
-          subscription_status: 'active',
-          subscription_end_date: endDate.toISOString(),
-          updated_at: new Date().toISOString()
+          subscription_plan: 'premium', 
+          subscription_end_date: endDate.toISOString() 
         })
         .eq('id', userId)
         .select()
@@ -116,8 +117,7 @@ export const useSubscriptionActions = (
             ? { 
                 ...user, 
                 subscription_status: 'active',
-                subscription_plan: SubscriptionPlan.PREMIUM,
-                subscription_tier: SubscriptionPlan.PREMIUM,
+                subscription_tier: 'premium',
                 subscription_end_date: endDate.toISOString() 
               } 
             : user
@@ -137,7 +137,6 @@ export const useSubscriptionActions = (
         description: 'Failed to update subscription. Please try again.',
         variant: 'destructive',
       });
-      return null;
     } finally {
       if (setActionLoading) setActionLoading(false);
     }
@@ -151,58 +150,28 @@ export const useSubscriptionActions = (
     users: User[],
     setUsers: (users: User[]) => void
   ) => {
-    if (!userId) return null;
+    if (!userId) return;
     
     if (setActionLoading) setActionLoading(true);
     
     try {
-      console.log('Updating subscription with:', { userId, planType, endDate });
+      console.log(`Updating user subscription: ${userId} to plan ${planType} until ${endDate.toISOString()}`);
       
-      // Validate inputs
-      if (!endDate || isNaN(endDate.getTime())) {
-        throw new Error('Please select a valid end date');
-      }
-
-      // Ensure the end date is in the future (only the date part matters)
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      if (endDate < today) {
-        throw new Error('End date must be in the future');
-      }
-      
-      // Format end date to ISO string to avoid timezone issues
-      const formattedEndDate = endDate.toISOString();
-      
-      // Create update payload
-      const updatePayload = {
-        subscription_plan: planType,
-        subscription_tier: planType,
-        subscription_status: planType === SubscriptionPlan.FREE_TRIAL ? 'trial' : 'active',
-        subscription_end_date: formattedEndDate,
-        subscription_start_date: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      console.log('Update payload:', updatePayload);
-      
-      // Update subscription in the database
+      // Update subscription status in the database
       const { data, error } = await supabase
         .from('profiles')
-        .update(updatePayload)
+        .update({ 
+          subscription_plan: planType,
+          subscription_tier: planType,
+          subscription_end_date: endDate.toISOString() 
+        })
         .eq('id', userId)
-        .select();
+        .select()
+        .single();
       
       if (error) {
-        console.error('Supabase error:', error);
         throw error;
       }
-      
-      if (!data || data.length === 0) {
-        throw new Error('No data returned after update');
-      }
-      
-      console.log('Update successful, data:', data);
       
       // Update local state
       setUsers(
@@ -212,8 +181,7 @@ export const useSubscriptionActions = (
                 ...user, 
                 subscription_plan: planType,
                 subscription_tier: planType,
-                subscription_status: planType === SubscriptionPlan.FREE_TRIAL ? 'trial' : 'active',
-                subscription_end_date: formattedEndDate
+                subscription_end_date: endDate.toISOString() 
               } 
             : user
         )
@@ -224,21 +192,14 @@ export const useSubscriptionActions = (
         description: `User's subscription has been updated to ${planType} ending on ${endDate.toLocaleDateString()}.`,
       });
       
-      return data[0];
+      return data;
     } catch (error) {
       console.error('Error updating subscription:', error);
-      
-      let errorMessage = 'Failed to update subscription. Please try again.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      
       toast({
         title: 'Error',
-        description: errorMessage,
+        description: 'Failed to update subscription. Please try again.',
         variant: 'destructive',
       });
-      return null;
     } finally {
       if (setActionLoading) setActionLoading(false);
     }

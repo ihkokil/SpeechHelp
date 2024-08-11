@@ -1,7 +1,7 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { corsHeaders } from '../_shared/cors.ts';
-import Stripe from "https://esm.sh/stripe@13.2.0?target=deno";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.8?target=deno";
+import Stripe from 'https://esm.sh/stripe@13.2.0?target=deno';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8?target=deno';
 
 // Helper function to log with timestamps
 const log = (message: string, data?: any) => {
@@ -39,58 +39,6 @@ const stripe = new Stripe(stripeSecretKey, {
 // Initialize Supabase client with service role key
 log('Initializing Supabase client');
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-// Helper function to determine plan type from Stripe product metadata or price
-const determinePlanType = async (subscription: any): Promise<string> => {
-  try {
-    // Default to free_trial if we can't determine
-    let planType = 'free_trial';
-    
-    if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
-      // First try to get it from product metadata
-      const productId = subscription.items.data[0].price.product as string;
-      const product = await stripe.products.retrieve(productId);
-      
-      if (product.metadata && product.metadata.plan_type) {
-        planType = product.metadata.plan_type.toLowerCase();
-        log(`Found plan type from product metadata: ${planType}`);
-        return planType;
-      }
-      
-      // If not in metadata, try to determine from the price or product name
-      if (product.name) {
-        const name = product.name.toLowerCase();
-        if (name.includes('pro')) {
-          return 'pro';
-        } else if (name.includes('premium')) {
-          return 'premium';
-        } else if (name.includes('free') || name.includes('trial')) {
-          return 'free_trial';
-        }
-      }
-      
-      // Try to determine from price
-      const price = await stripe.prices.retrieve(subscription.items.data[0].price.id);
-      const amount = price.unit_amount || 0;
-      
-      // Determine plan type based on price
-      if (amount <= 0) {
-        planType = 'free_trial';
-      } else if (amount <= 1500) {
-        planType = 'premium';
-      } else {
-        planType = 'pro';
-      }
-      
-      log(`Determined plan type from price: ${planType} (amount: ${amount})`);
-    }
-    
-    return planType;
-  } catch (error) {
-    log('Error determining plan type:', error);
-    return 'free_trial'; // Default fallback
-  }
-};
 
 serve(async (req) => {
 	// Log incoming request
@@ -157,7 +105,6 @@ serve(async (req) => {
 				const userId = session.client_reference_id;
 				const customerId = session.customer;
 				const subscriptionId = session.subscription;
-				const planType = session.metadata?.plan || 'premium';
 
 				if (!userId) {
 					log('Warning: No userId (client_reference_id) found in session');
@@ -167,32 +114,12 @@ serve(async (req) => {
 					// Update user's subscription in the database
 					log(`Updating user ${userId} subscription data in profiles table`);
 
-					// Get subscription details to get proper end date
-					let subscriptionEndDate = null;
-					let determinedPlanType = planType;
-					
-					if (subscriptionId) {
-						try {
-							const subscriptionDetails = await stripe.subscriptions.retrieve(subscriptionId);
-							subscriptionEndDate = new Date(subscriptionDetails.current_period_end * 1000).toISOString();
-							log('Retrieved subscription end date:', subscriptionEndDate);
-							
-							// Get plan type from subscription
-							determinedPlanType = await determinePlanType(subscriptionDetails);
-							log('Determined plan type:', determinedPlanType);
-						} catch (subError) {
-							log('Error retrieving subscription details:', subError);
-						}
-					}
-
 					const updateData = {
 						stripe_customer_id: customerId,
 						stripe_subscription_id: subscriptionId,
-						subscription_plan: determinedPlanType,
-						subscription_tier: determinedPlanType,
-						subscription_status: 'active',
-						subscription_start_date: new Date().toISOString(),
-						subscription_end_date: subscriptionEndDate,
+						subscription_plan: session.metadata?.plan || null,
+						subscription_start_date: session.created,
+						subscription_end_date: session.current_period_end,
 						is_active: true,
 					};
 
@@ -229,7 +156,6 @@ serve(async (req) => {
 
 				// Get the customer ID from the subscription
 				const customerId = subscription.customer;
-				const subscriptionEndDate = new Date(subscription.current_period_end * 1000).toISOString();
 
 				// Update the subscription status
 				log(`Finding user with Stripe customer ID: ${customerId}`);
@@ -251,19 +177,12 @@ serve(async (req) => {
 				const userId = users[0].id;
 				log(`Found user ${userId} with customer ID ${customerId}`);
 
-				// Determine plan type from subscription
-				const planType = await determinePlanType(subscription);
-				log(`Plan type determined for subscription update: ${planType}`);
-
 				// Update subscription status based on the Stripe status
-				log(`Updating subscription status to '${subscription.status}' and plan to '${planType}' for user ${userId}`);
+				log(`Updating subscription status to '${subscription.status}' for user ${userId}`);
 				const { error: updateError } = await supabase
 					.from('profiles')
 					.update({
 						subscription_status: subscription.status,
-						subscription_plan: planType,
-						subscription_tier: planType,
-						subscription_end_date: subscriptionEndDate,
 						updated_at: new Date().toISOString(),
 					})
 					.eq('id', userId);
@@ -311,8 +230,6 @@ serve(async (req) => {
 					.from('profiles')
 					.update({
 						subscription_status: 'canceled',
-						subscription_plan: 'free_trial',
-						subscription_tier: 'free_trial',
 						updated_at: new Date().toISOString(),
 					})
 					.eq('id', userId);
@@ -352,4 +269,4 @@ serve(async (req) => {
 			}
 		);
 	}
-});
+}); 
