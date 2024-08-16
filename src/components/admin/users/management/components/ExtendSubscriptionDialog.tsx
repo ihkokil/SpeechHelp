@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
@@ -25,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { User } from '../../../types';
+import { User } from '@/components/admin/users/types';
 import { SubscriptionPlan, PLAN_RULES } from '@/lib/plan_rules';
 
 interface ExtendSubscriptionDialogProps {

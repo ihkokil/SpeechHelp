@@ -1,9 +1,8 @@
-
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
 import { SearchToolbar } from '@/components/admin/users/management/SearchToolbar';
-import { UserTable } from '@/components/admin/users/management/UserTable';
+import UserTable from '@/components/admin/users/management/UserTable';
 import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
@@ -99,42 +98,23 @@ const UserManagement = () => {
         </CardHeader>
         <CardContent>
           <SearchToolbar 
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
+            searchQuery={searchTerm}
+            onSearchChange={setSearchTerm}
             isLoading={isLoading}
             fetchUsers={fetchUsers}
-            selectedUsers={selectedUsers}
+            selectedCount={selectedUsers.length}
             isActionLoading={isActionLoading}
-            setIsDeleteDialogOpen={setIsDeleteDialogOpen}
-            setIsAddUserDialogOpen={setIsAddUserDialogOpen}
+            onDeleteSelected={() => setIsDeleteDialogOpen(true)}
+            onAddUser={() => setIsAddUserDialogOpen(true)}
           />
           
-          <UserTable 
-            users={filteredUsers}
-            isLoading={isLoading}
-            selectedUsers={selectedUsers}
-            toggleUserSelection={toggleUserSelection}
-            toggleAllUsers={toggleAllUsers}
-            handleViewUserDetails={handleViewUserDetails}
-            handleManagePermissions={handleManagePermissions}
-            handleToggleUserStatus={handleToggleUserStatus}
-            handleToggleUserSubscription={handleToggleUserSubscription}
-            setSelectedUsers={setSelectedUsers}
-            setIsDeleteDialogOpen={setIsDeleteDialogOpen}
-            searchTerm={searchTerm}
-            handleBulkDelete={handleBulkDelete}
-            handleBulkActivate={handleBulkActivate}
-            handleBulkDeactivate={handleBulkDeactivate}
-            handleDeleteUser={handleDeleteUser}
-            handleEditUser={handleEditUser}
-            handleSendEmail={handleSendEmail}
-          />
+          <UserTable />
         </CardContent>
       </Card>
       
       <DeleteUserDialog 
-        isOpen={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleDeleteUsers}
         isLoading={isActionLoading}
         selectedCount={selectedUsers.length}

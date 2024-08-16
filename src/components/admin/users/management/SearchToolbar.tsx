@@ -20,6 +20,8 @@ interface SearchToolbarProps {
   onDeleteSelected: () => void;
   onRefresh: () => void;
   isLoading: boolean;
+  isActionLoading?: boolean;
+  onAddUser?: () => void;
 }
 
 export const SearchToolbar: React.FC<SearchToolbarProps> = ({
@@ -28,7 +30,9 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
   selectedCount,
   onDeleteSelected,
   onRefresh,
-  isLoading
+  isLoading,
+  isActionLoading,
+  onAddUser
 }) => {
   return (
     <div className="mb-4 flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -65,6 +69,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
               variant="outline" 
               size="sm" 
               onClick={onDeleteSelected}
+              disabled={isActionLoading}
             >
               <UserMinus className="mr-2 h-4 w-4" />
               Delete
@@ -86,7 +91,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
           <FileUp className="mr-2 h-4 w-4" />
           Import
         </Button>
-        <Button>
+        <Button onClick={onAddUser}>
           <UserPlus className="mr-2 h-4 w-4" />
           Add User
         </Button>

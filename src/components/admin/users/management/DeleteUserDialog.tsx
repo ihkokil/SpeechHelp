@@ -9,18 +9,20 @@ interface DeleteUserDialogProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  users: User[];
+  users?: User[];
   isLoading: boolean;
+  selectedCount?: number;
 }
 
 export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
   open,
   onClose,
   onConfirm,
-  users,
-  isLoading
+  users = [],
+  isLoading,
+  selectedCount = 0
 }) => {
-  const userCount = users.length;
+  const userCount = users.length || selectedCount;
   const isSingleUser = userCount === 1;
 
   return (

@@ -89,10 +89,6 @@ const UserTable = () => {
     userContext.setUsers(users);
   }, [users]);
   
-  // if (error) {
-  //   return <div className="flex justify-center p-4">Error loading users: {error.message}</div>;
-  // }
-
   // Create a function to render table states (loading, empty, error)
   const renderTableStates = () => {
     if (isLoading) return <LoadingState />;
@@ -142,9 +138,9 @@ const UserTable = () => {
       
       {/* User Details Drawer */}
       <UserDetailsDrawer 
-        user={selectedUser}
-        open={isDetailsOpen}
-        onClose={handleCloseUserDetails}
+        user={selectedUser} 
+        open={isDetailsOpen} 
+        onClose={handleCloseUserDetails} 
       />
       
       {/* Delete User Dialog */}
@@ -162,18 +158,18 @@ const UserTable = () => {
       {/* Admin Permissions Dialog */}
       <AdminPermissionsDialog 
         user={selectedUser}
-        isOpen={isPermissionsDialogOpen}
-        onClose={() => setIsPermissionsDialogOpen(false)}
-        onSave={updatedUser => handlePermissionsUpdated(updatedUser, users, setUsers)}
+        open={isPermissionsDialogOpen}
+        onOpenChange={setIsPermissionsDialogOpen}
+        onPermissionsUpdated={(updatedUser) => handlePermissionsUpdated(updatedUser, users, setUsers)}
       />
 
       {/* Subscription Dialog */}
       <ExtendSubscriptionDialog
         isOpen={isSubscriptionDialogOpen}
         onClose={() => setIsSubscriptionDialogOpen(false)}
-        onConfirm={(userId, planType, endDate) => 
-          handleSubscriptionUpdated(userId, planType, endDate, users, setUsers)
-        }
+        onConfirm={async (userId, planType, endDate) => {
+          return handleSubscriptionUpdated(userId, planType, endDate, users, setUsers);
+        }}
         user={selectedUser}
         isLoading={isActionLoading}
       />
