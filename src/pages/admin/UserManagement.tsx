@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -101,7 +102,7 @@ const UserManagement = () => {
             searchQuery={searchTerm}
             onSearchChange={setSearchTerm}
             isLoading={isLoading}
-            fetchUsers={fetchUsers}
+            onRefresh={fetchUsers}
             selectedCount={selectedUsers.length}
             isActionLoading={isActionLoading}
             onDeleteSelected={() => setIsDeleteDialogOpen(true)}
