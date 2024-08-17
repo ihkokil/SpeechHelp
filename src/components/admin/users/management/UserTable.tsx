@@ -103,3 +103,6 @@ export const UserTable: React.FC<UserTableProps> = ({
     </div>
   );
 };
+
+// Add default export for backward compatibility
+export default UserTable;

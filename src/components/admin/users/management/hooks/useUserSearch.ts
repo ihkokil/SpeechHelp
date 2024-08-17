@@ -4,6 +4,8 @@ import { User } from '../../types';
 
 export const useUserSearch = (users: User[]) => {
   const [searchTerm, setSearchTerm] = useState('');
+  // For backward compatibility with some components using searchQuery
+  const [searchQuery, setSearchQuery] = useState('');
   
   const filterUsers = useCallback((users: User[], term: string) => {
     if (!term.trim()) return users;
@@ -19,6 +21,16 @@ export const useUserSearch = (users: User[]) => {
     });
   }, []);
   
+  // Update searchQuery whenever searchTerm changes
+  useCallback(() => {
+    setSearchQuery(searchTerm);
+  }, [searchTerm]);
+
+  // Update searchTerm whenever searchQuery changes
+  useCallback(() => {
+    setSearchTerm(searchQuery);
+  }, [searchQuery]);
+  
   const filteredUsers = useMemo(() => {
     return filterUsers(users, searchTerm);
   }, [users, searchTerm, filterUsers]);
@@ -26,6 +38,8 @@ export const useUserSearch = (users: User[]) => {
   return {
     searchTerm,
     setSearchTerm,
+    searchQuery,
+    setSearchQuery,
     filterUsers,
     filteredUsers
   };
