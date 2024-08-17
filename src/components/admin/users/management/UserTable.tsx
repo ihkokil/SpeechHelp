@@ -1,123 +1,80 @@
 
-import React from 'react';
-import { useUserManagementData } from './hooks/useUserManagementData';
-import { useUserSearch } from './hooks/useUserSearch';
-import { useUserSelection } from './hooks/useUserSelection';
-import { useFetchUsers } from './hooks/useFetchUsers';
-import { useUserActions } from './hooks/useUserActions';
-import { useUserManagementUIState } from './hooks/useUserManagementUIState';
+import React, { useMemo } from 'react';
 import { Table, TableBody } from '@/components/ui/table';
-import { SearchToolbar } from './SearchToolbar';
+import { User } from '../types';
+import { useUserSearch } from './hooks/useUserSearch';
 import UserTableHeader from './components/UserTableHeader';
 import UserTableRow from './components/UserTableRow';
 import { LoadingState, EmptyState } from './components/UserTableStates';
-import UserDetailsDrawer from '../details/UserDetailsDrawer';
-import { DeleteUserDialog } from './DeleteUserDialog';
-import AdminPermissionsDialog from '../AdminPermissionsDialog';
-import ExtendSubscriptionDialog from './components/ExtendSubscriptionDialog';
 
-const UserTable = () => {
-  // Fetch and manage users data
-  const { users, setUsers, isLoading, error, fetchUsers } = useFetchUsers();
-  const { filteredUsers, searchTerm, setSearchTerm } = useUserSearch(users);
-  const { 
-    selectedUsers, 
-    toggleUserSelection, 
-    toggleAllUsers, 
-    isAllSelected 
-  } = useUserSelection(filteredUsers);
-  
-  // Custom hook for UI state management
-  const { 
-    isDeleteDialogOpen, 
-    setIsDeleteDialogOpen,
-    isDetailsOpen, 
-    setIsDetailsOpen,
-    isPermissionsDialogOpen,
-    setIsPermissionsDialogOpen,
-    selectedUser,
-    setSelectedUser
-  } = useUserManagementUIState();
-  
-  // User actions hook
-  const { 
-    handleDeleteUsers, 
-    handleDeleteUser,
-    handleViewUserDetails,
-    handleCloseUserDetails,
-    handleManagePermissions,
-    handlePermissionsUpdated,
-    handleToggleUserStatus,
-    handleOpenSubscriptionDialog,
-    handleSubscriptionUpdated,
-    isActionLoading,
-    isSubscriptionDialogOpen,
-    setIsSubscriptionDialogOpen
-  } = useUserActions();
+interface UserTableProps {
+  users: User[];
+  isLoading: boolean;
+  selectedUsers: User[];
+  toggleUserSelection: (user: User) => void;
+  toggleAllUsers: (filteredUsers: User[]) => void;
+  handleViewUserDetails: (user: User) => void;
+  handleManagePermissions: (user: User) => void;
+  handleToggleUserStatus: (userId: string, isActive: boolean) => void;
+  handleToggleUserSubscription: (userId: string) => void;
+  setSelectedUsers: (users: User[]) => void;
+  setIsDeleteDialogOpen: (isOpen: boolean) => void;
+  searchTerm: string;
+  handleBulkDelete: () => void;
+  handleBulkActivate: () => void;
+  handleBulkDeactivate: () => void;
+  handleDeleteUser: (userId: string) => void;
+  handleEditUser?: (user: User) => void;
+  handleSendEmail?: (user: User) => void;
+}
 
-  // Global user context
-  const userContext = useUserManagementData();
+export const UserTable: React.FC<UserTableProps> = ({ 
+  users, 
+  isLoading, 
+  selectedUsers, 
+  toggleUserSelection, 
+  toggleAllUsers, 
+  handleViewUserDetails, 
+  handleManagePermissions, 
+  handleToggleUserStatus, 
+  handleToggleUserSubscription, 
+  setSelectedUsers, 
+  setIsDeleteDialogOpen,
+  searchTerm,
+  handleBulkDelete,
+  handleDeleteUser,
+  handleEditUser,
+  handleSendEmail
+}) => {
+  console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
-  // Clear selection when users change
-  React.useEffect(() => {
-    // Clear selectedUsers when users change
-    // toggleAllUsers(false);
-  }, [users]);
-  
-  // Handle deleting multiple users
-  const handleConfirmDelete = async () => {
-    await handleDeleteUsers(
-      selectedUser ? [selectedUser] : selectedUsers, 
-      users, 
-      setUsers
-    );
-    setIsDeleteDialogOpen(false);
-    setSelectedUser(null);
-  };
-  
-  // Handle deleting a single user from the action menu
-  const handleDeleteSingleUser = (userId: string) => {
-    const user = users.find(u => u.id === userId);
-    if (user) {
-      setSelectedUser(user);
-      setIsDeleteDialogOpen(true);
-    }
-  };
-  
-  // Set current context for all hooks
-  React.useEffect(() => {
-    userContext.setUsers(users);
-  }, [users]);
-  
-  // Create a function to render table states (loading, empty, error)
-  const renderTableStates = () => {
-    if (isLoading) return <LoadingState />;
-    if (filteredUsers.length === 0) return <EmptyState />;
-    return null;
+  const { filterUsers } = useUserSearch(users);
+  const filteredUsers = useMemo(() => filterUsers(users, searchTerm), [users, searchTerm, filterUsers]);
+
+  const isAllSelected = filteredUsers.length > 0 && 
+    selectedUsers.length === filteredUsers.length &&
+    filteredUsers.every(user => selectedUsers.some(selectedUser => selectedUser.id === user.id));
+
+  const handleToggleAll = () => {
+    toggleAllUsers(filteredUsers);
   };
 
   return (
-    <div className="space-y-4">
-      <SearchToolbar 
-        searchQuery={searchTerm}
-        onSearchChange={setSearchTerm}
-        selectedCount={selectedUsers.length}
-        onDeleteSelected={() => setIsDeleteDialogOpen(true)}
-        onRefresh={fetchUsers}
-        isLoading={isLoading}
-      />
-      
-      <div className="rounded-md border">
-        <Table>
-          <UserTableHeader 
-            isAllSelected={isAllSelected}
-            onToggleSelectAll={() => toggleAllUsers()}
-            disabled={isLoading || filteredUsers.length === 0}
-            selectedCount={selectedUsers.length}
-          />
-          <TableBody>
-            {renderTableStates()}
-            {!isLoading && filteredUsers.map(user => (
+    <div className="rounded-md border">
+      <Table>
+        <UserTableHeader 
+          onToggleAll={handleToggleAll}
+          isAllSelected={isAllSelected}
+          disabled={isLoading || filteredUsers.length === 0}
+          selectedCount={selectedUsers.length}
+        />
+        <TableBody>
+          {isLoading ? (
+            <LoadingState />
+          ) : filteredUsers.length === 0 ? (
+            <EmptyState />
+          ) : (
+            filteredUsers.map((user) => (
               <UserTableRow
                 key={user.id}
                 user={user}
@@ -125,56 +82,24 @@ const UserTable = () => {
                 onToggleSelection={toggleUserSelection}
                 onViewDetails={handleViewUserDetails}
                 onManagePermissions={handleManagePermissions}
-                onToggleUserActive={(userId, isActive) => 
-                  handleToggleUserStatus(userId, isActive, users, setUsers)
-                }
-                onExtendSubscription={handleOpenSubscriptionDialog}
-                onDeleteUser={handleDeleteSingleUser}
+                onToggleUserActive={handleToggleUserStatus}
+                onExtendSubscription={handleToggleUserSubscription}
+                onDeleteUser={handleDeleteUser}
+                onEditUser={handleEditUser}
+                onSendEmail={handleSendEmail}
               />
-            ))}
-          </TableBody>
-        </Table>
+            ))
+          )}
+        </TableBody>
+      </Table>
+      <div className="mt-4 flex justify-between text-sm text-gray-500 p-4">
+        <div>Showing {filteredUsers.length} of {users.length} users</div>
+        <div>
+          {selectedUsers.length > 0 && (
+            <span>{selectedUsers.length} users selected</span>
+          )}
+        </div>
       </div>
-      
-      {/* User Details Drawer */}
-      <UserDetailsDrawer 
-        user={selectedUser} 
-        open={isDetailsOpen} 
-        onClose={handleCloseUserDetails} 
-      />
-      
-      {/* Delete User Dialog */}
-      <DeleteUserDialog
-        open={isDeleteDialogOpen}
-        onClose={() => {
-          setIsDeleteDialogOpen(false);
-          setSelectedUser(null);
-        }}
-        onConfirm={handleConfirmDelete}
-        users={selectedUser ? [selectedUser] : selectedUsers}
-        isLoading={isActionLoading}
-      />
-      
-      {/* Admin Permissions Dialog */}
-      <AdminPermissionsDialog 
-        user={selectedUser}
-        open={isPermissionsDialogOpen}
-        onOpenChange={setIsPermissionsDialogOpen}
-        onPermissionsUpdated={(updatedUser) => handlePermissionsUpdated(updatedUser, users, setUsers)}
-      />
-
-      {/* Subscription Dialog */}
-      <ExtendSubscriptionDialog
-        isOpen={isSubscriptionDialogOpen}
-        onClose={() => setIsSubscriptionDialogOpen(false)}
-        onConfirm={async (userId, planType, endDate) => {
-          return handleSubscriptionUpdated(userId, planType, endDate, users, setUsers);
-        }}
-        user={selectedUser}
-        isLoading={isActionLoading}
-      />
     </div>
   );
 };
-
-export default UserTable;

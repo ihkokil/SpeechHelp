@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { SubscriptionPlan } from '@/lib/plan_rules';
 
 export const useIndividualUserActions = () => {
   const { toast } = useToast();
@@ -99,7 +98,7 @@ export const useIndividualUserActions = () => {
     }
   }, [toast]);
 
-  // Toggle user subscription with days
+  // Toggle user subscription
   const handleToggleUserSubscription = useCallback(async (
     userId: string, 
     days: number = 30, 
@@ -138,7 +137,7 @@ export const useIndividualUserActions = () => {
       const { error } = await supabase
         .from('profiles')
         .update({ 
-          subscription_tier: 'premium', 
+          subscription_plan: 'premium', 
           subscription_end_date: endDate.toISOString() 
         })
         .eq('id', userId);
@@ -149,19 +148,18 @@ export const useIndividualUserActions = () => {
       
       // Update local state if setUsers is provided
       if (setUsers && users.length > 0) {
-        const updatedUsers = [...users];
-        for (let i = 0; i < updatedUsers.length; i++) {
-          if (updatedUsers[i].id === userId) {
-            updatedUsers[i] = {
-              ...updatedUsers[i],
-              subscription_status: 'active',
-              subscription_tier: 'premium',
-              subscription_end_date: endDate.toISOString()
-            };
-            break;
-          }
-        }
-        setUsers(updatedUsers);
+        setUsers(
+          users.map(user => 
+            user.id === userId 
+              ? { 
+                  ...user, 
+                  subscription_status: 'active',
+                  subscription_tier: 'premium',
+                  subscription_end_date: endDate.toISOString() 
+                } 
+              : user
+          )
+        );
       }
       
       toast({
@@ -181,74 +179,10 @@ export const useIndividualUserActions = () => {
     }
   }, [toast]);
 
-  // Update user subscription with custom plan and end date
-  const handleUpdateUserSubscription = useCallback(async (
-    userId: string,
-    planType: SubscriptionPlan,
-    endDate: Date,
-    users: User[] = [],
-    setUsers: ((users: User[]) => void) | null = null
-  ) => {
-    if (!userId) return;
-    
-    setIsActionLoading(true);
-    
-    try {
-      console.log(`Updating user subscription: ${userId} to plan ${planType} until ${endDate.toISOString()}`);
-      
-      // Update subscription status in the database
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          subscription_tier: planType,
-          subscription_end_date: endDate.toISOString() 
-        })
-        .eq('id', userId);
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Update local state if setUsers is provided
-      if (setUsers && users.length > 0) {
-        const updatedUsers = [...users];
-        for (let i = 0; i < updatedUsers.length; i++) {
-          if (updatedUsers[i].id === userId) {
-            updatedUsers[i] = {
-              ...updatedUsers[i],
-              subscription_tier: planType,
-              subscription_end_date: endDate.toISOString()
-            };
-            break;
-          }
-        }
-        setUsers(updatedUsers);
-      }
-      
-      toast({
-        title: 'Subscription Updated',
-        description: `User's subscription has been updated to ${planType} ending on ${endDate.toLocaleDateString()}.`,
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('Error updating subscription:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update subscription. Please try again.',
-        variant: 'destructive',
-      });
-      throw error;
-    } finally {
-      setIsActionLoading(false);
-    }
-  }, [toast]);
-
   return {
     isActionLoading,
     handleDeleteUser,
     handleToggleUserStatus,
-    handleToggleUserSubscription,
-    handleUpdateUserSubscription
+    handleToggleUserSubscription
   };
 };

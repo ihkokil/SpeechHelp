@@ -14,7 +14,7 @@ interface UserTableRowProps {
   onViewDetails: (user: User) => void;
   onManagePermissions: (user: User) => void;
   onToggleUserActive: (userId: string, isActive: boolean) => void;
-  onExtendSubscription: (user: User) => void;
+  onExtendSubscription: (userId: string) => void;
   onDeleteUser: (userId: string) => void;
   onEditUser?: (user: User) => void;
   onSendEmail?: (user: User) => void;

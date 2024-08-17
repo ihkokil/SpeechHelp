@@ -3,51 +3,42 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
-import { User } from '../types';
 
 interface DeleteUserDialogProps {
-  open: boolean;
-  onClose: () => void;
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
   onConfirm: () => void;
-  users?: User[];
   isLoading: boolean;
-  selectedCount?: number;
+  selectedCount: number;
 }
 
 export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
-  open,
-  onClose,
+  isOpen,
+  onOpenChange,
   onConfirm,
-  users = [],
   isLoading,
-  selectedCount = 0
+  selectedCount
 }) => {
-  const userCount = users.length || selectedCount;
-  const isSingleUser = userCount === 1;
-
   return (
-    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isSingleUser ? 'Delete User' : 'Delete Users'}</DialogTitle>
+          <DialogTitle>Delete Users</DialogTitle>
           <DialogDescription>
-            {isSingleUser
-              ? `Are you sure you want to delete ${users[0]?.email || 'this user'}? This action cannot be undone.`
-              : `Are you sure you want to delete ${userCount} selected users? This action cannot be undone.`
-            }
+            Are you sure you want to delete {selectedCount} selected users? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button 
             variant="outline" 
-            onClick={onClose}
+            onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
             Cancel
           </Button>
           <Button 
             variant="destructive" 
-            onClick={onConfirm}
+            onClick={() => onConfirm()}
             disabled={isLoading}
           >
             {isLoading ? (
