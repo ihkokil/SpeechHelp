@@ -168,7 +168,7 @@ const UserManagement = () => {
           user={selectedUser}
           open={isPermissionsDialogOpen}
           onOpenChange={setIsPermissionsDialogOpen}
-          onPermissionsUpdated={(updatedUser) => handlePermissionsUpdated(updatedUser)}
+          onPermissionsUpdated={handlePermissionsUpdated}
         />
       )}
     </div>

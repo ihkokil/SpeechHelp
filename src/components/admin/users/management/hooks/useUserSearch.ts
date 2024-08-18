@@ -10,7 +10,7 @@ export const useUserSearch = (users: User[]) => {
     
     const lowerTerm = term.toLowerCase();
     return users.filter(user => {
-      const name = user.user_metadata.name || user.user_metadata.full_name || '';
+      const name = user.user_metadata?.name || user.user_metadata?.full_name || '';
       const email = user.email || '';
       return (
         name.toLowerCase().includes(lowerTerm) ||
