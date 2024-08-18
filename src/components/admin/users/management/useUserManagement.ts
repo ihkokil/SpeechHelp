@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef } from 'react';
 import { useUserManagementData } from './hooks/useUserManagementData';
 import { useUserSearch } from './hooks/useUserSearch';
@@ -7,7 +6,6 @@ import { useUserActions } from './hooks/useUserActions';
 import { useUserManagementUIState } from './hooks/useUserManagementUIState';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
-import { SubscriptionPlan } from '@/lib/plan_rules';
 
 export const useUserManagement = () => {
   console.log("Initializing useUserManagement");
@@ -63,10 +61,6 @@ export const useUserManagement = () => {
     handleBulkDeactivate: baseHandleBulkDeactivate,
     handleToggleUserStatus: baseHandleToggleUserStatus,
     handleToggleUserSubscription: baseHandleToggleUserSubscription,
-    handleManageSubscription: baseHandleManageSubscription,
-    handleExtendSubscription: baseHandleExtendSubscription,
-    isExtendSubscriptionDialogOpen,
-    setIsExtendSubscriptionDialogOpen,
     
     // States
     isActionLoading
@@ -108,22 +102,6 @@ export const useUserManagement = () => {
     setIsEditUserDialogOpen(true);
   }, [setSelectedUser, setIsEditUserDialogOpen]);
   
-  // Handle Manage Subscription
-  const handleManageSubscription = useCallback((userId: string) => {
-    console.log("useUserManagement: Manage subscription called for user:", userId);
-    const userToUpdate = users.find(user => user.id === userId);
-    if (userToUpdate) {
-      setSelectedUser(userToUpdate);
-      setIsExtendSubscriptionDialogOpen(true);
-    }
-  }, [users, setSelectedUser, setIsExtendSubscriptionDialogOpen]);
-  
-  // Handle Extend Subscription
-  const handleExtendSubscription = useCallback((userId: string, days: number, plan: SubscriptionPlan) => {
-    console.log("useUserManagement: Extend subscription for user:", userId, "days:", days, "plan:", plan);
-    return baseHandleExtendSubscription(userId, days, plan, users, setUsers);
-  }, [baseHandleExtendSubscription, users, setUsers]);
-  
   // Handle Send Email
   const handleSendEmail = useCallback((user: User) => {
     console.log("useUserManagement: Send email called for user:", user.id);
@@ -145,8 +123,8 @@ export const useUserManagement = () => {
   
   const handleToggleUserSubscription = useCallback((userId: string) => {
     console.log("useUserManagement: Toggle subscription called for user:", userId);
-    handleManageSubscription(userId);
-  }, [handleManageSubscription]);
+    return baseHandleToggleUserSubscription(userId, 30, users, setUsers);
+  }, [baseHandleToggleUserSubscription, users, setUsers]);
   
   const handleDeleteUsers = useCallback(() => {
     baseHandleDeleteUsers(selectedUsers, users, setUsers);
@@ -215,8 +193,6 @@ export const useUserManagement = () => {
     setIsEditUserDialogOpen,
     isEmailDialogOpen,
     setIsEmailDialogOpen,
-    isExtendSubscriptionDialogOpen,
-    setIsExtendSubscriptionDialogOpen,
     filteredUsers,
     
     // Functions
@@ -236,8 +212,6 @@ export const useUserManagement = () => {
     handleBulkDeactivate,
     handleEditUser,
     handleSendEmail,
-    handleManageSubscription,
-    handleExtendSubscription,
     cleanup,
     addUser
   };
