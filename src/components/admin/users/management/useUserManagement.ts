@@ -7,6 +7,7 @@ import { useUserActions } from './hooks/useUserActions';
 import { useUserManagementUIState } from './hooks/useUserManagementUIState';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
+import { usePermissionActions } from './hooks/user-actions/usePermissionActions';
 
 export const useUserManagement = () => {
   console.log("Initializing useUserManagement");
@@ -53,6 +54,9 @@ export const useUserManagement = () => {
     clearSelection
   } = useUserSelection();
   
+  // Get permission actions
+  const { handlePermissionsUpdated: baseHandlePermissionsUpdated } = usePermissionActions();
+  
   // Get all user actions and their states from the useUserActions hook
   const {
     // Actions
@@ -88,13 +92,12 @@ export const useUserManagement = () => {
     setIsPermissionsDialogOpen(true);
   }, [setSelectedUser, setIsPermissionsDialogOpen]);
   
+  // Fix the parameter signature to match how it's used in AdminPermissionsDialog.tsx
   const handlePermissionsUpdated = useCallback((updatedUser: User) => {
     console.log("useUserManagement: Permissions updated for user:", updatedUser.id);
-    setUsers(prevUsers => 
-      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
-    );
+    baseHandlePermissionsUpdated(updatedUser, users, setUsers);
     setIsPermissionsDialogOpen(false);
-  }, [setUsers, setIsPermissionsDialogOpen]);
+  }, [baseHandlePermissionsUpdated, users, setUsers, setIsPermissionsDialogOpen]);
   
   // Handle Edit User
   const handleEditUser = useCallback((user: User) => {
