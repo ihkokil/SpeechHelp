@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef } from 'react';
 import { useUserManagementData } from './hooks/useUserManagementData';
 import { useUserSearch } from './hooks/useUserSearch';
@@ -10,11 +9,9 @@ import { useToast } from '@/hooks/use-toast';
 import { usePermissionActions } from './hooks/user-actions/usePermissionActions';
 
 export const useUserManagement = () => {
-  console.log("Initializing useUserManagement");
   const isMounted = useRef(true);
   const { toast } = useToast();
 
-  // Get user data operations
   const {
     users,
     setUsers,
@@ -22,8 +19,7 @@ export const useUserManagement = () => {
     fetchUsers,
     addUser
   } = useUserManagementData();
-  
-  // Get UI state management
+
   const {
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
@@ -41,104 +37,78 @@ export const useUserManagement = () => {
     isEmailDialogOpen,
     setIsEmailDialogOpen
   } = useUserManagementUIState();
-  
-  // User search functionality
+
   const { searchTerm, setSearchTerm, filteredUsers } = useUserSearch(users);
-  
-  // User selection functionality
-  const { 
-    selectedUsers, 
-    setSelectedUsers, 
+
+  const {
+    selectedUsers,
+    setSelectedUsers,
     toggleUserSelection,
     toggleAllUsers,
     clearSelection
   } = useUserSelection();
-  
-  // Get permission actions with the dialog setter
-  const { handlePermissionsUpdated: baseHandlePermissionsUpdated } = usePermissionActions(setIsPermissionsDialogOpen);
-  
-  // Get all user actions and their states from the useUserActions hook
+
+  const { handlePermissionsUpdated: baseHandlePermissionsUpdated } = usePermissionActions();
+
   const {
-    // Actions
     handleDeleteUsers: baseHandleDeleteUsers,
     handleBulkDelete: baseHandleBulkDelete,
     handleBulkActivate: baseHandleBulkActivate,
     handleBulkDeactivate: baseHandleBulkDeactivate,
     handleToggleUserStatus: baseHandleToggleUserStatus,
     handleToggleUserSubscription: baseHandleToggleUserSubscription,
-    
-    // States
     isActionLoading
   } = useUserActions();
-  
-  // Direct action handlers
+
   const handleViewUserDetails = useCallback((user: User) => {
-    console.log("useUserManagement: View details called for user:", user.id);
     setSelectedUser(user);
     setIsDetailsOpen(true);
   }, [setSelectedUser, setIsDetailsOpen]);
-  
+
   const handleCloseUserDetails = useCallback(() => {
-    console.log("useUserManagement: Close details called");
     setIsDetailsOpen(false);
-    setTimeout(() => {
-      setSelectedUser(null);
-    }, 300);
+    setTimeout(() => setSelectedUser(null), 300);
   }, [setIsDetailsOpen, setSelectedUser]);
-  
+
   const handleManagePermissions = useCallback((user: User) => {
-    console.log("useUserManagement: Manage permissions called for user:", user.id);
     setSelectedUser(user);
     setIsPermissionsDialogOpen(true);
   }, [setSelectedUser, setIsPermissionsDialogOpen]);
-  
-  // Fix the implementation to match AdminPermissionsDialog.tsx expectations
+
+  // ✅ FIXED: Only pass updatedUser if that's all the handler expects
   const handlePermissionsUpdated = useCallback((updatedUser: User) => {
-    console.log("useUserManagement: Permissions updated for user:", updatedUser.id);
-    // Update the users array directly
-    setUsers(prevUsers => 
-      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
-    );
-    // Also notify the base implementation
     baseHandlePermissionsUpdated(updatedUser);
-  }, [baseHandlePermissionsUpdated, setUsers]);
-  
-  // Handle Edit User
+    setIsPermissionsDialogOpen(false);
+  }, [baseHandlePermissionsUpdated, setIsPermissionsDialogOpen]);
+
   const handleEditUser = useCallback((user: User) => {
-    console.log("useUserManagement: Edit user called for user:", user.id);
     setSelectedUser(user);
     setIsEditUserDialogOpen(true);
   }, [setSelectedUser, setIsEditUserDialogOpen]);
-  
-  // Handle Send Email
+
   const handleSendEmail = useCallback((user: User) => {
-    console.log("useUserManagement: Send email called for user:", user.id);
     setSelectedUser(user);
     setIsEmailDialogOpen(true);
-    
-    // For now, just show a toast notification since email dialog is not implemented
+
     toast({
       title: 'Email Function',
       description: `Email dialog for ${user.email} would open here.`,
     });
   }, [setSelectedUser, setIsEmailDialogOpen, toast]);
-  
-  // Wrapper functions to include users and setUsers
+
   const handleToggleUserStatus = useCallback((userId: string, isActive: boolean) => {
-    console.log("useUserManagement: Toggle user status called for user:", userId, isActive);
     return baseHandleToggleUserStatus(userId, isActive, users, setUsers);
   }, [baseHandleToggleUserStatus, users, setUsers]);
-  
+
   const handleToggleUserSubscription = useCallback((userId: string) => {
-    console.log("useUserManagement: Toggle subscription called for user:", userId);
     return baseHandleToggleUserSubscription(userId, 30, users, setUsers);
   }, [baseHandleToggleUserSubscription, users, setUsers]);
-  
+
   const handleDeleteUsers = useCallback(() => {
-    baseHandleDeleteUsers(selectedUsers);
+    baseHandleDeleteUsers(selectedUsers, users, setUsers);
     setIsDeleteDialogOpen(false);
   }, [baseHandleDeleteUsers, selectedUsers, users, setUsers, setIsDeleteDialogOpen]);
-  
+
   const handleDeleteUser = useCallback((userId: string) => {
     const userToDelete = users.find(user => user.id === userId);
     if (userToDelete) {
@@ -146,41 +116,32 @@ export const useUserManagement = () => {
       setIsDeleteDialogOpen(true);
     }
   }, [users, setSelectedUsers, setIsDeleteDialogOpen]);
-  
-  // Bulk actions
+
   const handleBulkDelete = useCallback(() => {
     baseHandleBulkDelete(selectedUsers, users, setUsers);
   }, [baseHandleBulkDelete, selectedUsers, users, setUsers]);
-  
+
   const handleBulkActivate = useCallback(() => {
     baseHandleBulkActivate(selectedUsers, users, setUsers);
   }, [baseHandleBulkActivate, selectedUsers, users, setUsers]);
-  
+
   const handleBulkDeactivate = useCallback(() => {
     baseHandleBulkDeactivate(selectedUsers, users, setUsers);
   }, [baseHandleBulkDeactivate, selectedUsers, users, setUsers]);
-  
-  // Cleanup function for component unmount
+
   const cleanup = useCallback(() => {
     setSelectedUsers([]);
     setSearchTerm('');
     resetUIState();
   }, [setSelectedUsers, setSearchTerm, resetUIState]);
-  
-  // Lifecycle hooks
+
   useEffect(() => {
     isMounted.current = true;
-    
-    // Fetch users on initial mount
     fetchUsers();
-    
-    return () => {
-      isMounted.current = false;
-    };
+    return () => { isMounted.current = false; };
   }, [fetchUsers]);
-  
+
   return {
-    // State
     users,
     setUsers,
     searchTerm,
@@ -202,8 +163,7 @@ export const useUserManagement = () => {
     isEmailDialogOpen,
     setIsEmailDialogOpen,
     filteredUsers,
-    
-    // Functions
+
     fetchUsers,
     toggleUserSelection,
     toggleAllUsers,
