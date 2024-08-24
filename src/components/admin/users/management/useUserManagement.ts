@@ -135,7 +135,7 @@ export const useUserManagement = () => {
   }, [baseHandleToggleUserSubscription, users, setUsers]);
   
   const handleDeleteUsers = useCallback(() => {
-    baseHandleDeleteUsers(selectedUsers, users, setUsers);
+    baseHandleDeleteUsers(selectedUsers);
     setIsDeleteDialogOpen(false);
   }, [baseHandleDeleteUsers, selectedUsers, users, setUsers, setIsDeleteDialogOpen]);
   
