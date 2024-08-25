@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useRef } from 'react';
 import { useUserManagementData } from './hooks/useUserManagementData';
 import { useUserSearch } from './hooks/useUserSearch';
@@ -75,11 +76,17 @@ export const useUserManagement = () => {
     setIsPermissionsDialogOpen(true);
   }, [setSelectedUser, setIsPermissionsDialogOpen]);
 
-  // ✅ FIXED: Only pass updatedUser if that's all the handler expects
+  // Fix: Change to accept only the updatedUser parameter to match the expected signature
   const handlePermissionsUpdated = useCallback((updatedUser: User) => {
     baseHandlePermissionsUpdated(updatedUser);
+    
+    // Update the user in the users array
+    setUsers(prevUsers => 
+      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
+    );
+    
     setIsPermissionsDialogOpen(false);
-  }, [baseHandlePermissionsUpdated, setIsPermissionsDialogOpen]);
+  }, [baseHandlePermissionsUpdated, setIsPermissionsDialogOpen, setUsers]);
 
   const handleEditUser = useCallback((user: User) => {
     setSelectedUser(user);
