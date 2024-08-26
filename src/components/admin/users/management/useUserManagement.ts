@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useRef } from 'react';
 import { useUserManagementData } from './hooks/useUserManagementData';
 import { useUserSearch } from './hooks/useUserSearch';
@@ -60,7 +61,6 @@ export const useUserManagement = () => {
     handleBulkActivate: baseHandleBulkActivate,
     handleBulkDeactivate: baseHandleBulkDeactivate,
     handleToggleUserStatus: baseHandleToggleUserStatus,
-    handleToggleUserSubscription: baseHandleToggleUserSubscription,
     
     // States
     isActionLoading
@@ -120,11 +120,6 @@ export const useUserManagement = () => {
     console.log("useUserManagement: Toggle user status called for user:", userId, isActive);
     return baseHandleToggleUserStatus(userId, isActive, users, setUsers);
   }, [baseHandleToggleUserStatus, users, setUsers]);
-  
-  const handleToggleUserSubscription = useCallback((userId: string) => {
-    console.log("useUserManagement: Toggle subscription called for user:", userId);
-    return baseHandleToggleUserSubscription(userId, 30, users, setUsers);
-  }, [baseHandleToggleUserSubscription, users, setUsers]);
   
   const handleDeleteUsers = useCallback(() => {
     baseHandleDeleteUsers(selectedUsers, users, setUsers);
@@ -204,7 +199,6 @@ export const useUserManagement = () => {
     handleToggleUserStatus,
     handleViewUserDetails,
     handleCloseUserDetails,
-    handleToggleUserSubscription,
     handleManagePermissions,
     handlePermissionsUpdated,
     handleBulkDelete,

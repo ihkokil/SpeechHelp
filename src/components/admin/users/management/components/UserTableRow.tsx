@@ -14,7 +14,6 @@ interface UserTableRowProps {
   onViewDetails: (user: User) => void;
   onManagePermissions: (user: User) => void;
   onToggleUserActive: (userId: string, isActive: boolean) => void;
-  onExtendSubscription: (userId: string) => void;
   onDeleteUser: (userId: string) => void;
   onEditUser?: (user: User) => void;
   onSendEmail?: (user: User) => void;
@@ -27,7 +26,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   onViewDetails,
   onManagePermissions,
   onToggleUserActive,
-  onExtendSubscription,
   onDeleteUser,
   onEditUser,
   onSendEmail
@@ -102,7 +100,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
             onViewDetails={onViewDetails}
             onManagePermissions={onManagePermissions}
             onToggleUserActive={onToggleUserActive}
-            onExtendSubscription={onExtendSubscription}
             onDeleteUser={onDeleteUser}
             onEditUser={onEditUser}
             onSendEmail={onSendEmail}
