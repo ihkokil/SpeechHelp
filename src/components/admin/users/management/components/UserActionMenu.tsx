@@ -12,6 +12,7 @@ import {
   UserCheck,
   Shield,
   Edit,
+  BadgePercent, // Added for subscription
 } from 'lucide-react';
 
 interface UserActionMenuProps {
@@ -23,6 +24,7 @@ interface UserActionMenuProps {
   onDeleteUser: (userId: string) => void;
   onEditUser?: (user: User) => void;
   onSendEmail?: (user: User) => void;
+  onUpdateSubscription?: (user: User) => void; // Added new prop
 }
 
 const UserActionMenu: React.FC<UserActionMenuProps> = ({
@@ -32,7 +34,8 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onToggleUserActive,
   onDeleteUser,
   onEditUser,
-  onSendEmail
+  onSendEmail,
+  onUpdateSubscription // Added new prop
 }) => {
   // Handle menu item actions - now these are explicit functions
   const handleViewDetails = (e: React.MouseEvent) => {
@@ -79,6 +82,17 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     }
   };
 
+  // New handler for updating subscription
+  const handleUpdateSubscription = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onUpdateSubscription) {
+      onUpdateSubscription(user);
+    } else {
+      console.log('Update Subscription clicked - handler not implemented yet');
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -104,6 +118,13 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
           <Mail className="mr-2 h-4 w-4" />
           <span>Send Email</span>
         </DropdownMenuItem>
+
+        {/* Add the new subscription update menu item */}
+        <DropdownMenuItem onClick={handleUpdateSubscription} id={`update-subscription-${user.id}`}>
+          <BadgePercent className="mr-2 h-4 w-4" />
+          <span>Update Subscription</span>
+        </DropdownMenuItem>
+
         <DropdownMenuSeparator />
         {user.is_active !== false ? (
           <DropdownMenuItem onClick={handleToggleUserActive} id={`deactivate-user-${user.id}`}>

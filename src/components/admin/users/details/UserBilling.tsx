@@ -2,8 +2,9 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { BadgePercent } from 'lucide-react';
 import { User } from '../types';
+import { PLAN_RULES, SubscriptionPlan } from '@/lib/plan_rules';
 
 interface UserBillingProps {
   user: User;
@@ -22,6 +23,14 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
   
   // Get plan display name
   const getPlanDisplayName = (planType: string) => {
+    if (!planType) return 'Free Plan';
+    
+    // Use the plan rules if available
+    const planKey = planType as SubscriptionPlan;
+    if (PLAN_RULES[planKey]) {
+      return PLAN_RULES[planKey].displayName;
+    }
+    
     return planType || 'Free Plan';
   };
 
@@ -29,7 +38,10 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Subscription Information</CardTitle>
+          <CardTitle className="flex items-center">
+            <BadgePercent className="mr-2 h-5 w-5 text-primary" />
+            Subscription Information
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
@@ -42,7 +54,15 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Status</p>
               <p className="text-sm">
-                {subscriptionStatus}
+                <span 
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    subscriptionStatus === 'Active' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  {subscriptionStatus}
+                </span>
               </p>
             </div>
             <div>
@@ -57,7 +77,7 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
           
           <div className="mt-4">
             <p className="text-xs text-muted-foreground">
-              Subscription management has been disabled by administrator.
+              Subscription management is handled by administrators.
             </p>
           </div>
         </CardContent>
