@@ -28,6 +28,7 @@ const UserManagement = () => {
     isLoading,
     isActionLoading,
     selectedUser,
+    setSelectedUser, // Make sure this is destructured from useUserManagement
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
@@ -51,7 +52,7 @@ const UserManagement = () => {
     addUser,
     isEditUserDialogOpen,
     setIsEditUserDialogOpen,
-    handleUpdateSubscription, // New function from useUserManagement
+    handleUpdateSubscription, // From useUserManagement
   } = useUserManagement();
   
   // New state for subscription dialog
@@ -133,7 +134,7 @@ const UserManagement = () => {
             isLoading={isLoading}
             selectedUsers={selectedUsers}
             toggleUserSelection={toggleUserSelection}
-            toggleAllUsers={toggleAllUsers}
+            toggleAllUsers={toggleAllUsers} // Passing the function without args
             handleViewUserDetails={handleViewUserDetails}
             handleManagePermissions={handleManagePermissions}
             handleToggleUserStatus={handleToggleUserStatus}

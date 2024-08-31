@@ -3,7 +3,7 @@ import React from 'react';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { User } from '@/components/admin/users/types';
+import { User } from '../../types';
 import UserActionMenu from './UserActionMenu';
 import { formatDateRelative, formatUserDisplayName, getUserPhone } from '../utils/userDisplayUtils';
 
@@ -13,10 +13,11 @@ interface UserTableRowProps {
   onToggleSelection: (user: User) => void;
   onViewDetails: (user: User) => void;
   onManagePermissions: (user: User) => void;
-  onToggleUserActive: (userId: string, isActive: boolean) => void;
+  onToggleActive: (userId: string, isActive: boolean) => void;
   onDeleteUser: (userId: string) => void;
   onEditUser?: (user: User) => void;
   onSendEmail?: (user: User) => void;
+  onUpdateSubscription?: (user: User) => void;  // Add subscription handler prop
 }
 
 const UserTableRow: React.FC<UserTableRowProps> = ({
@@ -25,10 +26,11 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   onToggleSelection,
   onViewDetails,
   onManagePermissions,
-  onToggleUserActive,
+  onToggleActive,
   onDeleteUser,
   onEditUser,
-  onSendEmail
+  onSendEmail,
+  onUpdateSubscription  // Add subscription handler
 }) => {
   const handleRowClick = () => {
     onViewDetails(user);
@@ -99,10 +101,11 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
             user={user}
             onViewDetails={onViewDetails}
             onManagePermissions={onManagePermissions}
-            onToggleUserActive={onToggleUserActive}
+            onToggleUserActive={onToggleActive}
             onDeleteUser={onDeleteUser}
             onEditUser={onEditUser}
             onSendEmail={onSendEmail}
+            onUpdateSubscription={onUpdateSubscription}  // Pass the subscription handler
           />
         </div>
       </TableCell>
