@@ -1,3 +1,4 @@
+
 import { User } from '../../types';
 import { format, formatDistanceToNow } from 'date-fns';
 import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
@@ -13,39 +14,6 @@ export const formatDateRelative = (dateString: string | null) => {
   try {
     return formatDistanceToNow(new Date(dateString), { addSuffix: true });
   } catch (error) {
-    return 'Invalid date';
-  }
-};
-
-export const formatUserName = (user: User) => {
-  const firstName = user.user_metadata?.first_name || '';
-  const lastName = user.user_metadata?.last_name || '';
-  
-  if (firstName && lastName) {
-    return `${firstName} ${lastName}`;
-  }
-  
-  if (user.user_metadata?.full_name) {
-    return user.user_metadata.full_name;
-  }
-  
-  if (user.user_metadata?.name) {
-    return user.user_metadata.name;
-  }
-  
-  if (user.email) {
-    return `${user.email.split('@')[0]} (No name provided)`;
-  }
-  
-  return 'No name provided';
-};
-
-export const formatDateTimeForDisplay = (dateString: string) => {
-  if (!dateString) return 'Never';
-  try {
-    return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
-  } catch (error) {
-    console.error('Error formatting date:', error);
     return 'Invalid date';
   }
 };

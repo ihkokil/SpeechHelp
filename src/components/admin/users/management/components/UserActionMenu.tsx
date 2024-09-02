@@ -19,7 +19,8 @@ interface UserActionMenuProps {
   user: User;
   onViewDetails: (user: User) => void;
   onManagePermissions: (user: User) => void;
-  onToggleActive: (userId: string, isActive: boolean) => void;
+  onToggleUserActive: (userId: string, isActive: boolean) => void;
+  onExtendSubscription?: (userId: string) => void;
   onDeleteUser: (userId: string) => void;
   onEditUser?: (user: User) => void;
   onSendEmail?: (user: User) => void;
@@ -30,7 +31,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   user,
   onViewDetails,
   onManagePermissions,
-  onToggleActive,
+  onToggleUserActive,
   onDeleteUser,
   onEditUser,
   onSendEmail,
@@ -52,7 +53,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   const handleToggleUserActive = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onToggleActive(user.id, user.is_active !== false);
+    onToggleUserActive(user.id, user.is_active !== false);
   };
   
   const handleDeleteUser = (e: React.MouseEvent) => {
