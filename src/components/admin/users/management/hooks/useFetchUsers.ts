@@ -78,7 +78,7 @@ export const useFetchUsers = () => {
           is_active: profile.is_active !== false, // Default to true if not specified
           subscription_status: profile.subscription_plan ? 'active' : undefined,
           subscription_end_date: profile.subscription_end_date || undefined,
-          subscription_tier: profile.subscription_plan || undefined,
+          subscription_plan: profile.subscription_plan || undefined,
         };
         
         return user;

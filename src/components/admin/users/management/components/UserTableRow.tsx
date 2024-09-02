@@ -72,7 +72,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
           <Badge className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200">
             Admin
           </Badge>
-        ) : user.subscription_tier === 'premium' ? (
+        ) : user.subscription_plan === 'premium' ? (
           <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">
             Premium
           </Badge>

@@ -31,7 +31,7 @@ export type User = {
   // Subscription related fields
   subscription_status?: string;
   subscription_end_date?: string;
-  subscription_tier?: string;
+  subscription_plan?: string;
   subscription_plan?: string;
   // Stripe related fields
   stripe_customer_id?: string;
