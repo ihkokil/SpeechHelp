@@ -21,8 +21,11 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     ? 'Active'
     : 'Inactive';
   
-  // Get plan display name
-  const getPlanDisplayName = (planType: string) => {
+  // Get plan display name - check both subscription_tier and subscription_plan
+  const getPlanDisplayName = (user: User) => {
+    // Use subscription_tier if available, otherwise use subscription_plan
+    const planType = user.subscription_tier || user.subscription_plan || '';
+    
     if (!planType) return 'Free Plan';
     
     // Use the plan rules if available
@@ -48,7 +51,7 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Current Plan</p>
               <p className="text-sm">
-                {getPlanDisplayName(user.subscription_tier || '')}
+                {getPlanDisplayName(user)}
               </p>
             </div>
             <div>
