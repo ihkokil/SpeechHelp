@@ -65,7 +65,7 @@ export const useSubscriptionActions = (
   // Update user subscription
   const handleUpdateSubscription = useCallback(async (
     userId: string,
-    subscriptionTier: string,
+    subscriptionPlan: string,
     subscriptionEndDate: Date,
     users: User[],
     setUsers: (users: User[]) => void
@@ -75,32 +75,65 @@ export const useSubscriptionActions = (
     if (setActionLoading) setActionLoading(true);
     
     try {
-      console.log(`Updating user subscription: ${userId} to ${subscriptionTier} until ${subscriptionEndDate}`);
+      console.log(`Updating user subscription: ${userId} to ${subscriptionPlan} until ${subscriptionEndDate}`);
       
-      // Update the user's subscription details in the database
-      // Changed 'subscription_plan' to 'subscription_plan' to match the database schema
-      const { data, error } = await supabase
+      // First check if the profile exists
+      const { data: profileData, error: profileCheckError } = await supabase
         .from('profiles')
-        .update({ 
-          subscription_plan: subscriptionTier,
-          subscription_end_date: subscriptionEndDate.toISOString()
-        })
-        .eq('id', userId)
-        .select()
-        .single();
+        .select('*')
+        .eq('id', userId);
       
-      if (error) {
-        throw error;
+      if (profileCheckError) {
+        throw profileCheckError;
       }
       
-      // Update local state - also update the field name in the local state update
+      // If profile doesn't exist, create it first
+      if (!profileData || profileData.length === 0) {
+        // Create profile
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert({ 
+            id: userId,
+            subscription_plan: subscriptionPlan,
+            subscription_end_date: subscriptionEndDate.toISOString()
+          });
+          
+        if (createError) {
+          throw createError;
+        }
+      } else {
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            subscription_plan: subscriptionPlan,
+            subscription_end_date: subscriptionEndDate.toISOString()
+          })
+          .eq('id', userId);
+        
+        if (updateError) {
+          throw updateError;
+        }
+      }
+      
+      // Fetch the updated profile to return
+      const { data: updatedProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (fetchError) {
+        throw fetchError;
+      }
+      
+      // Update local state
       setUsers(
         users.map(user => 
           user.id === userId 
             ? { 
                 ...user, 
-                subscription_plan: subscriptionTier, // Keep this as is for UI consistency
-                subscription_plan: subscriptionTier, // Add this to ensure both properties are updated
+                subscription_plan: subscriptionPlan,
                 subscription_end_date: subscriptionEndDate.toISOString()
               } 
             : user
@@ -109,10 +142,10 @@ export const useSubscriptionActions = (
       
       toast({
         title: 'Subscription Updated',
-        description: `User's subscription has been updated to ${subscriptionTier}.`,
+        description: `User's subscription has been updated to ${subscriptionPlan}.`,
       });
       
-      return data;
+      return updatedProfile;
     } catch (error) {
       console.error('Error updating user subscription:', error);
       toast({
