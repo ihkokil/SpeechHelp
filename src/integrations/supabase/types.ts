@@ -424,6 +424,10 @@ export type Database = {
         }
         Returns: Json
       }
+      update_user_subscription: {
+        Args: { user_id: string; plan: string; end_date: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

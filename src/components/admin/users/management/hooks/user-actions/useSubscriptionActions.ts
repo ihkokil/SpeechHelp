@@ -77,7 +77,7 @@ export const useSubscriptionActions = (
     try {
       console.log(`Updating user subscription: ${userId} to ${subscriptionPlan} until ${subscriptionEndDate}`);
       
-      // Use the Supabase function to update user subscription (bypasses RLS)
+      // Use the Supabase RPC function to update user subscription (bypasses RLS)
       const { data, error } = await supabase.rpc(
         'update_user_subscription',
         {
