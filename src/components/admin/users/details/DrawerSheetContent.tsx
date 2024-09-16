@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +11,7 @@ import { UserStatistics } from './UserStatistics';
 import { UserActivity } from './UserActivity';
 import { UserPermissions } from './UserPermissions';
 import { User as UserType, Speech } from '../types';
+import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
 
 interface DrawerSheetContentProps {
   user: UserType;
@@ -37,26 +37,6 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
     onClose(e);
   };
 
-  // Get user's full name for display
-  const getUserDisplayName = () => {
-    if (user.user_metadata?.full_name) {
-      return user.user_metadata.full_name;
-    }
-    
-    const firstName = user.user_metadata?.first_name || '';
-    const lastName = user.user_metadata?.last_name || '';
-    
-    if (firstName && lastName) {
-      return `${firstName} ${lastName}`;
-    }
-    
-    if (user.user_metadata?.name) {
-      return user.user_metadata.name;
-    }
-    
-    return user.email;
-  };
-
   // Log the data being passed to the component
   console.log("DrawerSheetContent rendering with:", {
     userId: user.id,
@@ -78,7 +58,7 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
           </SheetClose>
         </div>
         <SheetDescription>
-          Detailed information about <span className="bg-gray-100 px-2 py-0.5 rounded-md font-medium">{getUserDisplayName()}</span>
+          Detailed information about <span className="bg-gray-100 px-2 py-0.5 rounded-md font-medium">{formatUserDisplayName(user)}</span>
         </SheetDescription>
       </SheetHeader>
       
