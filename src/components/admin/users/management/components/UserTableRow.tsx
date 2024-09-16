@@ -70,7 +70,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       </TableCell>
       <TableCell className="hidden md:table-cell">
         {user.is_admin ? (
-          <Badge className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200 flex items-center gap-1">
+          <Badge className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200 flex items-center gap-1">
             <Crown size={12} /> Admin
           </Badge>
         ) : user.subscription_plan === 'pro' ? (
