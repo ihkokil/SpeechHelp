@@ -60,11 +60,32 @@ export const useUserDetails = (user: User | null, open: boolean) => {
   
   // Calculate activity time based on speeches
   const calculateTotalActivityTime = useCallback((speeches: Speech[]) => {
-    // Estimate total activity time based on speeches (5 minutes per speech as a rough estimate)
+    // Enhanced estimate of total activity time:
+    // - Base time for each speech: 5 minutes
+    // - Additional time based on content length: 1 minute per 500 chars
+    // - Consider speech type (certain types take more time)
+    
+    const speechTypeMultipliers: Record<string, number> = {
+      'wedding': 1.5,      // Wedding speeches often require more effort
+      'business': 1.3,     // Business presentations need more preparation
+      'tedtalk': 1.7,      // TED talks need significant preparation
+      'funeral': 1.4,      // Emotional speeches take more time
+      'keynote': 1.5,      // Keynotes are typically longer/more complex
+      'default': 1.0       // Default multiplier
+    };
+    
     const totalTime = speeches.reduce((total, speech) => {
-      // Estimate time based on content length - longer speeches take more time
+      // Base time
+      let estimatedMinutes = 5;
+      
+      // Content length factor
       const contentLength = speech.content?.length || 0;
-      const estimatedMinutes = Math.max(5, Math.floor(contentLength / 500)); // 1 min per 500 chars, min 5 mins
+      estimatedMinutes += Math.floor(contentLength / 500);
+      
+      // Speech type multiplier
+      const typeMultiplier = speechTypeMultipliers[speech.speech_type?.toLowerCase()] || speechTypeMultipliers.default;
+      estimatedMinutes = Math.round(estimatedMinutes * typeMultiplier);
+      
       return total + estimatedMinutes;
     }, 0);
     
