@@ -21,7 +21,7 @@ const AdminSidebar = ({ navItems, onSignOut }: AdminSidebarProps) => {
   const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
   
   return (
-    <Sidebar>
+    <Sidebar className="bg-white shadow-md z-30">
       <SidebarHeader className="pb-0">
         <div className="flex items-center space-x-2 px-3 py-2">
           <Link to="/admin/dashboard">
@@ -35,7 +35,7 @@ const AdminSidebar = ({ navItems, onSignOut }: AdminSidebarProps) => {
         </div>
         <Separator className="mb-2 mt-1" />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-white">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -50,7 +50,7 @@ const AdminSidebar = ({ navItems, onSignOut }: AdminSidebarProps) => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="bg-white">
         <div className="px-3 pb-2">
           <Button
             variant="outline"
