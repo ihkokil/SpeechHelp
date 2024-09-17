@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { User } from '../../types';
+import { supabase } from '@/integrations/supabase/client';
 
 // Form validation schema
 const formSchema = z.object({
@@ -30,7 +31,7 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: initialUser?.email || '',
-      name: initialUser?.user_metadata?.name || '',
+      name: initialUser?.user_metadata?.name || initialUser?.user_metadata?.full_name || '',
       role: initialUser?.is_admin ? (initialUser.admin_role || 'admin') : 'user',
       isActive: initialUser?.is_active !== false,
       phone: initialUser?.user_metadata?.phone || '',
@@ -48,11 +49,38 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
     try {
       console.log('Updating user with values:', values);
       
-      // Mock the API call for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       if (!initialUser) {
         throw new Error('No user to update');
+      }
+      
+      // Update user in Supabase
+      const { error: updateError } = await supabase.auth.admin.updateUserById(
+        initialUser.id,
+        { 
+          email: values.email,
+          user_metadata: {
+            ...initialUser.user_metadata,
+            name: values.name,
+            full_name: values.name, // Also update full_name for consistency
+            phone: values.phone,
+          }
+        }
+      );
+      
+      if (updateError) {
+        throw updateError;
+      }
+      
+      // Update profile table for admin role and active status
+      const { error: profileError } = await supabase.rpc('update_user_admin_status', {
+        user_id: initialUser.id,
+        is_admin_status: values.role !== 'user',
+        admin_role_value: values.role !== 'user' ? values.role : null,
+        permissions_value: initialUser.permissions || []
+      });
+      
+      if (profileError) {
+        throw profileError;
       }
       
       // Create an updated user object
@@ -66,6 +94,7 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         user_metadata: {
           ...initialUser.user_metadata,
           name: values.name,
+          full_name: values.name,
           phone: values.phone,
         }
       };
@@ -102,8 +131,13 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
     try {
       console.log('Sending password reset to:', email);
       
-      // Mock the API call for now
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?type=recovery`,
+      });
+      
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: 'Password Reset Sent',
