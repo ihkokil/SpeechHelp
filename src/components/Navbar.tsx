@@ -40,7 +40,7 @@ const Navbar = () => {
             <img 
               src={logoPath}
               alt="SpeechHelp Logo" 
-              className={`${isMobile ? "h-10" : "h-12"} w-auto`}
+              className={`${isMobile ? "h-8" : "h-10"} w-auto`}
             />
           </Link>
 

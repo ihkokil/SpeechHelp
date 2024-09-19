@@ -81,7 +81,7 @@ const MySpeeches = () => {
             <h1 className="text-2xl font-bold text-gray-900">
               {initialFilter === 'upcoming' ? 'Upcoming Speeches' : 'My Speeches'}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mt-1">
               {initialFilter === 'upcoming'
                 ? 'View and manage your scheduled upcoming speeches'
                 : 'Manage, edit and organize your speeches'}
