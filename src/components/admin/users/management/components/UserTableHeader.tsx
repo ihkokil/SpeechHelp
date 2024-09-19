@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -10,7 +10,7 @@ interface UserTableHeaderProps {
   selectedCount: number;
 }
 
-const UserTableHeader: React.FC<UserTableHeaderProps> = ({ 
+const UserTableHeader: React.FC<UserTableHeaderProps> = memo(({ 
   onToggleAll, 
   isAllSelected,
   disabled,
@@ -31,7 +31,7 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
         <TableHead className="hidden sm:table-cell">Email</TableHead>
         <TableHead className="hidden md:table-cell">Phone</TableHead>
         <TableHead className="hidden md:table-cell">Plan</TableHead>
-        <TableHead className="hidden md:table-cell">Joined</TableHead>
+        <TableHead className="hidden lg:table-cell">Joined</TableHead>
         <TableHead className="hidden lg:table-cell">Last Sign In</TableHead>
         <TableHead className="hidden sm:table-cell">Status</TableHead>
         <TableHead>
@@ -40,6 +40,8 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
       </TableRow>
     </TableHeader>
   );
-};
+});
+
+UserTableHeader.displayName = "UserTableHeader";
 
 export default UserTableHeader;
