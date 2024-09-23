@@ -54,42 +54,50 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         throw new Error('No user to update');
       }
       
-      // First update the user's admin status through RPC function
-      const { data: adminStatusData, error: adminStatusError } = await supabase.rpc('update_user_admin_status', {
-        user_id: initialUser.id,
-        is_admin_status: values.role !== 'user',
-        admin_role_value: values.role !== 'user' ? values.role : null,
-        permissions_value: initialUser.permissions || []
+      // Use the admin_update_user_profile RPC function to update user profile
+      const { data, error } = await supabase.rpc('admin_update_user_profile', {
+        user_id_param: initialUser.id,
+        display_name: values.name,
+        user_email: initialUser.email, // We're not changing the email
+        phone_number: values.phone || '',
+        is_active_status: values.isActive,
       });
       
-      if (adminStatusError) {
-        console.error('Error updating admin status:', adminStatusError);
-        throw adminStatusError;
+      if (error) {
+        console.error('Error updating user profile:', error);
+        throw error;
       }
       
-      // Update the user's profile data
-      const updatedMetadata = {
+      console.log('User profile updated successfully:', data);
+      
+      // Also update the admin status if needed
+      if ((initialUser.is_admin && values.role === 'user') || (!initialUser.is_admin && values.role !== 'user') || 
+          (initialUser.is_admin && values.role !== 'user' && initialUser.admin_role !== values.role)) {
+        
+        const { data: adminData, error: adminError } = await supabase.rpc('update_user_admin_status', {
+          user_id: initialUser.id,
+          is_admin_status: values.role !== 'user',
+          admin_role_value: values.role !== 'user' ? values.role : null,
+          permissions_value: initialUser.permissions || []
+        });
+        
+        if (adminError) {
+          console.error('Error updating admin status:', adminError);
+          throw adminError;
+        }
+        
+        console.log('Admin status updated successfully:', adminData);
+      }
+      
+      // Create an updated user object to reflect the changes in the UI
+      // Extract the user metadata from the response if available, otherwise use our constructed metadata
+      const updatedMetadata = data?.user_metadata || {
         ...initialUser.user_metadata,
         name: values.name,
         full_name: values.name,
         phone: values.phone,
       };
       
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ 
-          is_active: values.isActive,
-          updated_at: new Date().toISOString(),
-          user_metadata: updatedMetadata
-        })
-        .eq('id', initialUser.id);
-      
-      if (profileError) {
-        console.error('Error updating profile:', profileError);
-        throw profileError;
-      }
-      
-      // Create an updated user object to reflect the changes in the UI
       const updatedUser: User = {
         ...initialUser,
         email: initialUser.email,
