@@ -50,6 +50,15 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     callback(arg);
   };
 
+  // Special handler for toggle active which requires two arguments
+  const handleToggleActive = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log(`Toggle active triggered for user ${user.id}, current state: ${user.is_active !== false}`);
+    onToggleUserActive(user.id, user.is_active !== false);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -108,7 +117,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         <DropdownMenuSeparator />
         
         <DropdownMenuItem 
-          onClick={(e) => handleAction(e, onToggleUserActive, [user.id, user.is_active !== false])} 
+          onClick={handleToggleActive} 
           id={`${user.is_active !== false ? 'deactivate' : 'activate'}-user-${user.id}`}
         >
           {user.is_active !== false ? (
