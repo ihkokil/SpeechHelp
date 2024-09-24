@@ -12,7 +12,7 @@ import {
   UserCheck,
   Shield,
   Edit,
-  BadgePercent, // Added for subscription
+  BadgePercent,
 } from 'lucide-react';
 
 interface UserActionMenuProps {
@@ -24,7 +24,7 @@ interface UserActionMenuProps {
   onDeleteUser: (userId: string) => void;
   onEditUser?: (user: User) => void;
   onSendEmail?: (user: User) => void;
-  onUpdateSubscription?: (user: User) => void; // Added new prop
+  onUpdateSubscription?: (user: User) => void; 
 }
 
 const UserActionMenu: React.FC<UserActionMenuProps> = ({
@@ -35,62 +35,19 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onDeleteUser,
   onEditUser,
   onSendEmail,
-  onUpdateSubscription // Added new prop
+  onUpdateSubscription
 }) => {
-  // Handle menu item actions - now these are explicit functions
-  const handleViewDetails = (e: React.MouseEvent) => {
+  // Prevent default event behavior and propagation for all handlers
+  const handleAction = (
+    e: React.MouseEvent, 
+    callback: (arg: any) => void, 
+    arg: any
+  ) => {
     e.preventDefault();
     e.stopPropagation();
-    onViewDetails(user);
-  };
-  
-  const handleManagePermissions = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onManagePermissions(user);
-  };
-  
-  const handleToggleUserActive = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onToggleUserActive(user.id, user.is_active !== false);
-  };
-  
-  const handleDeleteUser = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onDeleteUser(user.id);
-  };
-  
-  const handleEditUser = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (onEditUser) {
-      onEditUser(user);
-    } else {
-      console.log('Edit User clicked - handler not implemented yet');
-    }
-  };
-  
-  const handleSendEmail = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (onSendEmail) {
-      onSendEmail(user);
-    } else {
-      console.log('Send Email clicked - handler not implemented yet');
-    }
-  };
-
-  // New handler for updating subscription
-  const handleUpdateSubscription = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (onUpdateSubscription) {
-      onUpdateSubscription(user);
-    } else {
-      console.log('Update Subscription clicked - handler not implemented yet');
-    }
+    
+    console.log(`User action triggered: ${callback.name} for user ${user.id}`);
+    callback(arg);
   };
 
   return (
@@ -102,45 +59,76 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
-        <DropdownMenuItem onClick={handleViewDetails} id={`view-details-${user.id}`}>
+        <DropdownMenuItem 
+          onClick={(e) => handleAction(e, onViewDetails, user)} 
+          id={`view-details-${user.id}`}
+        >
           <Eye className="mr-2 h-4 w-4" />
           <span>View Details</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleEditUser} id={`edit-user-${user.id}`}>
-          <Edit className="mr-2 h-4 w-4" />
-          <span>Edit User</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleManagePermissions} id={`manage-permissions-${user.id}`}>
+        
+        {onEditUser && (
+          <DropdownMenuItem 
+            onClick={(e) => handleAction(e, onEditUser, user)} 
+            id={`edit-user-${user.id}`}
+          >
+            <Edit className="mr-2 h-4 w-4" />
+            <span>Edit User</span>
+          </DropdownMenuItem>
+        )}
+        
+        <DropdownMenuItem 
+          onClick={(e) => handleAction(e, onManagePermissions, user)} 
+          id={`manage-permissions-${user.id}`}
+        >
           <Shield className="mr-2 h-4 w-4" />
           <span>Manage Permissions</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSendEmail} id={`send-email-${user.id}`}>
-          <Mail className="mr-2 h-4 w-4" />
-          <span>Send Email</span>
-        </DropdownMenuItem>
-
-        {/* Add the new subscription update menu item */}
-        <DropdownMenuItem onClick={handleUpdateSubscription} id={`update-subscription-${user.id}`}>
-          <BadgePercent className="mr-2 h-4 w-4" />
-          <span>Update Subscription</span>
-        </DropdownMenuItem>
-
-        <DropdownMenuSeparator />
-        {user.is_active !== false ? (
-          <DropdownMenuItem onClick={handleToggleUserActive} id={`deactivate-user-${user.id}`}>
-            <UserMinus className="mr-2 h-4 w-4" />
-            <span>Deactivate User</span>
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem onClick={handleToggleUserActive} id={`activate-user-${user.id}`}>
-            <UserCheck className="mr-2 h-4 w-4" />
-            <span>Activate User</span>
+        
+        {onSendEmail && (
+          <DropdownMenuItem 
+            onClick={(e) => handleAction(e, onSendEmail, user)} 
+            id={`send-email-${user.id}`}
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            <span>Send Email</span>
           </DropdownMenuItem>
         )}
+
+        {onUpdateSubscription && (
+          <DropdownMenuItem 
+            onClick={(e) => handleAction(e, onUpdateSubscription, user)} 
+            id={`update-subscription-${user.id}`}
+          >
+            <BadgePercent className="mr-2 h-4 w-4" />
+            <span>Update Subscription</span>
+          </DropdownMenuItem>
+        )}
+
         <DropdownMenuSeparator />
+        
+        <DropdownMenuItem 
+          onClick={(e) => handleAction(e, onToggleUserActive, [user.id, user.is_active !== false])} 
+          id={`${user.is_active !== false ? 'deactivate' : 'activate'}-user-${user.id}`}
+        >
+          {user.is_active !== false ? (
+            <>
+              <UserMinus className="mr-2 h-4 w-4" />
+              <span>Deactivate User</span>
+            </>
+          ) : (
+            <>
+              <UserCheck className="mr-2 h-4 w-4" />
+              <span>Activate User</span>
+            </>
+          )}
+        </DropdownMenuItem>
+        
+        <DropdownMenuSeparator />
+        
         <DropdownMenuItem 
           className="text-red-600 focus:text-red-700 focus:bg-red-50"
-          onClick={handleDeleteUser}
+          onClick={(e) => handleAction(e, onDeleteUser, user.id)}
           id={`delete-user-${user.id}`}
         >
           <UserMinus className="mr-2 h-4 w-4" />

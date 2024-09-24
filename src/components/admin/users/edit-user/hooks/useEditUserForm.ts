@@ -54,26 +54,30 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         throw new Error('No user to update');
       }
       
-      // Use the admin_update_user_profile RPC function to update user profile
-      const { data, error } = await supabase.rpc('admin_update_user_profile', {
+      // 1. Update user profile information with admin_update_user_profile RPC function
+      const { data: profileData, error: profileError } = await supabase.rpc('admin_update_user_profile', {
         user_id_param: initialUser.id,
         display_name: values.name,
-        user_email: initialUser.email, // We're not changing the email
+        user_email: initialUser.email, // Not changing email
         phone_number: values.phone || '',
-        is_active_status: values.isActive,
+        is_active_status: values.isActive
       });
       
-      if (error) {
-        console.error('Error updating user profile:', error);
-        throw error;
+      if (profileError) {
+        console.error('Error updating user profile:', profileError);
+        throw profileError;
       }
       
-      console.log('User profile updated successfully:', data);
+      console.log('User profile updated successfully:', profileData);
       
-      // Also update the admin status if needed
-      if ((initialUser.is_admin && values.role === 'user') || (!initialUser.is_admin && values.role !== 'user') || 
-          (initialUser.is_admin && values.role !== 'user' && initialUser.admin_role !== values.role)) {
-        
+      // 2. Update admin role if needed
+      const shouldUpdateAdminStatus = (
+        (initialUser.is_admin && values.role === 'user') || 
+        (!initialUser.is_admin && values.role !== 'user') || 
+        (initialUser.is_admin && values.role !== 'user' && initialUser.admin_role !== values.role)
+      );
+      
+      if (shouldUpdateAdminStatus) {
         const { data: adminData, error: adminError } = await supabase.rpc('update_user_admin_status', {
           user_id: initialUser.id,
           is_admin_status: values.role !== 'user',
@@ -89,18 +93,16 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         console.log('Admin status updated successfully:', adminData);
       }
       
-      // Create an updated user object to reflect the changes in the UI
-      // Extract the user metadata from the response if available
-      // We need to properly handle the response data which is of type Json
+      // 3. Construct the updated user object - important for UI updates
       let updatedMetadata = initialUser.user_metadata || {};
       
-      // Check if data exists and if it has user_metadata property
-      if (data && typeof data === 'object') {
-        const responseData = data as Record<string, any>;
-        if (responseData.user_metadata) {
-          updatedMetadata = responseData.user_metadata;
+      // Ensure we have the updated metadata
+      if (profileData && typeof profileData === 'object') {
+        const typedData = profileData as Record<string, any>;
+        if (typedData.user_metadata && typeof typedData.user_metadata === 'object') {
+          updatedMetadata = typedData.user_metadata;
         } else {
-          // Fallback: Construct metadata if not provided in response
+          // Manual update if not provided in response
           updatedMetadata = {
             ...initialUser.user_metadata,
             name: values.name,
@@ -130,6 +132,11 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       
       // Reset the form
       resetForm();
+      
+      // Refresh the page after a slight delay to ensure state is properly updated
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
       
       // Close the dialog after successful submission
       onOpenChange(false);
