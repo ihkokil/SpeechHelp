@@ -93,24 +93,13 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         console.log('Admin status updated successfully:', adminData);
       }
       
-      // 3. Construct the updated user object - important for UI updates
-      let updatedMetadata = initialUser.user_metadata || {};
-      
-      // Ensure we have the updated metadata
-      if (profileData && typeof profileData === 'object') {
-        const typedData = profileData as Record<string, any>;
-        if (typedData.user_metadata && typeof typedData.user_metadata === 'object') {
-          updatedMetadata = typedData.user_metadata;
-        } else {
-          // Manual update if not provided in response
-          updatedMetadata = {
-            ...initialUser.user_metadata,
-            name: values.name,
-            full_name: values.name,
-            phone: values.phone,
-          };
-        }
-      }
+      // 3. Construct the updated user object for UI updates
+      const updatedMetadata = {
+        ...(initialUser.user_metadata || {}),
+        name: values.name,
+        full_name: values.name,
+        phone: values.phone,
+      };
       
       const updatedUser: User = {
         ...initialUser,
@@ -133,13 +122,13 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       // Reset the form
       resetForm();
       
+      // Close the dialog after successful submission
+      onOpenChange(false);
+      
       // Refresh the page after a slight delay to ensure state is properly updated
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-      
-      // Close the dialog after successful submission
-      onOpenChange(false);
     } catch (error) {
       console.error('Exception updating user:', error);
       toast({

@@ -22,12 +22,27 @@ export const useSubscriptionActions = () => {
     try {
       console.log(`Toggling user status: ${userId} to ${!isActive}`);
       
+      // Get current user data to preserve metadata
+      const { data: userData, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (fetchError) {
+        console.error('Error fetching user data:', fetchError);
+      }
+      
+      const currentMetadata = userData?.user_metadata || {};
+      const displayName = currentMetadata.name || currentMetadata.full_name || '';
+      const phoneNumber = currentMetadata.phone || '';
+      
       // Update the user's active status in the database
       const { data, error } = await supabase.rpc('admin_update_user_profile', {
         user_id_param: userId,
-        display_name: '',  // Not changing name
-        user_email: '',    // Not changing email
-        phone_number: '',  // Not changing phone
+        display_name: displayName,  
+        user_email: '', // Not changing email
+        phone_number: phoneNumber,
         is_active_status: !isActive
       });
       
@@ -56,7 +71,7 @@ export const useSubscriptionActions = () => {
       // Refresh the page to ensure data consistency
       setTimeout(() => {
         window.location.reload();
-      }, 500);
+      }, 1000);
       
     } catch (error) {
       console.error('Error toggling user status:', error);
@@ -122,7 +137,7 @@ export const useSubscriptionActions = () => {
       // Refresh the page to ensure data consistency
       setTimeout(() => {
         window.location.reload();
-      }, 500);
+      }, 1000);
       
     } catch (error) {
       console.error('Error updating subscription:', error);
