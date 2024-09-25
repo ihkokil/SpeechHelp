@@ -112,7 +112,7 @@ const UserMenu = () => {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <button 
-            className="w-full flex cursor-default items-center text-red-600 hover:text-white focus:text-white"
+            className="w-full flex cursor-default items-center text-red-600 hover:bg-red-600 hover:text-white focus:bg-red-600 focus:text-white"
             onClick={handleSignOut}
           >
             <LogOut className="h-4 w-4 mr-2" />
