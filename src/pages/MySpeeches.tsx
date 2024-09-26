@@ -41,7 +41,7 @@ const MySpeeches = () => {
     }
   }, [user, fetchSpeeches]);
 
-  // Debug log all speeches when they change
+  // Enhanced debug log all speeches when they change
   useEffect(() => {
     console.log(`MySpeeches has ${speeches.length} total speeches to display`);
     
