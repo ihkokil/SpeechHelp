@@ -36,9 +36,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Fetch speeches when needed
   const fetchSpeeches = async () => {
-    if (!user) return;
-    const fetchedSpeeches = await speechService.fetchSpeeches(user.id);
-    setSpeeches(fetchedSpeeches);
+    if (!user) {
+      console.log('Cannot fetch speeches: No user is logged in');
+      return [];
+    }
+    
+    console.log('Fetching speeches for user:', user.id);
+    try {
+      const fetchedSpeeches = await speechService.fetchSpeeches(user.id);
+      console.log(`Successfully fetched ${fetchedSpeeches.length} speeches from database`);
+      setSpeeches(fetchedSpeeches);
+      return fetchedSpeeches;
+    } catch (error) {
+      console.error('Error in fetchSpeeches:', error);
+      toast({
+        title: "Error fetching speeches",
+        description: "Could not load your speeches. Please try again.",
+        variant: "destructive"
+      });
+      return [];
+    }
   };
 
   // Save a new speech
@@ -116,7 +133,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(newSession?.user ?? null);
       
       if (newSession?.user) {
-        await fetchSpeeches();
+        // Defer the fetch to avoid potential auth state conflicts
+        setTimeout(() => {
+          fetchSpeeches();
+        }, 0);
       } else {
         setSpeeches([]);
       }
