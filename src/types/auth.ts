@@ -7,7 +7,7 @@ export type AuthContextType = {
   session: Session | null;
   isLoading: boolean;
   speeches: Speech[];
-  fetchSpeeches: () => Promise<void>;
+  fetchSpeeches: () => Promise<Speech[]>;
   refreshUserData: () => Promise<void>;
   saveSpeech: (title: string, content: string, speechType: string) => Promise<void>;
   updateSpeech: (id: string, title: string, content: string) => Promise<void>;
