@@ -1,7 +1,7 @@
 
 import { SpeechEvent } from './types';
 
-// Updated to take a userId parameter
+// Updated to take a userId parameter and properly handle user-specific storage
 export const loadEventsFromStorage = (userId?: string): SpeechEvent[] => {
   if (!userId) {
     console.error('Cannot load events: No user ID provided');
@@ -40,7 +40,7 @@ export const saveEventsToStorage = (events: SpeechEvent[], userId?: string): voi
 
   try {
     const storageKey = `upcomingEvents_${userId}`;
-    // Convert Date objects to ISO strings for storage
+    // Convert Date objects to ISO strings for storage to ensure proper persistence
     const serializedEvents = events.map(event => ({
       ...event,
       date: event.date instanceof Date ? event.date.toISOString() : event.date
