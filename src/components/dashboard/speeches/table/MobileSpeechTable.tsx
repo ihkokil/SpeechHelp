@@ -1,10 +1,10 @@
 
-import { useState, useEffect } from 'react';
 import { Speech } from '@/types/speech';
-import { format } from 'date-fns';
 import { Eye, Edit, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getSpeechTypeLabel, getTypeColor } from '../speech-utils';
+import { formatSpeechDate } from '../utils/dateFormatUtils';
+import { useEffect } from 'react';
 
 interface MobileSpeechTableProps {
   speeches: Speech[];
@@ -18,25 +18,6 @@ const MobileSpeechTable = ({ speeches, onView, onEdit, onDelete }: MobileSpeechT
   useEffect(() => {
     console.log(`MobileSpeechTable rendering with ${speeches.length} speeches`);
   }, [speeches]);
-  
-  const getFormattedDate = (date: string | null) => {
-    if (!date || date === "") {
-      return 'N/A';
-    }
-    
-    try {
-      const parsedDate = new Date(date);
-      
-      if (isNaN(parsedDate.getTime())) {
-        return 'N/A';
-      }
-      
-      return format(parsedDate, 'MMM d, yyyy');
-    } catch (error) {
-      console.error('Error formatting date:', error, 'Date value:', date);
-      return 'N/A';
-    }
-  };
 
   return (
     <div className="space-y-4 pb-4">
@@ -57,8 +38,8 @@ const MobileSpeechTable = ({ speeches, onView, onEdit, onDelete }: MobileSpeechT
                   {getSpeechTypeLabel(speech.speech_type)}
                 </Badge>
                 <div className="mt-2">
-                  <div>Created: {getFormattedDate(speech.created_at)}</div>
-                  <div>Modified: {getFormattedDate(speech.updated_at)}</div>
+                  <div>{formatSpeechDate(speech, 'created_at')}</div>
+                  <div>{speech.isUpcoming ? '' : `Modified: ${formatSpeechDate(speech, 'updated_at')}`}</div>
                 </div>
               </div>
               <div className="flex space-x-2 mt-2 sm:mt-0">

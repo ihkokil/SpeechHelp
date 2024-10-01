@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { 
   Table, 
   TableBody, 
@@ -9,10 +9,10 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Speech } from '@/types/speech';
-import { format } from 'date-fns';
 import { Eye, Edit, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getSpeechTypeLabel, getTypeColor } from '../speech-utils';
+import { formatSpeechDate } from '../utils/dateFormatUtils';
 
 interface DesktopSpeechTableProps {
   speeches: Speech[];
@@ -26,25 +26,6 @@ const DesktopSpeechTable = ({ speeches, onView, onEdit, onDelete }: DesktopSpeec
   useEffect(() => {
     console.log(`DesktopSpeechTable rendering with ${speeches.length} speeches`);
   }, [speeches]);
-  
-  const getFormattedDate = (date: string | null) => {
-    if (!date || date === "") {
-      return 'N/A';
-    }
-    
-    try {
-      const parsedDate = new Date(date);
-      
-      if (isNaN(parsedDate.getTime())) {
-        return 'N/A';
-      }
-      
-      return format(parsedDate, 'MMM d, yyyy');
-    } catch (error) {
-      console.error('Error formatting date:', error, 'Date value:', date);
-      return 'N/A';
-    }
-  };
 
   return (
     <div className="border rounded-md overflow-hidden">
@@ -78,8 +59,12 @@ const DesktopSpeechTable = ({ speeches, onView, onEdit, onDelete }: DesktopSpeec
                         {getSpeechTypeLabel(speech.speech_type)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{getFormattedDate(speech.created_at)}</TableCell>
-                    <TableCell className="hidden md:table-cell">{getFormattedDate(speech.updated_at)}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {formatSpeechDate(speech, 'created_at')}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {speech.isUpcoming ? 'Not created yet' : formatSpeechDate(speech, 'updated_at')}
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end space-x-2">
                         <button
