@@ -119,7 +119,7 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent }) => {
           
           <Button 
             onClick={handleAddEvent}
-            className="flex items-center"
+            className="h-10 px-4 py-2 bg-pink-500 text-white hover:bg-pink-600 transition-colors rounded-md"
           >
             <Plus className="mr-1 h-4 w-4" />
             Add Event
