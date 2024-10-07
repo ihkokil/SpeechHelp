@@ -79,15 +79,16 @@ export const useSpeechesFilter = (
     // Apply type filter
     let filtered: Speech[] = [];
     if (filterType === 'all') {
-      filtered = combinedSpeeches; // Show ALL speeches without filtering by type
+      // Show ALL speeches without filtering by type
+      filtered = combinedSpeeches;
       console.log('Showing ALL speeches');
     } else if (filterType === 'upcoming') {
+      // Only show upcoming speeches
       filtered = combinedSpeeches.filter(speech => speech.isUpcoming === true);
       console.log('Filtering for UPCOMING speeches only');
     } else {
-      filtered = combinedSpeeches.filter(speech => 
-        speech.speech_type === filterType && !speech.isUpcoming
-      );
+      // Filter for a specific speech type
+      filtered = combinedSpeeches.filter(speech => speech.speech_type === filterType);
       console.log(`Filtering for type: ${filterType}`);
     }
     
