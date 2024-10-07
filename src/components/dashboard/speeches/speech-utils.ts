@@ -1,4 +1,3 @@
-
 // Helper functions for speech type display
 
 export const getSpeechTypeLabel = (type: string): string => {
@@ -53,4 +52,3 @@ export const getTypeColor = (type: string): string => {
     default: return `${baseClasses} bg-gray-100 text-gray-700`;
   }
 };
-
