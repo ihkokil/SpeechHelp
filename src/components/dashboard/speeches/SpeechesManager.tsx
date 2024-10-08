@@ -85,6 +85,16 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     const upcomingCount = filteredSpeeches.filter(speech => speech.isUpcoming).length;
     const regularCount = filteredSpeeches.filter(speech => !speech.isUpcoming).length;
     console.log(`SpeechesManager - Breakdown: ${upcomingCount} upcoming, ${regularCount} saved speeches`);
+    
+    // Log detailed speech list after filtering
+    console.log('Speeches after filtering:', 
+      filteredSpeeches.map(s => ({
+        id: s.id,
+        title: s.title,
+        type: s.speech_type,
+        isUpcoming: s.isUpcoming
+      }))
+    );
   }, [filterType, filteredSpeeches]);
   
   return (
