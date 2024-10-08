@@ -17,6 +17,12 @@ export const useSpeechesFilter = (
     console.log('Original speeches array count:', speeches.length);
     console.log('Filter type:', filterType);
     
+    // Deep inspect the speeches array to see what we're actually getting
+    const regularSpeeches = speeches.filter(s => !s.isUpcoming);
+    const upcomingSpeeches = speeches.filter(s => s.isUpcoming);
+    console.log('Original regular speeches count:', regularSpeeches.length);
+    console.log('Original upcoming speeches count:', upcomingSpeeches.length);
+    
     // Ensure each regular speech has correct isUpcoming flag
     let allSpeeches = speeches.map(speech => ({
       ...speech,
@@ -65,6 +71,15 @@ export const useSpeechesFilter = (
     // Combine regular speeches and upcoming speeches
     let combinedSpeeches = [...allSpeeches, ...upcomingSpeeches];
     console.log(`Combined total: ${combinedSpeeches.length} speeches`);
+    
+    // Debug: Log all speech types to see what we have
+    console.log('Speech types in combined list:', 
+      combinedSpeeches.map(s => ({ 
+        type: s.speech_type, 
+        isUpcoming: s.isUpcoming, 
+        title: s.title 
+      }))
+    );
 
     // Apply search filter if provided
     if (searchQuery) {

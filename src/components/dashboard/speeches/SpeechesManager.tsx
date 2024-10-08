@@ -37,6 +37,15 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     const savedSpeeches = speeches.filter(s => !s.isUpcoming).length;
     const upcomingSpeeches = speeches.filter(s => s.isUpcoming).length;
     console.log(`SpeechesManager input breakdown: ${savedSpeeches} saved, ${upcomingSpeeches} upcoming`);
+    
+    // Deep inspect the speech types in incoming speeches
+    const speechTypeBreakdown = speeches.reduce((acc, speech) => {
+      const type = speech.speech_type || 'unknown';
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    console.log('Speech types in incoming speeches:', speechTypeBreakdown);
   }, [speeches]);
   
   const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
@@ -68,6 +77,15 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     
     // Log source speeches count for comparison
     console.log(`SpeechesManager - Source speeches count: ${speeches.length}`);
+    
+    // Log actual speech types after filtering
+    const typesAfterFiltering = filteredSpeeches.reduce((acc, speech) => {
+      const type = speech.speech_type || 'unknown';
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    console.log('Speech types after filtering:', typesAfterFiltering);
   }, [filterType, filteredSpeeches, speeches]);
   
   return (
