@@ -14,7 +14,7 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
   const navigate = useNavigate();
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  const { user } = useAuth(); // Get the current user
+  const { user } = useAuth();
 
   // Load events from localStorage - now with user ID scoping
   const loadEvents = useCallback(() => {
@@ -39,32 +39,44 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
         date: event.date instanceof Date ? event.date : new Date(event.date)
       }));
       setUpcomingEvents(eventsWithDates);
-    } else if (speeches.length && !localStorage.getItem(`upcomingEvents_${userId}`)) {
-      // If no saved events but we have speeches, create example events (legacy behavior)
-      console.log(`Creating example events for user ${userId} based on speeches`);
-      const exampleEvents = speeches
-        .slice(0, 3)
-        .map((speech, index) => {
-          const upcomingDate = new Date();
-          upcomingDate.setDate(upcomingDate.getDate() + (index + 1) * 3);
-          
-          const durationBase = parseInt(speech.id.substring(0, 8), 16);
-          const duration = (durationBase % 20) + 15;
-          
-          return {
-            id: speech.id,
-            title: speech.title,
-            date: upcomingDate,
-            duration: duration,
-            category: speech.speech_type,
-            status: 'upcoming' as const
-          };
-        });
-      setUpcomingEvents(exampleEvents);
-      saveEventsForUser(exampleEvents, userId);
     } else {
-      console.log(`No events found for user ${userId}`);
-      setUpcomingEvents([]);
+      // Create default example events if none found
+      console.log(`No events found for user ${userId}, creating example events`);
+      if (speeches && speeches.length > 0) {
+        console.log(`Creating example events for user ${userId} based on speeches`);
+        const exampleEvents = speeches
+          .slice(0, Math.min(speeches.length, 3))
+          .map((speech, index) => {
+            const upcomingDate = new Date();
+            upcomingDate.setDate(upcomingDate.getDate() + (index + 1) * 3);
+            
+            const durationBase = parseInt(speech.id?.substring(0, 8) || '0', 16) || 20;
+            const duration = (durationBase % 20) + 15;
+            
+            return {
+              id: speech.id || crypto.randomUUID(),
+              title: speech.title || 'Upcoming Speech',
+              date: upcomingDate,
+              duration: duration,
+              category: speech.speech_type || 'speech',
+              status: 'upcoming' as const
+            };
+          });
+        setUpcomingEvents(exampleEvents);
+        saveEventsForUser(exampleEvents, userId);
+      } else {
+        // Create a default event if no speeches exist
+        const defaultEvent: SpeechEvent = {
+          id: crypto.randomUUID(),
+          title: 'Your First Speech',
+          date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+          duration: 15,
+          category: 'speech',
+          status: 'upcoming'
+        };
+        setUpcomingEvents([defaultEvent]);
+        saveEventsForUser([defaultEvent], userId);
+      }
     }
   }, [user, speeches]);
 

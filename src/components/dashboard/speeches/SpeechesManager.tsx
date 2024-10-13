@@ -14,7 +14,7 @@ interface SpeechesManagerProps {
   initialFilter?: string;
 }
 
-const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerProps) => {
+const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManagerProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterOption>(initialFilter as FilterOption);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -34,13 +34,14 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
   
   // Debug logging for incoming speeches data
   useEffect(() => {
-    console.log('SpeechesManager received speeches array:', speeches.length);
-    const savedSpeeches = speeches.filter(s => !s.isUpcoming).length;
-    const upcomingSpeeches = speeches.filter(s => s.isUpcoming).length;
+    console.log('SpeechesManager received speeches array:', speeches?.length || 0);
+    const speechesArray = speeches || [];
+    const savedSpeeches = speechesArray.filter(s => !s.isUpcoming).length;
+    const upcomingSpeeches = speechesArray.filter(s => s.isUpcoming).length;
     console.log(`SpeechesManager input breakdown: ${savedSpeeches} saved, ${upcomingSpeeches} upcoming`);
     
     // Log speech types with proper labels
-    const speechTypes = speeches.map(speech => ({
+    const speechTypes = speechesArray.map(speech => ({
       type: speech.speech_type,
       label: getSpeechTypeLabel(speech.speech_type),
       isUpcoming: speech.isUpcoming
@@ -48,7 +49,7 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     console.log('Speech types with labels:', speechTypes);
   }, [speeches]);
   
-  const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
+  const { filteredSpeeches } = useSpeechesFilter(speeches || [], searchQuery, filterType, sortBy);
   
   const handleViewSpeech = (speech: Speech) => {
     setSelectedSpeech(speech);
