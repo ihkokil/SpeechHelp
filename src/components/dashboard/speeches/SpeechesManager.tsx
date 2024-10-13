@@ -31,32 +31,12 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     }
   }, [initialFilter]);
   
-  // Explicitly check speeches passed to component
+  // Debug logging for incoming speeches data
   useEffect(() => {
     console.log('SpeechesManager received speeches array:', speeches.length);
     const savedSpeeches = speeches.filter(s => !s.isUpcoming).length;
     const upcomingSpeeches = speeches.filter(s => s.isUpcoming).length;
     console.log(`SpeechesManager input breakdown: ${savedSpeeches} saved, ${upcomingSpeeches} upcoming`);
-    
-    // Deep inspect each speech to diagnose issues
-    speeches.forEach((speech, index) => {
-      console.log(`Speech ${index}:`, {
-        id: speech.id,
-        title: speech.title,
-        type: speech.speech_type,
-        isUpcoming: speech.isUpcoming || false,
-        created: speech.created_at
-      });
-    });
-    
-    // Deep inspect the speech types in incoming speeches
-    const speechTypeBreakdown = speeches.reduce((acc, speech) => {
-      const type = speech.speech_type || 'unknown';
-      acc[type] = (acc[type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    
-    console.log('Speech types in incoming speeches:', speechTypeBreakdown);
   }, [speeches]);
   
   const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
@@ -76,7 +56,7 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     setIsDeleteAlertOpen(true);
   };
 
-  // Enhanced debug logging
+  // Enhanced debug logging for filtered results
   useEffect(() => {
     console.log(`SpeechesManager - Current filter: ${filterType}`);
     console.log(`SpeechesManager - Displaying ${filteredSpeeches.length} speeches after filtering`);
@@ -84,17 +64,7 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     // Log number of upcoming and regular speeches
     const upcomingCount = filteredSpeeches.filter(speech => speech.isUpcoming).length;
     const regularCount = filteredSpeeches.filter(speech => !speech.isUpcoming).length;
-    console.log(`SpeechesManager - Breakdown: ${upcomingCount} upcoming, ${regularCount} saved speeches`);
-    
-    // Log detailed speech list after filtering
-    console.log('Speeches after filtering:', 
-      filteredSpeeches.map(s => ({
-        id: s.id,
-        title: s.title,
-        type: s.speech_type,
-        isUpcoming: s.isUpcoming
-      }))
-    );
+    console.log(`SpeechesManager - Breakdown after filtering: ${upcomingCount} upcoming, ${regularCount} saved speeches`);
   }, [filterType, filteredSpeeches]);
   
   return (
