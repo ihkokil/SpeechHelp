@@ -51,14 +51,16 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Current Plan</p>
               <p className="text-sm">
-                {getPlanDisplayName(user)}
+                <span className="inline-flex w-24 justify-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  {getPlanDisplayName(user)}
+                </span>
               </p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Status</p>
               <p className="text-sm">
                 <span 
-                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                  className={`inline-flex items-center w-24 justify-center px-2 py-1 rounded-full text-xs font-medium ${
                     subscriptionStatus === 'Active' 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-gray-100 text-gray-800'
