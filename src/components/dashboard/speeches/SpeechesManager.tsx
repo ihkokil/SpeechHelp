@@ -7,6 +7,7 @@ import EmptyState from './EmptyState';
 import SpeechModals from './SpeechModals';
 import { useSpeechesFilter } from './useSpeechesFilter';
 import { FilterOption, SortOption } from './FilterBar';
+import { getSpeechTypeLabel } from './speech-utils';
 
 interface SpeechesManagerProps {
   speeches: Speech[];
@@ -37,6 +38,14 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     const savedSpeeches = speeches.filter(s => !s.isUpcoming).length;
     const upcomingSpeeches = speeches.filter(s => s.isUpcoming).length;
     console.log(`SpeechesManager input breakdown: ${savedSpeeches} saved, ${upcomingSpeeches} upcoming`);
+    
+    // Log speech types with proper labels
+    const speechTypes = speeches.map(speech => ({
+      type: speech.speech_type,
+      label: getSpeechTypeLabel(speech.speech_type),
+      isUpcoming: speech.isUpcoming
+    }));
+    console.log('Speech types with labels:', speechTypes);
   }, [speeches]);
   
   const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
@@ -65,6 +74,15 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     const upcomingCount = filteredSpeeches.filter(speech => speech.isUpcoming).length;
     const regularCount = filteredSpeeches.filter(speech => !speech.isUpcoming).length;
     console.log(`SpeechesManager - Breakdown after filtering: ${upcomingCount} upcoming, ${regularCount} saved speeches`);
+    
+    // Log speech types with their display labels
+    const typesWithLabels = filteredSpeeches.map(speech => ({
+      type: speech.speech_type,
+      label: getSpeechTypeLabel(speech.speech_type),
+      isUpcoming: speech.isUpcoming,
+      title: speech.title
+    }));
+    console.log('Filtered speeches with proper labels:', typesWithLabels);
   }, [filterType, filteredSpeeches]);
   
   return (

@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { Speech } from '@/types/speech';
 import { FilterOption, SortOption } from './FilterBar';
 import { useAuth } from '@/contexts/AuthContext';
+import { getSpeechTypeLabel } from './speech-utils';
 
 export const useSpeechesFilter = (
   speeches: Speech[],
@@ -52,7 +53,7 @@ export const useSpeechesFilter = (
       upcomingEvents = [];
     }
     
-    // Create speech objects for upcoming events
+    // Create speech objects for upcoming events - ensure speech_type is preserved
     const upcomingSpeeches = upcomingEvents.map((event) => ({
       id: event.id,
       user_id: user?.id || '', 
@@ -60,7 +61,7 @@ export const useSpeechesFilter = (
       content: event.notes || '',
       created_at: event.date || '', // Use event date for sorting
       updated_at: event.date || '',
-      speech_type: event.category || 'upcoming',
+      speech_type: event.category || 'upcoming', // Preserve the original category/speech_type
       isUpcoming: true,
       event_date: event.date
     }));
@@ -75,6 +76,7 @@ export const useSpeechesFilter = (
     console.log('Speech types in combined list:', 
       combinedSpeeches.map(s => ({ 
         type: s.speech_type, 
+        label: getSpeechTypeLabel(s.speech_type),
         isUpcoming: s.isUpcoming, 
         title: s.title 
       }))
