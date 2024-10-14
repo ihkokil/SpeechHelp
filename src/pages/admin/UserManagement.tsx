@@ -80,15 +80,31 @@ const UserManagement = () => {
   };
 
   // Handler for when a user is updated via the EditUserDialog
-  const handleUserUpdated = (updatedUser: User) => {
+  const handleUserUpdated = async (updatedUser: User) => {
     console.log("User updated:", updatedUser);
+    
+    // Update the user in the local state immediately
     setUsers(prevUsers => 
       prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
     );
+    
+    // Also update the selected user if it's the same user
+    if (selectedUser && selectedUser.id === updatedUser.id) {
+      setSelectedUser(updatedUser);
+    }
+    
     toast({
       title: "User updated",
       description: `${updatedUser.email} has been updated successfully.`
     });
+    
+    // Refresh the users data to ensure consistency with server
+    try {
+      await fetchUsers();
+      console.log("Users data refreshed after update");
+    } catch (error) {
+      console.error("Error refreshing users data:", error);
+    }
   };
 
   // Handler for opening the subscription dialog
