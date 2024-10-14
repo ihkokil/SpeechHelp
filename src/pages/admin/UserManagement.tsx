@@ -45,7 +45,6 @@ const UserManagement = () => {
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
-    handleEditUser,
     handleSendEmail,
     cleanup,
     addUser,
@@ -155,7 +154,6 @@ const UserManagement = () => {
             handleBulkActivate={handleBulkActivate}
             handleBulkDeactivate={handleBulkDeactivate}
             handleDeleteUser={handleDeleteUser}
-            handleEditUser={handleEditUser}
             handleSendEmail={handleSendEmail}
             handleUpdateSubscription={handleOpenSubscriptionDialog}
           />
