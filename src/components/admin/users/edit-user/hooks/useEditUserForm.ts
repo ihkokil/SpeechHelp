@@ -9,11 +9,16 @@ import { formatUserDisplayName } from '../../management/utils/userDisplayUtils';
 
 // Form validation schema
 const formSchema = z.object({
+  firstName: z.string().min(1, { message: 'First name is required' }),
+  lastName: z.string().min(1, { message: 'Last name is required' }),
   email: z.string().email({ message: 'Please enter a valid email address' }),
-  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
-  role: z.string().default('user'),
-  isActive: z.boolean().default(true),
   phone: z.string().optional(),
+  streetAddress: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
+  country: z.string().optional(),
+  isActive: z.boolean().default(true),
 });
 
 export type FormValues = z.infer<typeof formSchema>;
@@ -31,11 +36,16 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      firstName: initialUser?.user_metadata?.first_name || '',
+      lastName: initialUser?.user_metadata?.last_name || '',
       email: initialUser?.email || '',
-      name: initialUser ? formatUserDisplayName(initialUser) : '',
-      role: initialUser?.is_admin ? (initialUser.admin_role || 'admin') : 'user',
-      isActive: initialUser?.is_active !== false,
       phone: initialUser?.user_metadata?.phone || '',
+      streetAddress: initialUser?.user_metadata?.street_address || '',
+      city: initialUser?.user_metadata?.city || '',
+      state: initialUser?.user_metadata?.state || '',
+      zipCode: initialUser?.user_metadata?.zip_code || '',
+      country: initialUser?.user_metadata?.country || '',
+      isActive: initialUser?.is_active !== false,
     },
   });
 
@@ -54,13 +64,23 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         throw new Error('No user to update');
       }
       
-      // 1. Update user profile information with admin_update_user_profile RPC function
+      // Update user profile information with admin_update_user_profile RPC function
       const { data: profileData, error: profileError } = await supabase.rpc('admin_update_user_profile', {
         user_id_param: initialUser.id,
-        display_name: values.name,
-        user_email: initialUser.email, // Not changing email
+        display_name: `${values.firstName} ${values.lastName}`,
+        user_email: values.email,
         phone_number: values.phone || '',
-        is_active_status: values.isActive
+        is_active_status: values.isActive,
+        user_metadata: {
+          first_name: values.firstName,
+          last_name: values.lastName,
+          phone: values.phone,
+          street_address: values.streetAddress,
+          city: values.city,
+          state: values.state,
+          zip_code: values.zipCode,
+          country: values.country
+        }
       });
       
       if (profileError) {
@@ -70,43 +90,42 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       
       console.log('User profile updated successfully:', profileData);
       
-      // 2. Update admin role if needed
-      const shouldUpdateAdminStatus = (
-        (initialUser.is_admin && values.role === 'user') || 
-        (!initialUser.is_admin && values.role !== 'user') || 
-        (initialUser.is_admin && values.role !== 'user' && initialUser.admin_role !== values.role)
-      );
-      
-      if (shouldUpdateAdminStatus) {
-        const { data: adminData, error: adminError } = await supabase.rpc('update_user_admin_status', {
-          user_id: initialUser.id,
-          is_admin_status: values.role !== 'user',
-          admin_role_value: values.role !== 'user' ? values.role : null,
-          permissions_value: initialUser.permissions || []
-        });
+      // Update user email if it changed
+      if (values.email !== initialUser.email) {
+        const { error: emailError } = await supabase.auth.admin.updateUserById(
+          initialUser.id,
+          { email: values.email }
+        );
         
-        if (adminError) {
-          console.error('Error updating admin status:', adminError);
-          throw adminError;
+        if (emailError) {
+          console.error('Error updating user email:', emailError);
+          // Don't throw here as the profile update was successful
+          toast({
+            title: 'Partial Update',
+            description: 'Profile updated but email change failed. User will need to verify new email.',
+            variant: 'destructive',
+          });
         }
-        
-        console.log('Admin status updated successfully:', adminData);
       }
       
-      // 3. Construct the updated user object for UI updates
+      // Construct the updated user object for UI updates
       const updatedMetadata = {
         ...(initialUser.user_metadata || {}),
-        name: values.name,
-        full_name: values.name,
+        first_name: values.firstName,
+        last_name: values.lastName,
+        full_name: `${values.firstName} ${values.lastName}`,
         phone: values.phone,
+        street_address: values.streetAddress,
+        city: values.city,
+        state: values.state,
+        zip_code: values.zipCode,
+        country: values.country,
       };
       
       const updatedUser: User = {
         ...initialUser,
-        email: initialUser.email,
+        email: values.email,
         is_active: values.isActive,
-        is_admin: values.role !== 'user',
-        admin_role: values.role !== 'user' ? values.role : undefined,
         updated_at: new Date().toISOString(),
         user_metadata: updatedMetadata
       };

@@ -18,6 +18,7 @@ interface UserTableRowProps {
   onDeleteUser: (userId: string) => void;
   onSendEmail?: (user: User) => void;
   onUpdateSubscription?: (user: User) => void;
+  onEditUser?: (user: User) => void;
 }
 
 const UserTableRow: React.FC<UserTableRowProps> = ({
@@ -29,7 +30,8 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   onToggleActive,
   onDeleteUser,
   onSendEmail,
-  onUpdateSubscription
+  onUpdateSubscription,
+  onEditUser
 }) => {
   const handleRowClick = () => {
     onViewDetails(user);
@@ -108,6 +110,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
             onDeleteUser={onDeleteUser}
             onSendEmail={onSendEmail}
             onUpdateSubscription={onUpdateSubscription}
+            onEditUser={onEditUser}
           />
         </div>
       </TableCell>
