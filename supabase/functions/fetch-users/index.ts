@@ -15,67 +15,76 @@ serve(async (req) => {
   }
 
   try {
-    // Create a Supabase client with the Admin API key
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing environment variables for Supabase connection');
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing environment variables');
     }
     
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Use service role to fetch all users and profiles
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
     
-    // Query auth.users (only possible with service_role key)
-    const { data: users, error } = await supabase.auth.admin.listUsers();
+    console.log('Fetching users from auth and profiles...');
     
-    if (error) {
-      throw error;
+    // Get all users from auth.users
+    const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+    
+    if (authError) {
+      console.error('Error fetching auth users:', authError);
+      throw new Error('Failed to fetch users from auth');
     }
     
-    console.log(`Fetched ${users.users.length} users from auth.users`);
-    
-    // Fetch all profiles to join with users
+    // Get all profiles
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('*');
-      
+    
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError);
-      // We'll continue but with empty profiles
+      throw new Error('Failed to fetch user profiles');
     }
     
-    console.log(`Fetched ${profiles?.length || 0} profiles`);
+    console.log(`Found ${authUsers.users.length} auth users and ${profiles?.length || 0} profiles`);
     
-    // Create a map of profiles by id for faster lookup
-    const profilesMap = new Map();
-    if (profiles) {
-      profiles.forEach(profile => {
-        profilesMap.set(profile.id, profile);
-      });
-    }
+    // Create a map of profiles for quick lookup
+    const profileMap = new Map();
+    profiles?.forEach(profile => {
+      profileMap.set(profile.id, profile);
+    });
     
-    // Enhance users with their profile data
-    const enhancedUsers = users.users.map(user => {
-      // Find the corresponding profile or use default empty profile
-      const profile = profilesMap.get(user.id) || {
-        username: null,
-        phone: null,
-        is_active: true,
-        subscription_plan: null,
-        subscription_end_date: null
-      };
+    // Combine auth users with their profiles
+    const usersWithProfiles = authUsers.users.map(authUser => {
+      const profile = profileMap.get(authUser.id) || {};
       
       return {
-        ...user,
-        profile
+        ...authUser,
+        profile: {
+          username: profile.username || authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0],
+          phone: profile.phone || authUser.user_metadata?.phone || '',
+          is_active: profile.is_active !== false,
+          is_admin: profile.is_admin || false,
+          admin_role: profile.admin_role || null,
+          permissions: profile.permissions || [],
+          subscription_plan: profile.subscription_plan || null,
+          subscription_end_date: profile.subscription_end_date || null,
+          stripe_customer_id: profile.stripe_customer_id || null,
+          stripe_subscription_id: profile.stripe_subscription_id || null,
+          created_at: profile.created_at,
+          updated_at: profile.updated_at
+        }
       };
     });
     
-    console.log(`Returning ${enhancedUsers.length} enhanced users`);
+    console.log('Successfully combined users with profiles');
     
-    // Return the enhanced users
     return new Response(
-      JSON.stringify({ users: enhancedUsers }),
+      JSON.stringify({ users: usersWithProfiles }),
       { 
         headers: { 
           'Content-Type': 'application/json',
@@ -83,11 +92,13 @@ serve(async (req) => {
         } 
       }
     );
-  } catch (error) {
-    console.error('Error fetching users:', error);
+  } catch (error: any) {
+    console.error('Error in fetch-users function:', error);
     
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'Failed to fetch users'
+      }),
       { 
         status: 500,
         headers: { 
