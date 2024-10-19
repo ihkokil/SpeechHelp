@@ -290,9 +290,11 @@ export type Database = {
           admin_role: string | null
           avatar_url: string | null
           created_at: string
+          first_name: string | null
           id: string
           is_active: boolean | null
           is_admin: boolean | null
+          last_name: string | null
           permissions: Json | null
           phone: string | null
           stripe_customer_id: string | null
@@ -307,9 +309,11 @@ export type Database = {
           admin_role?: string | null
           avatar_url?: string | null
           created_at?: string
+          first_name?: string | null
           id: string
           is_active?: boolean | null
           is_admin?: boolean | null
+          last_name?: string | null
           permissions?: Json | null
           phone?: string | null
           stripe_customer_id?: string | null
@@ -324,9 +328,11 @@ export type Database = {
           admin_role?: string | null
           avatar_url?: string | null
           created_at?: string
+          first_name?: string | null
           id?: string
           is_active?: boolean | null
           is_admin?: boolean | null
+          last_name?: string | null
           permissions?: Json | null
           phone?: string | null
           stripe_customer_id?: string | null
@@ -379,14 +385,24 @@ export type Database = {
         Returns: boolean
       }
       admin_update_user_profile: {
-        Args: {
-          user_id_param: string
-          display_name: string
-          user_email: string
-          phone_number: string
-          is_active_status: boolean
-          user_metadata?: Json
-        }
+        Args:
+          | {
+              user_id_param: string
+              display_name: string
+              user_email: string
+              phone_number: string
+              is_active_status: boolean
+              user_metadata?: Json
+            }
+          | {
+              user_id_param: string
+              first_name_param: string
+              last_name_param: string
+              user_email: string
+              phone_number: string
+              is_active_status: boolean
+              user_metadata?: Json
+            }
         Returns: Json
       }
       authenticate_admin: {

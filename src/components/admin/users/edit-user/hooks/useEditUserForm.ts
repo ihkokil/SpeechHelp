@@ -66,7 +66,8 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       // Update user profile information using admin_update_user_profile RPC function
       const { data: profileData, error: profileError } = await supabase.rpc('admin_update_user_profile', {
         user_id_param: initialUser.id,
-        display_name: `${values.firstName} ${values.lastName}`,
+        first_name_param: values.firstName,
+        last_name_param: values.lastName,
         user_email: values.email,
         phone_number: values.phone || '',
         is_active_status: values.isActive,
