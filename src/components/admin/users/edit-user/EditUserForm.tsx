@@ -49,8 +49,9 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: user.user_metadata?.first_name || '',
-      lastName: user.user_metadata?.last_name || '',
+      // Use direct first_name and last_name from profiles table, with fallbacks
+      firstName: user.first_name || user.user_metadata?.first_name || '',
+      lastName: user.last_name || user.user_metadata?.last_name || '',
       email: user.email || '',
       phone: user.user_metadata?.phone || '',
       streetAddress: user.user_metadata?.street_address || '',

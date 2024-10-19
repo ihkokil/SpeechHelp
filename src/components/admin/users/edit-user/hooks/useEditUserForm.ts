@@ -35,8 +35,9 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: initialUser?.user_metadata?.first_name || '',
-      lastName: initialUser?.user_metadata?.last_name || '',
+      // Use direct first_name and last_name from profiles table, with fallbacks
+      firstName: initialUser?.first_name || initialUser?.user_metadata?.first_name || '',
+      lastName: initialUser?.last_name || initialUser?.user_metadata?.last_name || '',
       email: initialUser?.email || '',
       phone: initialUser?.user_metadata?.phone || '',
       streetAddress: initialUser?.user_metadata?.street_address || '',
@@ -114,6 +115,9 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         email: values.email,
         is_active: values.isActive,
         updated_at: new Date().toISOString(),
+        // Update both the direct fields and user_metadata for compatibility
+        first_name: values.firstName,
+        last_name: values.lastName,
         user_metadata: {
           ...(initialUser.user_metadata || {}),
           first_name: values.firstName,
