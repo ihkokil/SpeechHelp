@@ -64,6 +64,29 @@ serve(async (req) => {
       
       return {
         ...authUser,
+        // Include direct fields from profiles table
+        first_name: profile.first_name || null,
+        last_name: profile.last_name || null,
+        is_active: profile.is_active !== false,
+        is_admin: profile.is_admin || false,
+        admin_role: profile.admin_role || null,
+        permissions: profile.permissions || [],
+        subscription_plan: profile.subscription_plan || null,
+        subscription_end_date: profile.subscription_end_date || null,
+        stripe_customer_id: profile.stripe_customer_id || null,
+        stripe_subscription_id: profile.stripe_subscription_id || null,
+        // Enhanced user_metadata with address fields
+        user_metadata: {
+          ...authUser.user_metadata,
+          first_name: profile.first_name || authUser.user_metadata?.first_name || '',
+          last_name: profile.last_name || authUser.user_metadata?.last_name || '',
+          phone: authUser.user_metadata?.phone || '',
+          street_address: authUser.user_metadata?.street_address || '',
+          city: authUser.user_metadata?.city || '',
+          state: authUser.user_metadata?.state || '',
+          zip_code: authUser.user_metadata?.zip_code || '',
+          country: authUser.user_metadata?.country || '',
+        },
         profile: {
           username: profile.username || authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0],
           phone: profile.phone || authUser.user_metadata?.phone || '',
