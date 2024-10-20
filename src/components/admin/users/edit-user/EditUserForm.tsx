@@ -49,7 +49,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      // Use direct first_name and last_name from profiles table, with fallbacks
+      // Prioritize direct fields from profiles table, then fallback to user_metadata
       firstName: user.first_name || user.user_metadata?.first_name || '',
       lastName: user.last_name || user.user_metadata?.last_name || '',
       email: user.email || '',
@@ -61,6 +61,15 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
       country: user.user_metadata?.country || '',
       isActive: user.is_active !== false,
     },
+  });
+
+  // Log the user data to help debug
+  console.log('EditUserForm - User data:', {
+    id: user.id,
+    email: user.email,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    user_metadata: user.user_metadata
   });
 
   const handleSendPasswordReset = () => {
