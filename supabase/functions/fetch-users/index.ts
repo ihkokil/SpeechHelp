@@ -62,11 +62,14 @@ serve(async (req) => {
     const usersWithProfiles = authUsers.users.map(authUser => {
       const profile = profileMap.get(authUser.id) || {};
       
+      // Extract metadata safely
+      const metadata = authUser.raw_user_meta_data || {};
+      
       return {
         ...authUser,
-        // Direct fields from profiles table - ensure they're strings, not objects
-        first_name: profile.first_name || null,
-        last_name: profile.last_name || null,
+        // Direct fields from profiles table as strings
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
         is_active: profile.is_active !== false,
         is_admin: profile.is_admin || false,
         admin_role: profile.admin_role || null,
@@ -77,19 +80,22 @@ serve(async (req) => {
         stripe_subscription_id: profile.stripe_subscription_id || null,
         // Enhanced user_metadata with proper fallbacks
         user_metadata: {
-          ...authUser.user_metadata,
-          first_name: profile.first_name || authUser.user_metadata?.first_name || '',
-          last_name: profile.last_name || authUser.user_metadata?.last_name || '',
-          phone: authUser.user_metadata?.phone || '',
-          street_address: authUser.user_metadata?.street_address || '',
-          city: authUser.user_metadata?.city || '',
-          state: authUser.user_metadata?.state || '',
-          zip_code: authUser.user_metadata?.zip_code || '',
-          country: authUser.user_metadata?.country || '',
+          first_name: metadata.first_name || profile.first_name || '',
+          last_name: metadata.last_name || profile.last_name || '',
+          full_name: metadata.full_name || metadata.name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || '',
+          name: metadata.name || metadata.full_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || '',
+          email: authUser.email || '',
+          phone: metadata.phone || profile.phone || '',
+          street_address: metadata.street_address || '',
+          city: metadata.city || '',
+          state: metadata.state || '',
+          zip_code: metadata.zip_code || '',
+          country: metadata.country || '',
+          country_code: metadata.country_code || '',
         },
         profile: {
-          username: profile.username || authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0],
-          phone: profile.phone || authUser.user_metadata?.phone || '',
+          username: profile.username || metadata.full_name || metadata.name || authUser.email?.split('@')[0] || '',
+          phone: profile.phone || metadata.phone || '',
           is_active: profile.is_active !== false,
           is_admin: profile.is_admin || false,
           admin_role: profile.admin_role || null,

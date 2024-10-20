@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,25 +33,24 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Helper function to safely extract string values
-  const extractStringValue = (value: any): string => {
+  const safeString = (value: any): string => {
     if (typeof value === 'string') return value;
-    if (value && typeof value === 'object' && value.value) return String(value.value);
-    return '';
+    if (value === null || value === undefined) return '';
+    return String(value);
   };
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      // Safely extract values from both direct fields and user_metadata
-      firstName: extractStringValue(initialUser?.first_name) || extractStringValue(initialUser?.user_metadata?.first_name) || '',
-      lastName: extractStringValue(initialUser?.last_name) || extractStringValue(initialUser?.user_metadata?.last_name) || '',
-      email: initialUser?.email || '',
-      phone: extractStringValue(initialUser?.user_metadata?.phone) || '',
-      streetAddress: extractStringValue(initialUser?.user_metadata?.street_address) || '',
-      city: extractStringValue(initialUser?.user_metadata?.city) || '',
-      state: extractStringValue(initialUser?.user_metadata?.state) || '',
-      zipCode: extractStringValue(initialUser?.user_metadata?.zip_code) || '',
-      country: extractStringValue(initialUser?.user_metadata?.country) || '',
+      firstName: safeString(initialUser?.first_name) || safeString(initialUser?.user_metadata?.first_name) || '',
+      lastName: safeString(initialUser?.last_name) || safeString(initialUser?.user_metadata?.last_name) || '',
+      email: safeString(initialUser?.email) || '',
+      phone: safeString(initialUser?.user_metadata?.phone) || '',
+      streetAddress: safeString(initialUser?.user_metadata?.street_address) || '',
+      city: safeString(initialUser?.user_metadata?.city) || '',
+      state: safeString(initialUser?.user_metadata?.state) || '',
+      zipCode: safeString(initialUser?.user_metadata?.zip_code) || '',
+      country: safeString(initialUser?.user_metadata?.country) || '',
       isActive: initialUser?.is_active !== false,
     },
   });
@@ -112,7 +112,6 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         { 
           email: values.email,
           user_metadata: {
-            ...initialUser.user_metadata,
             first_name: values.firstName,
             last_name: values.lastName,
             full_name: `${values.firstName} ${values.lastName}`,
