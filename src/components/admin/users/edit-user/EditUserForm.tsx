@@ -46,19 +46,26 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
 }) => {
   const { toast } = useToast();
   
+  // Helper function to safely extract string values
+  const extractStringValue = (value: any): string => {
+    if (typeof value === 'string') return value;
+    if (value && typeof value === 'object' && value.value) return String(value.value);
+    return '';
+  };
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      // Prioritize direct fields from profiles table, then fallback to user_metadata
-      firstName: user.first_name || user.user_metadata?.first_name || '',
-      lastName: user.last_name || user.user_metadata?.last_name || '',
+      // Safely extract values from both direct fields and user_metadata
+      firstName: extractStringValue(user.first_name) || extractStringValue(user.user_metadata?.first_name) || '',
+      lastName: extractStringValue(user.last_name) || extractStringValue(user.user_metadata?.last_name) || '',
       email: user.email || '',
-      phone: user.user_metadata?.phone || '',
-      streetAddress: user.user_metadata?.street_address || '',
-      city: user.user_metadata?.city || '',
-      state: user.user_metadata?.state || '',
-      zipCode: user.user_metadata?.zip_code || '',
-      country: user.user_metadata?.country || '',
+      phone: extractStringValue(user.user_metadata?.phone) || '',
+      streetAddress: extractStringValue(user.user_metadata?.street_address) || '',
+      city: extractStringValue(user.user_metadata?.city) || '',
+      state: extractStringValue(user.user_metadata?.state) || '',
+      zipCode: extractStringValue(user.user_metadata?.zip_code) || '',
+      country: extractStringValue(user.user_metadata?.country) || '',
       isActive: user.is_active !== false,
     },
   });

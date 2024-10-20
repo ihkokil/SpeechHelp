@@ -64,7 +64,7 @@ serve(async (req) => {
       
       return {
         ...authUser,
-        // Include direct fields from profiles table
+        // Direct fields from profiles table - ensure they're strings, not objects
         first_name: profile.first_name || null,
         last_name: profile.last_name || null,
         is_active: profile.is_active !== false,
@@ -75,7 +75,7 @@ serve(async (req) => {
         subscription_end_date: profile.subscription_end_date || null,
         stripe_customer_id: profile.stripe_customer_id || null,
         stripe_subscription_id: profile.stripe_subscription_id || null,
-        // Enhanced user_metadata with address fields
+        // Enhanced user_metadata with proper fallbacks
         user_metadata: {
           ...authUser.user_metadata,
           first_name: profile.first_name || authUser.user_metadata?.first_name || '',
