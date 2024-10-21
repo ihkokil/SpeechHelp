@@ -403,6 +403,20 @@ export type Database = {
               is_active_status: boolean
               user_metadata?: Json
             }
+          | {
+              user_id_param: string
+              first_name_param: string
+              last_name_param: string
+              user_email: string
+              phone_number?: string
+              street_address_param?: string
+              city_param?: string
+              state_param?: string
+              zip_code_param?: string
+              country_param?: string
+              is_active_status?: boolean
+              user_metadata?: Json
+            }
         Returns: Json
       }
       authenticate_admin: {
