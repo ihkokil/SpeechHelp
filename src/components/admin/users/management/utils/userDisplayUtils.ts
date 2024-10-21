@@ -18,20 +18,42 @@ export const formatDateRelative = (dateString: string | null) => {
   }
 };
 
+// Helper function to safely extract string values
+const safeString = (value: any): string => {
+  if (typeof value === 'string') return value.trim();
+  if (value === null || value === undefined) return '';
+  return String(value).trim();
+};
+
+// Helper function to construct full name from first and last name
+const constructFullName = (firstName: string, lastName: string): string => {
+  const first = safeString(firstName);
+  const last = safeString(lastName);
+  if (first && last) {
+    return `${first} ${last}`;
+  }
+  if (first) return first;
+  if (last) return last;
+  return '';
+};
+
 export const getUserName = (user: User) => {
-  const firstName = user.user_metadata?.first_name || '';
-  const lastName = user.user_metadata?.last_name || '';
+  // Always try to construct from first and last name first
+  const firstName = safeString(user.first_name) || safeString(user.user_metadata?.first_name);
+  const lastName = safeString(user.last_name) || safeString(user.user_metadata?.last_name);
   
-  if (firstName && lastName) {
-    return `${firstName} ${lastName}`;
+  const fullName = constructFullName(firstName, lastName);
+  if (fullName) {
+    return fullName;
   }
   
+  // Fallback to existing full_name or name fields (but these should be deprecated)
   if (user.user_metadata?.full_name) {
-    return user.user_metadata.full_name;
+    return safeString(user.user_metadata.full_name);
   }
   
   if (user.user_metadata?.name) {
-    return user.user_metadata.name;
+    return safeString(user.user_metadata.name);
   }
   
   if (user.email) {

@@ -34,28 +34,27 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
 
   // Helper function to safely extract string values
   const safeString = (value: any): string => {
-    if (typeof value === 'string') return value;
+    if (typeof value === 'string') return value.trim();
     if (value === null || value === undefined) return '';
-    return String(value);
+    return String(value).trim();
   };
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: safeString(initialUser?.first_name) || safeString(initialUser?.user_metadata?.first_name) || '',
-      lastName: safeString(initialUser?.last_name) || safeString(initialUser?.user_metadata?.last_name) || '',
-      email: safeString(initialUser?.email) || '',
-      phone: safeString(initialUser?.user_metadata?.phone) || '',
-      streetAddress: safeString(initialUser?.user_metadata?.street_address) || '',
-      city: safeString(initialUser?.user_metadata?.city) || '',
-      state: safeString(initialUser?.user_metadata?.state) || '',
-      zipCode: safeString(initialUser?.user_metadata?.zip_code) || '',
-      country: safeString(initialUser?.user_metadata?.country) || '',
+      firstName: safeString(initialUser?.first_name) || safeString(initialUser?.user_metadata?.first_name),
+      lastName: safeString(initialUser?.last_name) || safeString(initialUser?.user_metadata?.last_name),
+      email: safeString(initialUser?.email),
+      phone: safeString(initialUser?.user_metadata?.phone),
+      streetAddress: safeString(initialUser?.user_metadata?.street_address),
+      city: safeString(initialUser?.user_metadata?.city),
+      state: safeString(initialUser?.user_metadata?.state),
+      zipCode: safeString(initialUser?.user_metadata?.zip_code),
+      country: safeString(initialUser?.user_metadata?.country),
       isActive: initialUser?.is_active !== false,
     },
   });
 
-  // Log user data for debugging
   console.log('useEditUserForm - Initial user data:', {
     id: initialUser?.id,
     email: initialUser?.email,
@@ -79,23 +78,28 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       
       console.log('Updating user profile for user ID:', initialUser.id);
       
+      // Construct full name from first and last name
+      const fullName = `${values.firstName.trim()} ${values.lastName.trim()}`.trim();
+      
       // Update user profile information using admin_update_user_profile RPC function
       const { data: profileData, error: profileError } = await supabase.rpc('admin_update_user_profile', {
         user_id_param: initialUser.id,
-        first_name_param: values.firstName,
-        last_name_param: values.lastName,
+        first_name_param: values.firstName.trim(),
+        last_name_param: values.lastName.trim(),
         user_email: values.email,
-        phone_number: values.phone || '',
+        phone_number: values.phone?.trim() || '',
         is_active_status: values.isActive,
         user_metadata: {
-          first_name: values.firstName,
-          last_name: values.lastName,
-          phone: values.phone || '',
-          street_address: values.streetAddress || '',
-          city: values.city || '',
-          state: values.state || '',
-          zip_code: values.zipCode || '',
-          country: values.country || ''
+          first_name: values.firstName.trim(),
+          last_name: values.lastName.trim(),
+          full_name: fullName,
+          name: fullName,
+          phone: values.phone?.trim() || '',
+          street_address: values.streetAddress?.trim() || '',
+          city: values.city?.trim() || '',
+          state: values.state?.trim() || '',
+          zip_code: values.zipCode?.trim() || '',
+          country: values.country?.trim() || ''
         }
       });
       
@@ -112,16 +116,16 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         { 
           email: values.email,
           user_metadata: {
-            first_name: values.firstName,
-            last_name: values.lastName,
-            full_name: `${values.firstName} ${values.lastName}`,
-            name: `${values.firstName} ${values.lastName}`,
-            phone: values.phone || '',
-            street_address: values.streetAddress || '',
-            city: values.city || '',
-            state: values.state || '',
-            zip_code: values.zipCode || '',
-            country: values.country || ''
+            first_name: values.firstName.trim(),
+            last_name: values.lastName.trim(),
+            full_name: fullName,
+            name: fullName,
+            phone: values.phone?.trim() || '',
+            street_address: values.streetAddress?.trim() || '',
+            city: values.city?.trim() || '',
+            state: values.state?.trim() || '',
+            zip_code: values.zipCode?.trim() || '',
+            country: values.country?.trim() || ''
           }
         }
       );
@@ -137,20 +141,20 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         is_active: values.isActive,
         updated_at: new Date().toISOString(),
         // Update both the direct fields and user_metadata for compatibility
-        first_name: values.firstName,
-        last_name: values.lastName,
+        first_name: values.firstName.trim(),
+        last_name: values.lastName.trim(),
         user_metadata: {
           ...(initialUser.user_metadata || {}),
-          first_name: values.firstName,
-          last_name: values.lastName,
-          full_name: `${values.firstName} ${values.lastName}`,
-          name: `${values.firstName} ${values.lastName}`,
-          phone: values.phone || '',
-          street_address: values.streetAddress || '',
-          city: values.city || '',
-          state: values.state || '',
-          zip_code: values.zipCode || '',
-          country: values.country || '',
+          first_name: values.firstName.trim(),
+          last_name: values.lastName.trim(),
+          full_name: fullName,
+          name: fullName,
+          phone: values.phone?.trim() || '',
+          street_address: values.streetAddress?.trim() || '',
+          city: values.city?.trim() || '',
+          state: values.state?.trim() || '',
+          zip_code: values.zipCode?.trim() || '',
+          country: values.country?.trim() || '',
         }
       };
       
