@@ -29,6 +29,23 @@ interface UseEditUserProps {
   onClose: () => void;
 }
 
+// Type for the RPC response
+interface AdminUpdateUserProfileResponse {
+  success?: boolean;
+  error?: string;
+  id?: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  is_active?: boolean;
+  is_admin?: boolean;
+  admin_role?: string;
+  updated_at?: string;
+  username?: string;
+  phone?: string;
+  subscription_plan?: string;
+}
+
 export const useEditUser = ({ user, onSuccess, onClose }: UseEditUserProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -91,11 +108,14 @@ export const useEditUser = ({ user, onSuccess, onClose }: UseEditUserProps) => {
         throw new Error(profileError.message || 'Failed to update user profile');
       }
 
-      if (!profileData?.success) {
-        throw new Error(profileData?.error || 'Failed to update user profile');
+      // Type cast the response to our expected interface
+      const response = profileData as AdminUpdateUserProfileResponse;
+
+      if (!response?.success) {
+        throw new Error(response?.error || 'Failed to update user profile');
       }
       
-      console.log('User profile updated successfully:', profileData);
+      console.log('User profile updated successfully:', response);
       
       // Construct the updated user object
       const fullName = `${values.firstName.trim()} ${values.lastName.trim()}`.trim();
