@@ -2,8 +2,7 @@
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { Mail } from 'lucide-react';
+import { resetPassword } from '@/services/authService';
 
 interface ForgotPasswordFormProps {
   onBackToLogin: () => void;
@@ -19,24 +18,11 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Reset link sent",
-        description: "Check your email for the password reset link.",
-      });
-      onBackToLogin();
-    } catch (error: any) {
-      console.error('Reset password error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "An error occurred while sending the reset link",
-        variant: "destructive"
-      });
+      await resetPassword(email, toast);
+      // Clear the form on success
+      setEmail('');
+    } catch (error) {
+      // Error is already handled in the service
     } finally {
       setLoading(false);
     }
@@ -45,14 +31,14 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
   return (
     <>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Reset Password</h1>
-        <p className="text-gray-600">Enter your email to receive a reset link</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Forgot Password?</h1>
+        <p className="text-gray-600">Enter your email address and we'll send you a link to reset your password</p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email
+            Email Address
           </label>
           <input
             id="email"
@@ -61,7 +47,7 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-            placeholder="your@email.com"
+            placeholder="Enter your email address"
           />
         </div>
 
@@ -77,21 +63,21 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Processing...
+              Sending Reset Link...
             </span>
           ) : 'Send Reset Link'}
         </ButtonCustom>
-      </form>
 
-      <div className="mt-6 text-center">
-        <button
-          type="button"
-          onClick={onBackToLogin}
-          className="text-pink-600 hover:text-pink-800 text-sm font-medium"
-        >
-          Back to login
-        </button>
-      </div>
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={onBackToLogin}
+            className="text-pink-600 hover:text-pink-700 text-sm font-medium"
+          >
+            ← Back to Login
+          </button>
+        </div>
+      </form>
     </>
   );
 };
