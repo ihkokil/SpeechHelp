@@ -9,7 +9,7 @@ interface EmailHeaderProps {
 
 export const EmailHeader = ({ username = 'there' }: EmailHeaderProps) => {
 	return (
-		<Section style={styles.header}>
+		<Section style={styles.logoSection}>
 			<Img
 				src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/assets/Speech%20Help%20-%20Logo-New.png"
 				width="150"
@@ -17,8 +17,8 @@ export const EmailHeader = ({ username = 'there' }: EmailHeaderProps) => {
 				alt="SpeechHelp"
 				style={styles.logo}
 			/>
-			<h1 style={styles.heading}>Welcome to SpeechHelp, {username}!</h1>
-			<p style={styles.subtitle}>
+			<h1 style={styles.h1}>Welcome to SpeechHelp, {username}!</h1>
+			<p style={styles.tagline}>
 				Your personal AI speech assistant is ready to help you create amazing speeches.
 			</p>
 		</Section>
