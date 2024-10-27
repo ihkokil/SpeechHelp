@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import WelcomeEmail from './welcome-email';
 import { renderToString } from 'react-dom/server';
@@ -40,50 +39,73 @@ export const signUp = async (
 	firstName?: string,
 	lastName?: string
 ) => {
-	const res = await supabase.auth.signUp({
-		email,
-		password,
-		options: {
-			data: {
-				first_name: firstName,
-				last_name: lastName,
-				is_active: false,
-				subscription_plan: SubscriptionPlan.FREE_TRIAL,
-				subscription_start_date: new Date().toISOString(),
-				subscription_end_date: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-			}
-		}
-	});
-	console.log("RES", res)
-	if (res.data.user || res.data.session) {
-		// Call the Supabase Edge Function
-		const { data, error } = await supabase.functions.invoke('send-email', {
-			body: {
-				email: email,
-				subject: "Welcome to SpeechHelp!",
-				emailHtml: renderToString(WelcomeEmail({ username: firstName || 'there' })),
-				message: "Welcome to SpeechHelp! Please check your email to confirm your account."
+	try {
+		const res = await supabase.auth.signUp({
+			email,
+			password,
+			options: {
+				data: {
+					first_name: firstName,
+					last_name: lastName,
+					is_active: false,
+					subscription_plan: SubscriptionPlan.FREE_TRIAL,
+					subscription_start_date: new Date().toISOString(),
+					subscription_end_date: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+				}
 			}
 		});
-		showToast({
-			title: "Sign up successful",
-			description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
-		});
-	}
+		
+		console.log("Sign up response:", res);
 
-	if (res.error) {
+		if (res.error) {
+			showToast({
+				title: "Sign up failed",
+				description: res.error.message,
+				variant: "destructive"
+			});
+			throw res.error;
+		}
+
+		// Only send welcome email if user was created successfully
+		if (res.data.user && !res.error) {
+			console.log("Sending welcome email to:", email);
+			
+			try {
+				// Call the Supabase Edge Function to send welcome email
+				const { data: emailData, error: emailError } = await supabase.functions.invoke('send-email', {
+					body: {
+						email: email,
+						subject: "Welcome to SpeechHelp!",
+						emailHtml: renderToString(WelcomeEmail({ username: firstName || 'there' })),
+						message: "Welcome to SpeechHelp! Please check your email to confirm your account."
+					}
+				});
+
+				if (emailError) {
+					console.error("Error sending welcome email:", emailError);
+					// Don't throw error here - user registration was successful
+				} else {
+					console.log("Welcome email sent successfully:", emailData);
+				}
+			} catch (emailError) {
+				console.error("Failed to send welcome email:", emailError);
+				// Don't throw error here - user registration was successful
+			}
+
+			showToast({
+				title: "Sign up successful",
+				description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
+			});
+		}
+	} catch (error: any) {
+		console.error('Sign up error:', error);
 		showToast({
 			title: "Sign up failed",
-			description: res.error.message,
+			description: error.message || "An error occurred during sign up",
 			variant: "destructive"
 		});
-		throw res.error;
+		throw error;
 	}
-
-	showToast({
-		title: "Sign up successful",
-		description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
-	});
 };
 
 export const resetPassword = async (email: string, showToast: ShowToastFunction) => {

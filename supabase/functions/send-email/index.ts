@@ -17,10 +17,13 @@ serve(async (req) => {
 	}
 
 	try {
+		console.log('Send email function called');
+		
 		// Get the API key from environment variable
 		const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
 		if (!RESEND_API_KEY) {
+			console.error('RESEND_API_KEY not found in environment variables');
 			return new Response(
 				JSON.stringify({ error: 'Resend API key not configured' }),
 				{
@@ -35,6 +38,7 @@ serve(async (req) => {
 
 		// Parse request body
 		const { email, username, subject, message, emailHtml } = await req.json() as EmailRequestBody;
+		console.log('Email request for:', email);
 
 		if (!email) {
 			return new Response(
@@ -49,6 +53,7 @@ serve(async (req) => {
 			);
 		}
 
+		console.log('Sending email via Resend API');
 		const res = await fetch('https://api.resend.com/emails', {
 			method: 'POST',
 			headers: {
@@ -57,18 +62,22 @@ serve(async (req) => {
 			},
 			body: JSON.stringify({
 				from: 'SpeechHelp <hello@speechhelp.ai>',
-				to: email,
-				cc: 'hello@speechhelp.ai',  // Adding CC to hello@speechhelp.ai
+				to: [email],
+				cc: ['hello@speechhelp.ai'],  // Adding CC to hello@speechhelp.ai
 				subject: subject || 'Welcome to SpeechHelp!',
-				html: emailHtml,
+				html: emailHtml || `<h1>Welcome to SpeechHelp!</h1><p>${message || 'We\'re excited to have you on board.'}</p>`,
 				// Optional text version as fallback
 				text: message || `Welcome to SpeechHelp! We're excited to have you on board.`
 			}),
-		})
+		});
+
+		const responseData = await res.json();
+		console.log('Resend API response:', responseData);
+
 		if (!res.ok) {
-			console.error(await res.json())
+			console.error('Resend API error:', responseData);
 			return new Response(
-				JSON.stringify({ error: 'Failed to send email' }),
+				JSON.stringify({ error: 'Failed to send email', details: responseData }),
 				{
 					status: 500,
 					headers: {
@@ -83,7 +92,7 @@ serve(async (req) => {
 			JSON.stringify({
 				success: true,
 				message: 'Welcome email sent successfully',
-				data: await res.json()
+				data: responseData
 			}),
 			{
 				headers: {
