@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import WelcomeEmail from './welcome-email';
 import { renderToString } from 'react-dom/server';
@@ -75,9 +76,10 @@ export const signUp = async (
 				const { data: emailData, error: emailError } = await supabase.functions.invoke('send-email', {
 					body: {
 						email: email,
+						username: firstName || 'there',
 						subject: "Welcome to SpeechHelp!",
 						emailHtml: renderToString(WelcomeEmail({ username: firstName || 'there' })),
-						message: "Welcome to SpeechHelp! Please check your email to confirm your account."
+						message: "Welcome to SpeechHelp! We're excited to have you on board."
 					}
 				});
 
@@ -92,9 +94,10 @@ export const signUp = async (
 				// Don't throw error here - user registration was successful
 			}
 
+			// Show success message without asking to check email
 			showToast({
-				title: "Sign up successful",
-				description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
+				title: "Account created successfully",
+				description: "Welcome to SpeechHelp! You can now start creating amazing speeches.",
 			});
 		}
 	} catch (error: any) {

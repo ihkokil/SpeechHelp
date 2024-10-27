@@ -39,6 +39,7 @@ serve(async (req) => {
 		// Parse request body
 		const { email, username, subject, message, emailHtml } = await req.json() as EmailRequestBody;
 		console.log('Email request for:', email);
+		console.log('Using API key starting with:', RESEND_API_KEY?.substring(0, 10) + '...');
 
 		if (!email) {
 			return new Response(
@@ -63,7 +64,6 @@ serve(async (req) => {
 			body: JSON.stringify({
 				from: 'SpeechHelp <hello@speechhelp.ai>',
 				to: [email],
-				cc: ['hello@speechhelp.ai'],  // Adding CC to hello@speechhelp.ai
 				subject: subject || 'Welcome to SpeechHelp!',
 				html: emailHtml || `<h1>Welcome to SpeechHelp!</h1><p>${message || 'We\'re excited to have you on board.'}</p>`,
 				// Optional text version as fallback
@@ -72,6 +72,7 @@ serve(async (req) => {
 		});
 
 		const responseData = await res.json();
+		console.log('Resend API response status:', res.status);
 		console.log('Resend API response:', responseData);
 
 		if (!res.ok) {
