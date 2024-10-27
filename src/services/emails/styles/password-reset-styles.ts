@@ -32,7 +32,7 @@ export const contentSection = {
 };
 
 export const h1 = {
-  color: '#a94b9a', // Brand purple/pink
+  color: '#be185d', // Using your actual pink-700 brand color
   fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
   fontSize: '32px',
   fontWeight: 'bold',
@@ -53,7 +53,7 @@ export const ctaSection = {
 };
 
 export const button = {
-  backgroundColor: '#a94b9a', // Brand purple/pink
+  backgroundColor: '#be185d', // Using your actual pink-700 brand color
   borderRadius: '8px',
   color: '#fff',
   display: 'inline-block',
@@ -78,7 +78,7 @@ export const linkText = {
 };
 
 export const link = {
-  color: '#a94b9a', // Brand purple/pink
+  color: '#be185d', // Using your actual pink-700 brand color
   fontWeight: '500',
   textDecoration: 'none',
 };
