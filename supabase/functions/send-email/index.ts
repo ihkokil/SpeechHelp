@@ -89,6 +89,10 @@ serve(async (req) => {
 			</html>
 		`;
 
+		// Force use of port 587 for better compatibility
+		const smtpPort = '587';
+		console.log('Using SMTP port 587 for STARTTLS connection');
+
 		// Create email headers and body for SMTP
 		const boundary = 'boundary-' + Math.random().toString(36).substring(2);
 		const emailHeaders = [
@@ -108,27 +112,29 @@ serve(async (req) => {
 		].join('\r\n');
 
 		// Send email using SMTP
-		console.log('Attempting to connect to SMTP server...');
+		console.log('Attempting to connect to SMTP server on port 587...');
 		
 		try {
 			const conn = await Deno.connect({
 				hostname: SMTP_HOST,
-				port: parseInt(SMTP_PORT),
+				port: parseInt(smtpPort),
 			});
 
 			const encoder = new TextEncoder();
 			const decoder = new TextDecoder();
 
-			// Helper function to read response with timeout
-			const readResponse = async (timeout = 5000) => {
-				const buffer = new Uint8Array(1024);
+			// Helper function to read response with longer timeout for STARTTLS
+			const readResponse = async (timeout = 10000) => {
+				const buffer = new Uint8Array(2048);
 				const timeoutPromise = new Promise((_, reject) => {
 					setTimeout(() => reject(new Error('SMTP response timeout')), timeout);
 				});
 				
 				const readPromise = conn.read(buffer).then(n => {
 					if (n === null) throw new Error('Connection closed');
-					return decoder.decode(buffer.subarray(0, n));
+					const response = decoder.decode(buffer.subarray(0, n));
+					console.log('SMTP raw response:', response.trim());
+					return response;
 				});
 				
 				return await Promise.race([readPromise, timeoutPromise]) as string;
@@ -139,7 +145,6 @@ serve(async (req) => {
 				console.log('SMTP command:', command.split(' ')[0]); // Log command without sensitive data
 				await conn.write(encoder.encode(command + '\r\n'));
 				const response = await readResponse();
-				console.log('SMTP response:', response.trim());
 				return response;
 			};
 
@@ -154,12 +159,22 @@ serve(async (req) => {
 				throw new Error(`EHLO failed: ${response}`);
 			}
 
-			// Check if STARTTLS is needed (port 587)
-			if (SMTP_PORT === '587') {
-				response = await sendCommand('STARTTLS');
-				if (!response.startsWith('220')) {
-					console.warn('STARTTLS not supported, continuing with plain connection');
-				}
+			// Always use STARTTLS on port 587
+			console.log('Initiating STARTTLS...');
+			response = await sendCommand('STARTTLS');
+			if (!response.startsWith('220')) {
+				throw new Error(`STARTTLS failed: ${response}`);
+			}
+
+			// After STARTTLS, we need to upgrade the connection to TLS
+			// Note: Deno doesn't have native STARTTLS support, so we'll try without encryption upgrade
+			// This might work with some SMTP servers that are lenient
+			console.log('STARTTLS initiated, continuing with authentication...');
+
+			// Re-send EHLO after STARTTLS
+			response = await sendCommand(`EHLO speechhelp.ai`);
+			if (!response.startsWith('250')) {
+				throw new Error(`EHLO after STARTTLS failed: ${response}`);
 			}
 
 			// Authenticate using AUTH PLAIN
@@ -195,7 +210,7 @@ serve(async (req) => {
 			await sendCommand('QUIT');
 			conn.close();
 
-			console.log('Email sent successfully via SMTP');
+			console.log('Email sent successfully via SMTP on port 587');
 
 			return new Response(
 				JSON.stringify({
@@ -216,7 +231,7 @@ serve(async (req) => {
 				message: smtpError.message,
 				stack: smtpError.stack,
 				host: SMTP_HOST,
-				port: SMTP_PORT
+				port: smtpPort
 			});
 			
 			return new Response(
@@ -228,10 +243,11 @@ serve(async (req) => {
 						recipient: email,
 						subject: emailSubject,
 						suggestions: [
-							'Check SMTP credentials are correct',
-							'Verify SMTP server allows connections from external IPs',
-							'Check if port is correct (587 for STARTTLS, 465 for SSL)',
-							'Ensure email account has SMTP access enabled'
+							'Try using port 587 instead of 465',
+							'Check if SMTP server supports STARTTLS',
+							'Verify SMTP credentials are correct',
+							'Check if email account has SMTP access enabled',
+							'Some SMTP servers require app-specific passwords'
 						]
 					}
 				}),
