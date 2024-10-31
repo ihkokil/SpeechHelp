@@ -1,7 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import WelcomeEmail from './welcome-email';
-import { renderToString } from 'react-dom/server';
 import { SubscriptionPlan } from '@/lib/plan_rules.ts';
 
 // Define the ToastProps type directly here to avoid the import error
@@ -67,37 +65,11 @@ export const signUp = async (
 			throw res.error;
 		}
 
-		// Only send welcome email if user was created successfully
+		// Show success message for email confirmation
 		if (res.data.user && !res.error) {
-			console.log("Sending welcome email to:", email);
-			
-			try {
-				// Call the Supabase Edge Function to send welcome email
-				const { data: emailData, error: emailError } = await supabase.functions.invoke('send-email', {
-					body: {
-						email: email,
-						username: firstName || 'there',
-						subject: "Welcome to SpeechHelp!",
-						emailHtml: renderToString(WelcomeEmail({ username: firstName || 'there' })),
-						message: "Welcome to SpeechHelp! We're excited to have you on board."
-					}
-				});
-
-				if (emailError) {
-					console.error("Error sending welcome email:", emailError);
-					// Don't throw error here - user registration was successful
-				} else {
-					console.log("Welcome email sent successfully:", emailData);
-				}
-			} catch (emailError) {
-				console.error("Failed to send welcome email:", emailError);
-				// Don't throw error here - user registration was successful
-			}
-
-			// Show success message without asking to check email
 			showToast({
 				title: "Account created successfully",
-				description: "Welcome to SpeechHelp! You can now start creating amazing speeches.",
+				description: "Please check your email to confirm your account and complete the setup.",
 			});
 		}
 	} catch (error: any) {
