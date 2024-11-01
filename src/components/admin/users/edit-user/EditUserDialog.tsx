@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { User } from '../types';
 import EditUserForm from './EditUserForm';
@@ -18,7 +18,6 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
   onOpenChange, 
   onUserUpdated 
 }) => {
-  // Prevent closing while form might be submitting
   const handleOpenChange = (newOpen: boolean) => {
     onOpenChange(newOpen);
   };
@@ -29,7 +28,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit User: {user.email}</DialogTitle>
           <DialogDescription>
