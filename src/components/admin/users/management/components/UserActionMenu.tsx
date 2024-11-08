@@ -8,13 +8,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Eye, Shield, UserCheck, UserX, Trash2, Mail, CreditCard, Edit } from 'lucide-react';
+import { MoreHorizontal, Eye, Shield, UserCheck, UserX, Trash2, Mail, CreditCard } from 'lucide-react';
 import { User } from '../../types';
 
 interface UserActionMenuProps {
   user: User;
   onViewDetails: (user: User) => void;
-  onEditUser: (user: User) => void;
   onManagePermissions: (user: User) => void;
   onToggleActive: (userId: string, isActive: boolean) => void;
   onDeleteUser: (userId: string) => void;
@@ -25,7 +24,6 @@ interface UserActionMenuProps {
 export const UserActionMenu: React.FC<UserActionMenuProps> = ({
   user,
   onViewDetails,
-  onEditUser,
   onManagePermissions,
   onToggleActive,
   onDeleteUser,
@@ -46,11 +44,6 @@ export const UserActionMenu: React.FC<UserActionMenuProps> = ({
         <DropdownMenuItem onClick={() => onViewDetails(user)}>
           <Eye className="mr-2 h-4 w-4" />
           View Details
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem onClick={() => onEditUser(user)}>
-          <Edit className="mr-2 h-4 w-4" />
-          Edit User
         </DropdownMenuItem>
         
         <DropdownMenuItem onClick={() => onManagePermissions(user)}>

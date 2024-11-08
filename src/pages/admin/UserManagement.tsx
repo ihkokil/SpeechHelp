@@ -1,11 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
 import { SearchToolbar } from '@/components/admin/users/management/SearchToolbar';
 import { UserTable } from '@/components/admin/users/management/UserTable';
 import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
-import { EditUserDialog } from '@/components/admin/users/management/components/EditUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
 import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
@@ -52,8 +50,7 @@ const UserManagement = () => {
     handleUpdateSubscription,
   } = useUserManagement();
   
-  // New state for edit and subscription dialogs
-  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
+  // New state for subscription dialog
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   
   const { toast } = useToast();
@@ -75,25 +72,6 @@ const UserManagement = () => {
         description: `${newUser.email} has been added successfully.`
       });
     }
-  };
-
-  // Handler for opening the edit user dialog
-  const handleEditUser = (user: User) => {
-    console.log("Opening edit dialog for user:", user.id);
-    setSelectedUser(user);
-    setIsEditUserDialogOpen(true);
-  };
-
-  // Handler for when a user is updated
-  const handleUserUpdated = (updatedUser: User) => {
-    console.log("User updated:", updatedUser.id);
-    // Update the user in the users array
-    setUsers(
-      users.map(user => 
-        user.id === updatedUser.id ? updatedUser : user
-      )
-    );
-    setIsEditUserDialogOpen(false);
   };
 
   // Handler for opening the subscription dialog
@@ -152,7 +130,6 @@ const UserManagement = () => {
             toggleUserSelection={toggleUserSelection}
             toggleAllUsers={toggleAllUsersWithFilter}
             handleViewUserDetails={handleViewUserDetails}
-            handleEditUser={handleEditUser}
             handleManagePermissions={handleManagePermissions}
             handleToggleUserStatus={handleToggleUserStatus}
             setSelectedUsers={setSelectedUsers}
@@ -177,20 +154,11 @@ const UserManagement = () => {
       />
 
       {selectedUser && (
-        <>
-          <UserDetailsDrawer 
-            user={selectedUser} 
-            open={isDetailsOpen} 
-            onClose={handleCloseUserDetails} 
-          />
-
-          <EditUserDialog
-            user={selectedUser}
-            open={isEditUserDialogOpen}
-            onOpenChange={setIsEditUserDialogOpen}
-            onUserUpdated={handleUserUpdated}
-          />
-        </>
+        <UserDetailsDrawer 
+          user={selectedUser} 
+          open={isDetailsOpen} 
+          onClose={handleCloseUserDetails} 
+        />
       )}
       
       <AddUserDialog 
