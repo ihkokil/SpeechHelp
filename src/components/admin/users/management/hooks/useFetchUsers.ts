@@ -17,17 +17,17 @@ export const useFetchUsers = () => {
     const now = Date.now();
     if (now - lastFetchTime < 1000) {
       console.log('Debouncing fetch request');
-      return []; // Debounce fetch requests
+      return users; // Return current users instead of empty array
     }
     
+    console.log('Starting to fetch users...');
     setLastFetchTime(now);
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log('Fetching users from Supabase auth');
+      console.log('Calling fetch-users function');
       
-      // Fetch users from auth.users via a Supabase function
       const { data: authUsersData, error: authUsersError } = await supabase.functions.invoke('fetch-users', {
         method: 'GET'
       });
@@ -44,10 +44,17 @@ export const useFetchUsers = () => {
         return [];
       }
       
-      console.log('Fetched auth users with profiles:', authUsersData);
+      console.log('Received auth users response:', authUsersData);
+      
+      if (!authUsersData || !authUsersData.users) {
+        console.error('Invalid response structure from fetch-users');
+        setError(new Error('Invalid response from server'));
+        setIsLoading(false);
+        return [];
+      }
       
       // Map users with their profiles
-      const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
+      const mappedUsers: User[] = authUsersData.users.map((authUser: any) => {
         // Get the profile data from our enhanced structure
         const profile = authUser.profile || {};
         
@@ -76,54 +83,34 @@ export const useFetchUsers = () => {
             country_code: authUser.raw_user_meta_data?.country_code || '',
           },
           is_active: profile.is_active !== false, // Default to true if not specified
+          is_admin: profile.is_admin || false,
+          admin_role: profile.admin_role || undefined,
+          permissions: profile.permissions || [],
           subscription_status: profile.subscription_plan ? 'active' : undefined,
           subscription_end_date: profile.subscription_end_date || undefined,
           subscription_plan: profile.subscription_plan || undefined,
         };
         
         return user;
-      }) || [];
+      });
       
-      // Add admin user if it doesn't exist and current user is admin
-      const adminExists = mappedUsers.some(user => user.is_admin);
-      if (!adminExists && adminUser) {
-        mappedUsers.push({
-          id: 'admin-id',
-          email: adminUser.email || 'admin@speechhelp.ai',
-          last_sign_in_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          app_metadata: {
-            provider: 'email',
-          },
-          user_metadata: {
-            name: adminUser.username,
-            full_name: 'Admin User',
-          },
-          is_active: true,
-          is_admin: true,
-          admin_role: 'Super Admin',
-          permissions: ['view_users', 'manage_users', 'view_speeches', 'manage_speeches', 'system_settings'],
-        });
-      }
-      
-      console.log('Mapped users with profiles:', mappedUsers);
+      console.log('Successfully mapped users:', mappedUsers.length, 'users');
       setUsers(mappedUsers);
+      setIsLoading(false);
       return mappedUsers;
     } catch (err) {
       console.error('Exception fetching users:', err);
       const error = err instanceof Error ? err : new Error('Failed to load users');
       setError(error);
+      setIsLoading(false);
       toast({
         title: 'Error',
         description: 'Failed to load users. Please check console for details.',
         variant: 'destructive',
       });
       return [];
-    } finally {
-      setIsLoading(false);
     }
-  }, [adminUser, toast, lastFetchTime]);
+  }, [adminUser, toast, lastFetchTime, users]);
 
   return {
     users,

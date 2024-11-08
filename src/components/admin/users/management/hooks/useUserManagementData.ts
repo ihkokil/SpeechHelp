@@ -20,12 +20,20 @@ export const useUserManagementData = (initialUsers?: User[]) => {
   
   // Update users when fetchedUsers changes
   useEffect(() => {
+    console.log('useUserManagementData: fetchedUsers changed:', fetchedUsers.length, 'users, loading:', isFetchLoading);
+    
     if (fetchedUsers && fetchedUsers.length > 0) {
+      console.log('Setting users from fetched data');
       setUsers(fetchedUsers);
+      setIsLoading(false);
+    } else if (!isFetchLoading && fetchedUsers.length === 0) {
+      // Only set loading to false if we're not loading and got empty results
+      console.log('No users found, stopping loading');
       setIsLoading(false);
     }
     
     if (fetchError) {
+      console.error('Fetch error detected:', fetchError);
       toast({
         title: "Error",
         description: "Failed to fetch users. Please try again.",
@@ -33,7 +41,7 @@ export const useUserManagementData = (initialUsers?: User[]) => {
       });
       setIsLoading(false);
     }
-  }, [fetchedUsers, fetchError, toast]);
+  }, [fetchedUsers, isFetchLoading, fetchError, toast]);
   
   // Filter users based on search term
   const filteredUsers = useMemo(() => {
@@ -52,12 +60,13 @@ export const useUserManagementData = (initialUsers?: User[]) => {
   
   // Fetch users
   const fetchUsers = useCallback(async () => {
-    console.log("Fetching users...");
+    console.log("useUserManagementData: Manual fetch triggered");
     setIsLoading(true);
     try {
-      await apiFetchUsers();
+      const result = await apiFetchUsers();
+      console.log("Manual fetch completed with", result?.length || 0, "users");
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Error in manual fetch:", error);
       toast({
         title: "Error",
         description: "Failed to fetch users. Please try again.",
@@ -72,10 +81,16 @@ export const useUserManagementData = (initialUsers?: User[]) => {
     setUsers(prevUsers => [...prevUsers, newUser]);
   }, []);
 
+  // Trigger initial fetch on mount
+  useEffect(() => {
+    console.log('useUserManagementData: Triggering initial fetch on mount');
+    fetchUsers();
+  }, []);
+
   return {
     users,
     setUsers,
-    isLoading: isLoading || isFetchLoading,
+    isLoading,
     fetchUsers,
     addUser,
     error: fetchError,
