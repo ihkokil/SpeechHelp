@@ -1,14 +1,13 @@
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useFetchUsers } from './useFetchUsers';
 import { User } from '../../types';
 import { useToast } from '@/hooks/use-toast';
 
-export const useUserManagementData = (initialUsers?: User[]) => {
+export const useUserManagementData = () => {
   const { toast } = useToast();
-  const [users, setUsers] = useState<User[]>(initialUsers || []);
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   
   // Fetch users data
   const { 
@@ -34,21 +33,6 @@ export const useUserManagementData = (initialUsers?: User[]) => {
       setIsLoading(false);
     }
   }, [fetchedUsers, fetchError, toast]);
-  
-  // Filter users based on search term
-  const filteredUsers = useMemo(() => {
-    if (!searchTerm.trim()) return users;
-    
-    const lowerTerm = searchTerm.toLowerCase();
-    return users.filter(user => {
-      const name = user.user_metadata?.name || user.user_metadata?.full_name || '';
-      const email = user.email || '';
-      return (
-        name.toLowerCase().includes(lowerTerm) ||
-        email.toLowerCase().includes(lowerTerm)
-      );
-    });
-  }, [users, searchTerm]);
   
   // Fetch users
   const fetchUsers = useCallback(async () => {
@@ -78,9 +62,6 @@ export const useUserManagementData = (initialUsers?: User[]) => {
     isLoading: isLoading || isFetchLoading,
     fetchUsers,
     addUser,
-    error: fetchError,
-    searchTerm,
-    setSearchTerm,
-    filteredUsers
+    error: fetchError
   };
 };

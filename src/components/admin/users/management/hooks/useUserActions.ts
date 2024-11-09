@@ -17,60 +17,15 @@ export const useUserActions = () => {
   
   // Initialize hooks with necessary parameters
   const { 
-    handleBulkDelete: baseBulkDelete,
-    handleBulkActivate: baseBulkActivate,
-    handleBulkDeactivate: baseBulkDeactivate
+    handleBulkDelete,
+    handleBulkActivate,
+    handleBulkDeactivate
   } = useBulkActions();
   
   const {
-    handleToggleUserStatus: baseToggleUserStatus,
-    handleDeleteUser: baseDeleteUser
+    handleToggleUserStatus,
+    handleDeleteUser
   } = useIndividualUserActions();
-  
-  // Wrapper functions that match expected signatures
-  const handleBulkDelete = useCallback(async () => {
-    // This will be called from UserManagement with proper parameters
-  }, []);
-
-  const handleBulkActivate = useCallback(async () => {
-    // This will be called from UserManagement with proper parameters
-  }, []);
-
-  const handleBulkDeactivate = useCallback(async () => {
-    // This will be called from UserManagement with proper parameters
-  }, []);
-
-  const handleDeleteUser = useCallback(async (userId: string) => {
-    setIsActionLoading(true);
-    try {
-      await baseDeleteUser(userId, [], null);
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete user. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsActionLoading(false);
-    }
-  }, [baseDeleteUser, toast]);
-
-  const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean) => {
-    setIsActionLoading(true);
-    try {
-      await baseToggleUserStatus(userId, isActive, [], null);
-    } catch (error) {
-      console.error('Error toggling user status:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update user status. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsActionLoading(false);
-    }
-  }, [baseToggleUserStatus, toast]);
   
   // View user details handler
   const handleViewUserDetails = useCallback((user: User) => {
@@ -119,9 +74,39 @@ export const useUserActions = () => {
   }, [toast]);
   
   // Handle deleting users (plural for backward compatibility)
-  const handleDeleteUsers = useCallback(async () => {
-    // This will be called from UserManagement with proper parameters
-  }, []);
+  const handleDeleteUsers = useCallback(async (
+    selectedUsers: User[], 
+    users: User[] = [], 
+    setUsers: ((users: User[]) => void) | null = null
+  ) => {
+    console.log('Deleting users:', selectedUsers.map(user => user.id));
+    setIsActionLoading(true);
+    try {
+      // If only one user, use the single user delete method
+      if (selectedUsers.length === 1) {
+        if (setUsers && users.length > 0) {
+          await handleDeleteUser(selectedUsers[0].id, users, setUsers);
+        } else {
+          await handleDeleteUser(selectedUsers[0].id, [], null);
+        }
+      } else {
+        if (setUsers && users.length > 0) {
+          await handleBulkDelete(selectedUsers, users, setUsers);
+        } else {
+          await handleBulkDelete(selectedUsers, [], null);
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting users:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete users. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsActionLoading(false);
+    }
+  }, [handleDeleteUser, handleBulkDelete, toast]);
   
   // Return all actions and state
   return {
@@ -146,7 +131,6 @@ export const useUserActions = () => {
     // States
     isActionLoading,
     selectedUser,
-    setSelectedUser,
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen
