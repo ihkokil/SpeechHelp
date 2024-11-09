@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -7,7 +6,6 @@ import { UserTable } from '@/components/admin/users/management/UserTable';
 import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
-import EditUserDialog from '@/components/admin/users/edit-user/EditUserDialog';
 import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
 import UpdateSubscriptionDialog from '@/components/admin/users/management/components/UpdateSubscriptionDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -49,9 +47,6 @@ const UserManagement = () => {
     handleSendEmail,
     cleanup,
     addUser,
-    isEditUserDialogOpen,
-    setIsEditUserDialogOpen,
-    handleEditUser,
     handleUpdateSubscription,
   } = useUserManagement();
   
@@ -76,34 +71,6 @@ const UserManagement = () => {
         title: "User added",
         description: `${newUser.email} has been added successfully.`
       });
-    }
-  };
-
-  // Handler for when a user is updated via the EditUserDialog
-  const handleUserUpdated = async (updatedUser: User) => {
-    console.log("User updated:", updatedUser);
-    
-    // Update the user in the local state immediately
-    setUsers(prevUsers => 
-      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
-    );
-    
-    // Also update the selected user if it's the same user
-    if (selectedUser && selectedUser.id === updatedUser.id) {
-      setSelectedUser(updatedUser);
-    }
-    
-    toast({
-      title: "User updated",
-      description: `${updatedUser.email} has been updated successfully.`
-    });
-    
-    // Refresh the users data to ensure consistency with server
-    try {
-      await fetchUsers();
-      console.log("Users data refreshed after update");
-    } catch (error) {
-      console.error("Error refreshing users data:", error);
     }
   };
 
@@ -174,7 +141,6 @@ const UserManagement = () => {
             handleDeleteUser={handleDeleteUser}
             handleSendEmail={handleSendEmail}
             handleUpdateSubscription={handleOpenSubscriptionDialog}
-            handleEditUser={handleEditUser}
           />
         </CardContent>
       </Card>
@@ -200,15 +166,6 @@ const UserManagement = () => {
         onOpenChange={setIsAddUserDialogOpen} 
         onUserAdded={handleUserAdded}
       />
-
-      {isEditUserDialogOpen && selectedUser && (
-        <EditUserDialog
-          user={selectedUser}
-          open={isEditUserDialogOpen}
-          onOpenChange={setIsEditUserDialogOpen}
-          onUserUpdated={handleUserUpdated}
-        />
-      )}
 
       {isPermissionsDialogOpen && selectedUser && (
         <AdminPermissionsDialog

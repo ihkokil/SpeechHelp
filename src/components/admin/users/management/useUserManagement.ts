@@ -36,8 +36,6 @@ export const useUserManagement = () => {
     selectedUser,
     setSelectedUser,
     resetUIState,
-    isEditUserDialogOpen,
-    setIsEditUserDialogOpen,
     isEmailDialogOpen,
     setIsEmailDialogOpen
   } = useUserManagementUIState();
@@ -100,13 +98,6 @@ export const useUserManagement = () => {
     );
     setIsPermissionsDialogOpen(false);
   }, [setUsers, setIsPermissionsDialogOpen]);
-  
-  // Handle Edit User
-  const handleEditUser = useCallback((user: User) => {
-    console.log("useUserManagement: Edit user called for user:", user.id);
-    setSelectedUser(user);
-    setIsEditUserDialogOpen(true);
-  }, [setSelectedUser, setIsEditUserDialogOpen]);
   
   // Handle Send Email
   const handleSendEmail = useCallback((user: User) => {
@@ -197,8 +188,6 @@ export const useUserManagement = () => {
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
-    isEditUserDialogOpen,
-    setIsEditUserDialogOpen,
     isEmailDialogOpen,
     setIsEmailDialogOpen,
     filteredUsers,
@@ -217,7 +206,6 @@ export const useUserManagement = () => {
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
-    handleEditUser,
     handleSendEmail,
     handleUpdateSubscription,
     cleanup,
