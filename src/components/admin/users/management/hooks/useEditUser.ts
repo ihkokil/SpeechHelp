@@ -4,6 +4,20 @@ import { User } from '../../types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// Define the exact interface for the user data to match the form schema
+interface EditUserFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  isActive: boolean;
+}
+
 export const useEditUser = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -11,18 +25,7 @@ export const useEditUser = () => {
 
   const updateUser = useCallback(async (
     userId: string,
-    userData: {
-      firstName: string;
-      lastName: string;
-      email: string;
-      phone: string;
-      streetAddress: string;
-      city: string;
-      state: string;
-      zipCode: string;
-      country: string;
-      isActive: boolean;
-    }
+    userData: EditUserFormData
   ) => {
     setIsLoading(true);
     try {
