@@ -31,12 +31,12 @@ const editUserSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Please enter a valid email address'),
-  phone: z.string().optional(),
-  streetAddress: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zipCode: z.string().optional(),
-  country: z.string().optional(),
+  phone: z.string(),
+  streetAddress: z.string(),
+  city: z.string(),
+  state: z.string(),
+  zipCode: z.string(),
+  country: z.string(),
   isActive: z.boolean(),
 });
 
@@ -77,17 +77,43 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
   useEffect(() => {
     if (user) {
       console.log('Setting form values for user:', user);
+      
+      // Extract data from both direct fields and user_metadata
+      const firstName = user.first_name || user.user_metadata?.first_name || '';
+      const lastName = user.last_name || user.user_metadata?.last_name || '';
+      const email = user.email || '';
+      const phone = user.phone || user.user_metadata?.phone || '';
+      const streetAddress = user.user_metadata?.street_address || '';
+      const city = user.user_metadata?.city || '';
+      const state = user.user_metadata?.state || '';
+      const zipCode = user.user_metadata?.zip_code || '';
+      const country = user.user_metadata?.country || '';
+      const isActive = user.is_active !== false;
+
+      console.log('Form data being set:', {
+        firstName,
+        lastName,
+        email,
+        phone,
+        streetAddress,
+        city,
+        state,
+        zipCode,
+        country,
+        isActive
+      });
+
       form.reset({
-        firstName: user.first_name || user.user_metadata?.first_name || '',
-        lastName: user.last_name || user.user_metadata?.last_name || '',
-        email: user.email || '',
-        phone: user.phone || user.user_metadata?.phone || '',
-        streetAddress: user.user_metadata?.street_address || '',
-        city: user.user_metadata?.city || '',
-        state: user.user_metadata?.state || '',
-        zipCode: user.user_metadata?.zip_code || '',
-        country: user.user_metadata?.country || '',
-        isActive: user.is_active !== false,
+        firstName,
+        lastName,
+        email,
+        phone,
+        streetAddress,
+        city,
+        state,
+        zipCode,
+        country,
+        isActive,
       });
     }
   }, [user, form]);
