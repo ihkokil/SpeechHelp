@@ -78,45 +78,20 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
     if (user) {
       console.log('Setting form values for user:', user);
       
-      // Extract data with guaranteed string fallbacks and explicit typing
-      const firstName: string = user.first_name || user.user_metadata?.first_name || '';
-      const lastName: string = user.last_name || user.user_metadata?.last_name || '';
-      const email: string = user.email || '';
-      const phone: string = user.phone || user.user_metadata?.phone || '';
-      const streetAddress: string = user.user_metadata?.street_address || '';
-      const city: string = user.user_metadata?.city || '';
-      const state: string = user.user_metadata?.state || '';
-      const zipCode: string = user.user_metadata?.zip_code || '';
-      const country: string = user.user_metadata?.country || '';
-      const isActive: boolean = user.is_active !== false;
-
-      console.log('Form data being set:', {
-        firstName,
-        lastName,
-        email,
-        phone,
-        streetAddress,
-        city,
-        state,
-        zipCode,
-        country,
-        isActive
-      });
-
-      // Create the form data object - now all properties are properly typed as required
       const formData: EditUserFormData = {
-        firstName,
-        lastName,
-        email,
-        phone,
-        streetAddress,
-        city,
-        state,
-        zipCode,
-        country,
-        isActive,
+        firstName: user.first_name || user.user_metadata?.first_name || '',
+        lastName: user.last_name || user.user_metadata?.last_name || '',
+        email: user.email || '',
+        phone: user.phone || user.user_metadata?.phone || '',
+        streetAddress: user.user_metadata?.street_address || '',
+        city: user.user_metadata?.city || '',
+        state: user.user_metadata?.state || '',
+        zipCode: user.user_metadata?.zip_code || '',
+        country: user.user_metadata?.country || '',
+        isActive: user.is_active !== false,
       };
 
+      console.log('Form data being set:', formData);
       form.reset(formData);
     }
   }, [user, form]);
