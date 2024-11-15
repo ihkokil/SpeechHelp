@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import { User } from '../../types';
 import { useEditUser } from '../hooks/useEditUser';
 import {
@@ -9,37 +10,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Mail, Send } from 'lucide-react';
-
-const editUserSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Please enter a valid email address'),
-  phone: z.string(),
-  streetAddress: z.string(),
-  city: z.string(),
-  state: z.string(),
-  zipCode: z.string(),
-  country: z.string(),
-  isActive: z.boolean(),
-});
-
-type EditUserFormData = z.infer<typeof editUserSchema>;
+import { useEditUserForm } from './hooks/useEditUserForm';
+import { PersonalInfoSection } from './PersonalInfoSection';
+import { AddressSection } from './AddressSection';
+import { AccountStatusSection } from './AccountStatusSection';
+import { PasswordManagementSection } from './PasswordManagementSection';
+import { EditUserFormData } from './types';
 
 interface EditUserDialogProps {
   user: User | null;
@@ -55,45 +34,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
   onUserUpdated
 }) => {
   const { updateUser, sendPasswordReset, isLoading, isPasswordResetLoading } = useEditUser();
-
-  const form = useForm<EditUserFormData>({
-    resolver: zodResolver(editUserSchema),
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      streetAddress: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      country: '',
-      isActive: true,
-    },
-  });
-
-  // Update form when user changes
-  useEffect(() => {
-    if (user) {
-      console.log('Setting form values for user:', user);
-      
-      const formData: EditUserFormData = {
-        firstName: (user.first_name || user.user_metadata?.first_name || '').toString(),
-        lastName: (user.last_name || user.user_metadata?.last_name || '').toString(),
-        email: (user.email || '').toString(),
-        phone: (user.phone || user.user_metadata?.phone || '').toString(),
-        streetAddress: (user.user_metadata?.street_address || '').toString(),
-        city: (user.user_metadata?.city || '').toString(),
-        state: (user.user_metadata?.state || '').toString(),
-        zipCode: (user.user_metadata?.zip_code || '').toString(),
-        country: (user.user_metadata?.country || '').toString(),
-        isActive: user.is_active !== false,
-      };
-
-      console.log('Form data being set:', formData);
-      form.reset(formData);
-    }
-  }, [user, form]);
+  const form = useEditUserForm(user);
 
   const onSubmit = async (data: EditUserFormData) => {
     if (!user) return;
@@ -151,202 +92,17 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Personal Information */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-900">Personal Information</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter first name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter last name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="Enter email address" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter phone number with country code" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
+            <PersonalInfoSection form={form} />
             <Separator />
-
-            {/* Address Information */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-900">Address Information</h3>
-              <FormField
-                control={form.control}
-                name="streetAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Street Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter street address" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter city" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="state"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>State/Province</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter state or province" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="zipCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ZIP/Postal Code</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter ZIP or postal code" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="country"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Country</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter country" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
+            <AddressSection form={form} />
             <Separator />
-
-            {/* Account Status */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-900">Account Status</h3>
-              <FormField
-                control={form.control}
-                name="isActive"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">Active Account</FormLabel>
-                      <div className="text-sm text-muted-foreground">
-                        Enable or disable this user's account access
-                      </div>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-
+            <AccountStatusSection form={form} />
             <Separator />
-
-            {/* Password Reset Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-900">Password Management</h3>
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <div className="text-sm font-medium">Send Password Reset</div>
-                  <div className="text-sm text-muted-foreground">
-                    Send a password reset link to {user?.email}
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSendPasswordReset}
-                  disabled={isPasswordResetLoading || !user?.email}
-                >
-                  {isPasswordResetLoading ? (
-                    <Send className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Mail className="h-4 w-4" />
-                  )}
-                  <span className="ml-2">
-                    {isPasswordResetLoading ? 'Sending...' : 'Send Reset Link'}
-                  </span>
-                </Button>
-              </div>
-            </div>
+            <PasswordManagementSection 
+              user={user}
+              isPasswordResetLoading={isPasswordResetLoading}
+              onSendPasswordReset={handleSendPasswordReset}
+            />
 
             <DialogFooter>
               <Button
