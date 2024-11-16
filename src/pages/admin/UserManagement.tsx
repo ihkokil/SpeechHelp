@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -7,7 +6,6 @@ import { UserTable } from '@/components/admin/users/management/UserTable';
 import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
-import EditUserDialog from '@/components/admin/users/management/components/EditUserDialog';
 import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
 import UpdateSubscriptionDialog from '@/components/admin/users/management/components/UpdateSubscriptionDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -55,9 +53,6 @@ const UserManagement = () => {
   // New state for subscription dialog
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   
-  // New state for edit user dialog
-  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
-  
   const { toast } = useToast();
   
   // Clean up all state when component unmounts
@@ -77,25 +72,6 @@ const UserManagement = () => {
         description: `${newUser.email} has been added successfully.`
       });
     }
-  };
-
-  // Handler for opening the edit user dialog
-  const handleEditUser = (user: User) => {
-    console.log("Opening edit user dialog for user:", user.id);
-    setSelectedUser(user);
-    setIsEditUserDialogOpen(true);
-  };
-
-  // Handler for when a user is updated
-  const handleUserUpdated = (updatedUser: User) => {
-    console.log("User updated:", updatedUser);
-    setUsers(prevUsers => 
-      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
-    );
-    toast({
-      title: "User Updated",
-      description: `${updatedUser.email} has been updated successfully.`
-    });
   };
 
   // Handler for opening the subscription dialog
@@ -154,7 +130,6 @@ const UserManagement = () => {
             toggleUserSelection={toggleUserSelection}
             toggleAllUsers={toggleAllUsersWithFilter}
             handleViewUserDetails={handleViewUserDetails}
-            handleEditUser={handleEditUser}
             handleManagePermissions={handleManagePermissions}
             handleToggleUserStatus={handleToggleUserStatus}
             setSelectedUsers={setSelectedUsers}
@@ -190,14 +165,6 @@ const UserManagement = () => {
         open={isAddUserDialogOpen} 
         onOpenChange={setIsAddUserDialogOpen} 
         onUserAdded={handleUserAdded}
-      />
-
-      {/* Edit User Dialog */}
-      <EditUserDialog
-        user={selectedUser}
-        open={isEditUserDialogOpen}
-        onOpenChange={setIsEditUserDialogOpen}
-        onUserUpdated={handleUserUpdated}
       />
 
       {isPermissionsDialogOpen && selectedUser && (

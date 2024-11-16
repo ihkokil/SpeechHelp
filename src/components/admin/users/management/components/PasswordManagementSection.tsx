@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Mail, Send } from 'lucide-react';
-import { User } from '../../../types';
+import { User } from '../../types';
 
 interface PasswordManagementSectionProps {
   user: User | null;
