@@ -47,14 +47,12 @@ const MySpeeches = () => {
 
   // Enhanced debug log all speeches when they change
   useEffect(() => {
-    console.log(`MySpeeches has ${speeches.length} total speeches to display`);
+    console.log(`MySpeeches has ${speeches.length} total speeches from database`);
     
     // Log regular speeches from the backend
     const savedSpeeches = speeches.filter(s => !s.isUpcoming);
-    const upcomingSpeeches = speeches.filter(s => s.isUpcoming);
     
     console.log(`Regular speeches from database: ${savedSpeeches.length}`);
-    console.log(`Upcoming speeches: ${upcomingSpeeches.length}`);
 
     // Check for localStorage upcoming events for the current user
     if (user?.id) {
