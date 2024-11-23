@@ -60,7 +60,7 @@ const PreviousSpeeches = () => {
           <Button 
             variant="outline"
             onClick={handleCreateNewSpeech} 
-            className="h-10 px-6 py-2 border border-pink-500 text-pink-500 hover:bg-pink-50 transition-colors rounded-md"
+            className="h-10 px-6 py-2 border border-pink-500 text-pink-500 hover:bg-pink-50 hover:text-white transition-colors rounded-md"
           >
             <Translate text="dashboard.createFirstSpeech" />
           </Button>
