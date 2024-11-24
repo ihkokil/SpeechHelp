@@ -66,16 +66,16 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
         saveEventsForUser(exampleEvents, userId);
       } else {
         // Create a default event if no speeches exist
-        const defaultEvent: SpeechEvent = {
-          id: crypto.randomUUID(),
-          title: 'Your First Speech',
-          date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-          duration: 15,
-          category: 'speech',
-          status: 'upcoming'
-        };
-        setUpcomingEvents([defaultEvent]);
-        saveEventsForUser([defaultEvent], userId);
+        // const defaultEvent: SpeechEvent = {
+        //   id: crypto.randomUUID(),
+        //   title: 'Your First Speech',
+        //   date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        //   duration: 15,
+        //   category: 'speech',
+        //   status: 'upcoming'
+        // };
+        // setUpcomingEvents([defaultEvent]);
+        // saveEventsForUser([defaultEvent], userId);
       }
     }
   }, [user, speeches]);
