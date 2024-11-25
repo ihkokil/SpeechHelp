@@ -32,3 +32,4 @@ dist-ssr
 
 **/*/.env.test
 **/*/.env.production
+issues.md
