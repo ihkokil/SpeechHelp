@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Speech } from '@/types/speech';
 import FilterBar from './FilterBar';
 import SpeechesTable from './SpeechesTable';
@@ -7,7 +8,6 @@ import EmptyState from './EmptyState';
 import SpeechModals from './SpeechModals';
 import { useSpeechesFilter } from './useSpeechesFilter';
 import { FilterOption, SortOption } from './FilterBar';
-import { getSpeechTypeLabel } from './speech-utils';
 
 interface SpeechesManagerProps {
   speeches: Speech[];
@@ -15,6 +15,9 @@ interface SpeechesManagerProps {
 }
 
 const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManagerProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterOption>(initialFilter as FilterOption);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -27,29 +30,26 @@ const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManag
   // Apply initial filter when component mounts or initialFilter changes
   useEffect(() => {
     if (initialFilter) {
-      console.log('Setting initial filter to:', initialFilter);
       setFilterType(initialFilter as FilterOption);
     }
   }, [initialFilter]);
   
-  // Debug logging for incoming speeches data
+  // Update URL when filter changes
   useEffect(() => {
-    console.log('SpeechesManager received speeches array from props:', speeches?.length || 0);
-    const speechesArray = speeches || [];
-    const savedSpeeches = speechesArray.filter(s => !s.isUpcoming).length;
-    const upcomingSpeeches = speechesArray.filter(s => s.isUpcoming).length;
-    console.log(`SpeechesManager input breakdown: ${savedSpeeches} saved, ${upcomingSpeeches} upcoming`);
+    const params = new URLSearchParams(location.search);
+    const currentFilter = params.get('filter');
     
-    // Log speech types with proper labels
-    const speechTypes = speechesArray.map(speech => ({
-      type: speech.speech_type,
-      label: getSpeechTypeLabel(speech.speech_type),
-      isUpcoming: speech.isUpcoming
-    }));
-    console.log('Speech types with labels:', speechTypes);
-  }, [speeches]);
+    if (filterType !== 'all' && filterType !== currentFilter) {
+      params.set('filter', filterType);
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    } else if (filterType === 'all' && currentFilter) {
+      params.delete('filter');
+      const newSearch = params.toString();
+      navigate(`${location.pathname}${newSearch ? `?${newSearch}` : ''}`, { replace: true });
+    }
+  }, [filterType, location, navigate]);
   
-  const { filteredSpeeches } = useSpeechesFilter(speeches || [], searchQuery, filterType, sortBy);
+  const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
   
   const handleViewSpeech = (speech: Speech) => {
     setSelectedSpeech(speech);
@@ -65,26 +65,6 @@ const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManag
     setSelectedSpeech(speech);
     setIsDeleteAlertOpen(true);
   };
-
-  // Enhanced debug logging for filtered results
-  useEffect(() => {
-    console.log(`SpeechesManager - Current filter: ${filterType}`);
-    console.log(`SpeechesManager - Displaying ${filteredSpeeches.length} speeches after filtering`);
-    
-    // Log number of upcoming and regular speeches
-    const upcomingCount = filteredSpeeches.filter(speech => speech.isUpcoming).length;
-    const regularCount = filteredSpeeches.filter(speech => !speech.isUpcoming).length;
-    console.log(`SpeechesManager - Breakdown after filtering: ${upcomingCount} upcoming, ${regularCount} saved speeches`);
-    
-    // Log speech types with their display labels
-    const typesWithLabels = filteredSpeeches.map(speech => ({
-      type: speech.speech_type,
-      label: getSpeechTypeLabel(speech.speech_type),
-      isUpcoming: speech.isUpcoming,
-      title: speech.title
-    }));
-    console.log('Filtered speeches with proper labels:', typesWithLabels);
-  }, [filterType, filteredSpeeches]);
   
   return (
     <div>
