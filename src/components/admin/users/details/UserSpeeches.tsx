@@ -1,154 +1,174 @@
 
 import React from 'react';
+import { User, Speech } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Loader2, Filter } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Loader2, FileText, Calendar, Type } from 'lucide-react';
 import { format } from 'date-fns';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User, Speech } from '@/components/admin/users/types';
-import { Button } from '@/components/ui/button';
-import { useState, useMemo } from 'react';
-import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface UserSpeechesProps {
   user: User;
-  speeches?: Speech[];
-  isLoadingSpeeches?: boolean;
+  speeches: Speech[];
+  isLoadingSpeeches: boolean;
 }
 
-export const UserSpeeches: React.FC<UserSpeechesProps> = ({ 
-  user, 
-  speeches = [], 
-  isLoadingSpeeches = false 
+export const UserSpeeches: React.FC<UserSpeechesProps> = ({
+  user,
+  speeches,
+  isLoadingSpeeches
 }) => {
-  const [filter, setFilter] = useState<'all' | 'recent'>('all');
-  const isMobile = useIsMobile();
-  
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), isMobile ? 'MMM dd, yyyy' : 'MMM dd, yyyy HH:mm');
-    } catch (e) {
-      console.error("Error formatting date:", dateString, e);
-      return "Invalid date";
-    }
+  console.log('UserSpeeches component rendering:', {
+    userId: user.id,
+    speechesLength: speeches?.length,
+    isLoadingSpeeches,
+    speeches: speeches
+  });
+
+  // Helper function to get speech type display name
+  const getSpeechTypeDisplay = (speechType: string): string => {
+    const typeMap: Record<string, string> = {
+      'wedding': 'Wedding',
+      'business': 'Business',
+      'funeral': 'Funeral',
+      'birthday': 'Birthday',
+      'graduation': 'Graduation',
+      'retirement': 'Retirement',
+      'keynote': 'Keynote',
+      'tedtalk': 'TED Talk',
+      'motivational': 'Motivational',
+      'persuasive': 'Persuasive',
+      'informative': 'Informative',
+      'entertaining': 'Entertaining',
+      'farewell': 'Farewell',
+      'award': 'Award',
+      'introduction': 'Introduction',
+      'social': 'Social',
+      'other': 'Other'
+    };
+    
+    return typeMap[speechType?.toLowerCase()] || speechType || 'Unknown';
   };
 
-  // Filter speeches based on selected filter
-  const filteredSpeeches = useMemo(() => {
-    if (filter === 'all') return speeches;
+  // Helper function to get speech type color
+  const getSpeechTypeColor = (speechType: string): string => {
+    const colorMap: Record<string, string> = {
+      'wedding': 'bg-pink-100 text-pink-800',
+      'business': 'bg-blue-100 text-blue-800',
+      'funeral': 'bg-gray-100 text-gray-800',
+      'birthday': 'bg-yellow-100 text-yellow-800',
+      'graduation': 'bg-green-100 text-green-800',
+      'retirement': 'bg-purple-100 text-purple-800',
+      'keynote': 'bg-indigo-100 text-indigo-800',
+      'tedtalk': 'bg-red-100 text-red-800',
+      'motivational': 'bg-orange-100 text-orange-800',
+      'persuasive': 'bg-teal-100 text-teal-800',
+      'informative': 'bg-cyan-100 text-cyan-800',
+      'entertaining': 'bg-emerald-100 text-emerald-800',
+      'farewell': 'bg-slate-100 text-slate-800',
+      'award': 'bg-amber-100 text-amber-800',
+      'introduction': 'bg-lime-100 text-lime-800',
+      'social': 'bg-rose-100 text-rose-800',
+      'other': 'bg-neutral-100 text-neutral-800'
+    };
     
-    // Recent speeches - last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    return speeches.filter(speech => 
-      new Date(speech.created_at) >= thirtyDaysAgo
+    return colorMap[speechType?.toLowerCase()] || 'bg-gray-100 text-gray-800';
+  };
+
+  // Helper function to truncate content
+  const truncateContent = (content: string, maxLength: number = 100): string => {
+    if (!content || content.length <= maxLength) return content || '';
+    return content.substring(0, maxLength) + '...';
+  };
+
+  if (isLoadingSpeeches) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <FileText className="h-5 w-5 mr-2" />
+            User Speeches
+          </CardTitle>
+          <CardDescription>Speeches created by this user</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin mr-2" />
+            <span>Loading speeches...</span>
+          </div>
+        </CardContent>
+      </Card>
     );
-  }, [speeches, filter]);
+  }
+
+  if (!speeches || speeches.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <FileText className="h-5 w-5 mr-2" />
+            User Speeches
+          </CardTitle>
+          <CardDescription>Speeches created by this user</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No speeches found for this user</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              This user hasn't created any speeches yet.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-          <div>
-            <CardTitle>User Speeches</CardTitle>
-            <CardDescription>
-              All speeches created by {formatUserDisplayName(user)}
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2 mt-2 sm:mt-0">
-            <Button 
-              variant={filter === 'all' ? 'secondary' : 'outline'} 
-              size="sm"
-              onClick={() => setFilter('all')}
-            >
-              All
-            </Button>
-            <Button 
-              variant={filter === 'recent' ? 'secondary' : 'outline'} 
-              size="sm" 
-              onClick={() => setFilter('recent')}
-            >
-              Recent (30d)
-            </Button>
-          </div>
-        </div>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <FileText className="h-5 w-5 mr-2" />
+          User Speeches ({speeches.length})
+        </CardTitle>
+        <CardDescription>Speeches created by this user</CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoadingSpeeches ? (
-          <div className="flex justify-center items-center h-40">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : filteredSpeeches.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <FileText className="h-12 w-12 mx-auto opacity-20 mb-2" />
-            <p>No speeches found for this user{filter === 'recent' ? ' in the last 30 days' : ''}.</p>
-            {filter === 'recent' && speeches.length > 0 && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-4"
-                onClick={() => setFilter('all')}
-              >
-                Show all speeches
-              </Button>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="flex justify-between items-center mb-3">
-              <div className="text-sm text-muted-foreground">
-                Showing {filteredSpeeches.length} speech{filteredSpeeches.length !== 1 ? 'es' : ''}
-                {filter === 'recent' ? ' from the last 30 days' : ''}
+        <div className="space-y-4">
+          {speeches.map((speech) => (
+            <div key={speech.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex-1">
+                  <h4 className="font-medium text-sm line-clamp-1">{speech.title || 'Untitled Speech'}</h4>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="outline" className={getSpeechTypeColor(speech.speech_type)}>
+                      <Type className="h-3 w-3 mr-1" />
+                      {getSpeechTypeDisplay(speech.speech_type)}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              
+              {speech.content && (
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                  {truncateContent(speech.content, 150)}
+                </p>
+              )}
+              
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  Created: {speech.created_at ? format(new Date(speech.created_at), 'MMM d, yyyy') : 'Unknown'}
+                </div>
+                {speech.updated_at && speech.updated_at !== speech.created_at && (
+                  <div className="flex items-center">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    Updated: {format(new Date(speech.updated_at), 'MMM d, yyyy')}
+                  </div>
+                )}
               </div>
             </div>
-
-            {isMobile ? (
-              <div className="space-y-4">
-                {filteredSpeeches.map((speech) => (
-                  <div key={speech.id} className="border rounded-md p-3 space-y-2">
-                    <div className="font-medium">{speech.title}</div>
-                    <div className="flex justify-between items-center">
-                      <Badge variant="outline">{speech.speech_type}</Badge>
-                      <span className="text-xs text-gray-500">
-                        {formatDate(speech.created_at)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <ScrollArea className="h-[350px]">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead className="hidden sm:table-cell">Created</TableHead>
-                        <TableHead className="hidden md:table-cell">Modified</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredSpeeches.map((speech) => (
-                        <TableRow key={speech.id}>
-                          <TableCell className="font-medium max-w-[200px] break-words">{speech.title}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{speech.speech_type}</Badge>
-                          </TableCell>
-                          <TableCell className="hidden sm:table-cell">{formatDate(speech.created_at)}</TableCell>
-                          <TableCell className="hidden md:table-cell">{speech.updated_at ? formatDate(speech.updated_at) : '-'}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </ScrollArea>
-            )}
-          </>
-        )}
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

@@ -12,6 +12,36 @@ interface UserProfileProps {
 }
 
 export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
+  // Helper function to format address
+  const formatAddress = (user: User): string => {
+    const parts = [];
+    
+    if (user.user_metadata?.street_address) {
+      parts.push(user.user_metadata.street_address);
+    }
+    
+    const cityStateParts = [];
+    if (user.user_metadata?.city) {
+      cityStateParts.push(user.user_metadata.city);
+    }
+    if (user.user_metadata?.state) {
+      cityStateParts.push(user.user_metadata.state);
+    }
+    if (user.user_metadata?.zip_code) {
+      cityStateParts.push(user.user_metadata.zip_code);
+    }
+    
+    if (cityStateParts.length > 0) {
+      parts.push(cityStateParts.join(', '));
+    }
+    
+    if (user.user_metadata?.country) {
+      parts.push(user.user_metadata.country);
+    }
+    
+    return parts.length > 0 ? parts.join(', ') : 'Not provided';
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -59,11 +89,9 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
           
           <div className="space-y-1">
             <h3 className="text-sm font-medium text-muted-foreground">Address</h3>
-            <p className="flex items-center">
-              <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-              {user.user_metadata?.street_address 
-                ? `${user.user_metadata.street_address}, ${user.user_metadata.city || ''} ${user.user_metadata.state || ''} ${user.user_metadata.zip_code || ''}`
-                : 'Not provided'}
+            <p className="flex items-start">
+              <MapPin className="h-4 w-4 mr-2 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <span className="break-words">{formatAddress(user)}</span>
             </p>
           </div>
         </div>
@@ -91,4 +119,3 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
     </Card>
   );
 };
-

@@ -20,7 +20,10 @@ export const useUserDetails = (user: User | null, open: boolean) => {
 
   // Function to fetch speech data
   const fetchUserSpeeches = useCallback(async (userId: string) => {
-    if (!userId) return;
+    if (!userId) {
+      console.log('No userId provided for speech fetching');
+      return;
+    }
     
     setIsLoadingSpeeches(true);
     try {
@@ -34,13 +37,16 @@ export const useUserDetails = (user: User | null, open: boolean) => {
         
       if (error) {
         console.error('Error fetching user speeches:', error);
+        setSpeeches([]);
       } else {
-        console.log('Fetched speeches:', data?.length || 0, data);
+        console.log('Fetched speeches for user:', userId, 'Count:', data?.length || 0);
+        console.log('Speech data:', data);
         setSpeeches(data || []);
         calculateTotalActivityTime(data || []);
       }
     } catch (error) {
       console.error('Exception fetching user speeches:', error);
+      setSpeeches([]);
     } finally {
       setIsLoadingSpeeches(false);
     }
@@ -98,11 +104,23 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     
     if (user && open) {
       console.log('User details drawer opened for user:', user.id);
-      // When opening drawer with a user, reset state and fetch data
+      console.log('User data:', user);
+      
+      if (isMounted) {
+        // Reset state first
+        resetState();
+        
+        // Calculate user stats
+        calculateUserStats(user);
+        
+        // Fetch speeches for this user
+        fetchUserSpeeches(user.id);
+      }
+    } else if (!open) {
+      console.log('User details drawer closed, resetting state');
+      // Reset state when drawer closes
       if (isMounted) {
         resetState();
-        calculateUserStats(user);
-        fetchUserSpeeches(user.id);
       }
     }
     
