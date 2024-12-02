@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -9,7 +10,7 @@ import SystemStatus from '@/components/admin/dashboard/SystemStatus';
 import RecentActivity from '@/components/admin/dashboard/RecentActivity';
 import DashboardCharts from '@/components/admin/dashboard/DashboardCharts';
 import LoadingSpinner from '@/components/admin/layout/LoadingSpinner';
-import { RefreshCw, Download, Settings, Users } from 'lucide-react';
+import { RefreshCw, Download, Settings, Users, BarChart3, Shield, Database, Bell } from 'lucide-react';
 
 export interface DashboardData {
   totalUsers: number;
@@ -211,6 +212,17 @@ const AdminDashboard = () => {
     return () => clearInterval(interval);
   }, [adminUser, isLoading]);
 
+  const quickActions = [
+    { icon: Users, label: 'User Management', description: 'Manage user accounts' },
+    { icon: Settings, label: 'System Settings', description: 'Configure system' },
+    { icon: Download, label: 'Export Reports', description: 'Download data' },
+    { icon: RefreshCw, label: 'Sync Data', description: 'Refresh system data' },
+    { icon: BarChart3, label: 'Analytics', description: 'View detailed reports' },
+    { icon: Shield, label: 'Security', description: 'Security settings' },
+    { icon: Database, label: 'Database', description: 'Database management' },
+    { icon: Bell, label: 'Notifications', description: 'Manage alerts' }
+  ];
+
   if (isLoading || !dashboardData) {
     return <LoadingSpinner />;
   }
@@ -271,24 +283,25 @@ const AdminDashboard = () => {
           <CardDescription>Common administrative tasks</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Button variant="outline" className="h-20 flex-col">
-              <Users className="h-6 w-6 mb-2" />
-              User Management
-            </Button>
-            <Button variant="outline" className="h-20 flex-col">
-              <Settings className="h-6 w-6 mb-2" />
-              System Settings
-            </Button>
-            <Button variant="outline" className="h-20 flex-col">
-              <Download className="h-6 w-6 mb-2" />
-              Export Reports
-            </Button>
-            <Button variant="outline" className="h-20 flex-col">
-              <RefreshCw className="h-6 w-6 mb-2" />
-              Sync Data
-            </Button>
-          </div>
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex space-x-4 pb-4">
+              {quickActions.map((action, index) => {
+                const Icon = action.icon;
+                return (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className="h-24 w-48 flex-shrink-0 flex-col p-4"
+                  >
+                    <Icon className="h-6 w-6 mb-2" />
+                    <span className="text-sm font-medium">{action.label}</span>
+                    <span className="text-xs text-gray-500 mt-1">{action.description}</span>
+                  </Button>
+                );
+              })}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         </CardContent>
       </Card>
     </div>
