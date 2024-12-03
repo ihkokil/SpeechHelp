@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Activity, User, CheckCircle, AlertTriangle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -74,38 +75,40 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
       </CardHeader>
       <CardContent>
         {activities && activities.length > 0 ? (
-          <div className="space-y-4">
-            {activities.map((activity) => (
-              <div key={activity.id} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={getUserAvatarUrl(activity.user)} />
-                  <AvatarFallback className="bg-pink-100 text-pink-600">
-                    {getUserInitials(activity.user)}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {activity.user}
-                    </p>
-                    <div className="flex items-center space-x-2">
-                      {getStatusIcon(activity.status)}
-                      <Badge variant={getStatusBadgeVariant(activity.status)} className="text-xs">
-                        {activity.status}
-                      </Badge>
+          <ScrollArea className="h-80">
+            <div className="space-y-4 pr-4">
+              {activities.map((activity) => (
+                <div key={activity.id} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={getUserAvatarUrl(activity.user)} />
+                    <AvatarFallback className="bg-pink-100 text-pink-600">
+                      {getUserInitials(activity.user)}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {activity.user}
+                      </p>
+                      <div className="flex items-center space-x-2">
+                        {getStatusIcon(activity.status)}
+                        <Badge variant={getStatusBadgeVariant(activity.status)} className="text-xs">
+                          {activity.status}
+                        </Badge>
+                      </div>
                     </div>
+                    <p className="text-sm text-gray-500 truncate">
+                      {activity.action}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {activity.time}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-500 truncate">
-                    {activity.action}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {activity.time}
-                  </p>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </ScrollArea>
         ) : (
           <div className="text-center py-8">
             <Activity className="h-12 w-12 text-gray-300 mx-auto mb-4" />
