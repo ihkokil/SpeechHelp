@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { User } from '../../types';
 import UserActionMenu from './UserActionMenu';
-import { formatDateRelative, formatUserDisplayName, getUserPhone } from '../utils/userDisplayUtils';
+import { formatDateTimeDetailed, formatUserDisplayName, getUserPhone } from '../utils/userDisplayUtils';
 import { Crown } from 'lucide-react';
 
 interface UserTableRowProps {
@@ -46,60 +46,77 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       className={`${isSelected ? 'bg-muted/50' : ''} cursor-pointer hover:bg-muted/50`}
       onClick={handleRowClick}
     >
-      {/* Make the entire cell clickable for the checkbox, and stop propagation */}
       <TableCell 
-        className="w-12 relative" 
+        className="w-12" 
         onClick={handleCheckboxCellClick}
       >
-        {/* Position the checkbox absolutely to make the entire cell clickable */}
         <div className="flex items-center justify-center">
           <Checkbox 
             checked={isSelected}
-            // We don't need onCheckedChange here since the cell click will handle it
           />
         </div>
       </TableCell>
-      <TableCell className="font-medium">
-        {formatUserDisplayName(user)}
+      <TableCell className="min-w-[180px] font-medium">
+        <div className="truncate">
+          {formatUserDisplayName(user)}
+        </div>
       </TableCell>
-      <TableCell>{user.email}</TableCell>
-      <TableCell className="hidden md:table-cell">
-        {getUserPhone(user)}
+      <TableCell className="min-w-[200px]">
+        <div className="truncate text-sm">
+          {user.email}
+        </div>
       </TableCell>
-      <TableCell className="hidden md:table-cell">
-        {user.is_admin ? (
-          <Badge className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200 flex items-center gap-1 w-24 justify-center">
-            <Crown size={12} /> Admin
-          </Badge>
-        ) : user.subscription_plan === 'pro' ? (
-          <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200 w-24 justify-center">
-            Pro
-          </Badge>
-        ) : user.subscription_plan === 'premium' ? (
-          <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200 w-24 justify-center">
-            Premium
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="text-gray-600 w-24 justify-center">
-            Free
-          </Badge>
-        )}
+      <TableCell className="min-w-[120px]">
+        <div className="truncate text-sm">
+          {getUserPhone(user)}
+        </div>
       </TableCell>
-      <TableCell className="hidden md:table-cell">
-        {formatDateRelative(user.created_at || '')}
+      <TableCell className="w-24">
+        <div className="flex justify-center">
+          {user.is_admin ? (
+            <Badge className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200 flex items-center gap-1 text-xs px-2 py-1">
+              <Crown size={10} /> Admin
+            </Badge>
+          ) : user.subscription_plan === 'pro' ? (
+            <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200 text-xs px-2 py-1">
+              Pro
+            </Badge>
+          ) : user.subscription_plan === 'premium' ? (
+            <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200 text-xs px-2 py-1">
+              Premium
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-gray-600 text-xs px-2 py-1">
+              Free
+            </Badge>
+          )}
+        </div>
       </TableCell>
-      <TableCell className="hidden lg:table-cell">
-        {formatDateRelative(user.last_sign_in_at || '')}
+      <TableCell className="min-w-[140px]">
+        <div className="text-sm text-gray-600">
+          {formatDateTimeDetailed(user.created_at || '')}
+        </div>
       </TableCell>
-      <TableCell className="hidden md:table-cell">
-        {user.is_active !== false ? (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
-        ) : (
-          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Inactive</Badge>
-        )}
+      <TableCell className="min-w-[140px]">
+        <div className="text-sm text-gray-600">
+          {formatDateTimeDetailed(user.last_sign_in_at || '')}
+        </div>
       </TableCell>
-      <TableCell>
-        <div onClick={(e) => e.stopPropagation()}>
+      <TableCell className="w-20">
+        <div className="flex justify-center">
+          {user.is_active !== false ? (
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-1">
+              Active
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 text-xs px-2 py-1">
+              Inactive
+            </Badge>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="w-16">
+        <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
           <UserActionMenu
             user={user}
             onViewDetails={onViewDetails}
