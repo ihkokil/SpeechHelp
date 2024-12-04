@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -412,8 +413,8 @@ const DashboardCharts: React.FC = () => {
                     name="New Users"
                   />
                 </LineChart>
-              </CardContent>
-            </Card>
+              </ResponsiveContainer>
+            </CardContent>
           </Card>
         </TabsContent>
 
