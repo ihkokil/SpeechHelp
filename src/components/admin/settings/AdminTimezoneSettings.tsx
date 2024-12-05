@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { adminSettingsService } from '@/services/adminSettingsService';
 
 const timezones = [
   { value: 'UTC', label: 'UTC (Coordinated Universal Time)' },
@@ -23,12 +24,35 @@ const timezones = [
 const AdminTimezoneSettings = () => {
   const [selectedTimezone, setSelectedTimezone] = useState('UTC');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // Load timezone data on component mount
+  useEffect(() => {
+    loadTimezoneData();
+  }, []);
+
+  const loadTimezoneData = async () => {
+    setIsLoadingData(true);
+    try {
+      const timezone = await adminSettingsService.getSetting('timezone');
+      if (timezone) {
+        setSelectedTimezone(timezone);
+      }
+    } catch (error) {
+      console.error('Error loading timezone data:', error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // Here you would save the timezone preference to your backend
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      const result = await adminSettingsService.saveSetting('timezone', selectedTimezone, 'timezone');
+      
+      if (!result.success) {
+        throw new Error(result.error);
+      }
       
       // Store in localStorage for immediate use
       localStorage.setItem('admin_timezone', selectedTimezone);
@@ -37,10 +61,11 @@ const AdminTimezoneSettings = () => {
         title: "Timezone updated",
         description: `Timezone has been set to ${timezones.find(tz => tz.value === selectedTimezone)?.label}`,
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error saving timezone:', error);
       toast({
         title: "Error",
-        description: "Failed to update timezone. Please try again.",
+        description: error.message || "Failed to update timezone. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -62,6 +87,10 @@ const AdminTimezoneSettings = () => {
       timeZoneName: 'short'
     });
   };
+
+  if (isLoadingData) {
+    return <div className="flex items-center justify-center p-8">Loading timezone data...</div>;
+  }
 
   return (
     <div className="space-y-6">

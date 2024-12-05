@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { adminSettingsService } from '@/services/adminSettingsService';
 
 const AdminProfileSettings = () => {
   const [profileData, setProfileData] = useState({
@@ -15,6 +16,36 @@ const AdminProfileSettings = () => {
     avatar: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // Load profile data on component mount
+  useEffect(() => {
+    loadProfileData();
+  }, []);
+
+  const loadProfileData = async () => {
+    setIsLoadingData(true);
+    try {
+      const result = await adminSettingsService.getSettings('profile');
+      if (result.success && result.data) {
+        const settings = result.data.reduce((acc, setting) => {
+          acc[setting.setting_key] = setting.setting_value;
+          return acc;
+        }, {} as any);
+
+        setProfileData({
+          firstName: settings.first_name || '',
+          lastName: settings.last_name || '',
+          email: settings.email || '',
+          avatar: settings.avatar || ''
+        });
+      }
+    } catch (error) {
+      console.error('Error loading profile data:', error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setProfileData(prev => ({
@@ -39,7 +70,7 @@ const AdminProfileSettings = () => {
       
       toast({
         title: "Avatar uploaded",
-        description: "Your avatar has been updated successfully.",
+        description: "Your avatar has been updated. Remember to save your changes.",
       });
     }
   };
@@ -47,17 +78,31 @@ const AdminProfileSettings = () => {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // Here you would typically save to your backend/database
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      // Save each profile setting
+      const savePromises = [
+        adminSettingsService.saveSetting('first_name', profileData.firstName, 'profile'),
+        adminSettingsService.saveSetting('last_name', profileData.lastName, 'profile'),
+        adminSettingsService.saveSetting('email', profileData.email, 'profile'),
+        adminSettingsService.saveSetting('avatar', profileData.avatar, 'profile')
+      ];
+
+      const results = await Promise.all(savePromises);
+      const hasErrors = results.some(result => !result.success);
+
+      if (hasErrors) {
+        const errors = results.filter(r => !r.success).map(r => r.error).join(', ');
+        throw new Error(errors);
+      }
       
       toast({
         title: "Profile updated",
         description: "Your profile information has been saved successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error saving profile:', error);
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: error.message || "Failed to update profile. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -68,6 +113,10 @@ const AdminProfileSettings = () => {
   const getInitials = () => {
     return `${profileData.firstName.charAt(0)}${profileData.lastName.charAt(0)}`.toUpperCase();
   };
+
+  if (isLoadingData) {
+    return <div className="flex items-center justify-center p-8">Loading profile data...</div>;
+  }
 
   return (
     <div className="space-y-6">

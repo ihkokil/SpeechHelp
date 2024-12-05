@@ -210,6 +210,36 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_settings: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          id: string
+          setting_category: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          setting_category: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          setting_category?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_user_roles: {
         Row: {
           admin_user_id: string
@@ -439,6 +469,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_admin_settings: {
+        Args: { category_filter?: string }
+        Returns: {
+          setting_key: string
+          setting_value: Json
+          setting_category: string
+          updated_at: string
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -466,6 +505,14 @@ export type Database = {
       }
       update_user_subscription: {
         Args: { user_id: string; plan: string; end_date: string }
+        Returns: Json
+      }
+      upsert_admin_setting: {
+        Args: {
+          setting_key_param: string
+          setting_value_param: Json
+          setting_category_param: string
+        }
         Returns: Json
       }
     }
