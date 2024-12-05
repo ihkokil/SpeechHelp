@@ -8,6 +8,13 @@ export interface AdminSetting {
   updated_at: string;
 }
 
+interface RpcResponse {
+  success: boolean;
+  error?: string;
+  setting_key?: string;
+  setting_value?: any;
+}
+
 export const adminSettingsService = {
   // Save a setting to the database
   async saveSetting(key: string, value: any, category: string): Promise<{ success: boolean; error?: string }> {
@@ -23,8 +30,11 @@ export const adminSettingsService = {
         return { success: false, error: error.message };
       }
 
-      if (!data.success) {
-        return { success: false, error: data.error };
+      // Type assertion to handle the JSON response
+      const response = data as RpcResponse;
+      
+      if (!response?.success) {
+        return { success: false, error: response?.error || 'Unknown error occurred' };
       }
 
       return { success: true };
