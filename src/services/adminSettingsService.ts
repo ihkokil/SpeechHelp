@@ -19,8 +19,8 @@ interface RpcResponse {
 // Create a separate client for admin operations using service role
 const getAdminSupabaseClient = () => {
   return createClient(
-    import.meta.env.VITE_SUPABASE_URL,
-    import.meta.env.VITE_SUPABASE_ANON_KEY,
+    "https://yotrueuqjxmgcwlbbyps.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvdHJ1ZXVxanhtZ2N3bGJieXBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEwMjIyNDEsImV4cCI6MjA1NjU5ODI0MX0.JNEPQePgfO5ven3C1mUcBvOYezKyjK_zCncPRzuYyXo",
     {
       auth: {
         persistSession: false
