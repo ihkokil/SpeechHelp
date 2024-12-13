@@ -21,16 +21,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Refresh user data from Supabase
   const refreshUserData = async () => {
-    if (!session) return;
-    
-    const { data, error } = await supabase.auth.getUser();
-    if (error) {
-      console.error('Error refreshing user data:', error);
+    if (!session) {
+      console.log('No session available for refresh');
       return;
     }
     
-    if (data.user) {
-      setUser(data.user);
+    try {
+      // Get fresh user data
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('Error refreshing user data:', userError);
+        return;
+      }
+      
+      if (userData.user) {
+        // Get profile data to include subscription info
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userData.user.id)
+          .single();
+
+        if (!profileError && profileData) {
+          // Merge profile data into user metadata
+          const updatedUser = {
+            ...userData.user,
+            user_metadata: {
+              ...userData.user.user_metadata,
+              subscription_plan: profileData.subscription_plan,
+              subscription_start_date: profileData.subscription_start_date,
+              subscription_end_date: profileData.subscription_end_date,
+              stripe_customer_id: profileData.stripe_customer_id,
+              stripe_subscription_id: profileData.stripe_subscription_id,
+            }
+          };
+          setUser(updatedUser);
+          console.log('User data refreshed with subscription info:', updatedUser);
+        } else {
+          setUser(userData.user);
+          console.log('User data refreshed (no profile found):', userData.user);
+        }
+      }
+    } catch (error) {
+      console.error('Error in refreshUserData:', error);
     }
   };
 
@@ -117,7 +150,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Error getting session:', error);
       } else if (data?.session) {
         setSession(data.session);
-        setUser(data.session.user);
+        
+        // Get user with profile data
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.session.user.id)
+          .single();
+
+        if (profileData) {
+          const userWithProfile = {
+            ...data.session.user,
+            user_metadata: {
+              ...data.session.user.user_metadata,
+              subscription_plan: profileData.subscription_plan,
+              subscription_start_date: profileData.subscription_start_date,
+              subscription_end_date: profileData.subscription_end_date,
+              stripe_customer_id: profileData.stripe_customer_id,
+              stripe_subscription_id: profileData.stripe_subscription_id,
+            }
+          };
+          setUser(userWithProfile);
+        } else {
+          setUser(data.session.user);
+        }
+        
         await fetchSpeeches();
       }
       
@@ -130,14 +187,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       console.log(`Auth state changed: ${event}`);
       setSession(newSession);
-      setUser(newSession?.user ?? null);
       
       if (newSession?.user) {
+        // Get profile data when auth state changes
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', newSession.user.id)
+          .single();
+
+        if (profileData) {
+          const userWithProfile = {
+            ...newSession.user,
+            user_metadata: {
+              ...newSession.user.user_metadata,
+              subscription_plan: profileData.subscription_plan,
+              subscription_start_date: profileData.subscription_start_date,
+              subscription_end_date: profileData.subscription_end_date,
+              stripe_customer_id: profileData.stripe_customer_id,
+              stripe_subscription_id: profileData.stripe_subscription_id,
+            }
+          };
+          setUser(userWithProfile);
+        } else {
+          setUser(newSession.user);
+        }
+        
         // Defer the fetch to avoid potential auth state conflicts
         setTimeout(() => {
           fetchSpeeches();
         }, 0);
       } else {
+        setUser(null);
         setSpeeches([]);
       }
       

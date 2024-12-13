@@ -1,6 +1,8 @@
+
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import Stripe from 'https://esm.sh/stripe@13.2.0?target=deno';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 interface VerifyRequestBody {
 	sessionId: string;
@@ -64,6 +66,13 @@ serve(async (req) => {
 			httpClient: Stripe.createFetchHttpClient(),
 		});
 
+		// Initialize Supabase with service role key for database updates
+		const supabase = createClient(
+			Deno.env.get('SUPABASE_URL') ?? "",
+			Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? "",
+			{ auth: { persistSession: false } }
+		);
+
 		// Retrieve checkout session
 		try {
 			log(`Retrieving checkout session with ID: ${sessionId}`);
@@ -74,20 +83,86 @@ serve(async (req) => {
 			if (session.payment_status === 'paid' && session.status === 'complete') {
 				// Extract user ID from the session
 				const userId = session.client_reference_id;
+				const plan = session.metadata?.plan || 'free_trial';
 				const pricingPeriod = session.metadata?.pricingPeriod || 'monthly';
 				const subscriptionId = session.subscription as string;
 
-				log('Payment successful', { userId, pricingPeriod, subscriptionId });
+				log('Payment successful', { userId, plan, pricingPeriod, subscriptionId });
 
-				// Here you would typically update the user's subscription status in your database
-				// For example, using the Supabase client to update a users table
+				if (!userId) {
+					log('Error: No user ID found in session client_reference_id');
+					return new Response(
+						JSON.stringify({ error: 'No user ID found in session' }),
+						{
+							status: 400,
+							headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+						}
+					);
+				}
+
+				// Calculate subscription end date based on plan and period
+				const startDate = new Date();
+				const endDate = new Date();
+				
+				if (plan === 'free_trial') {
+					// 7-day trial
+					endDate.setDate(startDate.getDate() + 7);
+				} else if (pricingPeriod === 'yearly') {
+					// 1 year subscription
+					endDate.setFullYear(startDate.getFullYear() + 1);
+				} else {
+					// Monthly subscription
+					endDate.setMonth(startDate.getMonth() + 1);
+				}
+
+				log('Calculated subscription dates:', { 
+					startDate: startDate.toISOString(), 
+					endDate: endDate.toISOString() 
+				});
+
+				// Update user's profile with subscription details
+				const { data: profileData, error: profileError } = await supabase
+					.from('profiles')
+					.upsert({
+						id: userId,
+						subscription_plan: plan,
+						subscription_start_date: startDate.toISOString(),
+						subscription_end_date: endDate.toISOString(),
+						stripe_customer_id: session.customer,
+						stripe_subscription_id: subscriptionId,
+						updated_at: new Date().toISOString()
+					}, { 
+						onConflict: 'id',
+						ignoreDuplicates: false 
+					})
+					.select();
+
+				if (profileError) {
+					log('Error updating profile:', profileError);
+					return new Response(
+						JSON.stringify({ 
+							success: false, 
+							error: 'Failed to update user profile',
+							details: profileError 
+						}),
+						{
+							status: 500,
+							headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+						}
+					);
+				}
+
+				log('Successfully updated user profile:', profileData);
 
 				return new Response(
 					JSON.stringify({
 						success: true,
 						userId,
+						plan,
 						pricingPeriod,
 						subscriptionId,
+						subscriptionStartDate: startDate.toISOString(),
+						subscriptionEndDate: endDate.toISOString(),
 						paymentStatus: session.payment_status,
 						customerEmail: session.customer_details?.email
 					}),
@@ -151,4 +226,4 @@ serve(async (req) => {
 			}
 		);
 	}
-}); 
+});

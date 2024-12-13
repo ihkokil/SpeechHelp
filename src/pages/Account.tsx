@@ -1,15 +1,14 @@
-/* 
- This is the url that gets returned to after the user has completed the checkout process
- It will either redirect to the dashboard or the pricing page depending on the user's subscription status
- account?success=true&session_id=cs_test_b1KDw2VXeQoFYkOJ6mKBPV3cz46CBa8KowtLbfr7dmRcUdk2Pi8IzqtVk7
-*/
 
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Account = () => {
 	const navigate = useNavigate();
+	const { refreshUserData } = useAuth();
+	const { toast } = useToast();
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -38,31 +37,56 @@ const Account = () => {
 						// Checkout was successful and payment was completed
 						console.log('Payment successful:', data);
 
-						// Here you might want to update local state or context
-						// For example, dispatch to a user context to update subscription status
+						// Refresh user data to get updated subscription info
+						await refreshUserData();
 
-						// Redirect to dashboard
-						navigate('/dashboard');
+						// Show success toast
+						toast({
+							title: "Payment Successful!",
+							description: `Your ${data.plan} subscription has been activated. Welcome aboard!`,
+						});
+
+						// Redirect to dashboard after a short delay
+						setTimeout(() => {
+							navigate('/dashboard');
+						}, 2000);
 					} else {
 						// Payment was initiated but not completed
 						console.log('Payment not completed:', data);
-						setError('Your payment is being processed. Please check back later.');
+						setError('Your payment is being processed. Please check back later or contact support if you have concerns.');
 
-						// Optional: You can redirect after a delay or provide a button to retry
-						setTimeout(() => {
+						// Still try to refresh user data in case there was a delay
+						setTimeout(async () => {
+							await refreshUserData();
 							navigate('/dashboard');
 						}, 5000);
 					}
 				} catch (err) {
 					console.error('Error verifying checkout:', err);
-					setError('There was an error processing your payment. Please contact support.');
+					setError('There was an error processing your payment. Please contact support if you believe this is a mistake.');
+					
+					// Show error toast
+					toast({
+						title: "Payment Processing Error",
+						description: "We encountered an issue verifying your payment. Please contact support.",
+						variant: "destructive"
+					});
 				} finally {
 					setIsLoading(false);
 				}
 			} else if (canceled === 'true') {
 				// User canceled the checkout
 				console.log('Checkout was canceled');
-				navigate('/pricing');
+				toast({
+					title: "Payment Canceled",
+					description: "Your payment was canceled. You can try again anytime.",
+					variant: "destructive"
+				});
+				
+				// Redirect to pricing page after a short delay
+				setTimeout(() => {
+					navigate('/pricing');
+				}, 2000);
 			} else {
 				// No checkout parameters, redirect to pricing
 				navigate('/pricing');
@@ -70,40 +94,59 @@ const Account = () => {
 		};
 
 		verifyCheckout();
-	}, [success, canceled, sessionId, navigate]);
+	}, [success, canceled, sessionId, navigate, refreshUserData, toast]);
 
-	// Simple loading and error UI
+	// Loading state UI
 	if (isLoading) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-screen p-4">
-				<h1 className="text-xl font-bold mb-4">Processing your payment...</h1>
-				<p>Please wait while we verify your payment.</p>
+			<div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-br from-purple-50 to-pink-50">
+				<div className="max-w-md w-full text-center">
+					<div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-6"></div>
+					<h1 className="text-2xl font-bold mb-4 text-gray-900">Processing your payment...</h1>
+					<p className="text-gray-600">Please wait while we verify your payment and activate your subscription.</p>
+					<div className="mt-6 bg-white rounded-lg p-4 shadow-sm">
+						<p className="text-sm text-gray-500">This may take a few moments. Please don't close this window.</p>
+					</div>
+				</div>
 			</div>
 		);
 	}
 
+	// Error state UI
 	if (error) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-screen p-4">
-				<h1 className="text-xl font-bold mb-4">Payment Processing</h1>
-				<p className="text-red-500 mb-4">{error}</p>
-				<button
-					className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-					onClick={() => navigate('/dashboard')}
-				>
-					Go to Dashboard
-				</button>
+			<div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-br from-red-50 to-pink-50">
+				<div className="max-w-md w-full text-center">
+					<div className="text-red-500 text-6xl mb-6">⚠️</div>
+					<h1 className="text-2xl font-bold mb-4 text-gray-900">Payment Processing Issue</h1>
+					<p className="text-red-600 mb-6 bg-red-50 p-4 rounded-lg border border-red-200">{error}</p>
+					<div className="space-y-3">
+						<button
+							className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+							onClick={() => navigate('/dashboard')}
+						>
+							Go to Dashboard
+						</button>
+						<button
+							className="w-full px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+							onClick={() => navigate('/pricing')}
+						>
+							Back to Pricing
+						</button>
+					</div>
+				</div>
 			</div>
 		);
 	}
 
 	// This will only show briefly while the useEffect runs
 	return (
-		<div className="flex items-center justify-center min-h-screen">
-			<p>Redirecting...</p>
+		<div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
+			<div className="text-center">
+				<div className="animate-pulse text-lg text-gray-600">Redirecting...</div>
+			</div>
 		</div>
 	);
 };
 
 export default Account;
-
