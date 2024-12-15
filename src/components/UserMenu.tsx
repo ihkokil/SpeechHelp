@@ -23,9 +23,18 @@ const UserMenu = () => {
   const { user, signOut, isLoading } = useAuth();
   const navigate = useNavigate();
 
+  console.log('UserMenu render - user:', user);
+  console.log('UserMenu render - isLoading:', isLoading);
+
   const handleSignOut = async () => {
+    console.log('UserMenu - handleSignOut called');
     await signOut();
     navigate('/');
+  };
+
+  const handleNavigation = (path: string) => {
+    console.log('UserMenu - navigating to:', path);
+    navigate(path);
   };
 
   if (isLoading) {
@@ -88,17 +97,27 @@ const UserMenu = () => {
   const displayName = firstName || emailUsername;
   const displayFullName = fullName || displayName;
 
+  console.log('UserMenu - displayName:', displayName);
+  console.log('UserMenu - displayFullName:', displayFullName);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+        <button 
+          className="flex items-center gap-2 rounded-full p-2 transition-colors hover:bg-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+          onClick={() => console.log('UserMenu trigger clicked')}
+        >
           <UserCircle className="h-8 w-8 text-pink-600" />
           <span className="text-sm font-medium hidden md:block">
             {displayName}
           </span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-lg z-50">
+      <DropdownMenuContent 
+        align="end" 
+        className="w-56 bg-white border border-gray-200 shadow-lg z-[9999]"
+        sideOffset={5}
+      >
         <div className="px-2 py-1.5">
           <p className="text-sm font-bold truncate">{displayFullName}</p>
           <TooltipProvider>
@@ -113,22 +132,31 @@ const UserMenu = () => {
           </TooltipProvider>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate('/dashboard')} className="cursor-pointer">
+        <DropdownMenuItem 
+          className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
+          onSelect={() => handleNavigation('/dashboard')}
+        >
           <LayoutDashboardIcon className="h-4 w-4 mr-2" />
           Dashboard
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+        <DropdownMenuItem 
+          className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
+          onSelect={() => handleNavigation('/settings')}
+        >
           <Settings className="h-4 w-4 mr-2" />
           Account Settings
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/help')} className="cursor-pointer">
+        <DropdownMenuItem 
+          className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
+          onSelect={() => handleNavigation('/help')}
+        >
           <HelpCircle className="h-4 w-4 mr-2" />
           Help & Support
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
-          onClick={handleSignOut}
           className="cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-600"
+          onSelect={handleSignOut}
         >
           <LogOut className="h-4 w-4 mr-2" />
           Log Out
