@@ -80,6 +80,18 @@ serve(async (req) => {
       });
     }
     
+    // Handle ping action first
+    if (body.action === "ping") {
+      console.log("Ping request received, responding with success");
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: "Admin auth service is available" 
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+    
     // Determine the request type based on body parameters
     let requestType = "";
     

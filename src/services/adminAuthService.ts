@@ -33,23 +33,7 @@ export const adminAuthService = {
   // Create default admin user (for initial setup)
   async createDefaultAdmin(): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('Attempting to create default admin user');
-      
-      // Try to check if the edge function exists first
-      const functionCheckResult = await supabase.functions.invoke('admin-auth', {
-        body: { action: 'ping' },
-      }).catch(error => {
-        console.error('Edge function check failed:', error);
-        return { error };
-      });
-      
-      if (functionCheckResult.error) {
-        console.error('Edge function check failed:', functionCheckResult.error);
-        return { 
-          success: false, 
-          error: 'Admin authentication service is not available. Please check your deployment.' 
-        };
-      }
+      console.log('Creating default admin user from context');
       
       const functionResult = await supabase.functions.invoke('admin-auth', {
         body: { 
@@ -132,15 +116,7 @@ export const adminAuthService = {
           password: credentials.password 
         },
       }).catch(error => {
-        // Handle function not found error specifically
-        if (error.message?.includes('not found') || error.message?.includes('404')) {
-          console.error('Admin auth function not found. It may not be deployed:', error);
-          return { 
-            error: {
-              message: 'Authentication service is not available. The admin-auth function may not be deployed.'
-            }
-          };
-        }
+        console.error('Admin auth function error:', error);
         return { error };
       });
 
@@ -148,15 +124,6 @@ export const adminAuthService = {
 
       if (functionResult.error) {
         console.error('Admin auth function error:', functionResult.error);
-        
-        // Check for specific error types
-        if (functionResult.error.message?.includes('not found') || functionResult.error.message?.includes('404')) {
-          return { 
-            success: false, 
-            error: 'Authentication service is not available. Please check if the Edge Function is deployed.' 
-          };
-        }
-        
         return { 
           success: false, 
           error: 'Authentication service error. Please try again later.' 

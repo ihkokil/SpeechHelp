@@ -15,7 +15,6 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, LockKeyhole, Shield, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { supabase } from '@/integrations/supabase/client';
 
 const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
 
@@ -42,32 +41,6 @@ const AdminAuth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formTab, setFormTab] = useState<'login' | 'forgot-password'>('login');
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [deploymentError, setDeploymentError] = useState<boolean>(false);
-  const [checkingDeployment, setCheckingDeployment] = useState<boolean>(true);
-
-  useEffect(() => {
-    const checkFunctionDeployment = async () => {
-      try {
-        setCheckingDeployment(true);
-        await supabase.functions.invoke('admin-auth', {
-          body: { action: 'ping' },
-        }).catch(error => {
-          if (error.message?.includes('not found') || error.message?.includes('404')) {
-            console.error('Admin auth function not deployed:', error);
-            setDeploymentError(true);
-          }
-          return { error };
-        });
-      } catch (error) {
-        console.error('Function deployment check error:', error);
-        setDeploymentError(true);
-      } finally {
-        setCheckingDeployment(false);
-      }
-    };
-
-    checkFunctionDeployment();
-  }, []);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -115,10 +88,6 @@ const AdminAuth = () => {
           description: result.error || "Invalid credentials. Please try again.",
           variant: "destructive",
         });
-
-        if (result.error?.includes('not available') || result.error?.includes('not deployed')) {
-          setDeploymentError(true);
-        }
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -189,36 +158,6 @@ const AdminAuth = () => {
         />
         <div className="text-2xl font-bold text-pink-600">Admin Portal</div>
       </div>
-      
-      {deploymentError && (
-        <Alert variant="destructive" className="mb-4 max-w-md">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Deployment Issue Detected</AlertTitle>
-          <AlertDescription>
-            <div>
-              The admin authentication service is not available. The Supabase Edge Function 'admin-auth' needs to be deployed.
-            </div>
-            <div className="mt-2">
-              <strong>How to fix this:</strong>
-              <ul className="list-disc pl-5 mt-1 text-sm">
-                <li>Make sure the function is defined in <code>supabase/functions/admin-auth/index.ts</code></li>
-                <li>The <code>config.toml</code> file should have <code>name = "admin-auth"</code></li>
-                <li>Deploy your Supabase Functions using the Supabase CLI: <code>supabase functions deploy admin-auth</code></li>
-                <li>Or wait for the automatic deployment to complete if you're using a CI/CD pipeline</li>
-              </ul>
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {checkingDeployment && (
-        <Alert className="mb-4 max-w-md bg-blue-50 border-blue-200">
-          <Info className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-blue-700">
-            Checking authentication service availability...
-          </AlertDescription>
-        </Alert>
-      )}
       
       <Card className="w-full max-w-md shadow-xl border border-gray-200">
         <CardHeader className="space-y-1">
