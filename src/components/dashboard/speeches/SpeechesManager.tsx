@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Speech } from '@/types/speech';
 import FilterBar from './FilterBar';
@@ -19,26 +19,40 @@ const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManag
   const navigate = useNavigate();
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<FilterOption>(initialFilter as FilterOption);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  
+  // Use a ref to track if we're initializing to prevent infinite loops
+  const isInitializing = useRef(true);
+  
+  // Initialize filter from URL params or initialFilter
+  const getInitialFilter = (): FilterOption => {
+    const params = new URLSearchParams(location.search);
+    const urlFilter = params.get('filter');
+    if (urlFilter && ['all', 'completed', 'upcoming', 'draft'].includes(urlFilter)) {
+      return urlFilter as FilterOption;
+    }
+    return initialFilter as FilterOption;
+  };
+  
+  const [filterType, setFilterType] = useState<FilterOption>(getInitialFilter);
   
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   
-  // Apply initial filter when component mounts or initialFilter changes
+  // Single effect to handle URL synchronization
   useEffect(() => {
-    if (initialFilter) {
-      setFilterType(initialFilter as FilterOption);
+    if (isInitializing.current) {
+      // On first load, just set the initial state without navigation
+      isInitializing.current = false;
+      return;
     }
-  }, [initialFilter]);
-  
-  // Update URL when filter changes
-  useEffect(() => {
+    
     const params = new URLSearchParams(location.search);
     const currentFilter = params.get('filter');
     
+    // Only update URL if filter has actually changed and it's not 'all'
     if (filterType !== 'all' && filterType !== currentFilter) {
       params.set('filter', filterType);
       navigate(`${location.pathname}?${params.toString()}`, { replace: true });
@@ -47,7 +61,14 @@ const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManag
       const newSearch = params.toString();
       navigate(`${location.pathname}${newSearch ? `?${newSearch}` : ''}`, { replace: true });
     }
-  }, [filterType, location, navigate]);
+  }, [filterType, location.pathname, navigate]);
+  
+  // Separate effect to handle external filter changes (like from props)
+  useEffect(() => {
+    if (!isInitializing.current && initialFilter !== filterType) {
+      setFilterType(initialFilter as FilterOption);
+    }
+  }, [initialFilter]);
   
   const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
   
