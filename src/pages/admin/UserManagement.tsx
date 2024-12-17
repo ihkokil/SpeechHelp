@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -101,17 +102,17 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-x-hidden">
       <div className="flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
         <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
       </div>
       
-      <Card>
+      <Card className="w-full max-w-full">
         <CardHeader className="pb-3">
           <CardTitle>Users</CardTitle>
           <CardDescription>Manage your application users, their roles, and permissions.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="w-full max-w-full overflow-x-hidden p-6">
           <SearchToolbar 
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
