@@ -2,9 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
 
-// Import the new components
 import AuthContainer from '@/components/auth/AuthContainer';
 import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
@@ -18,10 +16,9 @@ const Auth = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
 
-  // Check if the URL contains signup=true or signin=true or hash contains type=recovery
+  // Check URL parameters for form state
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('signup') === 'true') {
@@ -47,7 +44,7 @@ const Auth = () => {
     }
   }, [user, navigate, isResetPassword]);
 
-  // Handle form transitions
+  // Form transition handlers
   const handleSwitchToSignUp = () => setIsSignUp(true);
   const handleSwitchToSignIn = () => setIsSignUp(false);
   const handleSwitchToForgotPassword = () => setIsForgotPassword(true);

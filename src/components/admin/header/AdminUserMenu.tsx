@@ -23,6 +23,13 @@ const AdminUserMenu = () => {
     navigate('/admin/auth');
   };
 
+  const getInitials = () => {
+    if (adminUser?.username) {
+      return adminUser.username.charAt(0).toUpperCase();
+    }
+    return 'A';
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -32,7 +39,9 @@ const AdminUserMenu = () => {
               src={adminUser?.email ? `https://gravatar.com/avatar/${btoa(adminUser.email)}?d=mp` : undefined} 
               alt={adminUser?.username || 'Admin'} 
             />
-            <AvatarFallback>{adminUser?.username?.charAt(0).toUpperCase() || 'A'}</AvatarFallback>
+            <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium">
+              {getInitials()}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -40,16 +49,18 @@ const AdminUserMenu = () => {
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
             <p className="font-medium">{adminUser?.username}</p>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <p className="text-xs text-gray-500 truncate">{adminUser?.email}</p>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{adminUser?.email}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {adminUser?.email && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <p className="text-xs text-gray-500 truncate cursor-help">{adminUser.email}</p>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{adminUser.email}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         </div>
         <DropdownMenuSeparator />
