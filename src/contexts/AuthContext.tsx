@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [speeches, setSpeeches] = useState<Speech[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   const { toast } = useToast();
   const speechService = useSpeechService();
@@ -174,9 +175,66 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return sessionUser;
     };
 
-    // Set up auth state listener first
+    // Initialize auth state
+    const initializeAuth = async () => {
+      console.log('AuthContext - Initializing auth state');
+      
+      try {
+        // First check for existing session
+        const { data: { session: existingSession }, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          setSession(null);
+          setUser(null);
+          setIsLoading(false);
+          setIsInitialized(true);
+          return;
+        }
+
+        if (existingSession?.user) {
+          console.log('AuthContext - Found existing session');
+          
+          const userWithProfile = await updateUserWithProfile(existingSession.user);
+          if (mounted) {
+            console.log('Setting user from existing session');
+            setSession(existingSession);
+            setUser(userWithProfile);
+            setIsLoading(false);
+            setIsInitialized(true);
+            
+            // Defer speech fetching
+            setTimeout(() => {
+              if (mounted && userWithProfile) {
+                fetchSpeeches().catch(console.error);
+              }
+            }, 100);
+          }
+        } else {
+          console.log('AuthContext - No existing session found');
+          if (mounted) {
+            setSession(null);
+            setUser(null);
+            setIsLoading(false);
+            setIsInitialized(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error in initializeAuth:', error);
+        if (mounted) {
+          setSession(null);
+          setUser(null);
+          setIsLoading(false);
+          setIsInitialized(true);
+        }
+      }
+    };
+
+    // Set up auth state listener
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if (!mounted) return;
+      if (!mounted || !isInitialized) return;
       
       console.log(`AuthContext - Auth state changed: ${event}`);
       
@@ -217,65 +275,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    // Check for existing session after setting up listener
-    const checkSession = async () => {
-      if (!mounted) return;
-      
-      console.log('AuthContext - Checking for existing session');
-      
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-        
-        if (error) {
-          console.error('Error getting session:', error);
-          setSession(null);
-          setUser(null);
-          setIsLoading(false);
-        } else if (data?.session) {
-          console.log('AuthContext - Found existing session');
-          
-          const userWithProfile = await updateUserWithProfile(data.session.user);
-          if (mounted) {
-            console.log('Setting user from existing session');
-            setSession(data.session);
-            setUser(userWithProfile);
-            setIsLoading(false);
-            
-            // Defer speech fetching
-            setTimeout(() => {
-              if (mounted && userWithProfile) {
-                fetchSpeeches().catch(console.error);
-              }
-            }, 100);
-          }
-        } else {
-          console.log('AuthContext - No existing session found');
-          if (mounted) {
-            setSession(null);
-            setUser(null);
-            setIsLoading(false);
-          }
-        }
-      } catch (error) {
-        console.error('Error in checkSession:', error);
-        if (mounted) {
-          setSession(null);
-          setUser(null);
-          setIsLoading(false);
-        }
-      }
-    };
-
-    // Initialize session check
-    checkSession();
+    // Initialize auth first, then set up listener
+    initializeAuth();
 
     return () => {
       mounted = false;
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, []); // Remove isInitialized from dependencies to avoid re-running
 
   return (
     <AuthContext.Provider value={{ 
