@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Link, useNavigate } from 'react-router-dom';
@@ -22,6 +22,20 @@ import UserProfileInfo from './UserProfileInfo';
 const UserMenu: React.FC = () => {
   const { user, signOut, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  // Set a timeout for loading state to prevent infinite loading
+  useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => {
+        setLoadingTimeout(true);
+      }, 5000); // 5 second timeout
+
+      return () => clearTimeout(timer);
+    } else {
+      setLoadingTimeout(false);
+    }
+  }, [isLoading]);
 
   const handleSignOut = async () => {
     try {
@@ -36,15 +50,18 @@ const UserMenu: React.FC = () => {
     navigate(path);
   };
 
-  // Show loading spinner if auth is loading
-  if (isLoading) {
+  // Show login/signup buttons if loading has timed out or no user
+  const shouldShowAuthButtons = (!user && !isLoading) || loadingTimeout;
+
+  // Show loading spinner only if auth is loading and hasn't timed out
+  if (isLoading && !loadingTimeout) {
     return (
       <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse"></div>
     );
   }
 
-  // Show login/signup buttons if no user
-  if (!user) {
+  // Show login/signup buttons if no user or loading timed out
+  if (shouldShowAuthButtons) {
     return (
       <div className="flex items-center gap-2">
         <Link to="/auth?signin=true">
