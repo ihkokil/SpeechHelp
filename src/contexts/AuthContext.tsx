@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Refresh user data from Supabase
   const refreshUserData = async () => {
-    if (!session) {
+    if (!session?.user) {
       console.log('No session available for refresh');
       return;
     }
@@ -29,38 +29,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       // Get fresh user data
       const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) {
+      if (userError || !userData.user) {
         console.error('Error refreshing user data:', userError);
         return;
       }
       
-      if (userData.user) {
-        // Get profile data to include subscription info
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userData.user.id)
-          .single();
+      // Get profile data to include subscription info
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userData.user.id)
+        .single();
 
-        if (!profileError && profileData) {
-          // Merge profile data into user metadata
-          const updatedUser = {
-            ...userData.user,
-            user_metadata: {
-              ...userData.user.user_metadata,
-              subscription_plan: profileData.subscription_plan,
-              subscription_start_date: profileData.subscription_start_date,
-              subscription_end_date: profileData.subscription_end_date,
-              stripe_customer_id: profileData.stripe_customer_id,
-              stripe_subscription_id: profileData.stripe_subscription_id,
-            }
-          };
-          setUser(updatedUser);
-          console.log('User data refreshed with subscription info:', updatedUser);
-        } else {
-          setUser(userData.user);
-          console.log('User data refreshed (no profile found):', userData.user);
-        }
+      if (!profileError && profileData) {
+        // Merge profile data into user metadata
+        const updatedUser = {
+          ...userData.user,
+          user_metadata: {
+            ...userData.user.user_metadata,
+            subscription_plan: profileData.subscription_plan,
+            subscription_start_date: profileData.subscription_start_date,
+            subscription_end_date: profileData.subscription_end_date,
+            stripe_customer_id: profileData.stripe_customer_id,
+            stripe_subscription_id: profileData.stripe_subscription_id,
+          }
+        };
+        setUser(updatedUser);
+        console.log('User data refreshed with subscription info');
+      } else {
+        setUser(userData.user);
+        console.log('User data refreshed (no profile found)');
       }
     } catch (error) {
       console.error('Error in refreshUserData:', error);
@@ -114,29 +112,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Auth functions wrapped to control loading state
   const handleSignIn = async (email: string, password: string) => {
-    setIsLoading(true);
     try {
       await signIn(email, password, toast);
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error('Sign in error:', error);
     }
   };
 
   const handleSignUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
-    setIsLoading(true);
     try {
       await signUp(email, password, toast, firstName, lastName);
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error('Sign up error:', error);
     }
   };
 
   const handleSignOut = async () => {
-    setIsLoading(true);
     try {
       await signOut(toast);
-    } finally {
-      setIsLoading(false);
+      setSpeeches([]);
+    } catch (error) {
+      console.error('Sign out error:', error);
     }
   };
 
@@ -168,23 +164,64 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               stripe_subscription_id: profileData.stripe_subscription_id,
             }
           };
-          console.log('User enriched with profile data:', enrichedUser);
+          console.log('User enriched with profile data');
           return enrichedUser;
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
       }
       
-      console.log('Returning user without profile enrichment');
       return sessionUser;
     };
 
-    // Check for existing session
-    const getSession = async () => {
+    // Set up auth state listener first
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      if (!mounted) return;
+      
+      console.log(`AuthContext - Auth state changed: ${event}`);
+      
+      if (newSession?.user) {
+        console.log('AuthContext - User authenticated, updating user data');
+        
+        try {
+          const userWithProfile = await updateUserWithProfile(newSession.user);
+          if (mounted) {
+            console.log('Setting user from auth state change');
+            setSession(newSession);
+            setUser(userWithProfile);
+            setIsLoading(false);
+            
+            // Defer speech fetching to avoid blocking auth state updates
+            setTimeout(() => {
+              if (mounted && userWithProfile) {
+                fetchSpeeches().catch(console.error);
+              }
+            }, 100);
+          }
+        } catch (error) {
+          console.error('Error updating user with profile:', error);
+          if (mounted) {
+            setSession(newSession);
+            setUser(newSession.user);
+            setIsLoading(false);
+          }
+        }
+      } else {
+        console.log('AuthContext - User signed out, clearing user data');
+        if (mounted) {
+          setSession(null);
+          setUser(null);
+          setSpeeches([]);
+          setIsLoading(false);
+        }
+      }
+    });
+
+    // Check for existing session after setting up listener
+    const checkSession = async () => {
       if (!mounted) return;
       
       console.log('AuthContext - Checking for existing session');
-      setIsLoading(true);
       
       try {
         const { data, error } = await supabase.auth.getSession();
@@ -195,83 +232,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.error('Error getting session:', error);
           setSession(null);
           setUser(null);
+          setIsLoading(false);
         } else if (data?.session) {
           console.log('AuthContext - Found existing session');
-          setSession(data.session);
           
           const userWithProfile = await updateUserWithProfile(data.session.user);
           if (mounted) {
-            console.log('Setting user from existing session:', userWithProfile);
+            console.log('Setting user from existing session');
+            setSession(data.session);
             setUser(userWithProfile);
-            // Defer the fetch to avoid potential auth state conflicts
+            setIsLoading(false);
+            
+            // Defer speech fetching
             setTimeout(() => {
-              if (mounted) fetchSpeeches();
-            }, 0);
+              if (mounted && userWithProfile) {
+                fetchSpeeches().catch(console.error);
+              }
+            }, 100);
           }
         } else {
           console.log('AuthContext - No existing session found');
-          setSession(null);
-          setUser(null);
+          if (mounted) {
+            setSession(null);
+            setUser(null);
+            setIsLoading(false);
+          }
         }
       } catch (error) {
-        console.error('Error in getSession:', error);
+        console.error('Error in checkSession:', error);
         if (mounted) {
           setSession(null);
           setUser(null);
-        }
-      } finally {
-        if (mounted) {
           setIsLoading(false);
         }
       }
     };
 
-    // Set up auth state listener
-    const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if (!mounted) return;
-      
-      console.log(`AuthContext - Auth state changed: ${event}`);
-      
-      setSession(newSession);
-      
-      if (newSession?.user) {
-        console.log('AuthContext - User authenticated, updating user data');
-        
-        try {
-          const userWithProfile = await updateUserWithProfile(newSession.user);
-          if (mounted) {
-            console.log('Setting user from auth state change:', userWithProfile);
-            setUser(userWithProfile);
-            // Always set loading to false after setting user
-            setIsLoading(false);
-            // Defer the fetch to avoid potential auth state conflicts
-            setTimeout(() => {
-              if (mounted) fetchSpeeches();
-            }, 0);
-          }
-        } catch (error) {
-          console.error('Error updating user with profile:', error);
-          if (mounted) {
-            setUser(newSession.user);
-            setIsLoading(false);
-          }
-        }
-      } else {
-        console.log('AuthContext - User signed out, clearing user data');
-        if (mounted) {
-          setUser(null);
-          setSpeeches([]);
-          setIsLoading(false);
-        }
-      }
-    });
-
     // Initialize session check
-    getSession();
+    checkSession();
 
     return () => {
       mounted = false;
-      data.subscription.unsubscribe();
+      authListener.subscription.unsubscribe();
     };
   }, []);
 

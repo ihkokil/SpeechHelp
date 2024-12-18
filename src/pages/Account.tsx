@@ -7,9 +7,9 @@ import { useToast } from '@/hooks/use-toast';
 
 const Account = () => {
 	const navigate = useNavigate();
-	const { refreshUserData, user } = useAuth();
+	const { refreshUserData, user, isLoading } = useAuth();
 	const { toast } = useToast();
-	const [isLoading, setIsLoading] = useState(false);
+	const [isVerifying, setIsVerifying] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	const searchParams = new URLSearchParams(window.location.search);
@@ -22,7 +22,7 @@ const Account = () => {
 			console.log('Account page - verifyCheckout called', { success, canceled, sessionId });
 
 			if (success === 'true' && sessionId) {
-				setIsLoading(true);
+				setIsVerifying(true);
 				setError(null);
 
 				try {
@@ -80,7 +80,7 @@ const Account = () => {
 						variant: "destructive"
 					});
 				} finally {
-					setIsLoading(false);
+					setIsVerifying(false);
 				}
 			} else if (canceled === 'true') {
 				// User canceled the checkout
@@ -96,38 +96,46 @@ const Account = () => {
 					navigate('/pricing');
 				}, 2000);
 			} else {
-				// No checkout parameters, redirect to pricing
-				console.log('No checkout parameters found, redirecting to pricing');
-				navigate('/pricing');
+				// No checkout parameters - only redirect after auth loading is complete
+				if (!isLoading) {
+					if (!user) {
+						// If no user and no payment parameters, redirect to auth
+						navigate('/auth');
+					} else {
+						// If user is logged in but no payment parameters, redirect to dashboard
+						navigate('/dashboard');
+					}
+				}
 			}
 		};
 
-		// Only run verification if we have the proper parameters
-		if (success || canceled) {
+		// Only run verification if we have the proper parameters or auth is not loading
+		if (success || canceled || !isLoading) {
 			verifyCheckout();
-		} else if (!user) {
-			// If no user and no payment parameters, redirect to auth
-			navigate('/auth');
-		} else {
-			// If user is logged in but no payment parameters, redirect to dashboard
-			navigate('/dashboard');
 		}
-	}, [success, canceled, sessionId, navigate, refreshUserData, toast, user]);
+	}, [success, canceled, sessionId, navigate, refreshUserData, toast, user, isLoading]);
 
 	// Loading state UI
-	if (isLoading) {
+	if (isLoading || isVerifying) {
 		return (
 			<div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-br from-purple-50 to-pink-50">
 				<div className="max-w-md w-full text-center">
 					<div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-6"></div>
-					<h1 className="text-2xl font-bold mb-4 text-gray-900">Processing your payment...</h1>
-					<p className="text-gray-600">Please wait while we verify your payment and activate your subscription.</p>
-					<div className="mt-6 bg-white rounded-lg p-4 shadow-sm">
-						<p className="text-sm text-gray-500">This may take a few moments. Please don't close this window.</p>
-						{sessionId && (
+					<h1 className="text-2xl font-bold mb-4 text-gray-900">
+						{isVerifying ? 'Processing your payment...' : 'Loading...'}
+					</h1>
+					<p className="text-gray-600">
+						{isVerifying 
+							? 'Please wait while we verify your payment and activate your subscription.'
+							: 'Please wait while we load your account information.'
+						}
+					</p>
+					{sessionId && (
+						<div className="mt-6 bg-white rounded-lg p-4 shadow-sm">
+							<p className="text-sm text-gray-500">This may take a few moments. Please don't close this window.</p>
 							<p className="text-xs text-gray-400 mt-2">Session ID: {sessionId}</p>
-						)}
-					</div>
+						</div>
+					)}
 				</div>
 			</div>
 		);

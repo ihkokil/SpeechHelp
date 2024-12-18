@@ -13,7 +13,7 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
@@ -37,12 +37,21 @@ const Auth = () => {
     }
   }, [location]);
 
-  // Redirect if already logged in (except for reset password flow)
+  // Redirect if already logged in (except for reset password flow) - but only when not loading
   useEffect(() => {
-    if (user && !isResetPassword) {
+    if (!isLoading && user && !isResetPassword) {
       navigate('/dashboard');
     }
-  }, [user, navigate, isResetPassword]);
+  }, [user, navigate, isResetPassword, isLoading]);
+
+  // Show loading while auth state is being determined
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-orange-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
 
   // Form transition handlers
   const handleSwitchToSignUp = () => setIsSignUp(true);
