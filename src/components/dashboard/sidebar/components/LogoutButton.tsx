@@ -1,14 +1,11 @@
 
 import { LogOutIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 
 export const LogoutButton = () => {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
 
   const handleSignOut = async () => {
-    await signOut();
     navigate('/');
   };
 

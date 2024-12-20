@@ -260,8 +260,6 @@ export const adminAuthService = {
         };
       }
 
-      // This would normally call an edge function to generate a reset token
-      // and send an email, but for now we'll just log it
       console.log(`AdminAuthService - Password reset requested for admin: ${data.email}`);
       
       // Log password reset request
