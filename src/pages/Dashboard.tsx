@@ -44,7 +44,11 @@ const Dashboard = () => {
         <main className="px-4 sm:px-6 lg:px-8 py-6">
           <div className="max-w-7xl mx-auto">
             {/* Welcome Section */}
-            <WelcomeCard />
+            <WelcomeCard 
+              userName={user?.email || 'User'}
+              firstName={user?.user_metadata?.first_name}
+              lastName={user?.user_metadata?.last_name}
+            />
             
             {/* Quick Actions */}
             <div className="mb-6">
