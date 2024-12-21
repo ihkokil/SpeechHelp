@@ -1,0 +1,40 @@
+
+import React from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import WelcomeCard from './WelcomeCard';
+import QuickActions from './QuickActions';
+import SpeechStatsCard from './speeches/SpeechStatsCard';
+import UpcomingSpeeches from './UpcomingSpeeches';
+import PreviousSpeeches from './PreviousSpeeches';
+
+interface DashboardMobileLayoutProps {
+  speeches: any[];
+}
+
+const DashboardMobileLayout: React.FC<DashboardMobileLayoutProps> = ({ speeches }) => {
+  return (
+    <div className="space-y-4">
+      {/* Welcome Section */}
+      <WelcomeCard />
+      
+      {/* Quick Actions */}
+      <QuickActions />
+      
+      {/* Speech Statistics */}
+      {speeches && speeches.length > 0 && (
+        <SpeechStatsCard speeches={speeches} />
+      )}
+      
+      {/* Mobile Stack Layout */}
+      <div className="space-y-4">
+        {/* Upcoming Speeches */}
+        <UpcomingSpeeches speeches={speeches} />
+        
+        {/* Previous Speeches */}
+        <PreviousSpeeches />
+      </div>
+    </div>
+  );
+};
+
+export default DashboardMobileLayout;
