@@ -33,9 +33,25 @@ export const adminAuthService = {
   // Create default admin user (for initial setup)
   async createDefaultAdmin(): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log('AdminAuthService - Creating default admin user');
+      console.log('Attempting to create default admin user');
       
-      const { data: functionResult, error: functionError } = await supabase.functions.invoke('admin-auth', {
+      // Try to check if the edge function exists first
+      const functionCheckResult = await supabase.functions.invoke('admin-auth', {
+        body: { action: 'ping' },
+      }).catch(error => {
+        console.error('Edge function check failed:', error);
+        return { error };
+      });
+      
+      if (functionCheckResult.error) {
+        console.error('Edge function check failed:', functionCheckResult.error);
+        return { 
+          success: false, 
+          error: 'Admin authentication service is not available. Please check your deployment.' 
+        };
+      }
+      
+      const functionResult = await supabase.functions.invoke('admin-auth', {
         body: { 
           action: 'create_admin',
           username: 'speechhelpmaster', 
@@ -43,43 +59,50 @@ export const adminAuthService = {
           email: 'admin@speechhelp.com',
           is_super_admin: true
         },
+      }).catch(error => {
+        console.error('Error invoking admin-auth function:', error);
+        return { error };
       });
       
-      console.log('AdminAuthService - Create admin response:', { data: functionResult, error: functionError });
+      console.log('Response from admin-auth function:', functionResult);
       
-      if (functionError) {
-        console.error('AdminAuthService - Error creating default admin:', functionError);
+      if (functionResult.error) {
+        console.error('Error creating default admin:', functionResult.error);
         return { 
           success: false, 
-          error: functionError.message || 'Failed to connect to authentication service' 
+          error: functionResult.error.message || 'Failed to connect to authentication service' 
         };
       }
       
-      if (!functionResult) {
-        console.error('AdminAuthService - No data returned from admin-auth function');
+      // Check if data exists on the response
+      const responseData = functionResult && 'data' in functionResult ? functionResult.data : null;
+      
+      if (!responseData) {
+        console.error('No data returned from admin-auth function');
         return { 
           success: false, 
           error: 'No response from authentication service' 
         };
       }
       
-      if (!functionResult.success) {
-        console.log('AdminAuthService - Admin creation failed with error:', functionResult.error);
-        if (functionResult.error && functionResult.error.includes('already exists')) {
-          console.log('AdminAuthService - Admin already exists, treating as success');
+      if (!responseData.success) {
+        console.log('Admin creation failed with error:', responseData.error);
+        // If the admin already exists, we'll treat this as a success for the UI
+        if (responseData.error && responseData.error.includes('already exists')) {
+          console.log('Admin already exists, treating as success');
           return { success: true };
         }
         
         return { 
           success: false, 
-          error: functionResult.error || 'Failed to create admin' 
+          error: responseData.error || 'Failed to create admin' 
         };
       }
 
-      console.log('AdminAuthService - Default admin user created successfully');
+      console.log('Default admin user created successfully');
       return { success: true };
     } catch (err: any) {
-      console.error('AdminAuthService - Create default admin error:', err);
+      console.error('Create default admin error:', err);
       return { 
         success: false, 
         error: 'An unexpected error occurred. Please try again later.' 
@@ -97,70 +120,93 @@ export const adminAuthService = {
         const ipData = await ipResponse.json();
         ip = ipData.ip;
       } catch (ipErr) {
-        console.warn('AdminAuthService - Could not fetch IP address:', ipErr);
+        console.warn('Could not fetch IP address:', ipErr);
       }
 
-      console.log(`AdminAuthService - Attempting to sign in user: ${credentials.username}`);
+      console.log(`Attempting to sign in user: ${credentials.username}`);
       
       // Call the admin-auth edge function to verify credentials
-      const { data: functionResult, error: functionError } = await supabase.functions.invoke('admin-auth', {
+      const functionResult = await supabase.functions.invoke('admin-auth', {
         body: { 
           username: credentials.username, 
           password: credentials.password 
         },
+      }).catch(error => {
+        // Handle function not found error specifically
+        if (error.message?.includes('not found') || error.message?.includes('404')) {
+          console.error('Admin auth function not found. It may not be deployed:', error);
+          return { 
+            error: {
+              message: 'Authentication service is not available. The admin-auth function may not be deployed.'
+            }
+          };
+        }
+        return { error };
       });
 
-      console.log('AdminAuthService - Sign in response:', { data: functionResult, error: functionError });
+      console.log('Sign in response:', functionResult);
 
-      if (functionError) {
-        console.error('AdminAuthService - Admin auth function error:', functionError);
+      if (functionResult.error) {
+        console.error('Admin auth function error:', functionResult.error);
+        
+        // Check for specific error types
+        if (functionResult.error.message?.includes('not found') || functionResult.error.message?.includes('404')) {
+          return { 
+            success: false, 
+            error: 'Authentication service is not available. Please check if the Edge Function is deployed.' 
+          };
+        }
+        
         return { 
           success: false, 
           error: 'Authentication service error. Please try again later.' 
         };
       }
 
-      if (!functionResult || !functionResult.success) {
+      // Check if data exists on the response
+      const responseData = functionResult && 'data' in functionResult ? functionResult.data : null;
+      
+      if (!responseData || !responseData.success) {
         // Log failed login attempt
         await this.logActivity({
           adminUserId: 'unknown',
           action: 'FAILED_LOGIN',
           entityType: 'ADMIN_USER',
           entityId: 'unknown',
-          details: { reason: functionResult?.error || 'Unknown error', ip },
+          details: { reason: responseData?.error || 'Unknown error', ip },
           ipAddress: ip
         });
         
         return { 
           success: false, 
-          error: functionResult?.error || 'Invalid credentials.' 
+          error: responseData?.error || 'Invalid credentials.' 
         };
       }
 
       // If 2FA is enabled, require verification
-      if (functionResult.requires2FA) {
+      if (responseData.requires2FA) {
         // Log 2FA prompt
         await this.logActivity({
-          adminUserId: functionResult.user.id,
+          adminUserId: responseData.user.id,
           action: 'TWO_FACTOR_PROMPT',
           entityType: 'ADMIN_USER',
-          entityId: functionResult.user.id,
+          entityId: responseData.user.id,
           ipAddress: ip
         });
         
         return { 
           success: true, 
           requires2FA: true,
-          user: functionResult.user
+          user: responseData.user
         };
       }
 
       // Log successful login
       await this.logActivity({
-        adminUserId: functionResult.user.id,
+        adminUserId: responseData.user.id,
         action: 'LOGIN',
         entityType: 'ADMIN_USER',
-        entityId: functionResult.user.id,
+        entityId: responseData.user.id,
         ipAddress: ip
       });
 
@@ -168,14 +214,14 @@ export const adminAuthService = {
       await supabase
         .from('admin_users')
         .update({ last_login: new Date().toISOString() })
-        .eq('id', functionResult.user.id);
+        .eq('id', responseData.user.id);
 
       return { 
         success: true, 
-        user: functionResult.user
+        user: responseData.user
       };
     } catch (err: any) {
-      console.error('AdminAuthService - Admin sign in error:', err);
+      console.error('Admin sign in error:', err);
       return { 
         success: false, 
         error: 'An unexpected error occurred. Please try again later.' 
@@ -190,19 +236,21 @@ export const adminAuthService = {
       const ipResponse = await fetch('https://api.ipify.org?format=json');
       const { ip } = await ipResponse.json();
 
-      console.log(`AdminAuthService - Verifying 2FA code for user ID: ${userId}`);
-
       // Call the admin-auth edge function to verify 2FA code
-      const { data: functionResult, error: functionError } = await supabase.functions.invoke('admin-auth', {
+      const functionResult = await supabase.functions.invoke('admin-auth', {
         body: { 
           adminId: userId, 
           code 
         },
+      }).catch(error => {
+        console.error('Error invoking 2FA verification:', error);
+        return { error };
       });
 
-      console.log('AdminAuthService - 2FA verification response:', { data: functionResult, error: functionError });
-
-      if (functionError || !functionResult?.success) {
+      // Check if data exists and for success
+      const responseData = 'data' in functionResult ? functionResult.data : null;
+      
+      if (functionResult.error || !responseData?.success) {
         await this.logActivity({
           adminUserId: userId,
           action: 'FAILED_TWO_FACTOR',
@@ -214,7 +262,7 @@ export const adminAuthService = {
         
         return { 
           success: false, 
-          error: functionResult?.error || 'Invalid verification code.' 
+          error: responseData?.error || 'Invalid verification code.' 
         };
       }
 
@@ -235,7 +283,7 @@ export const adminAuthService = {
 
       return { success: true };
     } catch (err: any) {
-      console.error('AdminAuthService - 2FA verification error:', err);
+      console.error('2FA verification error:', err);
       return { 
         success: false, 
         error: 'An unexpected error occurred. Please try again later.' 
@@ -262,7 +310,7 @@ export const adminAuthService = {
 
       // This would normally call an edge function to generate a reset token
       // and send an email, but for now we'll just log it
-      console.log(`AdminAuthService - Password reset requested for admin: ${data.email}`);
+      console.log(`Password reset requested for admin: ${data.email}`);
       
       // Log password reset request
       await this.logActivity({
@@ -274,7 +322,7 @@ export const adminAuthService = {
 
       return { success: true };
     } catch (err: any) {
-      console.error('AdminAuthService - Password reset request error:', err);
+      console.error('Password reset request error:', err);
       return { 
         success: false, 
         error: 'An unexpected error occurred. Please try again later.' 
@@ -297,7 +345,7 @@ export const adminAuthService = {
       sessionStorage.removeItem('adminSession');
       localStorage.removeItem('adminSession');
     } catch (err) {
-      console.error('AdminAuthService - Admin sign out error:', err);
+      console.error('Admin sign out error:', err);
     }
   },
 
@@ -333,7 +381,7 @@ export const adminAuthService = {
           details
         });
     } catch (err) {
-      console.error('AdminAuthService - Log activity error:', err);
+      console.error('Log activity error:', err);
     }
   }
 };

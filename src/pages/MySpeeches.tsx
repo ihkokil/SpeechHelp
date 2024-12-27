@@ -20,17 +20,16 @@ const MySpeeches = () => {
     setInitialFilter(filterParam === 'upcoming' ? 'upcoming' : 'all');
   }, [location]);
 
-  // Fetch speeches when component mounts and user is available
+  // Fetch speeches when component mounts
   useEffect(() => {
-    if (user && !isLoading) {
+    if (user) {
       fetchSpeeches().catch(error => {
         console.error('Error fetching speeches:', error);
         toast.error('Failed to load speeches. Please try again.');
       });
     }
-  }, [user, isLoading, fetchSpeeches]);
+  }, [user, fetchSpeeches]);
 
-  // Show loading state while auth is being determined
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">

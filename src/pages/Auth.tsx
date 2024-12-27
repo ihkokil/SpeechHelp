@@ -2,7 +2,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
+// Import the new components
 import AuthContainer from '@/components/auth/AuthContainer';
 import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
@@ -13,12 +15,13 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
 
-  // Check URL parameters for form state
+  // Check if the URL contains signup=true or signin=true or hash contains type=recovery
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('signup') === 'true') {
@@ -37,23 +40,14 @@ const Auth = () => {
     }
   }, [location]);
 
-  // Redirect if already logged in (except for reset password flow) - but only when not loading
+  // Redirect if already logged in (except for reset password flow)
   useEffect(() => {
-    if (!isLoading && user && !isResetPassword) {
+    if (user && !isResetPassword) {
       navigate('/dashboard');
     }
-  }, [user, navigate, isResetPassword, isLoading]);
+  }, [user, navigate, isResetPassword]);
 
-  // Show loading while auth state is being determined
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-orange-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-      </div>
-    );
-  }
-
-  // Form transition handlers
+  // Handle form transitions
   const handleSwitchToSignUp = () => setIsSignUp(true);
   const handleSwitchToSignIn = () => setIsSignUp(false);
   const handleSwitchToForgotPassword = () => setIsForgotPassword(true);
