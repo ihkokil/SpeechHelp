@@ -40,14 +40,14 @@ const AdminLayout = () => {
           />
         </div>
 
-        <div className="flex flex-1 flex-col w-full ml-0 md:ml-0">
+        <div className="flex flex-1 flex-col w-full min-w-0">
           <MemoizedAdminHeader
             navItems={adminNavItems}
             mobileMenuOpen={mobileMenuOpen}
             setMobileMenuOpen={setMobileMenuOpen}
           />
           
-          <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8 pt-20 md:pt-6">
+          <main className="flex-1 overflow-hidden p-4 md:p-6 lg:p-8 pt-20 md:pt-6">
             <Outlet />
           </main>
         </div>
