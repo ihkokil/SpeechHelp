@@ -35,7 +35,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     onViewDetails(user);
   };
 
-  // Create a specialized handler for the checkbox cell
   const handleCheckboxCellClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onToggleSelection(user);
@@ -47,31 +46,37 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       onClick={handleRowClick}
     >
       <TableCell 
-        className="w-12" 
+        className="w-12 px-2" 
         onClick={handleCheckboxCellClick}
       >
         <div className="flex items-center justify-center">
-          <Checkbox 
-            checked={isSelected}
-          />
+          <Checkbox checked={isSelected} />
         </div>
       </TableCell>
-      <TableCell className="min-w-[180px] font-medium">
+      
+      <TableCell className="min-w-[150px] font-medium px-2">
         <div className="truncate">
           {formatUserDisplayName(user)}
         </div>
+        {/* Show email on mobile when email column is hidden */}
+        <div className="text-xs text-gray-500 truncate sm:hidden">
+          {user.email}
+        </div>
       </TableCell>
-      <TableCell className="min-w-[200px]">
+      
+      <TableCell className="min-w-[180px] px-2 hidden sm:table-cell">
         <div className="truncate text-sm">
           {user.email}
         </div>
       </TableCell>
-      <TableCell className="min-w-[120px]">
+      
+      <TableCell className="min-w-[100px] px-2 hidden lg:table-cell">
         <div className="truncate text-sm">
           {getUserPhone(user)}
         </div>
       </TableCell>
-      <TableCell className="w-24">
+      
+      <TableCell className="w-20 px-2 hidden md:table-cell">
         <div className="flex justify-center">
           {user.is_admin ? (
             <Badge className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200 flex items-center gap-1 text-xs px-2 py-1">
@@ -92,17 +97,20 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
           )}
         </div>
       </TableCell>
-      <TableCell className="min-w-[140px]">
+      
+      <TableCell className="min-w-[120px] px-2 hidden xl:table-cell">
         <div className="text-sm text-gray-600">
           {formatDateTimeDetailed(user.created_at || '')}
         </div>
       </TableCell>
-      <TableCell className="min-w-[140px]">
+      
+      <TableCell className="min-w-[120px] px-2 hidden xl:table-cell">
         <div className="text-sm text-gray-600">
           {formatDateTimeDetailed(user.last_sign_in_at || '')}
         </div>
       </TableCell>
-      <TableCell className="w-20">
+      
+      <TableCell className="w-20 px-2 hidden md:table-cell">
         <div className="flex justify-center">
           {user.is_active !== false ? (
             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-1">
@@ -115,7 +123,8 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
           )}
         </div>
       </TableCell>
-      <TableCell className="w-16">
+      
+      <TableCell className="w-16 px-2">
         <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
           <UserActionMenu
             user={user}
@@ -126,6 +135,39 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
             onSendEmail={onSendEmail}
             onUpdateSubscription={onUpdateSubscription}
           />
+        </div>
+        {/* Show plan and status badges on mobile when those columns are hidden */}
+        <div className="flex flex-col gap-1 mt-1 md:hidden">
+          <div className="flex justify-center">
+            {user.is_admin ? (
+              <Badge className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200 flex items-center gap-1 text-xs px-1 py-0.5">
+                <Crown size={8} /> Admin
+              </Badge>
+            ) : user.subscription_plan === 'pro' ? (
+              <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200 text-xs px-1 py-0.5">
+                Pro
+              </Badge>
+            ) : user.subscription_plan === 'premium' ? (
+              <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200 text-xs px-1 py-0.5">
+                Premium
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-gray-600 text-xs px-1 py-0.5">
+                Free
+              </Badge>
+            )}
+          </div>
+          <div className="flex justify-center">
+            {user.is_active !== false ? (
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-1 py-0.5">
+                Active
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 text-xs px-1 py-0.5">
+                Inactive
+              </Badge>
+            )}
+          </div>
         </div>
       </TableCell>
     </TableRow>

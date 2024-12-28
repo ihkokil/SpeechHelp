@@ -56,7 +56,6 @@ export const UserTable: React.FC<UserTableProps> = ({
     selectedUsers.length === filteredUsers.length &&
     filteredUsers.every(user => selectedUsers.some(selectedUser => selectedUser.id === user.id));
 
-  // Fixed to not pass arguments when calling toggleAllUsers
   const handleToggleAll = () => {
     toggleAllUsers();
   };
@@ -65,40 +64,42 @@ export const UserTable: React.FC<UserTableProps> = ({
     <div className="space-y-4">
       <div className="rounded-md border bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <Table>
-            <UserTableHeader 
-              onToggleAll={handleToggleAll}
-              isAllSelected={isAllSelected}
-              disabled={isLoading || filteredUsers.length === 0}
-              selectedCount={selectedUsers.length}
-            />
-            <TableBody>
-              {isLoading ? (
-                <LoadingState />
-              ) : filteredUsers.length === 0 ? (
-                <EmptyState />
-              ) : (
-                filteredUsers.map((user) => (
-                  <UserTableRow
-                    key={user.id}
-                    user={user}
-                    isSelected={selectedUsers.some(selectedUser => selectedUser.id === user.id)}
-                    onToggleSelection={toggleUserSelection}
-                    onViewDetails={handleViewUserDetails}
-                    onManagePermissions={handleManagePermissions}
-                    onToggleActive={handleToggleUserStatus}
-                    onDeleteUser={handleDeleteUser}
-                    onSendEmail={handleSendEmail}
-                    onUpdateSubscription={handleUpdateSubscription}
-                  />
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <div className="min-w-full">
+            <Table>
+              <UserTableHeader 
+                onToggleAll={handleToggleAll}
+                isAllSelected={isAllSelected}
+                disabled={isLoading || filteredUsers.length === 0}
+                selectedCount={selectedUsers.length}
+              />
+              <TableBody>
+                {isLoading ? (
+                  <LoadingState />
+                ) : filteredUsers.length === 0 ? (
+                  <EmptyState />
+                ) : (
+                  filteredUsers.map((user) => (
+                    <UserTableRow
+                      key={user.id}
+                      user={user}
+                      isSelected={selectedUsers.some(selectedUser => selectedUser.id === user.id)}
+                      onToggleSelection={toggleUserSelection}
+                      onViewDetails={handleViewUserDetails}
+                      onManagePermissions={handleManagePermissions}
+                      onToggleActive={handleToggleUserStatus}
+                      onDeleteUser={handleDeleteUser}
+                      onSendEmail={handleSendEmail}
+                      onUpdateSubscription={handleUpdateSubscription}
+                    />
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
       
-      <div className={cn("flex justify-between items-center text-sm text-gray-500 px-2")}>
+      <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm text-gray-500 px-2")}>
         <div>
           Showing <span className="font-medium">{filteredUsers.length}</span> of{' '}
           <span className="font-medium">{users.length}</span> users
