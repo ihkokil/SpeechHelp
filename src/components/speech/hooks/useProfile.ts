@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { usePlanLimits } from '@/hooks/usePlanLimits';
@@ -13,21 +14,59 @@ interface ProfileProps {
 	onUpgradeNeeded?: () => void;
 }
 
+type Profile = Database['public']['Tables']['profiles']['Row'];
+
 /**
- * Hook for creating speeches with plan limit enforcement
+ * Hook for managing user profile data and updates with plan limit enforcement
  */
 export function useProfile({ onSuccess, onUpgradeNeeded }: ProfileProps = {}) {
 	const { user, fetchSpeeches } = useAuth();
 	const { toast } = useToast();
 	const planLimits = usePlanLimits();
 
+	const [profile, setProfile] = useState<Profile | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
 	const [isUpdating, setIsUpdating] = useState(false);
 	const [updateError, setUpdateError] = useState<string | null>(null);
 
+	// Fetch profile data
+	const fetchProfile = async () => {
+		if (!user) {
+			setProfile(null);
+			setIsLoading(false);
+			return;
+		}
+
+		try {
+			setIsLoading(true);
+			const { data, error } = await supabase
+				.from('profiles')
+				.select('*')
+				.eq('id', user.id)
+				.maybeSingle();
+
+			if (error) {
+				console.error('Error fetching profile:', error);
+				setProfile(null);
+			} else {
+				setProfile(data);
+			}
+		} catch (error) {
+			console.error('Error in fetchProfile:', error);
+			setProfile(null);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	// Fetch profile on mount and when user changes
+	useEffect(() => {
+		fetchProfile();
+	}, [user]);
+
 	/**
-	 * Attempt to create a new speech
+	 * Update user profile
 	 */
-	type Profile = Database['public']['Tables']['profiles']['Row'];
 	const updateProfile = async (profileData: Partial<Profile>) => {
 		if (!user) {
 			toast({
@@ -41,8 +80,8 @@ export function useProfile({ onSuccess, onUpgradeNeeded }: ProfileProps = {}) {
 		// Clear any previous errors
 		setUpdateError(null);
 
-		// Check if user can create a new speech based on their plan
-		if (!planLimits.canCreateSpeech) {
+		// Check if user can create a new speech based on their plan (if this is a speech-related update)
+		if (!planLimits.canCreateSpeech && profileData.subscription_plan) {
 			setUpdateError(planLimits.reasonCannotCreate || "You've reached your plan's limit for speeches.");
 
 			// Notify the user
@@ -60,11 +99,11 @@ export function useProfile({ onSuccess, onUpgradeNeeded }: ProfileProps = {}) {
 			return null;
 		}
 
-		// If we're good to go, create the speech
+		// If we're good to go, update the profile
 		setIsUpdating(true);
 
 		try {
-			// Create the speech in the database
+			// Update the profile in the database
 			const { data, error } = await supabase
 				.from('profiles')
 				.update(profileData)
@@ -75,6 +114,9 @@ export function useProfile({ onSuccess, onUpgradeNeeded }: ProfileProps = {}) {
 			if (error) {
 				throw error;
 			}
+
+			// Update local state
+			setProfile(data);
 
 			// Show success message
 			toast({
@@ -92,7 +134,7 @@ export function useProfile({ onSuccess, onUpgradeNeeded }: ProfileProps = {}) {
 
 			return data.id;
 		} catch (error) {
-			console.error('Error creating speech:', error);
+			console.error('Error updating profile:', error);
 
 			const errorMessage = error instanceof Error ? error.message : "Failed to update profile";
 			setUpdateError(errorMessage);
@@ -109,10 +151,13 @@ export function useProfile({ onSuccess, onUpgradeNeeded }: ProfileProps = {}) {
 		}
 	};
 
-	// Return everything needed for speech creation
+	// Return everything needed for profile management
 	return {
+		profile,
+		isLoading,
 		updateProfile,
 		isUpdating,
 		updateError,
+		refetch: fetchProfile,
 	};
-} 
+}
