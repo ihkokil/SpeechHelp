@@ -111,10 +111,12 @@ serve(async (req) => {
 					break;
 				}
 
-				// Get subscription details to extract amount and price ID
+				// Get subscription details to extract amount, price ID, and proper dates
 				let amount = 0;
 				let priceId = '';
 				let subscriptionStatus = 'active';
+				let subscriptionStartDate = new Date().toISOString();
+				let subscriptionEndDate = new Date().toISOString();
 				
 				if (subscriptionId) {
 					try {
@@ -125,11 +127,39 @@ serve(async (req) => {
 							priceId = lineItem.price.id;
 						}
 						subscriptionStatus = subscription.status;
-						log('Subscription details:', { amount, priceId, status: subscriptionStatus });
+						
+						// Use actual subscription dates from Stripe
+						subscriptionStartDate = new Date(subscription.current_period_start * 1000).toISOString();
+						subscriptionEndDate = new Date(subscription.current_period_end * 1000).toISOString();
+						
+						log('Subscription details:', { 
+							amount, 
+							priceId, 
+							status: subscriptionStatus,
+							startDate: subscriptionStartDate,
+							endDate: subscriptionEndDate
+						});
 					} catch (subError) {
 						log('Error retrieving subscription details:', subError);
 					}
 				}
+
+				// Map the plan type correctly based on metadata or price
+				let actualPlanType = planType;
+				if (session.metadata?.plan) {
+					actualPlanType = session.metadata.plan;
+				} else {
+					// Fallback: determine plan from amount
+					if (amount >= 4999) { // $49.99 or more
+						actualPlanType = 'pro';
+					} else if (amount >= 2999) { // $29.99 or more
+						actualPlanType = 'premium';
+					} else {
+						actualPlanType = 'free_trial';
+					}
+				}
+
+				log('Determined plan type:', { originalPlan: planType, actualPlan: actualPlanType, amount });
 
 				// Update user's subscription using our database function
 				log(`Updating user ${userId} subscription data using database function`);
@@ -138,7 +168,7 @@ serve(async (req) => {
 						'update_user_subscription_after_payment',
 						{
 							user_id_param: userId,
-							plan_type_param: planType,
+							plan_type_param: actualPlanType,
 							billing_period_param: pricingPeriod,
 							stripe_customer_id_param: customerId as string,
 							stripe_subscription_id_param: subscriptionId as string,
@@ -156,7 +186,34 @@ serve(async (req) => {
 					log('Error calling update function:', funcError);
 				}
 
-				// Store payment history
+				// Also directly update the profile with correct dates and status
+				try {
+					const { error: profileError } = await supabase
+						.from('profiles')
+						.update({
+							subscription_plan: actualPlanType,
+							subscription_status: 'active', // Ensure status is set to active
+							subscription_period: pricingPeriod,
+							subscription_start_date: subscriptionStartDate,
+							subscription_end_date: subscriptionEndDate,
+							subscription_price_id: priceId,
+							subscription_amount: amount,
+							stripe_customer_id: customerId as string,
+							stripe_subscription_id: subscriptionId as string,
+							updated_at: new Date().toISOString(),
+						})
+						.eq('id', userId);
+
+					if (profileError) {
+						log('Error updating profile directly:', profileError);
+					} else {
+						log('Successfully updated profile directly with correct dates and status');
+					}
+				} catch (profileUpdateError) {
+					log('Error in direct profile update:', profileUpdateError);
+				}
+
+				// Store payment history with correct data
 				try {
 					const { error: paymentError } = await supabase
 						.from('payment_history')
@@ -166,9 +223,9 @@ serve(async (req) => {
 							amount: amount,
 							currency: 'usd',
 							status: 'paid',
-							plan_type: planType,
+							plan_type: actualPlanType,
 							billing_period: pricingPeriod,
-							payment_date: new Date().toISOString()
+							payment_date: subscriptionStartDate
 						});
 
 					if (paymentError) {
@@ -180,7 +237,7 @@ serve(async (req) => {
 					log('Error inserting payment history:', paymentHistoryError);
 				}
 
-				log(`Successfully processed subscription for user ${userId}`);
+				log(`Successfully processed subscription for user ${userId} with plan ${actualPlanType}`);
 				break;
 			}
 
@@ -203,10 +260,15 @@ serve(async (req) => {
 					break;
 				}
 
+				const subscriptionStartDate = new Date(subscription.current_period_start * 1000).toISOString();
+				const subscriptionEndDate = new Date(subscription.current_period_end * 1000).toISOString();
+
 				const { error: updateError } = await supabase
 					.from('profiles')
 					.update({
 						subscription_status: subscription.status,
+						subscription_start_date: subscriptionStartDate,
+						subscription_end_date: subscriptionEndDate,
 						updated_at: new Date().toISOString(),
 					})
 					.eq('id', profiles[0].id);
