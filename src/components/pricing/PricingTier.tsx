@@ -134,22 +134,28 @@ const PricingTier: React.FC<PricingTierProps> = ({
 	};
 
 	return (
-		<Card className={`border rounded-xl h-full overflow-hidden hover:shadow-lg transition-shadow ${
+		<Card className={`border rounded-xl h-full overflow-hidden hover:shadow-lg transition-all duration-300 ${
 			isCurrentPlan 
-				? 'border-purple-500 bg-purple-50 shadow-lg' 
-				: 'border-gray-200'
+				? 'border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 shadow-xl ring-2 ring-purple-200' 
+				: 'border-gray-200 hover:border-purple-300'
 		}`}>
-			<div className="p-6 md:p-8 h-full flex flex-col">
-				<div className="flex items-center justify-between mb-2">
+			<div className="p-6 md:p-8 h-full flex flex-col relative">
+				{isCurrentPlan && (
+					<div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center py-2 text-sm font-medium">
+						Your Current Plan
+					</div>
+				)}
+				
+				<div className={`flex items-center justify-between mb-2 ${isCurrentPlan ? 'mt-8' : ''}`}>
 					<h3 className="text-2xl font-bold text-center text-gray-900">{name}</h3>
 					{isCurrentPlan && (
 						<Badge className="bg-purple-600 text-white">
-							Your Plan
+							Active
 						</Badge>
 					)}
 				</div>
 				<div className="flex items-end justify-center mb-6">
-					<span className="text-4xl font-bold text-purple-600">
+					<span className={`text-4xl font-bold ${isCurrentPlan ? 'text-purple-700' : 'text-purple-600'}`}>
 						{pricingPeriod === 'monthly' ? price.monthly.price : price.yearly.price}
 					</span>
 					{pricingPeriod === 'monthly' && planType !== SubscriptionPlan.FREE_TRIAL && (
@@ -175,7 +181,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
 				<Button
 					className={`w-full mt-auto ${
 						isCurrentPlan 
-							? 'bg-purple-600 hover:bg-purple-700 cursor-default' 
+							? 'bg-purple-600 hover:bg-purple-700 cursor-default opacity-75' 
 							: 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700'
 					}`}
 					onClick={isCurrentPlan ? undefined : handleStripeCheckout}
