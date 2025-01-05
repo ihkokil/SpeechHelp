@@ -41,42 +41,6 @@ const stripe = new Stripe(stripeSecretKey, {
 log('Initializing Supabase client');
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Function to determine plan type from price ID and amount
-const determinePlanType = (priceId: string, amount: number, metadataPlan?: string): string => {
-	log('Determining plan type:', { priceId, amount, metadataPlan });
-	
-	// First check metadata plan if provided
-	if (metadataPlan) {
-		log('Using metadata plan:', metadataPlan);
-		return metadataPlan;
-	}
-	
-	// Map based on specific price IDs
-	const priceIdToPlan: Record<string, string> = {
-		'price_1RAP4ARpjThCjn22l1gJgbj7': 'premium', // Premium monthly
-		'price_1RAP4ARpjThCjn22ndn40xT2': 'premium', // Premium yearly
-		'price_1RAP4ARpjThCjn220EX7m28A': 'pro',     // Pro monthly
-		'price_1RAP4ARpjThCjn22OYzdydQi': 'pro',     // Pro yearly
-	};
-	
-	if (priceIdToPlan[priceId]) {
-		log('Plan determined by price ID:', priceIdToPlan[priceId]);
-		return priceIdToPlan[priceId];
-	}
-	
-	// Fallback to amount-based determination
-	if (amount >= 4999) { // $49.99 or more = Pro
-		log('Plan determined by amount (Pro):', amount);
-		return 'pro';
-	} else if (amount >= 2999) { // $29.99 or more = Premium
-		log('Plan determined by amount (Premium):', amount);
-		return 'premium';
-	} else {
-		log('Plan determined by amount (Free trial):', amount);
-		return 'free_trial';
-	}
-};
-
 serve(async (req) => {
 	// Log incoming request
 	log(`Received ${req.method} request to ${req.url}`);
@@ -139,7 +103,7 @@ serve(async (req) => {
 				const userId = session.client_reference_id;
 				const customerId = session.customer;
 				const subscriptionId = session.subscription;
-				const metadataPlan = session.metadata?.plan;
+				const planType = session.metadata?.plan || 'premium';
 				const pricingPeriod = session.metadata?.pricingPeriod || 'monthly';
 
 				if (!userId) {
@@ -180,9 +144,22 @@ serve(async (req) => {
 					}
 				}
 
-				// Determine the correct plan type
-				const actualPlanType = determinePlanType(priceId, amount, metadataPlan);
-				log('Final determined plan type:', actualPlanType);
+				// Map the plan type correctly based on metadata or price
+				let actualPlanType = planType;
+				if (session.metadata?.plan) {
+					actualPlanType = session.metadata.plan;
+				} else {
+					// Fallback: determine plan from amount
+					if (amount >= 4999) { // $49.99 or more
+						actualPlanType = 'pro';
+					} else if (amount >= 2999) { // $29.99 or more
+						actualPlanType = 'premium';
+					} else {
+						actualPlanType = 'free_trial';
+					}
+				}
+
+				log('Determined plan type:', { originalPlan: planType, actualPlan: actualPlanType, amount });
 
 				// Update user's subscription using our database function
 				log(`Updating user ${userId} subscription data using database function`);
@@ -230,7 +207,7 @@ serve(async (req) => {
 					if (profileError) {
 						log('Error updating profile directly:', profileError);
 					} else {
-						log('Successfully updated profile directly with correct plan type, dates and status');
+						log('Successfully updated profile directly with correct dates and status');
 					}
 				} catch (profileUpdateError) {
 					log('Error in direct profile update:', profileUpdateError);
@@ -286,21 +263,10 @@ serve(async (req) => {
 				const subscriptionStartDate = new Date(subscription.current_period_start * 1000).toISOString();
 				const subscriptionEndDate = new Date(subscription.current_period_end * 1000).toISOString();
 
-				// Determine plan type from subscription data
-				let planType = 'premium'; // default
-				let amount = 0;
-				if (subscription.items && subscription.items.data.length > 0) {
-					const lineItem = subscription.items.data[0];
-					amount = lineItem.price.unit_amount || 0;
-					planType = determinePlanType(lineItem.price.id, amount);
-				}
-
 				const { error: updateError } = await supabase
 					.from('profiles')
 					.update({
 						subscription_status: subscription.status,
-						subscription_plan: planType,
-						subscription_amount: amount,
 						subscription_start_date: subscriptionStartDate,
 						subscription_end_date: subscriptionEndDate,
 						updated_at: new Date().toISOString(),
@@ -310,7 +276,7 @@ serve(async (req) => {
 				if (updateError) {
 					log('Error updating subscription status:', updateError);
 				} else {
-					log(`Successfully updated subscription status and plan for user ${profiles[0].id}`);
+					log(`Successfully updated subscription status for user ${profiles[0].id}`);
 				}
 				break;
 			}
