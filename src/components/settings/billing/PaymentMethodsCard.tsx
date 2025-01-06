@@ -8,6 +8,8 @@ import { PaymentMethod, PaymentFormValues } from './types';
 import PaymentMethodItem from './PaymentMethodItem';
 import EmptyPaymentMethods from './components/EmptyPaymentMethods';
 import { usePaymentMethodActions } from './hooks/usePaymentMethodActions';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface PaymentMethodsCardProps {
   paymentMethods: PaymentMethod[];
@@ -22,6 +24,7 @@ const PaymentMethodsCard = ({
   onUpdatePaymentMethod, 
   onDeletePaymentMethod 
 }: PaymentMethodsCardProps) => {
+  const { toast } = useToast();
   const {
     isAddDialogOpen,
     setIsAddDialogOpen,
@@ -39,10 +42,55 @@ const PaymentMethodsCard = ({
     onDeletePaymentMethod
   });
 
-  const handleSetDefault = (index: number) => {
-    // Create updated payment method with isDefault set to true
-    const updatedMethod = { ...paymentMethods[index], isDefault: true };
-    onUpdatePaymentMethod(index, updatedMethod);
+  const handleSetDefault = async (index: number) => {
+    const paymentMethod = paymentMethods[index];
+    if (!paymentMethod.id) {
+      toast({
+        title: "Error",
+        description: "Payment method ID not found",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('set-default-payment-method', {
+        body: { paymentMethodId: paymentMethod.id }
+      });
+
+      if (error) {
+        console.error('Error setting default payment method:', error);
+        toast({
+          title: "Error",
+          description: "Failed to set default payment method",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Update local state to reflect the change
+      const updatedMethods = paymentMethods.map((method, i) => ({
+        ...method,
+        isDefault: i === index
+      }));
+
+      // Update all payment methods to reflect the new default
+      updatedMethods.forEach((method, i) => {
+        onUpdatePaymentMethod(i, method);
+      });
+
+      toast({
+        title: "Success",
+        description: `${paymentMethod.brand} card ending in ${paymentMethod.last4} is now your default payment method.`,
+      });
+    } catch (error) {
+      console.error('Error setting default payment method:', error);
+      toast({
+        title: "Error",
+        description: "Failed to set default payment method",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
