@@ -3,7 +3,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import AddPaymentDialog from './AddPaymentDialog';
-import UpdatePaymentDialog from './UpdatePaymentDialog';
 import DeletePaymentDialog from './DeletePaymentDialog';
 import { PaymentMethod, PaymentFormValues } from './types';
 import PaymentMethodItem from './PaymentMethodItem';
@@ -26,14 +25,11 @@ const PaymentMethodsCard = ({
   const {
     isAddDialogOpen,
     setIsAddDialogOpen,
-    isUpdateDialogOpen,
-    setIsUpdateDialogOpen,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
     setSelectedPaymentMethod,
     isProcessing,
     handleAddPaymentMethod,
-    handleUpdatePaymentMethod,
     handleDeletePaymentMethod,
     getSelectedPaymentMethod
   } = usePaymentMethodActions({
@@ -42,6 +38,12 @@ const PaymentMethodsCard = ({
     onUpdatePaymentMethod,
     onDeletePaymentMethod
   });
+
+  const handleSetDefault = (index: number) => {
+    // Create updated payment method with isDefault set to true
+    const updatedMethod = { ...paymentMethods[index], isDefault: true };
+    onUpdatePaymentMethod(index, updatedMethod);
+  };
 
   return (
     <Card>
@@ -69,15 +71,13 @@ const PaymentMethodsCard = ({
               <PaymentMethodItem 
                 key={`${method.brand}-${method.last4}-${index}`}
                 paymentMethod={method}
-                onEdit={() => {
-                  setSelectedPaymentMethod(index);
-                  setIsUpdateDialogOpen(true);
-                }}
+                onSetDefault={() => handleSetDefault(index)}
                 onDelete={() => {
                   setSelectedPaymentMethod(index);
                   setIsDeleteDialogOpen(true);
                 }}
                 canDelete={!method.isDefault || paymentMethods.length > 1}
+                canSetDefault={!method.isDefault}
               />
             ))}
           </div>
@@ -89,14 +89,6 @@ const PaymentMethodsCard = ({
         onOpenChange={setIsAddDialogOpen}
         onSubmit={handleAddPaymentMethod}
         isProcessing={isProcessing}
-      />
-      
-      <UpdatePaymentDialog 
-        open={isUpdateDialogOpen}
-        onOpenChange={setIsUpdateDialogOpen}
-        onSubmit={handleUpdatePaymentMethod}
-        isProcessing={isProcessing}
-        paymentMethod={getSelectedPaymentMethod()}
       />
       
       <DeletePaymentDialog 
