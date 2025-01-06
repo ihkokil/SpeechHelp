@@ -63,6 +63,26 @@ const SubscriptionCard = ({
     }
   };
 
+  // Get the correct price based on plan and billing period
+  const getPlanPrice = () => {
+    const planName = subscriptionData.plan.toLowerCase();
+    
+    if (planName.includes('free') || planName.includes('trial')) {
+      return '$0.00';
+    }
+    
+    if (planName.includes('premium')) {
+      return subscriptionData.billingPeriod === 'yearly' ? '$99.99' : '$9.99';
+    }
+    
+    if (planName.includes('pro')) {
+      return subscriptionData.billingPeriod === 'yearly' ? '$299.99' : '$29.99';
+    }
+    
+    // Fallback to the original price from subscription data
+    return subscriptionData.price;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -88,8 +108,8 @@ const SubscriptionCard = ({
             <div className="space-y-1">
               <p className="text-2xl font-bold">{subscriptionData.plan}</p>
               <p className="text-lg text-muted-foreground">
-                {subscriptionData.price}
-                {subscriptionData.price !== '$0.00' && (
+                {getPlanPrice()}
+                {getPlanPrice() !== '$0.00' && (
                   <span className="text-sm">/{subscriptionData.billingPeriod}</span>
                 )}
               </p>
