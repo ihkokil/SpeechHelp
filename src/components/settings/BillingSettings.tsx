@@ -340,6 +340,7 @@ const BillingSettings = () => {
         autoRenew={autoRenew}
         onAutoRenewToggle={handleAutoRenewToggle}
         onToggleBillingPeriod={toggleBillingPeriod}
+        onSubscriptionUpdate={refreshSubscriptionData}
       />
       
       <PaymentMethodsCard 
