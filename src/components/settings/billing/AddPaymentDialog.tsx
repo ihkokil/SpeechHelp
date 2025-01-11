@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useEffect } from 'react';
 import { paymentMethodSchema, PaymentFormValues } from './payment-form/PaymentFormSchema';
 import CardInformationFields from './payment-form/CardInformationFields';
-import BillingAddressFields from './payment-form/BillingAddressFields';
 import DefaultPaymentCheckbox from './payment-form/DefaultPaymentCheckbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -74,11 +73,11 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
           cardHolder: data.cardHolder,
           isDefault: data.isDefault,
           billingAddress: {
-            street: data.billingStreet,
-            city: data.billingCity,
-            state: data.billingState,
-            zipCode: data.billingZip,
-            country: data.billingCountry,
+            street: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: 'US',
           },
         },
       });
@@ -138,8 +137,6 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
         <Form {...form}>
           <form onSubmit={handleSubmitForm} className="space-y-6">
             <CardInformationFields form={form} />
-            
-            <BillingAddressFields form={form} />
             
             <DefaultPaymentCheckbox form={form} />
             
