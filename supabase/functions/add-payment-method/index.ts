@@ -85,8 +85,7 @@ serve(async (req) => {
 			expiryYear, 
 			cvv, 
 			cardHolder, 
-			isDefault,
-			billingAddress 
+			isDefault
 		} = requestBody;
 
 		log('Request data', { 
@@ -137,13 +136,6 @@ serve(async (req) => {
 			},
 			billing_details: {
 				name: cardHolder,
-				address: {
-					line1: billingAddress.street,
-					city: billingAddress.city,
-					state: billingAddress.state,
-					postal_code: billingAddress.zipCode,
-					country: billingAddress.country,
-				},
 			},
 		});
 
@@ -176,13 +168,6 @@ serve(async (req) => {
 			brand: paymentMethod.card?.brand,
 			isDefault: isDefault,
 			cardHolder: cardHolder,
-			billingAddress: {
-				street: billingAddress.street,
-				city: billingAddress.city,
-				state: billingAddress.state,
-				zipCode: billingAddress.zipCode,
-				country: billingAddress.country,
-			},
 		};
 
 		log('Payment method created successfully', responseData);
