@@ -89,8 +89,17 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
         console.error('Error adding payment method:', error);
         let errorMessage = "Failed to add payment method. Please try again.";
         
+        // Handle specific error types
         if (error.message?.includes('Failed to fetch')) {
-          errorMessage = "Unable to connect to payment service. Please check your connection and try again.";
+          errorMessage = "Unable to connect to payment service. Please check your internet connection and try again.";
+        } else if (error.message?.includes('FunctionsFetchError')) {
+          errorMessage = "Payment service is temporarily unavailable. Please try again in a moment.";
+        } else if (error.message?.includes('Invalid JSON')) {
+          errorMessage = "There was a problem with your request. Please try again.";
+        } else if (error.message?.includes('Stripe API')) {
+          errorMessage = "Payment processing error. Please check your card details and try again.";
+        } else if (error.message?.includes('authorization')) {
+          errorMessage = "Authentication error. Please refresh the page and try again.";
         } else if (error.message) {
           errorMessage = error.message;
         }
@@ -127,9 +136,15 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
       }
     } catch (error) {
       console.error('Unexpected error adding payment method:', error);
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        errorMessage = "Network connection error. Please check your internet connection and try again.";
+      }
+      
       toast({
         title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

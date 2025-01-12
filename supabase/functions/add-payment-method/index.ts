@@ -24,6 +24,18 @@ serve(async (req) => {
 	}
 
 	try {
+		// Validate method
+		if (req.method !== 'POST') {
+			log(`Method ${req.method} not allowed`);
+			return new Response(
+				JSON.stringify({ error: 'Method not allowed' }),
+				{
+					status: 405,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
 		const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
 		if (!stripeKey) {
 			log('ERROR: STRIPE_SECRET_KEY is not set');
@@ -64,7 +76,7 @@ serve(async (req) => {
 		const token = authHeader.replace('Bearer ', '');
 		const { data: userData, error: userError } = await supabase.auth.getUser(token);
 		if (userError || !userData.user) {
-			log('Error: Invalid user token');
+			log('Error: Invalid user token', userError);
 			return new Response(
 				JSON.stringify({ error: 'Invalid user token' }),
 				{
@@ -78,7 +90,20 @@ serve(async (req) => {
 		log('User authenticated', { userId: user.id, email: user.email });
 
 		// Parse request body
-		const requestBody = await req.json();
+		let requestBody;
+		try {
+			requestBody = await req.json();
+		} catch (parseError) {
+			log('Error parsing request body:', parseError);
+			return new Response(
+				JSON.stringify({ error: 'Invalid JSON in request body' }),
+				{
+					status: 400,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
 		const { 
 			cardNumber, 
 			expiryMonth, 
@@ -87,6 +112,18 @@ serve(async (req) => {
 			cardHolder, 
 			isDefault
 		} = requestBody;
+
+		// Validate required fields
+		if (!cardNumber || !expiryMonth || !expiryYear || !cvv || !cardHolder) {
+			log('Error: Missing required fields');
+			return new Response(
+				JSON.stringify({ error: 'Missing required fields' }),
+				{
+					status: 400,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
 
 		log('Request data', { 
 			cardNumber: '****' + cardNumber.slice(-4), 
@@ -126,6 +163,7 @@ serve(async (req) => {
 		}
 
 		// Create payment method in Stripe
+		log('Creating payment method in Stripe');
 		const paymentMethod = await stripe.paymentMethods.create({
 			type: 'card',
 			card: {
@@ -190,6 +228,7 @@ serve(async (req) => {
 			JSON.stringify({
 				error: 'Server error',
 				message: error.message,
+				details: error.stack
 			}),
 			{
 				status: 500,
