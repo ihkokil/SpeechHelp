@@ -162,110 +162,28 @@ serve(async (req) => {
 				.eq('id', user.id);
 		}
 
-		// Map test card numbers to Stripe test tokens
-		const testCardTokens: { [key: string]: string } = {
-			'4242424242424242': 'pm_card_visa',
-			'4000056655665556': 'pm_card_visa_debit',
-			'5555555555554444': 'pm_card_mastercard',
-			'2223003122003222': 'pm_card_mastercard',
-			'5200828282828210': 'pm_card_mastercard_debit',
-			'5105105105105100': 'pm_card_mastercard_prepaid',
-			'378282246310005': 'pm_card_amex',
-			'371449635398431': 'pm_card_amex',
-			'6011111111111117': 'pm_card_discover',
-			'6011000990139424': 'pm_card_discover',
-			'3056930009020004': 'pm_card_diners',
-			'36227206271667': 'pm_card_diners',
-			'3566002020360505': 'pm_card_jcb',
-			'6200000000000005': 'pm_card_unionpay'
-		};
-
-		let paymentMethod;
+		// For test mode, we need to create a Setup Intent to collect payment method
+		// This is the recommended approach for test cards in Stripe
+		log('Creating Setup Intent for payment method collection');
 		
-		// Check if this is a test card and use the appropriate token
-		if (testCardTokens[cardNumber]) {
-			log('Using Stripe test card token for card number', { cardNumber: '****' + cardNumber.slice(-4) });
-			
-			// For test cards, we'll create a payment method using the test token
-			// But we need to create it differently for test environment
-			try {
-				paymentMethod = await stripe.paymentMethods.create({
-					type: 'card',
-					card: {
-						token: testCardTokens[cardNumber]
-					}
-				});
-			} catch (tokenError) {
-				log('Test token method failed, trying direct card creation with test data');
-				// If token method fails, create with test-safe parameters
-				paymentMethod = await stripe.paymentMethods.create({
-					type: 'card',
-					card: {
-						number: cardNumber,
-						exp_month: parseInt(expiryMonth),
-						exp_year: parseInt(expiryYear),
-						cvc: cvv,
-					},
-					billing_details: {
-						name: cardHolder,
-					},
-				});
-			}
-		} else {
-			// For non-test cards or in production, create normally
-			log('Creating payment method with provided card details');
-			paymentMethod = await stripe.paymentMethods.create({
-				type: 'card',
-				card: {
-					number: cardNumber,
-					exp_month: parseInt(expiryMonth),
-					exp_year: parseInt(expiryYear),
-					cvc: cvv,
-				},
-				billing_details: {
-					name: cardHolder,
-				},
-			});
-		}
-
-		log('Created payment method', { paymentMethodId: paymentMethod.id });
-
-		// Attach payment method to customer
-		await stripe.paymentMethods.attach(paymentMethod.id, {
+		const setupIntent = await stripe.setupIntents.create({
 			customer: customerId,
+			payment_method_types: ['card'],
+			usage: 'off_session',
 		});
 
-		log('Attached payment method to customer');
+		log('Created Setup Intent', { setupIntentId: setupIntent.id, clientSecret: setupIntent.client_secret });
 
-		// If this should be the default payment method, set it as default
-		if (isDefault) {
-			await stripe.customers.update(customerId, {
-				invoice_settings: {
-					default_payment_method: paymentMethod.id,
-				},
-			});
-			log('Set as default payment method');
-		}
-
-		// Return the created payment method data
-		const responseData = {
-			id: paymentMethod.id,
-			type: 'Credit Card',
-			last4: paymentMethod.card?.last4,
-			expiryMonth: paymentMethod.card?.exp_month,
-			expiryYear: paymentMethod.card?.exp_year,
-			brand: paymentMethod.card?.brand,
-			isDefault: isDefault,
-			cardHolder: cardHolder,
-		};
-
-		log('Payment method created successfully', responseData);
-
+		// For now, we'll return the setup intent details so the frontend can complete the payment method setup
+		// This requires using Stripe.js on the frontend to confirm the setup intent
 		return new Response(
 			JSON.stringify({ 
 				success: true,
-				paymentMethod: responseData,
-				message: 'Payment method added successfully'
+				message: 'Please complete payment method setup using Stripe Elements',
+				setupIntent: {
+					id: setupIntent.id,
+					clientSecret: setupIntent.client_secret
+				}
 			}),
 			{
 				status: 200,
