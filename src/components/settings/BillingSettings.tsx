@@ -279,7 +279,7 @@ const BillingSettings = () => {
     
     toast({
       title: "Payment method added",
-      description: `Your ${newPaymentMethod.brand} card ending in ${newPaymentMethod.last4} has been saved for automatic renewal.`,
+      description: `Your card ending in ${newPaymentMethod.last4} has been saved for automatic renewal.`,
     });
   };
 
@@ -307,7 +307,7 @@ const BillingSettings = () => {
     
     toast({
       title: "Payment method removed",
-      description: `Your ${deletedMethod.brand} card ending in ${deletedMethod.last4} has been removed.`,
+      description: `Your card ending in ${deletedMethod.last4} has been removed.`,
     });
   };
 
