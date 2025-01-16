@@ -39,6 +39,19 @@ const BillingSettings = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [paymentMethodsLoading, setPaymentMethodsLoading] = useState(true);
 
+  // Check for success parameter and show toast
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      toast({
+        title: "Subscription Updated",
+        description: "Your subscription has been successfully updated!",
+      });
+      // Clean up the URL
+      window.history.replaceState({}, document.title, '/settings');
+    }
+  }, [toast]);
+
   // Fetch real payment methods from Stripe
   const fetchPaymentMethods = async () => {
     if (!user) return;
@@ -49,7 +62,6 @@ const BillingSettings = () => {
 
       if (error) {
         console.error('Error fetching payment methods:', error);
-        // Fallback to empty array if there's an error
         setPaymentMethods([]);
       } else {
         setPaymentMethods(data?.paymentMethods || []);
@@ -67,6 +79,8 @@ const BillingSettings = () => {
     if (!user) return;
 
     try {
+      console.log('Refreshing subscription data for user:', user.id);
+      
       // Re-fetch user profile with latest subscription data
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -78,6 +92,8 @@ const BillingSettings = () => {
         console.error('Error fetching updated profile:', profileError);
         return;
       }
+
+      console.log('Updated profile data:', profile);
 
       if (profile) {
         // Process updated subscription data
@@ -116,6 +132,14 @@ const BillingSettings = () => {
           endDate: endDate.toISOString(),
           amount: profile.subscription_amount
         });
+
+        // Show success toast if subscription is now active
+        if (profile.subscription_status === 'active') {
+          toast({
+            title: "Subscription Active",
+            description: `Your ${planName} is now active and ready to use!`,
+          });
+        }
       }
     } catch (error) {
       console.error('Error refreshing subscription data:', error);
@@ -131,6 +155,8 @@ const BillingSettings = () => {
       }
 
       try {
+        console.log('Fetching subscription data for user:', user.id);
+        
         // Fetch user profile with subscription data
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -229,18 +255,6 @@ const BillingSettings = () => {
       } : null);
     }
   }, [paymentMethods]);
-
-  // Listen for URL changes to refresh data (after successful checkout)
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('success') === 'true') {
-      // Delay to allow webhook to process
-      setTimeout(() => {
-        refreshSubscriptionData();
-        fetchPaymentMethods();
-      }, 2000);
-    }
-  }, []);
 
   const handleAutoRenewToggle = (checked: boolean) => {
     setAutoRenew(checked);
