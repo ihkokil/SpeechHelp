@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +10,8 @@ import { PaymentMethod } from './types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { createCheckoutSession, getPriceId } from '@/services/stripe';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SubscriptionData {
   plan: string;
@@ -36,7 +39,10 @@ const SubscriptionCard = ({
   onSubscriptionUpdate,
 }: SubscriptionCardProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isReactivating, setIsReactivating] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -168,6 +174,115 @@ const SubscriptionCard = ({
     }
   };
 
+  const handleUpgradeSubscription = async () => {
+    if (!user) return;
+    
+    setIsUpgrading(true);
+    try {
+      const currentPlan = subscriptionData.plan.toLowerCase();
+      let targetPlan = 'pro';
+      let productId = 'prod_pro';
+      
+      // If current plan is pro, suggest premium, otherwise suggest pro
+      if (currentPlan.includes('pro')) {
+        targetPlan = 'premium';
+        productId = 'prod_premium';
+      }
+
+      const priceId = getPriceId(productId, subscriptionData.billingPeriod as 'monthly' | 'yearly');
+      const returnUrl = `${window.location.origin}/settings?success=true`;
+
+      const { url } = await createCheckoutSession({
+        plan: targetPlan,
+        priceId,
+        userId: user.id,
+        returnUrl,
+        pricingPeriod: subscriptionData.billingPeriod as 'monthly' | 'yearly',
+      });
+
+      // Open Stripe checkout in a new tab
+      window.open(url, '_blank');
+
+    } catch (error) {
+      console.error('Error creating upgrade checkout:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start upgrade process. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    setIsCancelling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('cancel-subscription');
+
+      if (error) {
+        console.error('Error cancelling subscription:', error);
+        toast({
+          title: "Error",
+          description: "Failed to cancel subscription. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Subscription Cancelled",
+        description: data?.message || "Your subscription has been cancelled successfully.",
+      });
+
+      // Refresh subscription data
+      if (onSubscriptionUpdate) {
+        onSubscriptionUpdate();
+      }
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+      toast({
+        title: "Error",
+        description: "Failed to cancel subscription. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const handleAutoRenewToggle = async (checked: boolean) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('update-subscription-auto-renewal', {
+        body: { autoRenew: checked }
+      });
+
+      if (error) {
+        console.error('Error updating auto-renewal:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update auto-renewal setting. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      onAutoRenewToggle(checked);
+      toast({
+        title: "Auto-renewal Updated",
+        description: `Auto-renewal has been ${checked ? 'enabled' : 'disabled'}.`,
+      });
+
+    } catch (error) {
+      console.error('Error updating auto-renewal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update auto-renewal setting. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -232,7 +347,7 @@ const SubscriptionCard = ({
             <Switch
               id="auto-renew"
               checked={autoRenew}
-              onCheckedChange={onAutoRenewToggle}
+              onCheckedChange={handleAutoRenewToggle}
             />
             <Label htmlFor="auto-renew">Auto-renewal</Label>
           </div>
@@ -249,8 +364,20 @@ const SubscriptionCard = ({
               >
                 Switch to {subscriptionData.billingPeriod === 'monthly' ? 'Yearly' : 'Monthly'} Billing
               </Button>
-              <Button variant="outline" className="flex-1">
-                Manage Subscription
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={handleUpgradeSubscription}
+                disabled={isUpgrading}
+              >
+                {isUpgrading ? 'Processing...' : 'Upgrade Plan'}
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleCancelSubscription}
+                disabled={isCancelling}
+              >
+                {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
               </Button>
             </>
           )}
