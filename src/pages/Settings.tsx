@@ -1,18 +1,78 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User, CreditCard, Bell, Shield } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
+import { useToast } from '@/hooks/use-toast';
 import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 import ProfileSettings from '@/components/settings/ProfileSettings';
 import BillingSettings from '@/components/settings/BillingSettings';
 import NotificationsSettings from '@/components/settings/NotificationsSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
+import { supabase } from '@/integrations/supabase/client';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const { toast } = useToast();
+
+  // Check for success parameter and trigger subscription verification
+  useEffect(() => {
+    const verifyPurchase = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const successParam = urlParams.get('success');
+      const sessionId = urlParams.get('session_id');
+
+      if (successParam === 'true' && sessionId) {
+        try {
+          console.log('Verifying purchase with session:', sessionId);
+          
+          // Call the verification function
+          const { data, error } = await supabase.functions.invoke('stripe-verify', {
+            body: { sessionId }
+          });
+
+          if (error) {
+            console.error('Verification error:', error);
+            toast({
+              title: "Verification Error",
+              description: "There was an issue verifying your payment. Please contact support if this persists.",
+              variant: "destructive"
+            });
+          } else if (data?.success) {
+            console.log('Purchase verified successfully:', data);
+            toast({
+              title: "Payment Successful!",
+              description: `Your ${data.planType} subscription has been activated successfully!`,
+            });
+            
+            // Switch to billing tab to show updated info
+            setActiveTab('billing');
+          } else {
+            console.log('Purchase verification failed:', data);
+            toast({
+              title: "Payment Processing",
+              description: "Your payment is being processed. Please check back in a few minutes.",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error('Error verifying purchase:', error);
+          toast({
+            title: "Verification Error",
+            description: "Failed to verify your payment. Please contact support.",
+            variant: "destructive"
+          });
+        }
+
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, '/settings');
+      }
+    };
+
+    verifyPurchase();
+  }, [toast]);
 
   return (
     <SpeechLabLayout>

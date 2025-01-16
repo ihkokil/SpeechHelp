@@ -123,8 +123,8 @@ serve(async (req) => {
 		const url = new URL(returnUrl);
 		const origin = `${url.protocol}//${url.host}`;
 		
-		// FIXED: Use /account instead of returnUrl for success URL
-		const successUrl = `${origin}/account?success=true&session_id={CHECKOUT_SESSION_ID}`;
+		// FIXED: Use /settings instead of /account for success URL
+		const successUrl = `${origin}/settings?success=true&session_id={CHECKOUT_SESSION_ID}`;
 		const cancelUrl = `${origin}/pricing?canceled=true`;
 		
 		log('Using URLs:', { successUrl, cancelUrl });
