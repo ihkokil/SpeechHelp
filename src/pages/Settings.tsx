@@ -4,6 +4,7 @@ import { User, CreditCard, Bell, Shield } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 import ProfileSettings from '@/components/settings/ProfileSettings';
 import BillingSettings from '@/components/settings/BillingSettings';
@@ -16,6 +17,7 @@ const Settings = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { refreshUser } = useAuth();
 
   // Check for success parameter and trigger subscription verification
   useEffect(() => {
@@ -42,6 +44,10 @@ const Settings = () => {
             });
           } else if (data?.success) {
             console.log('Purchase verified successfully:', data);
+            
+            // Force refresh the user's auth session and profile
+            await refreshUser();
+            
             toast({
               title: "Payment Successful!",
               description: `Your ${data.planType} subscription has been activated successfully!`,
@@ -49,6 +55,11 @@ const Settings = () => {
             
             // Switch to billing tab to show updated info
             setActiveTab('billing');
+            
+            // Refresh the page after a short delay to ensure all state is updated
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
           } else {
             console.log('Purchase verification failed:', data);
             toast({
@@ -72,7 +83,7 @@ const Settings = () => {
     };
 
     verifyPurchase();
-  }, [toast]);
+  }, [toast, refreshUser]);
 
   return (
     <SpeechLabLayout>

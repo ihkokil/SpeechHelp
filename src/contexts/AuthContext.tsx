@@ -1,173 +1,28 @@
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { Session, User } from '@supabase/supabase-js';
-import { AuthContextType } from '@/types/auth';
-import { Speech } from '@/types/speech';
-import { signIn, signUp, signOut } from '@/services/authService';
-import { useSpeechService } from '@/services/speechService';
-import { useToast } from '@/hooks/use-toast';
+
+interface Speech {
+  id: string;
+  title: string;
+  content: string;
+  speech_type: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  speeches: Speech[];
+  signOut: () => Promise<void>;
+  fetchSpeeches: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [speeches, setSpeeches] = useState<Speech[]>([]);
-  
-  const { toast } = useToast();
-  const speechService = useSpeechService();
-
-  // Refresh user data from Supabase
-  const refreshUserData = async () => {
-    if (!session) return;
-    
-    const { data, error } = await supabase.auth.getUser();
-    if (error) {
-      console.error('Error refreshing user data:', error);
-      return;
-    }
-    
-    if (data.user) {
-      setUser(data.user);
-    }
-  };
-
-  // Fetch speeches when needed
-  const fetchSpeeches = async () => {
-    if (!user) {
-      console.log('Cannot fetch speeches: No user is logged in');
-      return [];
-    }
-    
-    console.log('Fetching speeches for user:', user.id);
-    try {
-      const fetchedSpeeches = await speechService.fetchSpeeches(user.id);
-      console.log(`Successfully fetched ${fetchedSpeeches.length} speeches from database`);
-      setSpeeches(fetchedSpeeches);
-      return fetchedSpeeches;
-    } catch (error) {
-      console.error('Error in fetchSpeeches:', error);
-      toast({
-        title: "Error fetching speeches",
-        description: "Could not load your speeches. Please try again.",
-        variant: "destructive"
-      });
-      return [];
-    }
-  };
-
-  // Save a new speech
-  const saveSpeech = async (title: string, content: string, speechType: string) => {
-    if (!user) return;
-    await speechService.saveSpeech(user.id, title, content, speechType);
-    await fetchSpeeches();
-  };
-
-  // Update an existing speech
-  const updateSpeech = async (id: string, title: string, content: string) => {
-    if (!user) return;
-    await speechService.updateSpeech(user.id, id, title, content);
-    await fetchSpeeches();
-  };
-
-  // Delete a speech
-  const deleteSpeech = async (id: string) => {
-    if (!user) return;
-    await speechService.deleteSpeech(user.id, id);
-    await fetchSpeeches();
-  };
-
-  // Auth functions wrapped to control loading state
-  const handleSignIn = async (email: string, password: string) => {
-    setIsLoading(true);
-    try {
-      await signIn(email, password, toast);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
-    setIsLoading(true);
-    try {
-      await signUp(email, password, toast, firstName, lastName);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSignOut = async () => {
-    setIsLoading(true);
-    try {
-      await signOut(toast);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    // Check for existing session
-    const getSession = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Error getting session:', error);
-      } else if (data?.session) {
-        setSession(data.session);
-        setUser(data.session.user);
-        await fetchSpeeches();
-      }
-      
-      setIsLoading(false);
-    };
-
-    getSession();
-
-    // Listen for auth state changes
-    const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      console.log(`Auth state changed: ${event}`);
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
-      
-      if (newSession?.user) {
-        // Defer the fetch to avoid potential auth state conflicts
-        setTimeout(() => {
-          fetchSpeeches();
-        }, 0);
-      } else {
-        setSpeeches([]);
-      }
-      
-      setIsLoading(false);
-    });
-
-    return () => {
-      data.subscription.unsubscribe();
-    };
-  }, []);
-
-  return (
-    <AuthContext.Provider value={{ 
-      user, 
-      session, 
-      isLoading, 
-      speeches, 
-      fetchSpeeches,
-      refreshUserData,
-      saveSpeech, 
-      updateSpeech, 
-      deleteSpeech, 
-      signIn: handleSignIn, 
-      signUp: handleSignUp, 
-      signOut: handleSignOut 
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -175,4 +30,148 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+};
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [speeches, setSpeeches] = useState<Speech[]>([]);
+
+  const fetchSpeeches = async () => {
+    if (!user) {
+      console.info('Cannot fetch speeches: No user is logged in');
+      return;
+    }
+
+    try {
+      console.info('Fetching speeches for user:', user.id);
+      const { data, error } = await supabase
+        .from('speeches')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching speeches:', error);
+        return;
+      }
+
+      console.info('Successfully fetched', data?.length || 0, 'speeches from database');
+      console.info('Raw speech data from database:', data);
+
+      const processedSpeeches = data?.map(speech => ({
+        ...speech,
+        created_at: speech.created_at,
+        updated_at: speech.updated_at
+      })) || [];
+
+      console.info('Processed speeches with timestamps:', processedSpeeches);
+      setSpeeches(processedSpeeches);
+    } catch (error) {
+      console.error('Error in fetchSpeeches:', error);
+    }
+  };
+
+  const refreshUser = async () => {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        console.error('Error refreshing user:', error);
+        return;
+      }
+      
+      setUser(user);
+      
+      // Also refresh the session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Error refreshing session:', sessionError);
+        return;
+      }
+      
+      setSession(session);
+      
+      console.log('User refreshed successfully:', user?.id);
+    } catch (error) {
+      console.error('Error in refreshUser:', error);
+    }
+  };
+
+  useEffect(() => {
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting initial session:', error);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+          console.info('Initial session loaded:', session?.user?.id || 'No user');
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.info('Auth state changed:', event);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          // Fetch speeches when user signs in or token is refreshed
+          if (session?.user) {
+            await fetchSpeeches();
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setSpeeches([]);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch speeches when user changes
+  useEffect(() => {
+    if (user && !loading) {
+      fetchSpeeches();
+    }
+  }, [user, loading]);
+
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+      } else {
+        setUser(null);
+        setSession(null);
+        setSpeeches([]);
+      }
+    } catch (error) {
+      console.error('Error in signOut:', error);
+    }
+  };
+
+  const value = {
+    user,
+    session,
+    loading,
+    speeches,
+    signOut,
+    fetchSpeeches,
+    refreshUser,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
