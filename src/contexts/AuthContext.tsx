@@ -2,24 +2,23 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-
-interface Speech {
-  id: string;
-  title: string;
-  content: string;
-  speech_type: string;
-  created_at: string;
-  updated_at: string;
-}
+import { Speech } from '@/types/speech';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  loading: boolean;
+  isLoading: boolean;
   speeches: Speech[];
   signOut: () => Promise<void>;
   fetchSpeeches: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  refreshUserData: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
+  saveSpeech: (title: string, content: string, speechType: string) => Promise<void>;
+  updateSpeech: (id: string, title: string, content: string) => Promise<void>;
+  deleteSpeech: (id: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,8 +34,9 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [speeches, setSpeeches] = useState<Speech[]>([]);
+  const { toast } = useToast();
 
   const fetchSpeeches = async () => {
     if (!user) {
@@ -98,6 +98,134 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const refreshUserData = async () => {
+    await refreshUser();
+    if (user) {
+      await fetchSpeeches();
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('User signed in successfully:', data.user?.id);
+    } catch (error) {
+      console.error('Error signing in:', error);
+      throw error;
+    }
+  };
+
+  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName || '',
+            last_name: lastName || '',
+            full_name: firstName && lastName ? `${firstName} ${lastName}` : '',
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('User signed up successfully:', data.user?.id);
+      
+      if (data.user && !data.session) {
+        toast({
+          title: "Check your email",
+          description: "We've sent you a confirmation link to complete your registration.",
+        });
+      }
+    } catch (error) {
+      console.error('Error signing up:', error);
+      throw error;
+    }
+  };
+
+  const saveSpeech = async (title: string, content: string, speechType: string) => {
+    if (!user) {
+      throw new Error('User must be logged in to save speech');
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('speeches')
+        .insert({
+          user_id: user.id,
+          title,
+          content,
+          speech_type: speechType,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Speech saved successfully:', data.id);
+      await fetchSpeeches(); // Refresh speeches list
+    } catch (error) {
+      console.error('Error saving speech:', error);
+      throw error;
+    }
+  };
+
+  const updateSpeech = async (id: string, title: string, content: string) => {
+    try {
+      const { error } = await supabase
+        .from('speeches')
+        .update({
+          title,
+          content,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Speech updated successfully:', id);
+      await fetchSpeeches(); // Refresh speeches list
+    } catch (error) {
+      console.error('Error updating speech:', error);
+      throw error;
+    }
+  };
+
+  const deleteSpeech = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('speeches')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Speech deleted successfully:', id);
+      await fetchSpeeches(); // Refresh speeches list
+    } catch (error) {
+      console.error('Error deleting speech:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
@@ -113,7 +241,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('Error in getInitialSession:', error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -125,7 +253,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.info('Auth state changed:', event);
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
+        setIsLoading(false);
 
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           // Fetch speeches when user signs in or token is refreshed
@@ -143,10 +271,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Fetch speeches when user changes
   useEffect(() => {
-    if (user && !loading) {
+    if (user && !isLoading) {
       fetchSpeeches();
     }
-  }, [user, loading]);
+  }, [user, isLoading]);
 
   const signOut = async () => {
     try {
@@ -166,11 +294,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     user,
     session,
-    loading,
+    isLoading,
     speeches,
     signOut,
     fetchSpeeches,
     refreshUser,
+    refreshUserData,
+    signIn,
+    signUp,
+    saveSpeech,
+    updateSpeech,
+    deleteSpeech,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
