@@ -8,6 +8,7 @@ export const LogoutButton = () => {
   const { signOut } = useAuth();
 
   const handleSignOut = async () => {
+    console.log('LogoutButton: Handling sign out');
     await signOut();
     navigate('/');
   };

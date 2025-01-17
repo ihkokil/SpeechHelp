@@ -25,9 +25,7 @@ const SignUpForm = ({
   const firstNameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Focus the first name input when the component mounts if autoFocus is true
     if (autoFocus && firstNameInputRef.current) {
-      // Small timeout to ensure the input is rendered before focusing
       setTimeout(() => {
         if (firstNameInputRef.current) {
           firstNameInputRef.current.focus();
@@ -52,14 +50,13 @@ const SignUpForm = ({
     }
 
     try {
+      console.log('SignUpForm: Attempting to sign up');
       await signUp(email, password, firstName, lastName);
+      console.log('SignUpForm: Sign up successful');
+      // Don't navigate automatically - let the user check their email if needed
     } catch (error: any) {
-      console.error('Authentication error:', error);
-      toast({
-        title: "Authentication error",
-        description: error.message || "An error occurred during authentication",
-        variant: "destructive"
-      });
+      console.error('SignUpForm: Authentication error:', error);
+      // Error handling is already done in the AuthContext
     } finally {
       setLoading(false);
     }
