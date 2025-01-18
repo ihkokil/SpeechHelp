@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -173,9 +174,37 @@ const SubscriptionCard = ({
   };
 
   const handleCancelSubscription = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to cancel your subscription.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsCancelling(true);
     try {
-      const { data, error } = await supabase.functions.invoke('cancel-subscription');
+      // Get fresh session to ensure we have a valid token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        console.error('Session error:', sessionError);
+        toast({
+          title: "Authentication Error",
+          description: "Please log out and log back in, then try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Cancelling subscription for user:', user.id);
+      
+      const { data, error } = await supabase.functions.invoke('cancel-subscription', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
       if (error) {
         console.error('Error cancelling subscription:', error);
