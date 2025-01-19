@@ -125,8 +125,9 @@ serve(async (req) => {
 			);
 		}
 
+		const last4 = cardNumber.slice(-4);
 		log('Request data', { 
-			cardNumber: '****' + cardNumber.slice(-4), 
+			cardNumber: '****' + last4, 
 			expiryMonth, 
 			expiryYear,
 			cardHolder,
@@ -162,8 +163,40 @@ serve(async (req) => {
 				.eq('id', user.id);
 		}
 
+		// Check for existing payment methods with same card details
+		log('Checking for existing payment methods');
+		const existingPaymentMethods = await stripe.paymentMethods.list({
+			customer: customerId,
+			type: 'card',
+		});
+
+		// Check if a card with the same last4 and expiry already exists
+		const duplicateCard = existingPaymentMethods.data.find(pm => 
+			pm.card?.last4 === last4 && 
+			pm.card?.exp_month === parseInt(expiryMonth) && 
+			pm.card?.exp_year === parseInt(expiryYear)
+		);
+
+		if (duplicateCard) {
+			log('Duplicate card found, not creating new payment method', { 
+				existingCardId: duplicateCard.id,
+				last4: duplicateCard.card?.last4 
+			});
+			
+			return new Response(
+				JSON.stringify({ 
+					success: false,
+					error: 'This card is already saved to your account',
+					duplicate: true
+				}),
+				{
+					status: 400,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
 		// For test mode, we need to create a Setup Intent to collect payment method
-		// This is the recommended approach for test cards in Stripe
 		log('Creating Setup Intent for payment method collection');
 		
 		const setupIntent = await stripe.setupIntents.create({
@@ -174,8 +207,13 @@ serve(async (req) => {
 
 		log('Created Setup Intent', { setupIntentId: setupIntent.id, clientSecret: setupIntent.client_secret });
 
-		// For now, we'll return the setup intent details so the frontend can complete the payment method setup
-		// This requires using Stripe.js on the frontend to confirm the setup intent
+		// Check if this will be the first payment method (to set as default)
+		const isFirstCard = existingPaymentMethods.data.length === 0;
+		log('Payment method count check', { 
+			existingCount: existingPaymentMethods.data.length,
+			isFirstCard 
+		});
+
 		return new Response(
 			JSON.stringify({ 
 				success: true,
@@ -183,7 +221,8 @@ serve(async (req) => {
 				setupIntent: {
 					id: setupIntent.id,
 					clientSecret: setupIntent.client_secret
-				}
+				},
+				isFirstCard: isFirstCard
 			}),
 			{
 				status: 200,
