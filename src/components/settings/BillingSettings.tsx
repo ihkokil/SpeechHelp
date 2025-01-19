@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -295,7 +296,7 @@ const BillingSettings = () => {
     if (subscriptionData && paymentMethods.length > 0) {
       setSubscriptionData(prev => prev ? {
         ...prev,
-        paymentMethod: paymentMethods[0]
+        paymentMethod: paymentMethods.find(pm => pm.isDefault) || paymentMethods[0]
       } : null);
     }
   }, [paymentMethods]);
@@ -326,8 +327,35 @@ const BillingSettings = () => {
   };
 
   const handleAddPaymentMethod = (newPaymentMethod: PaymentMethod) => {
-    // Add to local state immediately
-    const updatedPaymentMethods = [...paymentMethods, newPaymentMethod];
+    // Check for duplicate before adding
+    const existingCard = paymentMethods.find(method => 
+      method.last4 === newPaymentMethod.last4 && 
+      method.expiryMonth === newPaymentMethod.expiryMonth && 
+      method.expiryYear === newPaymentMethod.expiryYear
+    );
+    
+    if (existingCard) {
+      toast({
+        title: "Card already exists",
+        description: `A card ending in ${newPaymentMethod.last4} with the same expiry date is already saved.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // If this is the first card or explicitly set as default, make it default
+    let updatedPaymentMethods = [...paymentMethods];
+    
+    if (newPaymentMethod.isDefault) {
+      // Remove default from other cards
+      updatedPaymentMethods = updatedPaymentMethods.map(pm => ({ ...pm, isDefault: false }));
+    } else if (paymentMethods.length === 0) {
+      // First card is always default
+      newPaymentMethod.isDefault = true;
+    }
+    
+    // Add the new payment method
+    updatedPaymentMethods.push(newPaymentMethod);
     setPaymentMethods(updatedPaymentMethods);
     
     // Refresh payment methods from Stripe to get the real data
@@ -337,12 +365,20 @@ const BillingSettings = () => {
     
     toast({
       title: "Payment method added",
-      description: `Your card ending in ${newPaymentMethod.last4} has been saved for automatic renewal.`,
+      description: `Your card ending in ${newPaymentMethod.last4} has been saved${newPaymentMethod.isDefault ? ' as your default card' : ''}.`,
     });
   };
 
   const handleUpdatePaymentMethod = (index: number, updatedMethod: PaymentMethod) => {
     let updatedMethods = [...paymentMethods];
+    
+    // If this card is being set as default, remove default from others
+    if (updatedMethod.isDefault) {
+      updatedMethods = updatedMethods.map((pm, i) => ({
+        ...pm,
+        isDefault: i === index
+      }));
+    }
     
     // Update the selected payment method with new data
     updatedMethods[index] = updatedMethod;
