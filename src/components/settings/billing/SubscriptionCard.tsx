@@ -49,6 +49,7 @@ const SubscriptionCard = ({
         return 'bg-green-100 text-green-800';
       case 'canceled':
       case 'cancelled':
+      case 'will_cancel':
         return 'bg-red-100 text-red-800';
       case 'past_due':
         return 'bg-yellow-100 text-yellow-800';
@@ -66,6 +67,8 @@ const SubscriptionCard = ({
       case 'canceled':
       case 'cancelled':
         return 'Canceled';
+      case 'will_cancel':
+        return 'Will Cancel';
       case 'past_due':
         return 'Past Due';
       case 'inactive':
@@ -327,21 +330,18 @@ const SubscriptionCard = ({
           </div>
         </div>
 
-        {/* Auto-renewal toggle */}
+        {/* Auto-renewal toggle and Cancel button on same row */}
         {subscriptionData.status === 'active' && (
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="auto-renew"
-              checked={autoRenew}
-              onCheckedChange={handleAutoRenewToggle}
-            />
-            <Label htmlFor="auto-renew">Auto-renewal</Label>
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          {subscriptionData.status === 'active' && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="auto-renew"
+                checked={autoRenew}
+                onCheckedChange={handleAutoRenewToggle}
+              />
+              <Label htmlFor="auto-renew">Auto-renewal</Label>
+            </div>
+            
             <Button 
               variant="destructive" 
               onClick={handleCancelSubscription}
@@ -349,24 +349,29 @@ const SubscriptionCard = ({
             >
               {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
             </Button>
-          )}
-          
-          {(subscriptionData.status === 'inactive' || subscriptionData.status === 'canceled') && (
-            <Button 
-              className="flex-1"
-              onClick={handleReactivateSubscription}
-              disabled={isReactivating}
-            >
-              {isReactivating ? 'Checking Subscription...' : 'Reactivate Subscription'}
-            </Button>
-          )}
-          
-          {subscriptionData.status === 'past_due' && (
-            <Button className="flex-1" variant="destructive">
-              Update Payment Method
-            </Button>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Action Buttons for non-active states */}
+        {subscriptionData.status !== 'active' && (
+          <div className="flex flex-col sm:flex-row gap-3">
+            {(subscriptionData.status === 'inactive' || subscriptionData.status === 'canceled') && (
+              <Button 
+                className="flex-1"
+                onClick={handleReactivateSubscription}
+                disabled={isReactivating}
+              >
+                {isReactivating ? 'Checking Subscription...' : 'Reactivate Subscription'}
+              </Button>
+            )}
+            
+            {subscriptionData.status === 'past_due' && (
+              <Button className="flex-1" variant="destructive">
+                Update Payment Method
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
