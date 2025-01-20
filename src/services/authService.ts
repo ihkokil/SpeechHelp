@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionPlan } from '@/lib/plan_rules.ts';
 
@@ -13,21 +14,46 @@ type ShowToastFunction = (props: ToastProps) => void;
 
 // Service functions now accept toast function as a parameter
 export const signIn = async (email: string, password: string, showToast: ShowToastFunction) => {
-	const { error } = await supabase.auth.signInWithPassword({ email, password });
+	try {
+		// Clean up any existing auth state first
+		await supabase.auth.signOut({ scope: 'global' });
+		
+		const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-	if (error) {
+		if (error) {
+			console.error('Sign in error:', error);
+			
+			// Handle specific error types
+			if (error.message.includes('Invalid login credentials')) {
+				showToast({
+					title: "Login failed",
+					description: "Invalid email or password. Please check your credentials and try again.",
+					variant: "destructive"
+				});
+			} else if (error.message.includes('Email not confirmed')) {
+				showToast({
+					title: "Email not confirmed",
+					description: "Please check your email and click the confirmation link before signing in.",
+					variant: "destructive"
+				});
+			} else {
+				showToast({
+					title: "Login failed",
+					description: error.message,
+					variant: "destructive"
+				});
+			}
+			throw error;
+		}
+
 		showToast({
-			title: "Login failed",
-			description: error.message,
-			variant: "destructive"
+			title: "Login successful",
+			description: "Welcome back!",
 		});
+	} catch (error) {
+		console.error('Sign in error:', error);
 		throw error;
 	}
-
-	showToast({
-		title: "Login successful",
-		description: "Welcome back!",
-	});
 };
 
 export const signUp = async (
@@ -38,6 +64,9 @@ export const signUp = async (
 	lastName?: string
 ) => {
 	try {
+		// Clean up any existing auth state first
+		await supabase.auth.signOut({ scope: 'global' });
+		
 		const res = await supabase.auth.signUp({
 			email,
 			password,
@@ -56,11 +85,28 @@ export const signUp = async (
 		console.log("Sign up response:", res);
 
 		if (res.error) {
-			showToast({
-				title: "Sign up failed",
-				description: res.error.message,
-				variant: "destructive"
-			});
+			console.error('Sign up error:', res.error);
+			
+			// Handle specific error types
+			if (res.error.message.includes('User already registered')) {
+				showToast({
+					title: "Account already exists",
+					description: "An account with this email already exists. Please sign in instead.",
+					variant: "destructive"
+				});
+			} else if (res.error.message.includes('Password should be at least')) {
+				showToast({
+					title: "Password too weak",
+					description: "Password should be at least 6 characters long.",
+					variant: "destructive"
+				});
+			} else {
+				showToast({
+					title: "Sign up failed",
+					description: res.error.message,
+					variant: "destructive"
+				});
+			}
 			throw res.error;
 		}
 
@@ -80,34 +126,48 @@ export const signUp = async (
 				if (emailError) {
 					console.error('Error sending confirmation email:', emailError);
 					// Don't throw here, just log the error as signup was successful
+					showToast({
+						title: "Account created",
+						description: "Your account was created but we couldn't send the confirmation email. Please contact support.",
+						variant: "destructive"
+					});
 				} else {
 					console.log('Confirmation email sent successfully:', emailData);
+					showToast({
+						title: "Account created successfully",
+						description: "Please check your email to confirm your account and complete the setup.",
+					});
 				}
 			} catch (emailErr) {
 				console.error('Exception sending confirmation email:', emailErr);
 				// Don't throw here, just log the error as signup was successful
+				showToast({
+					title: "Account created",
+					description: "Your account was created but we couldn't send the confirmation email. Please contact support.",
+					variant: "destructive"
+				});
 			}
-
-			showToast({
-				title: "Account created successfully",
-				description: "Please check your email to confirm your account and complete the setup.",
-			});
 		}
 	} catch (error: any) {
 		console.error('Sign up error:', error);
-		showToast({
-			title: "Sign up failed",
-			description: error.message || "An error occurred during sign up",
-			variant: "destructive"
-		});
 		throw error;
 	}
 };
 
 export const resetPassword = async (email: string, showToast: ShowToastFunction) => {
 	try {
-		// Get the current URL to construct the redirect URL
-		const redirectUrl = `${window.location.origin}/auth?type=recovery`;
+		// Validate email format
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			showToast({
+				title: "Invalid email",
+				description: "Please enter a valid email address.",
+				variant: "destructive"
+			});
+			return;
+		}
+
+		console.log('Sending password reset for:', email);
 		
 		// Call our custom password reset function
 		const { data, error } = await supabase.functions.invoke('send-password-reset', {
@@ -118,13 +178,23 @@ export const resetPassword = async (email: string, showToast: ShowToastFunction)
 		});
 
 		if (error) {
+			console.error('Password reset error:', error);
+			showToast({
+				title: "Error sending reset email",
+				description: "Failed to send password reset email. Please try again or contact support.",
+				variant: "destructive"
+			});
 			throw error;
 		}
 
-		showToast({
-			title: "Password reset sent",
-			description: "Check your email for password reset instructions.",
-		});
+		if (data?.success) {
+			showToast({
+				title: "Password reset sent",
+				description: "Check your email for password reset instructions.",
+			});
+		} else {
+			throw new Error(data?.error || 'Unknown error occurred');
+		}
 	} catch (error: any) {
 		console.error('Password reset error:', error);
 		showToast({
@@ -137,19 +207,41 @@ export const resetPassword = async (email: string, showToast: ShowToastFunction)
 };
 
 export const signOut = async (showToast: ShowToastFunction) => {
-	const { error } = await supabase.auth.signOut();
-
-	if (error) {
-		showToast({
-			title: "Sign out failed",
-			description: error.message,
-			variant: "destructive"
+	try {
+		// Clean up local storage first
+		Object.keys(localStorage).forEach((key) => {
+			if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+				localStorage.removeItem(key);
+			}
 		});
+
+		const { error } = await supabase.auth.signOut({ scope: 'global' });
+
+		if (error) {
+			console.error('Sign out error:', error);
+			showToast({
+				title: "Sign out failed",
+				description: error.message,
+				variant: "destructive"
+			});
+			throw error;
+		}
+
+		showToast({
+			title: "Signed out",
+			description: "You have been signed out successfully.",
+		});
+
+		// Force page reload to ensure clean state
+		setTimeout(() => {
+			window.location.href = '/auth';
+		}, 500);
+	} catch (error) {
+		console.error('Sign out error:', error);
+		// Even if there's an error, try to redirect to clear state
+		setTimeout(() => {
+			window.location.href = '/auth';
+		}, 500);
 		throw error;
 	}
-
-	showToast({
-		title: "Signed out",
-		description: "You have been signed out successfully.",
-	});
 };
