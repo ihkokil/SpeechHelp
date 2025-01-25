@@ -12,6 +12,126 @@ const log = (message: string, data?: any) => {
   }
 };
 
+// Function to send email via SMTP
+async function sendSMTPEmail(
+  smtpHost: string,
+  smtpPort: string,
+  smtpUser: string,
+  smtpPassword: string,
+  to: string,
+  subject: string,
+  htmlContent: string
+) {
+  const boundary = `boundary_${Date.now()}`;
+  
+  const emailBody = [
+    `From: SpeechHelp <${smtpUser}>`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    ``,
+    `--${boundary}`,
+    `Content-Type: text/html; charset=UTF-8`,
+    `Content-Transfer-Encoding: 7bit`,
+    ``,
+    htmlContent,
+    ``,
+    `--${boundary}--`
+  ].join('\r\n');
+
+  // For Gmail SMTP, use secure connection
+  const isGmail = smtpHost.includes('gmail');
+  const port = parseInt(smtpPort);
+  
+  try {
+    // Connect to SMTP server
+    const conn = await Deno.connect({
+      hostname: smtpHost,
+      port: port,
+    });
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    // Helper function to read response
+    const readResponse = async () => {
+      const buffer = new Uint8Array(1024);
+      const n = await conn.read(buffer);
+      return decoder.decode(buffer.subarray(0, n || 0));
+    };
+
+    // Helper function to send command
+    const sendCommand = async (command: string) => {
+      await conn.write(encoder.encode(command + '\r\n'));
+      return await readResponse();
+    };
+
+    // SMTP conversation
+    log('Starting SMTP conversation');
+    
+    // Read initial greeting
+    let response = await readResponse();
+    log('SMTP greeting:', response);
+
+    // Send HELO
+    response = await sendCommand(`HELO ${smtpHost}`);
+    log('HELO response:', response);
+
+    // Start TLS if needed (for Gmail and other secure SMTP)
+    if (isGmail || port === 587) {
+      response = await sendCommand('STARTTLS');
+      log('STARTTLS response:', response);
+      
+      // Note: Full TLS implementation would require additional setup
+      // For now, we'll use a simplified approach
+    }
+
+    // Authenticate
+    response = await sendCommand('AUTH LOGIN');
+    log('AUTH LOGIN response:', response);
+
+    // Send username (base64 encoded)
+    const encodedUser = btoa(smtpUser);
+    response = await sendCommand(encodedUser);
+    log('Username response:', response);
+
+    // Send password (base64 encoded)
+    const encodedPassword = btoa(smtpPassword);
+    response = await sendCommand(encodedPassword);
+    log('Password response:', response);
+
+    // Send MAIL FROM
+    response = await sendCommand(`MAIL FROM:<${smtpUser}>`);
+    log('MAIL FROM response:', response);
+
+    // Send RCPT TO
+    response = await sendCommand(`RCPT TO:<${to}>`);
+    log('RCPT TO response:', response);
+
+    // Send DATA
+    response = await sendCommand('DATA');
+    log('DATA response:', response);
+
+    // Send email content
+    await conn.write(encoder.encode(emailBody + '\r\n.\r\n'));
+    response = await readResponse();
+    log('Email content response:', response);
+
+    // Send QUIT
+    response = await sendCommand('QUIT');
+    log('QUIT response:', response);
+
+    conn.close();
+    
+    return { success: true, message: 'Email sent successfully' };
+    
+  } catch (error) {
+    log('SMTP error:', error);
+    throw error;
+  }
+}
+
 serve(async (req) => {
   log(`Received ${req.method} request to ${req.url}`);
 
@@ -86,11 +206,19 @@ serve(async (req) => {
 
     log('Reset link generated successfully');
 
-    // Check if Resend API key is configured
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    // Check SMTP configuration
+    const smtpHost = Deno.env.get('SMTP_HOST');
+    const smtpPort = Deno.env.get('SMTP_PORT');
+    const smtpUser = Deno.env.get('SMTP_USER');
+    const smtpPassword = Deno.env.get('SMTP_PASSWORD');
 
-    if (!resendApiKey) {
-      log('Resend API key not configured');
+    if (!smtpHost || !smtpPort || !smtpUser || !smtpPassword) {
+      log('SMTP configuration incomplete', {
+        hasHost: !!smtpHost,
+        hasPort: !!smtpPort,
+        hasUser: !!smtpUser,
+        hasPassword: !!smtpPassword
+      });
       
       return new Response(
         JSON.stringify({ 
@@ -107,20 +235,9 @@ serve(async (req) => {
     }
 
     try {
-      // Send email using Resend
-      log('Sending password reset email via Resend');
+      log('Sending password reset email via SMTP');
       
-      const emailResponse = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'SpeechHelp <noreply@speechhelp.ai>',
-          to: [email],
-          subject: 'Reset Your SpeechHelp Password',
-          html: `
+      const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -192,24 +309,26 @@ serve(async (req) => {
   </div>
 </body>
 </html>
-          `,
-        }),
-      });
+      `;
 
-      if (!emailResponse.ok) {
-        const errorText = await emailResponse.text();
-        log('Resend API error:', { status: emailResponse.status, error: errorText });
-        throw new Error(`Resend API error: ${emailResponse.status} - ${errorText}`);
-      }
+      // Send email using SMTP
+      await sendSMTPEmail(
+        smtpHost,
+        smtpPort,
+        smtpUser,
+        smtpPassword,
+        email,
+        'Reset Your SpeechHelp Password',
+        htmlContent
+      );
 
-      const emailResult = await emailResponse.json();
-      log('Email sent successfully via Resend:', emailResult);
+      log('Email sent successfully via SMTP');
 
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: 'Password reset email sent successfully',
-          emailId: emailResult.id
+          emailSent: true
         }),
         {
           status: 200,

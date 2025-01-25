@@ -194,7 +194,7 @@ export const resetPassword = async (email: string, showToast: ShowToastFunction)
 			}
 			
 			// Show appropriate message based on email service configuration
-			if (data.emailId) {
+			if (data.emailSent) {
 				showToast({
 					title: "Password reset sent",
 					description: "Check your email for password reset instructions.",
