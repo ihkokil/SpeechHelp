@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8?target=deno';
@@ -12,7 +11,7 @@ const log = (message: string, data?: any) => {
   }
 };
 
-// Function to send email via SMTP
+// Function to send email via SMTP with proper SSL/TLS handling
 async function sendSMTPEmail(
   smtpHost: string,
   smtpPort: string,
@@ -22,32 +21,14 @@ async function sendSMTPEmail(
   subject: string,
   htmlContent: string
 ) {
-  const boundary = `boundary_${Date.now()}`;
-  
-  const emailBody = [
-    `From: SpeechHelp <${smtpUser}>`,
-    `To: ${to}`,
-    `Subject: ${subject}`,
-    `MIME-Version: 1.0`,
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
-    ``,
-    `--${boundary}`,
-    `Content-Type: text/html; charset=UTF-8`,
-    `Content-Transfer-Encoding: 7bit`,
-    ``,
-    htmlContent,
-    ``,
-    `--${boundary}--`
-  ].join('\r\n');
-
-  // For secure SMTP (port 465), use TLS from the start
   const port = parseInt(smtpPort);
   
   try {
     log(`Connecting to SMTP server: ${smtpHost}:${port}`);
     
-    // Connect to SMTP server
-    const conn = await Deno.connect({
+    // For port 465, use TLS from the start (implicit TLS)
+    // For port 587, use STARTTLS (explicit TLS)
+    const conn = await Deno.connectTls({
       hostname: smtpHost,
       port: port,
     });
@@ -57,7 +38,7 @@ async function sendSMTPEmail(
 
     // Helper function to read response
     const readResponse = async () => {
-      const buffer = new Uint8Array(1024);
+      const buffer = new Uint8Array(4096);
       const n = await conn.read(buffer);
       const response = decoder.decode(buffer.subarray(0, n || 0));
       log('SMTP Response:', response.trim());
@@ -73,7 +54,7 @@ async function sendSMTPEmail(
     };
 
     // SMTP conversation
-    log('Starting SMTP conversation');
+    log('Starting SMTP conversation over TLS');
     
     // Read initial greeting
     let response = await readResponse();
@@ -81,23 +62,13 @@ async function sendSMTPEmail(
       throw new Error(`SMTP connection failed: ${response}`);
     }
 
-    // Send EHLO/HELO
+    // Send EHLO
     response = await sendCommand(`EHLO ${smtpHost}`);
     if (!response.startsWith('250')) {
       // Try HELO instead
       response = await sendCommand(`HELO ${smtpHost}`);
       if (!response.startsWith('250')) {
         throw new Error(`EHLO/HELO failed: ${response}`);
-      }
-    }
-
-    // For port 587, start TLS
-    if (port === 587) {
-      response = await sendCommand('STARTTLS');
-      if (!response.startsWith('220')) {
-        log('STARTTLS not supported, continuing without TLS');
-      } else {
-        log('TLS started (simplified implementation)');
       }
     }
 
@@ -141,9 +112,23 @@ async function sendSMTPEmail(
       throw new Error(`DATA command failed: ${response}`);
     }
 
+    // Prepare email content
+    const emailBody = [
+      `From: SpeechHelp <${smtpUser}>`,
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      `MIME-Version: 1.0`,
+      `Content-Type: text/html; charset=UTF-8`,
+      `Content-Transfer-Encoding: 7bit`,
+      ``,
+      htmlContent,
+      ``,
+      `.`
+    ].join('\r\n');
+
     // Send email content
     log('Sending email content...');
-    await conn.write(encoder.encode(emailBody + '\r\n.\r\n'));
+    await conn.write(encoder.encode(emailBody + '\r\n'));
     response = await readResponse();
     if (!response.startsWith('250')) {
       throw new Error(`Email sending failed: ${response}`);
@@ -273,8 +258,9 @@ serve(async (req) => {
     }
 
     try {
-      log('Sending password reset email via SMTP');
+      log('Sending password reset email via SMTP with TLS');
       
+      // ... keep existing code (htmlContent variable)
       const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -349,7 +335,7 @@ serve(async (req) => {
 </html>
       `;
 
-      // Send email using SMTP
+      // Send email using SMTP with TLS
       await sendSMTPEmail(
         smtpHost,
         smtpPort,
