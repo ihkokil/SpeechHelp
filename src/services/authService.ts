@@ -167,7 +167,7 @@ export const resetPassword = async (email: string, showToast: ShowToastFunction)
 			return;
 		}
 
-		console.log('Sending password reset for:', email);
+		console.log('Starting password reset for:', email);
 		
 		// Call our custom password reset function
 		const { data, error } = await supabase.functions.invoke('send-password-reset', {
@@ -176,6 +176,8 @@ export const resetPassword = async (email: string, showToast: ShowToastFunction)
 				resetUrl: `${window.location.origin}/auth?type=recovery`
 			}
 		});
+
+		console.log('Password reset response:', { data, error });
 
 		if (error) {
 			console.error('Password reset error:', error);
