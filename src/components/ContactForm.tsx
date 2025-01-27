@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { Mail, MessageSquare } from 'lucide-react';
 import Translate from '@/components/Translate';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const ContactForm = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,20 +28,36 @@ const ContactForm = () => {
 
       if (error) {
         console.error('Contact form submission error:', error);
-        alert('Failed to send message. Please try again or contact us directly at hello@speechhelp.ai');
+        toast({
+          title: "Error sending message",
+          description: "Failed to send your message. Please try again or contact us directly at hello@speechhelp.ai",
+          variant: "destructive",
+        });
       } else if (data?.success) {
         // Reset form
         setName('');
         setEmail('');
         setMessage('');
-        alert('Message sent successfully! We\'ll get back to you soon.');
+        toast({
+          title: "Message sent successfully!",
+          description: "We'll get back to you soon.",
+          variant: "default",
+        });
       } else {
         console.error('Contact form submission failed:', data);
-        alert('Failed to send message. Please try again or contact us directly at hello@speechhelp.ai');
+        toast({
+          title: "Error sending message",
+          description: "Failed to send your message. Please try again or contact us directly at hello@speechhelp.ai",
+          variant: "destructive",
+        });
       }
     } catch (err) {
       console.error('Contact form submission error:', err);
-      alert('Failed to send message. Please try again or contact us directly at hello@speechhelp.ai');
+      toast({
+        title: "Error sending message",
+        description: "Failed to send your message. Please try again or contact us directly at hello@speechhelp.ai",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
