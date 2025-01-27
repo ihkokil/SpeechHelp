@@ -41,7 +41,7 @@ const ContactForm = () => {
         toast({
           title: "Message sent successfully!",
           description: "We'll get back to you soon.",
-          variant: "default",
+          variant: "success",
         });
       } else {
         console.error('Contact form submission failed:', data);
