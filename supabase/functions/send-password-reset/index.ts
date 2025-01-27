@@ -273,7 +273,7 @@ serve(async (req) => {
   <div style="background-color: #ffffff; border: 1px solid #eee; border-radius: 10px; box-shadow: 0 5px 15px rgba(20, 50, 70, 0.08); margin: 0 auto; max-width: 600px; padding: 40px 30px;">
     
     <div style="text-align: center; margin-bottom: 30px;">
-      <img src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/assets/Speech%20Help%20-%20Logo-New.png" 
+      <img src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg" 
            alt="SpeechHelp" 
            style="width: 150px; height: auto; display: block; margin: 0 auto;" />
     </div>
