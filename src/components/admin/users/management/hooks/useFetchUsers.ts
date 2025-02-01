@@ -68,12 +68,12 @@ export const useFetchUsers = () => {
             full_name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || '',
             email: authUser.email,
             phone: authUser.raw_user_meta_data?.phone || profile.phone || '',
+            country_code: authUser.raw_user_meta_data?.country_code || '',
             street_address: authUser.raw_user_meta_data?.street_address || '',
             city: authUser.raw_user_meta_data?.city || '',
             state: authUser.raw_user_meta_data?.state || '',
             zip_code: authUser.raw_user_meta_data?.zip_code || '',
             country: authUser.raw_user_meta_data?.country || '',
-            country_code: authUser.raw_user_meta_data?.country_code || '',
           },
           is_active: profile.is_active !== false, // Default to true if not specified
           subscription_status: profile.subscription_plan ? 'active' : undefined,
