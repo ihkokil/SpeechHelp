@@ -23,12 +23,6 @@ export interface User {
     last_name?: string;
     email?: string;
     phone?: string;
-    street_address?: string;
-    city?: string;
-    state?: string;
-    zip_code?: string;
-    country?: string;
-    country_code?: string;
   };
   // Direct fields from profiles table
   first_name?: string;
