@@ -7,16 +7,37 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { adminSettingsService } from '@/services/adminSettingsService';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form } from '@/components/ui/form';
+import PhoneInput from '@/components/ui/phone-input';
+import * as z from 'zod';
+
+const adminProfileSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email('Please enter a valid email address'),
+  phone: z.string().optional(),
+  countryCode: z.string().default('US'),
+});
+
+type AdminProfileFormValues = z.infer<typeof adminProfileSchema>;
 
 const AdminProfileSettings = () => {
-  const [profileData, setProfileData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    avatar: ''
-  });
+  const [avatar, setAvatar] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+
+  const form = useForm<AdminProfileFormValues>({
+    resolver: zodResolver(adminProfileSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      countryCode: 'US',
+    },
+  });
 
   // Load profile data on component mount
   useEffect(() => {
@@ -33,25 +54,21 @@ const AdminProfileSettings = () => {
           return acc;
         }, {} as any);
 
-        setProfileData({
+        form.reset({
           firstName: settings.first_name || '',
           lastName: settings.last_name || '',
           email: settings.email || '',
-          avatar: settings.avatar || ''
+          phone: settings.phone || '',
+          countryCode: settings.country_code || 'US',
         });
+
+        setAvatar(settings.avatar || '');
       }
     } catch (error) {
       console.error('Error loading profile data:', error);
     } finally {
       setIsLoadingData(false);
     }
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      [field]: value
-    }));
   };
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,10 +78,7 @@ const AdminProfileSettings = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
-        setProfileData(prev => ({
-          ...prev,
-          avatar: result
-        }));
+        setAvatar(result);
       };
       reader.readAsDataURL(file);
       
@@ -75,15 +89,17 @@ const AdminProfileSettings = () => {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (data: AdminProfileFormValues) => {
     setIsLoading(true);
     try {
       // Save each profile setting
       const savePromises = [
-        adminSettingsService.saveSetting('first_name', profileData.firstName, 'profile'),
-        adminSettingsService.saveSetting('last_name', profileData.lastName, 'profile'),
-        adminSettingsService.saveSetting('email', profileData.email, 'profile'),
-        adminSettingsService.saveSetting('avatar', profileData.avatar, 'profile')
+        adminSettingsService.saveSetting('first_name', data.firstName, 'profile'),
+        adminSettingsService.saveSetting('last_name', data.lastName, 'profile'),
+        adminSettingsService.saveSetting('email', data.email, 'profile'),
+        adminSettingsService.saveSetting('phone', data.phone || '', 'profile'),
+        adminSettingsService.saveSetting('country_code', data.countryCode, 'profile'),
+        adminSettingsService.saveSetting('avatar', avatar, 'profile')
       ];
 
       const results = await Promise.all(savePromises);
@@ -111,7 +127,9 @@ const AdminProfileSettings = () => {
   };
 
   const getInitials = () => {
-    return `${profileData.firstName.charAt(0)}${profileData.lastName.charAt(0)}`.toUpperCase();
+    const firstName = form.watch('firstName');
+    const lastName = form.watch('lastName');
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
   if (isLoadingData) {
@@ -123,7 +141,7 @@ const AdminProfileSettings = () => {
       {/* Avatar Upload Section */}
       <div className="flex items-center space-x-4">
         <Avatar className="h-20 w-20">
-          <AvatarImage src={profileData.avatar} alt="Admin avatar" />
+          <AvatarImage src={avatar} alt="Admin avatar" />
           <AvatarFallback className="text-lg">
             {getInitials() || <User className="h-8 w-8" />}
           </AvatarFallback>
@@ -150,44 +168,53 @@ const AdminProfileSettings = () => {
         </div>
       </div>
 
-      {/* Profile Information */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="firstName">First Name</Label>
-          <Input
-            id="firstName"
-            value={profileData.firstName}
-            onChange={(e) => handleInputChange('firstName', e.target.value)}
-            placeholder="Enter your first name"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="lastName">Last Name</Label>
-          <Input
-            id="lastName"
-            value={profileData.lastName}
-            onChange={(e) => handleInputChange('lastName', e.target.value)}
-            placeholder="Enter your last name"
-          />
-        </div>
-      </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                {...form.register('firstName')}
+                placeholder="Enter your first name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                {...form.register('lastName')}
+                placeholder="Enter your last name"
+              />
+            </div>
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
-        <Input
-          id="email"
-          type="email"
-          value={profileData.email}
-          onChange={(e) => handleInputChange('email', e.target.value)}
-          placeholder="Enter your email address"
-        />
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              type="email"
+              {...form.register('email')}
+              placeholder="Enter your email address"
+            />
+          </div>
 
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save Changes"}
-        </Button>
-      </div>
+          <PhoneInput 
+            form={form}
+            phoneFieldName="phone"
+            countryFieldName="countryCode"
+            label="Phone Number"
+            placeholder="Enter your phone number"
+          />
+
+          <div className="flex justify-end">
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 };
