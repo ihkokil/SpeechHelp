@@ -9,16 +9,20 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('verify-2fa-setup function called');
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { code } = await req.json();
+    console.log('Verification code received');
     
     // Get the authorization header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      console.error('No authorization header found');
       throw new Error("No authorization header");
     }
 
@@ -41,6 +45,8 @@ serve(async (req) => {
       throw new Error("Unauthorized");
     }
 
+    console.log('User authenticated:', user.id);
+
     // Get the secret from database
     const { data: twoFactorData, error: fetchError } = await supabaseClient
       .from('user_2fa')
@@ -49,8 +55,11 @@ serve(async (req) => {
       .single();
 
     if (fetchError || !twoFactorData) {
+      console.error('Error fetching 2FA data:', fetchError);
       throw new Error("2FA setup not found");
     }
+
+    console.log('2FA data fetched, verifying code...');
 
     // Verify the code
     const verified = speakeasy.totp.verify({
@@ -61,6 +70,7 @@ serve(async (req) => {
     });
 
     if (!verified) {
+      console.log('Code verification failed');
       return new Response(JSON.stringify({
         success: false,
         error: "Invalid verification code"
@@ -68,6 +78,8 @@ serve(async (req) => {
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
+
+    console.log('Code verified, generating backup codes...');
 
     // Generate backup codes
     const { data: backupCodes, error: backupError } = await supabaseClient
@@ -77,6 +89,8 @@ serve(async (req) => {
       console.error('Error generating backup codes:', backupError);
       throw backupError;
     }
+
+    console.log('Backup codes generated, enabling 2FA...');
 
     // Enable 2FA and store backup codes
     const { error: updateError } = await supabaseClient
@@ -92,6 +106,8 @@ serve(async (req) => {
       console.error('Error enabling 2FA:', updateError);
       throw updateError;
     }
+
+    console.log('2FA setup completed successfully');
 
     return new Response(JSON.stringify({
       success: true,
