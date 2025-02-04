@@ -16,6 +16,7 @@ const TwoFactorSetup = ({ onSetupComplete, onCancel }: TwoFactorSetupProps) => {
   const { toast } = useToast();
   const [step, setStep] = useState<'setup' | 'verify' | 'backup'>('setup');
   const [qrCodeData, setQrCodeData] = useState<string>('');
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
   const [secret, setSecret] = useState<string>('');
   const [verificationCode, setVerificationCode] = useState('');
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
@@ -29,7 +30,12 @@ const TwoFactorSetup = ({ onSetupComplete, onCancel }: TwoFactorSetupProps) => {
       
       if (error) throw error;
       
+      if (!data.success) {
+        throw new Error(data.error || "Failed to set up 2FA");
+      }
+      
       setQrCodeData(data.qrCode);
+      setQrCodeUrl(data.qrUrl);
       setSecret(data.secret);
       setStep('verify');
     } catch (error: any) {
@@ -184,7 +190,11 @@ const TwoFactorSetup = ({ onSetupComplete, onCancel }: TwoFactorSetupProps) => {
           </p>
           
           <div className="flex justify-center">
-            <img src={qrCodeData} alt="2FA QR Code" className="w-48 h-48" />
+            {qrCodeUrl ? (
+              <img src={qrCodeUrl} alt="2FA QR Code" className="w-48 h-48 border border-gray-200 rounded" />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: qrCodeData.replace('data:image/svg+xml;base64,', '') }} className="w-48 h-48" />
+            )}
           </div>
 
           <div className="space-y-2">
