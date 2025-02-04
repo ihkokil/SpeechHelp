@@ -7,6 +7,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper function to decode JWT and get user ID
+function getUserIdFromToken(authHeader: string): string | null {
+  try {
+    const token = authHeader.replace('Bearer ', '');
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.sub || null;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   console.log('disable-2fa function called');
   
@@ -22,36 +34,28 @@ serve(async (req) => {
       throw new Error("No authorization header");
     }
 
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { 
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-        global: { 
-          headers: { 
-            Authorization: authHeader,
-          } 
-        } 
-      }
-    );
-
-    // Get current user
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      console.error('User error:', userError);
-      throw new Error("Unauthorized");
+    // Extract user ID from JWT token
+    const userId = getUserIdFromToken(authHeader);
+    if (!userId) {
+      console.error('Could not extract user ID from token');
+      throw new Error("Invalid token");
     }
 
-    console.log('User authenticated:', user.id);
+    console.log('User ID extracted from token:', userId);
+
+    // Create Supabase client with service role key
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    console.log('Supabase client created, disabling 2FA...');
 
     // Delete 2FA settings for the user
     const { error: deleteError } = await supabaseClient
       .from('user_2fa')
       .delete()
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
 
     if (deleteError) {
       console.error('Error disabling 2FA:', deleteError);
