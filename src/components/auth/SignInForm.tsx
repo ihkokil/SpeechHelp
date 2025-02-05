@@ -49,31 +49,35 @@ const SignInForm = ({
     try {
       console.log('SignInForm: Attempting to sign in');
       
-      // First, try to sign in with email/password
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // First, check if user exists and get their ID without signing them in
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        console.error('SignInForm: Authentication error:', error);
+      if (signInError) {
+        console.error('SignInForm: Authentication error:', signInError);
         toast({
           title: "Login failed",
-          description: error.message,
+          description: signInError.message,
           variant: "destructive"
         });
         return;
       }
 
-      if (data.user) {
+      if (signInData.user) {
+        console.log('SignInForm: User authenticated, checking 2FA status');
+        
+        // Immediately sign out to prevent auto-redirect
+        await supabase.auth.signOut();
+        
         // Check if 2FA is enabled for this user
-        const has2FA = await checkTwoFactorEnabled(data.user.id);
+        const has2FA = await checkTwoFactorEnabled(signInData.user.id);
         
         if (has2FA) {
           console.log('SignInForm: 2FA required for user');
-          // Sign out immediately and show 2FA form
-          await supabase.auth.signOut();
-          setPendingUserId(data.user.id);
+          // Store credentials and show 2FA form
+          setPendingUserId(signInData.user.id);
           setPendingCredentials({ email, password });
           setShowTwoFactor(true);
         } else {
