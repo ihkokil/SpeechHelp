@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -44,7 +43,7 @@ const SignInForm = ({
         return false;
       }
 
-      const isEnabled = data?.is_enabled === true && data?.secret_key;
+      const isEnabled = data?.is_enabled === true && Boolean(data?.secret_key);
       console.log('2FA enabled status:', isEnabled);
       
       return isEnabled;
