@@ -23,6 +23,7 @@ const SignInForm = ({
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<AuthStep>('credentials');
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const [pendingCredentials, setPendingCredentials] = useState<{email: string, password: string} | null>(null);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -90,6 +91,9 @@ const SignInForm = ({
         // Sign out the user since we need 2FA verification first
         await supabase.auth.signOut();
         
+        // Store credentials for later use
+        setPendingCredentials({ email, password });
+        
         // Set up 2FA verification
         setPendingUserId(signInData.user.id);
         setCurrentStep('two-factor');
@@ -129,10 +133,14 @@ const SignInForm = ({
     try {
       console.log('=== 2FA verification successful, completing sign in ===');
       
+      if (!pendingCredentials) {
+        throw new Error('No pending credentials found');
+      }
+      
       // Now complete the sign in process
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: pendingCredentials.email,
+        password: pendingCredentials.password,
       });
 
       if (error) {
@@ -145,6 +153,7 @@ const SignInForm = ({
       // Reset state
       setCurrentStep('credentials');
       setPendingUserId(null);
+      setPendingCredentials(null);
       
       toast({
         title: "Login successful",
@@ -162,6 +171,7 @@ const SignInForm = ({
       // Reset to credentials step on error
       setCurrentStep('credentials');
       setPendingUserId(null);
+      setPendingCredentials(null);
     }
   };
 
@@ -169,6 +179,7 @@ const SignInForm = ({
     console.log('=== 2FA verification cancelled ===');
     setCurrentStep('credentials');
     setPendingUserId(null);
+    setPendingCredentials(null);
     toast({
       title: "Login cancelled",
       description: "Two-factor authentication was cancelled.",
@@ -179,11 +190,13 @@ const SignInForm = ({
   if (currentStep === 'two-factor' && pendingUserId) {
     console.log('Rendering 2FA verification for user:', pendingUserId);
     return (
-      <TwoFactorVerification
-        userId={pendingUserId}
-        onVerificationSuccess={handleTwoFactorSuccess}
-        onCancel={handleTwoFactorCancel}
-      />
+      <div className="max-w-md mx-auto">
+        <TwoFactorVerification
+          userId={pendingUserId}
+          onVerificationSuccess={handleTwoFactorSuccess}
+          onCancel={handleTwoFactorCancel}
+        />
+      </div>
     );
   }
 
