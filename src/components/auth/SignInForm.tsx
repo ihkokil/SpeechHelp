@@ -12,8 +12,6 @@ interface SignInFormProps {
   onSwitchToForgotPassword: () => void;
 }
 
-type AuthStep = 'email' | 'password' | 'two-factor';
-
 const SignInForm = ({ 
   onSwitchToSignUp, 
   onSwitchToForgotPassword 
@@ -21,10 +19,12 @@ const SignInForm = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState<AuthStep>('email');
-  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const [emailValidated, setEmailValidated] = useState(false);
+  const [passwordValidated, setPasswordValidated] = useState(false);
   const [userHas2FA, setUserHas2FA] = useState(false);
-  const [isIn2FAFlow, setIsIn2FAFlow] = useState(false); // New flag to track 2FA flow
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [show2FA, setShow2FA] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -33,29 +33,26 @@ const SignInForm = ({
     try {
       console.log('Checking if email exists:', email);
       
-      // First attempt to sign in with a dummy password to see if user exists
+      // Attempt to sign in with a dummy password to check if user exists
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password: 'dummy-password-for-email-check'
       });
 
-      // If error is "Invalid login credentials", email exists but password is wrong
-      // If error is "User not found", email doesn't exist
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           console.log('Email exists in the system');
-          return { exists: true, has2FA: false };
+          return { exists: true };
         } else {
           console.log('Email does not exist:', error.message);
-          return { exists: false, has2FA: false };
+          return { exists: false };
         }
       }
 
-      // If no error, that's unexpected with dummy password
-      return { exists: true, has2FA: false };
+      return { exists: true };
     } catch (error) {
       console.error('Error checking email:', error);
-      return { exists: false, has2FA: false };
+      return { exists: false };
     }
   };
 
@@ -97,8 +94,9 @@ const SignInForm = ({
       const { exists } = await checkEmailExists(email);
       
       if (exists) {
-        console.log('Email validated, proceeding to password step');
-        setCurrentStep('password');
+        console.log('Email validated, showing password field');
+        setEmailValidated(true);
+        setShowPassword(true);
         toast({
           title: "Email verified",
           description: "Please enter your password.",
@@ -155,14 +153,12 @@ const SignInForm = ({
       // Check if 2FA is enabled for this user
       const has2FA = await checkTwoFactorEnabled(signInData.user.id);
       setUserHas2FA(has2FA);
+      setPasswordValidated(true);
       
       console.log('2FA check result:', has2FA);
       
       if (has2FA) {
-        console.log('=== 2FA REQUIRED - Proceeding to verification step ===');
-        
-        // Set the 2FA flow flag BEFORE signing out
-        setIsIn2FAFlow(true);
+        console.log('=== 2FA REQUIRED - Showing 2FA verification ===');
         
         // Sign out the user since we need 2FA verification first
         await supabase.auth.signOut();
@@ -170,8 +166,8 @@ const SignInForm = ({
         // Store user ID for 2FA verification
         setPendingUserId(signInData.user.id);
         
-        // Switch to 2FA step
-        setCurrentStep('two-factor');
+        // Show 2FA step
+        setShow2FA(true);
         
         toast({
           title: "Two-factor authentication required",
@@ -222,10 +218,7 @@ const SignInForm = ({
       console.log('Sign in completed successfully after 2FA');
       
       // Reset state
-      setCurrentStep('email');
-      setPendingUserId(null);
-      setUserHas2FA(false);
-      setIsIn2FAFlow(false);
+      resetForm();
       
       toast({
         title: "Login successful",
@@ -253,32 +246,40 @@ const SignInForm = ({
     });
   };
 
-  const handleBackToEmail = () => {
-    // Only reset if we're not in the 2FA flow
-    if (!isIn2FAFlow) {
-      setCurrentStep('email');
-      setPendingUserId(null);
-      setUserHas2FA(false);
-      setEmail('');
-      setPassword('');
-    }
-    setIsIn2FAFlow(false);
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setEmailValidated(false);
+    setPasswordValidated(false);
+    setShowPassword(false);
+    setShow2FA(false);
+    setUserHas2FA(false);
+    setPendingUserId(null);
   };
 
-  const handleBackToPassword = () => {
-    setCurrentStep('password');
+  const handleBackToEmail = () => {
+    resetForm();
+  };
+
+  const handleEditEmail = () => {
+    setEmailValidated(false);
+    setShowPassword(false);
+    setShow2FA(false);
     setPassword('');
+    setUserHas2FA(false);
+    setPendingUserId(null);
   };
 
   console.log('=== SignInForm render ===');
-  console.log('Current step:', currentStep);
-  console.log('Email:', email);
+  console.log('Email validated:', emailValidated);
+  console.log('Password validated:', passwordValidated);
+  console.log('Show password:', showPassword);
+  console.log('Show 2FA:', show2FA);
   console.log('Has 2FA:', userHas2FA);
-  console.log('Is in 2FA flow:', isIn2FAFlow);
   console.log('Pending user ID:', pendingUserId);
 
   // Show 2FA verification if we're on that step
-  if (currentStep === 'two-factor' && pendingUserId) {
+  if (show2FA && pendingUserId) {
     console.log('=== Rendering 2FA verification component ===');
     return (
       <div className="w-full max-w-md mx-auto">
@@ -298,69 +299,59 @@ const SignInForm = ({
         <p className="text-gray-600">Log in to continue your speech journey</p>
       </div>
       
-      {/* Email Step */}
-      {currentStep === 'email' && (
-        <form onSubmit={handleEmailSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
+      <form className="space-y-4">
+        {/* Email Field */}
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
+          <div className="flex items-center">
             <input
               id="email"
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
+              className={`flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500 ${
+                emailValidated ? 'bg-gray-50 text-gray-600' : ''
+              }`}
               placeholder="your@email.com"
-              autoFocus
+              readOnly={emailValidated}
+              autoFocus={!emailValidated}
             />
-          </div>
-
-          <ButtonCustom
-            type="submit"
-            variant="magenta"
-            className="w-full py-2"
-            disabled={loading || !email}
-          >
-            {loading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Checking...
-              </span>
-            ) : 'Continue'}
-          </ButtonCustom>
-        </form>
-      )}
-
-      {/* Password Step */}
-      {currentStep === 'password' && (
-        <form onSubmit={handlePasswordSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email-display" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <div className="flex items-center">
-              <input
-                id="email-display"
-                type="email"
-                value={email}
-                readOnly
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
-              />
+            {emailValidated && (
               <button
                 type="button"
-                onClick={handleBackToEmail}
+                onClick={handleEditEmail}
                 className="ml-2 text-pink-600 hover:text-pink-800 text-sm font-medium"
               >
                 Change
               </button>
-            </div>
+            )}
           </div>
-          
+          {!emailValidated && (
+            <ButtonCustom
+              type="submit"
+              variant="magenta"
+              className="w-full py-2 mt-3"
+              disabled={loading || !email}
+              onClick={handleEmailSubmit}
+            >
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Checking...
+                </span>
+              ) : 'Continue'}
+            </ButtonCustom>
+          )}
+        </div>
+
+        {/* Password Field - appears after email validation */}
+        {showPassword && (
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
@@ -376,26 +367,26 @@ const SignInForm = ({
               minLength={6}
               autoFocus
             />
+            <ButtonCustom
+              type="submit"
+              variant="magenta"
+              className="w-full py-2 mt-3"
+              disabled={loading || !password}
+              onClick={handlePasswordSubmit}
+            >
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Verifying...
+                </span>
+              ) : userHas2FA ? 'Continue to 2FA' : 'Log In'}
+            </ButtonCustom>
           </div>
-
-          <ButtonCustom
-            type="submit"
-            variant="magenta"
-            className="w-full py-2"
-            disabled={loading || !password}
-          >
-            {loading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Verifying...
-              </span>
-            ) : userHas2FA ? 'Continue to 2FA' : 'Log In'}
-          </ButtonCustom>
-        </form>
-      )}
+        )}
+      </form>
 
       <div className="mt-6 text-center space-y-2">
         <button
