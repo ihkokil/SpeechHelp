@@ -24,6 +24,7 @@ const SignInForm = ({
   const [currentStep, setCurrentStep] = useState<AuthStep>('email');
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [userHas2FA, setUserHas2FA] = useState(false);
+  const [isIn2FAFlow, setIsIn2FAFlow] = useState(false); // New flag to track 2FA flow
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -160,6 +161,9 @@ const SignInForm = ({
       if (has2FA) {
         console.log('=== 2FA REQUIRED - Proceeding to verification step ===');
         
+        // Set the 2FA flow flag BEFORE signing out
+        setIsIn2FAFlow(true);
+        
         // Sign out the user since we need 2FA verification first
         await supabase.auth.signOut();
         
@@ -221,6 +225,7 @@ const SignInForm = ({
       setCurrentStep('email');
       setPendingUserId(null);
       setUserHas2FA(false);
+      setIsIn2FAFlow(false);
       
       toast({
         title: "Login successful",
@@ -249,11 +254,15 @@ const SignInForm = ({
   };
 
   const handleBackToEmail = () => {
-    setCurrentStep('email');
-    setPendingUserId(null);
-    setUserHas2FA(false);
-    setEmail('');
-    setPassword('');
+    // Only reset if we're not in the 2FA flow
+    if (!isIn2FAFlow) {
+      setCurrentStep('email');
+      setPendingUserId(null);
+      setUserHas2FA(false);
+      setEmail('');
+      setPassword('');
+    }
+    setIsIn2FAFlow(false);
   };
 
   const handleBackToPassword = () => {
@@ -265,6 +274,8 @@ const SignInForm = ({
   console.log('Current step:', currentStep);
   console.log('Email:', email);
   console.log('Has 2FA:', userHas2FA);
+  console.log('Is in 2FA flow:', isIn2FAFlow);
+  console.log('Pending user ID:', pendingUserId);
 
   // Show 2FA verification if we're on that step
   if (currentStep === 'two-factor' && pendingUserId) {
