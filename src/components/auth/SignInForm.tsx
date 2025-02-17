@@ -86,17 +86,20 @@ const SignInForm = ({
       console.log('2FA check result:', has2FA);
       
       if (has2FA) {
-        console.log('=== 2FA REQUIRED - Signing out and showing verification step ===');
+        console.log('=== 2FA REQUIRED - Proceeding to verification step ===');
         
         // Sign out the user since we need 2FA verification first
         await supabase.auth.signOut();
         
-        // Store credentials for later use
+        // Store credentials and user ID for later use
         setPendingCredentials({ email, password });
-        
-        // Set up 2FA verification
         setPendingUserId(signInData.user.id);
+        
+        // Switch to 2FA step BEFORE showing toast to ensure state is set
         setCurrentStep('two-factor');
+        
+        console.log('=== Switched to 2FA step, current step:', 'two-factor');
+        console.log('=== Pending user ID:', signInData.user.id);
         
         toast({
           title: "Two-factor authentication required",
@@ -118,6 +121,11 @@ const SignInForm = ({
       
       // Make sure to sign out in case of error
       await supabase.auth.signOut();
+      
+      // Reset states on error
+      setCurrentStep('credentials');
+      setPendingUserId(null);
+      setPendingCredentials(null);
       
       toast({
         title: "Login failed",
@@ -186,11 +194,15 @@ const SignInForm = ({
     });
   };
 
+  console.log('=== SignInForm render ===');
+  console.log('Current step:', currentStep);
+  console.log('Pending user ID:', pendingUserId);
+
   // Show 2FA verification if we're on that step
   if (currentStep === 'two-factor' && pendingUserId) {
-    console.log('Rendering 2FA verification for user:', pendingUserId);
+    console.log('=== Rendering 2FA verification component ===');
     return (
-      <div className="max-w-md mx-auto">
+      <div className="w-full max-w-md mx-auto">
         <TwoFactorVerification
           userId={pendingUserId}
           onVerificationSuccess={handleTwoFactorSuccess}
@@ -201,7 +213,7 @@ const SignInForm = ({
   }
 
   // Show credentials form
-  console.log('Rendering credentials form, current step:', currentStep);
+  console.log('=== Rendering credentials form ===');
   
   return (
     <>
