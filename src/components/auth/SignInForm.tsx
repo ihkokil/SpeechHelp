@@ -55,11 +55,12 @@ const SignInForm = ({
       
       if (result.success) {
         setPasswordValidated(true);
+        console.log('Password verified, user has 2FA:', userHas2FA);
         
         if (userHas2FA && pendingUserId) {
           // Show 2FA verification
           setShow2FA(true);
-          console.log('Password verified, showing 2FA');
+          console.log('Showing 2FA verification form');
         } else {
           // Direct login without 2FA
           console.log('Login successful without 2FA');
@@ -82,6 +83,10 @@ const SignInForm = ({
 
   const handleTwoFactorSuccess = async () => {
     console.log('2FA verification successful, redirecting to dashboard');
+    toast({
+      title: "Login successful",
+      description: "Welcome back!",
+    });
     setTimeout(() => {
       window.location.href = '/dashboard';
     }, 500);
@@ -91,6 +96,7 @@ const SignInForm = ({
     setShow2FA(false);
     setPasswordValidated(false);
     setPassword('');
+    console.log('2FA cancelled, returning to password step');
   };
 
   const resetForm = () => {
@@ -104,10 +110,6 @@ const SignInForm = ({
     setPendingUserId(null);
   };
 
-  const handleBackToEmail = () => {
-    resetForm();
-  };
-
   const handleEditEmail = () => {
     setEmailValidated(false);
     setShowPassword(false);
@@ -118,7 +120,8 @@ const SignInForm = ({
   };
 
   // Show 2FA verification if we're on that step
-  if (show2FA && pendingUserId) {
+  if (show2FA && passwordValidated && pendingUserId) {
+    console.log('Rendering 2FA component with userId:', pendingUserId);
     return (
       <div className="w-full max-w-md mx-auto">
         <TwoFactorVerification
@@ -189,7 +192,7 @@ const SignInForm = ({
         </div>
 
         {/* Password Field - appears after email validation */}
-        {showPassword && (
+        {showPassword && !show2FA && (
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
@@ -220,7 +223,7 @@ const SignInForm = ({
                   </svg>
                   Verifying...
                 </span>
-              ) : userHas2FA ? 'Continue to 2FA' : 'Log In'}
+              ) : userHas2FA ? 'Proceed to 2FA' : 'Log In'}
             </ButtonCustom>
           </div>
         )}
