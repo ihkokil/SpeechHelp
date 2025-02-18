@@ -1,10 +1,6 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import TwoFactorVerification from './TwoFactorVerification';
 
 interface SignInFormProps {
@@ -25,225 +21,23 @@ const SignInForm = ({
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [show2FA, setShow2FA] = useState(false);
-  
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const checkEmailExists = async (email: string) => {
-    try {
-      console.log('Checking if email exists:', email);
-      
-      // Attempt to sign in with a dummy password to check if user exists
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'dummy-password-for-email-check'
-      });
-
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          console.log('Email exists in the system');
-          return { exists: true };
-        } else {
-          console.log('Email does not exist:', error.message);
-          return { exists: false };
-        }
-      }
-
-      return { exists: true };
-    } catch (error) {
-      console.error('Error checking email:', error);
-      return { exists: false };
-    }
-  };
-
-  const checkTwoFactorEnabled = async (userId: string): Promise<boolean> => {
-    try {
-      console.log('Checking 2FA status for user:', userId);
-      
-      const { data, error } = await supabase
-        .from('user_2fa')
-        .select('is_enabled, secret_key')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      console.log('2FA check result:', { data, error, userId });
-
-      if (error) {
-        console.error('Error checking 2FA status:', error);
-        return false;
-      }
-
-      const isEnabled = data?.is_enabled === true && Boolean(data?.secret_key);
-      console.log('2FA enabled status:', isEnabled);
-      
-      return isEnabled;
-    } catch (error) {
-      console.error('Exception checking 2FA status:', error);
-      return false;
-    }
-  };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-
-    setLoading(true);
-    try {
-      console.log('=== Validating email ===');
-      
-      const { exists } = await checkEmailExists(email);
-      
-      if (exists) {
-        console.log('Email validated, showing password field');
-        setEmailValidated(true);
-        setShowPassword(true);
-        toast({
-          title: "Email verified",
-          description: "Please enter your password.",
-        });
-      } else {
-        toast({
-          title: "Email not found",
-          description: "No account found with this email address.",
-          variant: "destructive"
-        });
-      }
-    } catch (error: any) {
-      console.error('Email validation error:', error);
-      toast({
-        title: "Validation failed",
-        description: "Unable to verify email address.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+    // Email validation logic will be implemented elsewhere
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
-
-    setLoading(true);
-    try {
-      console.log('=== Validating password ===');
-      
-      // Attempt to sign in to validate credentials
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) {
-        console.error('Password validation failed:', signInError);
-        toast({
-          title: "Invalid password",
-          description: "The password you entered is incorrect.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (!signInData.user) {
-        throw new Error('No user returned from sign in');
-      }
-
-      console.log('Password validated, checking 2FA for user:', signInData.user.id);
-      
-      // Check if 2FA is enabled for this user
-      const has2FA = await checkTwoFactorEnabled(signInData.user.id);
-      setUserHas2FA(has2FA);
-      setPasswordValidated(true);
-      
-      console.log('2FA check result:', has2FA);
-      
-      if (has2FA) {
-        console.log('=== 2FA REQUIRED - Showing 2FA verification ===');
-        
-        // Sign out the user since we need 2FA verification first
-        await supabase.auth.signOut();
-        
-        // Store user ID for 2FA verification
-        setPendingUserId(signInData.user.id);
-        
-        // Show 2FA step
-        setShow2FA(true);
-        
-        toast({
-          title: "Two-factor authentication required",
-          description: "Please enter your verification code to continue.",
-        });
-      } else {
-        console.log('=== No 2FA required - User is now logged in ===');
-        
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
-        
-        // Navigate to dashboard since user is already signed in
-        navigate('/dashboard');
-      }
-    } catch (error: any) {
-      console.error('=== Password validation error ===', error);
-      
-      // Make sure to sign out in case of error
-      await supabase.auth.signOut();
-      
-      toast({
-        title: "Login failed",
-        description: error.message || "An error occurred during login",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+    // Password validation logic will be implemented elsewhere
   };
 
   const handleTwoFactorSuccess = async () => {
-    try {
-      console.log('=== 2FA verification successful, completing sign in ===');
-      
-      // Now complete the sign in process
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.error('Final sign in failed:', error);
-        throw error;
-      }
-      
-      console.log('Sign in completed successfully after 2FA');
-      
-      // Reset state
-      resetForm();
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
-      
-      navigate('/dashboard');
-    } catch (error: any) {
-      console.error('Error completing sign in after 2FA:', error);
-      toast({
-        title: "Login failed",
-        description: "Failed to complete sign in after verification.",
-        variant: "destructive"
-      });
-      handleBackToEmail();
-    }
+    // 2FA success logic will be implemented elsewhere
   };
 
   const handleTwoFactorCancel = () => {
-    console.log('=== 2FA verification cancelled ===');
-    handleBackToEmail();
-    toast({
-      title: "Login cancelled",
-      description: "Two-factor authentication was cancelled.",
-    });
+    // 2FA cancel logic will be implemented elsewhere
   };
 
   const resetForm = () => {
@@ -270,17 +64,8 @@ const SignInForm = ({
     setPendingUserId(null);
   };
 
-  console.log('=== SignInForm render ===');
-  console.log('Email validated:', emailValidated);
-  console.log('Password validated:', passwordValidated);
-  console.log('Show password:', showPassword);
-  console.log('Show 2FA:', show2FA);
-  console.log('Has 2FA:', userHas2FA);
-  console.log('Pending user ID:', pendingUserId);
-
   // Show 2FA verification if we're on that step
   if (show2FA && pendingUserId) {
-    console.log('=== Rendering 2FA verification component ===');
     return (
       <div className="w-full max-w-md mx-auto">
         <TwoFactorVerification
