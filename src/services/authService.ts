@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionPlan } from '@/lib/plan_rules.ts';
 
@@ -11,6 +10,136 @@ type ToastProps = {
 
 // Create a type for the showToast function that will be passed in
 type ShowToastFunction = (props: ToastProps) => void;
+
+export const verifyEmail = async (email: string, showToast: ShowToastFunction) => {
+	try {
+		// Check if user exists with this email
+		const { data, error } = await supabase.functions.invoke('verify-email', {
+			body: { email }
+		});
+
+		if (error) {
+			console.error('Email verification error:', error);
+			showToast({
+				title: "Verification failed",
+				description: "Unable to verify email. Please try again.",
+				variant: "destructive"
+			});
+			return { success: false };
+		}
+
+		if (data.userExists) {
+			return { 
+				success: true, 
+				userExists: true, 
+				has2FA: data.has2FA,
+				userId: data.userId 
+			};
+		} else {
+			showToast({
+				title: "Email not found",
+				description: "No account found with this email address.",
+				variant: "destructive"
+			});
+			return { success: false, userExists: false };
+		}
+	} catch (error: any) {
+		console.error('Email verification error:', error);
+		showToast({
+			title: "Verification failed",
+			description: "Unable to verify email. Please try again.",
+			variant: "destructive"
+		});
+		return { success: false };
+	}
+};
+
+export const verifyPassword = async (
+	email: string, 
+	password: string, 
+	showToast: ShowToastFunction
+) => {
+	try {
+		// Attempt to sign in with email and password
+		const { data, error } = await supabase.auth.signInWithPassword({
+			email,
+			password,
+		});
+
+		if (error) {
+			console.error('Password verification error:', error);
+			showToast({
+				title: "Invalid password",
+				description: "The password you entered is incorrect.",
+				variant: "destructive"
+			});
+			return { success: false };
+		}
+
+		if (data.user) {
+			return { 
+				success: true, 
+				user: data.user,
+				session: data.session 
+			};
+		}
+
+		return { success: false };
+	} catch (error: any) {
+		console.error('Password verification error:', error);
+		showToast({
+			title: "Verification failed",
+			description: "Unable to verify password. Please try again.",
+			variant: "destructive"
+		});
+		return { success: false };
+	}
+};
+
+export const verify2FA = async (
+	userId: string,
+	code: string,
+	showToast: ShowToastFunction
+) => {
+	try {
+		const { data, error } = await supabase.functions.invoke('verify-2fa-login', {
+			body: { userId, code }
+		});
+
+		if (error) {
+			console.error('2FA verification error:', error);
+			showToast({
+				title: "Verification failed",
+				description: "Unable to verify 2FA code. Please try again.",
+				variant: "destructive"
+			});
+			return { success: false };
+		}
+
+		if (data.success) {
+			showToast({
+				title: "Login successful",
+				description: "Welcome back!",
+			});
+			return { success: true };
+		} else {
+			showToast({
+				title: "Invalid code",
+				description: "The 2FA code you entered is incorrect.",
+				variant: "destructive"
+			});
+			return { success: false };
+		}
+	} catch (error: any) {
+		console.error('2FA verification error:', error);
+		showToast({
+			title: "Verification failed",
+			description: "Unable to verify 2FA code. Please try again.",
+			variant: "destructive"
+		});
+		return { success: false };
+	}
+};
 
 export const signUp = async (
 	email: string,
