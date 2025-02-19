@@ -70,9 +70,8 @@ const SignInForm = ({
               title: "Login successful",
               description: "Welcome back!",
             });
-            setTimeout(() => {
-              window.location.href = '/dashboard';
-            }, 500);
+            // Let React Router handle the navigation naturally
+            // The AuthContext will detect the login and redirect appropriately
           }
         }
       }
@@ -93,9 +92,8 @@ const SignInForm = ({
         title: "Login successful",
         description: "Welcome back!",
       });
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 500);
+      // Let React Router handle the navigation naturally
+      // The AuthContext will detect the login and redirect appropriately
     }
   };
 
