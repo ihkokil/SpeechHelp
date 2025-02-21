@@ -60,7 +60,9 @@ serve(async (req) => {
 			isModification: requestData.isModification,
 			hasInstruction: !!requestData.instruction,
 			hasExistingSpeech: !!requestData.existingSpeech,
-			speechTitle: requestData.speechTitle
+			speechTitle: requestData.speechTitle,
+			speechType: requestData.speechType,
+			detailsCount: Object.keys(requestData.speechDetails || {}).length
 		}));
 		
 		// Check if this is a modification request or a new speech generation
@@ -94,24 +96,39 @@ async function handleSpeechModification(
 	const { existingSpeech, instruction } = requestData;
 	console.log('Starting speech modification process');
 
-	// Create the system message for speech modification
+	// Create enhanced system message for speech modification
 	const systemMessage: OpenAIMessage = {
 		role: 'system',
-		content: `You are an expert speechwriter tasked with modifying existing speeches.
-    Carefully follow the user's instructions to improve the speech while maintaining its core message and purpose.
-    Preserve the overall structure and key points but apply the requested changes.
-    Return ONLY the modified speech content, no additional commentary.`
+		content: `You are an expert professional speechwriter with decades of experience crafting compelling speeches for all occasions.
+
+MODIFICATION GUIDELINES:
+- Carefully analyze the user's instruction and apply the changes precisely
+- Maintain the original speech's core message, purpose, and emotional impact
+- Preserve the existing structure unless specifically asked to change it
+- Ensure the modified speech flows naturally and maintains coherence
+- Keep the same tone and style unless the instruction specifically requests a change
+- Make sure all modifications enhance rather than detract from the speech's effectiveness
+
+QUALITY STANDARDS:
+- Every sentence should serve a purpose and advance the speech's message
+- Use vivid, engaging language that connects with the audience
+- Ensure smooth transitions between ideas and sections
+- Maintain appropriate pacing and rhythm for spoken delivery
+- Include natural pauses and emphasis points for effective delivery
+
+Return ONLY the complete modified speech content with no additional commentary.`
 	};
 
 	// Create user message with the existing speech and modification instructions
 	const userMessage: OpenAIMessage = {
 		role: 'user',
 		content: `
-INSTRUCTION: ${instruction}
+MODIFICATION INSTRUCTION: ${instruction}
 
-ORIGINAL SPEECH:
+ORIGINAL SPEECH TO MODIFY:
 ${existingSpeech}
-`
+
+Please apply the requested modification while maintaining the speech's quality and effectiveness.`
 	};
 
 	// Prepare the request body
@@ -187,28 +204,51 @@ async function handleSpeechGeneration(
 		);
 	}
 
-	// Create the system message that instructs OpenAI how to generate the speech
+	// Create enhanced system message that ensures high-quality speech generation
 	const systemMessage: OpenAIMessage = {
 		role: 'system',
-		content: `You are an expert speechwriter who creates compelling, professional speeches.
-      Create a speech that follows the user's requirements precisely.
-      Your speech should be authentic, emotionally resonant, and structured for maximum impact.
-      The speech should be well-organized with a clear introduction, body, and conclusion.
-      Adapt your style to match the requested tone, humor level, and formality.`
+		content: `You are a world-class professional speechwriter with expertise in crafting exceptional speeches for all occasions. You have written speeches for presidents, CEOs, wedding parties, and graduation ceremonies.
+
+SPEECH GENERATION EXCELLENCE STANDARDS:
+- Create speeches that are engaging, memorable, and emotionally resonant
+- Use sophisticated yet accessible language appropriate for the occasion
+- Incorporate storytelling techniques, vivid imagery, and compelling narratives
+- Structure speeches with powerful openings, coherent development, and memorable conclusions
+- Adapt tone, style, and content precisely to the audience and occasion
+- Include natural speech patterns, pauses, and emphasis for effective delivery
+- Ensure every element serves the speech's overall purpose and message
+
+DETAILED REQUIREMENTS:
+1. OPENING: Create a compelling hook that immediately captures attention
+2. STRUCTURE: Organize content logically with smooth transitions
+3. CONTENT: Weave in all provided details naturally and meaningfully
+4. LANGUAGE: Use varied sentence structure and engaging vocabulary
+5. EMOTION: Include appropriate emotional moments that resonate with the audience
+6. CONCLUSION: End with a powerful, memorable statement that reinforces the key message
+7. DELIVERY: Write for spoken delivery with natural rhythm and flow
+
+PERSONALIZATION:
+- Incorporate ALL provided questionnaire details meaningfully
+- Reflect the specific speech type and occasion appropriately
+- Match the requested tone, length, and style precisely
+- Include personal anecdotes and stories as provided
+- Address the specific audience mentioned in the details
+
+Generate a complete, professionally crafted speech that exceeds expectations and delivers real impact.`
 	};
 
-	// Generate the user message containing all the speech details
+	// Generate enhanced user message with all speech details
 	const userMessage: OpenAIMessage = {
 		role: 'user',
-		content: createPromptFromDetails(speechTitle, speechType, speechDetails)
+		content: createEnhancedPromptFromDetails(speechTitle, speechType, speechDetails)
 	};
 
-	// Prepare the request body
+	// Prepare the request body with optimized parameters
 	const requestBody: OpenAIRequestBody = {
 		model: MODEL,
 		messages: [systemMessage, userMessage],
-		temperature: 0.7, // Balance between creativity and consistency
-		max_tokens: 4000, // Allow for a substantial speech
+		temperature: 0.8, // Slightly higher for more creativity while maintaining quality
+		max_tokens: 4000, // Allow for substantial speeches
 	};
 
 	console.log('Sending generation request to OpenAI');
@@ -254,44 +294,102 @@ async function handleSpeechGeneration(
 }
 
 /**
- * Creates a detailed prompt for OpenAI based on speech details
+ * Creates an enhanced, detailed prompt for OpenAI based on speech details
  */
-function createPromptFromDetails(
+function createEnhancedPromptFromDetails(
 	speechTitle: string,
 	speechType: string,
 	speechDetails: SpeechDetails
 ): string {
-	// Start with the basic information
-	let prompt = `
-# Speech Generation Request
+	// Analyze the speech details to extract key information
+	const detailsEntries = Object.entries(speechDetails || {});
+	
+	// Categorize the information for better organization
+	const audienceInfo = extractInformation(detailsEntries, ['audience', 'who are you addressing', 'listeners']);
+	const toneInfo = extractInformation(detailsEntries, ['tone', 'mood', 'style', 'feeling']);
+	const lengthInfo = extractInformation(detailsEntries, ['length', 'duration', 'time', 'long']);
+	const personalInfo = extractInformation(detailsEntries, ['story', 'memory', 'experience', 'anecdote', 'personal']);
+	const keyPoints = extractInformation(detailsEntries, ['points', 'topics', 'themes', 'message', 'include']);
+	const contextInfo = extractInformation(detailsEntries, ['occasion', 'event', 'ceremony', 'celebration']);
+
+	// Create comprehensive prompt
+	let prompt = `# SPEECH GENERATION REQUEST
 
 ## CORE INFORMATION
-- Speech Title: "${speechTitle}"
-- Speech Type: ${speechType}
+- **Speech Title**: "${speechTitle}"
+- **Speech Type**: ${speechType}
+- **Primary Occasion**: ${contextInfo || 'As specified in details'}
 
-## USER-PROVIDED DETAILS
-`;
+## AUDIENCE & CONTEXT`;
 
-	// Add all user-provided questionnaire answers
-	Object.entries(speechDetails || {}).forEach(([question, answer]) => {
+	if (audienceInfo) {
+		prompt += `\n- **Target Audience**: ${audienceInfo}`;
+	}
+	
+	if (contextInfo) {
+		prompt += `\n- **Event Context**: ${contextInfo}`;
+	}
+
+	prompt += `\n\n## SPEECH SPECIFICATIONS`;
+
+	if (toneInfo) {
+		prompt += `\n- **Tone & Style**: ${toneInfo}`;
+	}
+
+	if (lengthInfo) {
+		prompt += `\n- **Length Requirements**: ${lengthInfo}`;
+	}
+
+	prompt += `\n\n## CONTENT REQUIREMENTS`;
+
+	if (keyPoints) {
+		prompt += `\n- **Key Points to Include**: ${keyPoints}`;
+	}
+
+	if (personalInfo) {
+		prompt += `\n- **Personal Elements**: ${personalInfo}`;
+	}
+
+	// Add all questionnaire details
+	prompt += `\n\n## DETAILED QUESTIONNAIRE RESPONSES`;
+	detailsEntries.forEach(([question, answer]) => {
 		if (answer && answer.trim()) {
-			prompt += `- ${question}: ${answer}\n`;
+			prompt += `\n- **${question}**: ${answer}`;
 		}
 	});
 
-	// Add detailed instructions
-	prompt += `
-## INSTRUCTIONS
+	// Add specific generation instructions
+	prompt += `\n\n## GENERATION INSTRUCTIONS
 
-Please write a complete, ready-to-deliver speech based on these specifications.
-The speech should be structured for maximum impact with a compelling opening,
-coherent flow between ideas, and a memorable conclusion.
+Please create a complete, professionally crafted speech that:
 
-The speech should feel natural and conversational, with appropriate emotional moments
-and emphasis. It should be authentic and tailored to the audience information provided.
+1. **INCORPORATES ALL PROVIDED DETAILS**: Every questionnaire response should be meaningfully woven into the speech content
+2. **MATCHES THE SPECIFIED TONE**: Ensure the speech reflects the requested emotional tone and style
+3. **ENGAGES THE AUDIENCE**: Write specifically for the mentioned audience with appropriate language and references
+4. **FOLLOWS PROPER STRUCTURE**: Include a compelling opening, well-organized body, and memorable conclusion
+5. **INCLUDES PERSONAL ELEMENTS**: Naturally incorporate any stories, memories, or personal details provided
+6. **MAINTAINS AUTHENTICITY**: Create content that sounds genuine and heartfelt, not artificial or generic
+7. **OPTIMIZES FOR DELIVERY**: Write for spoken presentation with natural rhythm and emphasis points
 
-Please organize the speech with clear sections and paragraphs for easy reading and delivery.
-`;
+The speech should be ready for immediate delivery and should make a lasting impact on the audience.
+
+Generate the complete speech now:`;
 
 	return prompt;
+}
+
+/**
+ * Helper function to extract specific information from questionnaire entries
+ */
+function extractInformation(entries: [string, string][], keywords: string[]): string | null {
+	for (const [question, answer] of entries) {
+		if (answer && answer.trim()) {
+			for (const keyword of keywords) {
+				if (question.toLowerCase().includes(keyword.toLowerCase())) {
+					return answer;
+				}
+			}
+		}
+	}
+	return null;
 }
