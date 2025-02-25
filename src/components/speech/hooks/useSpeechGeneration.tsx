@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generateSpeechFromDetails } from '../utils/speechGenerator';
 import { SpeechDetails } from './useSpeechLabState';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UseSpeechGenerationProps {
 	speechTitle: string;
@@ -17,6 +18,7 @@ export const useSpeechGeneration = ({
 	onSuccess
 }: UseSpeechGenerationProps) => {
 	const { toast } = useToast();
+	const { user, saveSpeech, fetchSpeeches } = useAuth();
 	const [generating, setGenerating] = useState(false);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [generatedSpeech, setGeneratedSpeech] = useState('');
@@ -52,6 +54,15 @@ export const useSpeechGeneration = ({
 			return;
 		}
 
+		if (!user) {
+			toast({
+				title: "Authentication Required",
+				description: "Please sign in to generate and save your speech",
+				variant: "destructive",
+			});
+			return;
+		}
+
 		setGenerating(true);
 		setError(null);
 
@@ -60,15 +71,40 @@ export const useSpeechGeneration = ({
 			const speech = await generateSpeechFromDetails(speechTitle, speechDetails, speechType);
 			setGeneratedSpeech(speech);
 
-			setShowConfetti(true);
-
-			// Save the generated speech to localStorage
+			// Save the generated speech to localStorage (for backup/recovery)
 			localStorage.setItem('generatedSpeech', speech);
 
-			toast({
-				title: "Speech Generated",
-				description: "Your AI-powered speech has been created based on your questionnaire answers",
-			});
+			// Automatically save the speech to the database
+			try {
+				const speechWithMetadata = {
+					content: speech,
+					details: speechDetails || {}
+				};
+				const contentToSave = JSON.stringify(speechWithMetadata);
+				
+				await saveSpeech(speechTitle, contentToSave, speechType);
+				
+				// Refresh speeches list to include the new speech
+				await fetchSpeeches();
+
+				toast({
+					title: "Speech Generated & Saved",
+					description: "Your AI-powered speech has been created and automatically saved to your account",
+				});
+
+				setShowConfetti(true);
+
+			} catch (saveError) {
+				console.error('Error auto-saving speech:', saveError);
+				
+				// Even if save fails, still show success for generation and keep the speech in localStorage
+				toast({
+					title: "Speech Generated",
+					description: "Your speech was generated successfully. You can manually save it in the next step.",
+				});
+				
+				setShowConfetti(true);
+			}
 
 		} catch (error) {
 			console.error('Error generating speech:', error);
