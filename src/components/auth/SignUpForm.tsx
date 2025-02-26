@@ -1,9 +1,9 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 import { User, Mail, Lock, ArrowRight } from 'lucide-react';
+import { signUp } from '@/services/authService';
 
 interface SignUpFormProps {
   onSwitchToSignIn: () => void;
@@ -21,7 +21,6 @@ const SignUpForm = ({
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
   const { toast } = useToast();
   const firstNameInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,12 +51,37 @@ const SignUpForm = ({
 
     try {
       console.log('SignUpForm: Attempting to sign up');
-      await signUp(email, password, firstName, lastName);
+      await signUp(email, password, toast, firstName, lastName);
       console.log('SignUpForm: Sign up successful');
       // Don't navigate automatically - let the user check their email if needed
     } catch (error: any) {
       console.error('SignUpForm: Authentication error:', error);
-      // Error handling is already done in the AuthContext
+      
+      // Handle specific error cases
+      if (error.message && error.message.includes('User already registered')) {
+        toast({
+          title: "Account already exists",
+          description: "An account with this email already exists. Would you like to sign in instead?",
+          variant: "destructive"
+        });
+        // Optionally auto-switch to sign in after a delay
+        setTimeout(() => {
+          onSwitchToSignIn();
+        }, 3000);
+      } else if (error.message && error.message.includes('Password should be at least')) {
+        toast({
+          title: "Password too weak",
+          description: "Password should be at least 6 characters long.",
+          variant: "destructive"
+        });
+      } else {
+        // Generic error handling for other cases
+        toast({
+          title: "Sign up failed",
+          description: error.message || "Unable to create account. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }

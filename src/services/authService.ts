@@ -213,27 +213,23 @@ export const signUp = async (
 		if (res.error) {
 			console.error('Sign up error:', res.error);
 			
-			// Handle specific error types
+			// Handle specific error types with more detailed error messages
 			if (res.error.message.includes('User already registered')) {
-				showToast({
-					title: "Account already exists",
-					description: "An account with this email already exists. Please sign in instead.",
-					variant: "destructive"
-				});
+				const error = new Error('User already registered');
+				error.message = 'User already registered';
+				throw error;
 			} else if (res.error.message.includes('Password should be at least')) {
-				showToast({
-					title: "Password too weak",
-					description: "Password should be at least 6 characters long.",
-					variant: "destructive"
-				});
+				const error = new Error('Password should be at least 6 characters long');
+				error.message = 'Password should be at least 6 characters long';
+				throw error;
+			} else if (res.error.message.includes('Invalid email')) {
+				const error = new Error('Invalid email address');
+				error.message = 'Invalid email address';
+				throw error;
 			} else {
-				showToast({
-					title: "Sign up failed",
-					description: res.error.message,
-					variant: "destructive"
-				});
+				// For any other error, throw the original error
+				throw res.error;
 			}
-			throw res.error;
 		}
 
 		// If user was created successfully, send confirmation email
