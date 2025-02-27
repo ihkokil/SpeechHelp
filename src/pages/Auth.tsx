@@ -21,29 +21,43 @@ const Auth = () => {
   const { toast } = useToast();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
 
-  // Check if the URL contains signup=true or signin=true or hash contains type=recovery
+  // Check for password reset flow
   useEffect(() => {
     const params = new URLSearchParams(location.search);
+    const hash = location.hash;
+    
+    console.log('Auth: Checking URL params and hash:', { params: params.toString(), hash });
+    
+    // Check for recovery flow in hash
+    if (hash) {
+      const hashParams = new URLSearchParams(hash.substring(1));
+      const type = hashParams.get('type');
+      const accessToken = hashParams.get('access_token');
+      
+      console.log('Auth: Hash params - type:', type, 'has access_token:', !!accessToken);
+      
+      if (type === 'recovery' && accessToken) {
+        console.log('Auth: Password recovery flow detected');
+        setIsResetPassword(true);
+        return; // Don't check other conditions if this is a recovery flow
+      }
+    }
+    
+    // Check for signup/signin params only if not in recovery flow
     if (params.get('signup') === 'true') {
+      console.log('Auth: Signup flow detected');
       setIsSignUp(true);
       setAutoFocusFirstName(true);
     } else if (params.get('signin') === 'true') {
+      console.log('Auth: Signin flow detected');
       setIsSignUp(false);
-    }
-
-    // Check for password reset flow
-    if (location.hash) {
-      const hashParams = new URLSearchParams(location.hash.substring(1));
-      if (hashParams.get('type') === 'recovery') {
-        setIsResetPassword(true);
-      }
     }
   }, [location]);
 
-  // Redirect if already logged in (except for reset password flow)
+  // Only redirect if user is logged in AND it's not a password reset flow
   useEffect(() => {
     if (!isLoading && user && !isResetPassword) {
-      console.log('Auth: User is already logged in, redirecting to dashboard');
+      console.log('Auth: User is logged in and not in reset flow, redirecting to dashboard');
       navigate('/dashboard');
     }
   }, [user, navigate, isResetPassword, isLoading]);
@@ -60,7 +74,7 @@ const Auth = () => {
     );
   }
 
-  // Don't render anything if user is logged in (will redirect)
+  // Don't render anything if user is logged in and not in reset flow (will redirect)
   if (user && !isResetPassword) {
     return null;
   }
