@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionPlan } from '@/lib/plan_rules.ts';
 
@@ -298,7 +297,8 @@ export const signUp = async (
 	}
 };
 
-export const resetPassword = async (email: string, showToast: ShowToastFunction) => {
+// Updated OTP-based password reset function
+export const sendPasswordResetOTP = async (email: string, showToast: ShowToastFunction) => {
 	try {
 		// Validate email format
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -308,99 +308,85 @@ export const resetPassword = async (email: string, showToast: ShowToastFunction)
 				description: "Please enter a valid email address.",
 				variant: "destructive"
 			});
-			return;
+			return { success: false };
 		}
 
-		console.log('Starting password reset for:', email);
+		console.log('Sending password reset OTP for:', email);
 		
-		// Call our custom password reset function
-		const { data, error } = await supabase.functions.invoke('send-password-reset', {
-			body: {
-				email: email,
-				resetUrl: `${window.location.origin}/auth?type=recovery`
-			}
+		const { data, error } = await supabase.functions.invoke('send-password-reset-otp', {
+			body: { email: email }
 		});
 
-		console.log('Password reset response:', { data, error });
+		console.log('Password reset OTP response:', { data, error });
 
 		if (error) {
-			console.error('Password reset error:', error);
+			console.error('Password reset OTP error:', error);
 			showToast({
-				title: "Error sending reset email",
-				description: "Failed to send password reset email. Please try again or contact support.",
+				title: "Error sending verification code",
+				description: "Failed to send verification code. Please try again.",
 				variant: "destructive"
 			});
-			throw error;
+			return { success: false };
 		}
 
 		if (data?.success) {
-			// Log the reset link for development/testing
-			if (data.resetLink) {
-				console.log('Password reset link (for testing):', data.resetLink);
+			// Log the OTP for development/testing if provided
+			if (data.otpCode) {
+				console.log('Password reset OTP (for testing):', data.otpCode);
 			}
 			
-			// Show appropriate message based on email service configuration
-			if (data.emailSent) {
-				showToast({
-					title: "Password reset sent",
-					description: "Check your email for password reset instructions.",
-				});
-			} else {
-				showToast({
-					title: "Password reset link generated",
-					description: data.note || "Check your email for password reset instructions. If you don't receive it, please contact support.",
-				});
-			}
+			showToast({
+				title: "Verification code sent",
+				description: "Please check your email for the 6-digit verification code.",
+			});
+			
+			return { success: true };
 		} else {
 			throw new Error(data?.error || 'Unknown error occurred');
 		}
 	} catch (error: any) {
-		console.error('Password reset error:', error);
+		console.error('Password reset OTP error:', error);
 		showToast({
-			title: "Error sending reset email",
-			description: error.message || "Failed to send password reset email. Please try again.",
+			title: "Error sending verification code",
+			description: error.message || "Failed to send verification code. Please try again.",
+			variant: "destructive"
+		});
+		return { success: false };
+	}
+};
+
+// Keep the old resetPassword function for backwards compatibility
+export const resetPassword = async (email: string, showToast: ShowToastFunction) => {
+	return sendPasswordResetOTP(email, showToast);
+};
+
+export const signOut = async (showToast: ShowToastFunction) => {
+	// Clean up local storage first
+	Object.keys(localStorage).forEach((key) => {
+		if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+			localStorage.removeItem(key);
+		}
+	});
+
+	const { error } = await supabase.auth.signOut({ scope: 'global' });
+
+	if (error) {
+		console.error('Sign out error:', error);
+		showToast({
+			title: "Sign out failed",
+			description: error.message,
 			variant: "destructive"
 		});
 		throw error;
 	}
-};
 
-export const signOut = async (showToast: ShowToastFunction) => {
-	try {
-		// Clean up local storage first
-		Object.keys(localStorage).forEach((key) => {
-			if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-				localStorage.removeItem(key);
-			}
-		});
+	showToast({
+		title: "Signed out",
+		description: "You have been signed out successfully.",
+	});
 
-		const { error } = await supabase.auth.signOut({ scope: 'global' });
-
-		if (error) {
-			console.error('Sign out error:', error);
-			showToast({
-				title: "Sign out failed",
-				description: error.message,
-				variant: "destructive"
-			});
-			throw error;
-		}
-
-		showToast({
-			title: "Signed out",
-			description: "You have been signed out successfully.",
-		});
-
-		// Force page reload to ensure clean state
-		setTimeout(() => {
-			window.location.href = '/auth';
-		}, 500);
-	} catch (error) {
-		console.error('Sign out error:', error);
-		// Even if there's an error, try to redirect to clear state
-		setTimeout(() => {
-			window.location.href = '/auth';
-		}, 500);
-		throw error;
-	}
+	// Force page reload to ensure clean state
+	setTimeout(() => {
+		window.location.href = '/auth';
+	}, 500);
 };
