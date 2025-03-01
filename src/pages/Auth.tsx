@@ -28,7 +28,7 @@ const Auth = () => {
     
     console.log('Auth: Checking URL params and hash:', { params: params.toString(), hash });
     
-    // Check for recovery flow in hash
+    // Check for recovery flow in hash - this takes priority
     if (hash) {
       const hashParams = new URLSearchParams(hash.substring(1));
       const type = hashParams.get('type');
@@ -37,22 +37,26 @@ const Auth = () => {
       console.log('Auth: Hash params - type:', type, 'has access_token:', !!accessToken);
       
       if (type === 'recovery' && accessToken) {
-        console.log('Auth: Password recovery flow detected');
+        console.log('Auth: Password recovery flow detected - setting reset password mode');
         setIsResetPassword(true);
+        setIsSignUp(false);
+        setIsForgotPassword(false);
         return; // Don't check other conditions if this is a recovery flow
       }
     }
     
     // Check for signup/signin params only if not in recovery flow
-    if (params.get('signup') === 'true') {
-      console.log('Auth: Signup flow detected');
-      setIsSignUp(true);
-      setAutoFocusFirstName(true);
-    } else if (params.get('signin') === 'true') {
-      console.log('Auth: Signin flow detected');
-      setIsSignUp(false);
+    if (!isResetPassword) {
+      if (params.get('signup') === 'true') {
+        console.log('Auth: Signup flow detected');
+        setIsSignUp(true);
+        setAutoFocusFirstName(true);
+      } else if (params.get('signin') === 'true') {
+        console.log('Auth: Signin flow detected');
+        setIsSignUp(false);
+      }
     }
-  }, [location]);
+  }, [location, isResetPassword]);
 
   // Only redirect if user is logged in AND it's not a password reset flow
   useEffect(() => {
@@ -63,7 +67,7 @@ const Auth = () => {
   }, [user, navigate, isResetPassword, isLoading]);
 
   // Show loading state
-  if (isLoading) {
+  if (isLoading && !isResetPassword) {
     return (
       <AuthContainer>
         <div className="text-center">
@@ -80,10 +84,29 @@ const Auth = () => {
   }
 
   // Handle form transitions
-  const handleSwitchToSignUp = () => setIsSignUp(true);
-  const handleSwitchToSignIn = () => setIsSignUp(false);
-  const handleSwitchToForgotPassword = () => setIsForgotPassword(true);
-  const handleBackToLogin = () => setIsForgotPassword(false);
+  const handleSwitchToSignUp = () => {
+    setIsSignUp(true);
+    setIsResetPassword(false);
+    setIsForgotPassword(false);
+  };
+  
+  const handleSwitchToSignIn = () => {
+    setIsSignUp(false);
+    setIsResetPassword(false);
+    setIsForgotPassword(false);
+  };
+  
+  const handleSwitchToForgotPassword = () => {
+    setIsForgotPassword(true);
+    setIsSignUp(false);
+    setIsResetPassword(false);
+  };
+  
+  const handleBackToLogin = () => {
+    setIsForgotPassword(false);
+    setIsSignUp(false);
+    setIsResetPassword(false);
+  };
 
   return (
     <AuthContainer>
