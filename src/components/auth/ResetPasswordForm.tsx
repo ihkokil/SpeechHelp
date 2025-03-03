@@ -14,11 +14,12 @@ const ResetPasswordForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const [errorDetails, setErrorDetails] = useState<string>('');
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Simplified recovery session validation
+  // Enhanced recovery session validation with better error handling
   const validateRecoverySession = async () => {
     console.log('ResetPassword: Starting session validation');
     console.log('ResetPassword: Full URL:', window.location.href);
@@ -26,42 +27,63 @@ const ResetPasswordForm = () => {
     console.log('ResetPassword: Search:', location.search);
     
     try {
-      // First, let's check if we have any recovery indicators in the URL
-      const hasRecoveryType = location.search.includes('type=recovery') || location.hash.includes('type=recovery');
-      const hasAccessToken = location.hash.includes('access_token=') || location.search.includes('access_token=');
+      // Check for recovery indicators in URL
+      const fullUrl = window.location.href;
+      const hasRecoveryType = fullUrl.includes('type=recovery');
+      const hasToken = fullUrl.includes('token=');
       
-      console.log('ResetPassword: Recovery indicators:', { hasRecoveryType, hasAccessToken });
+      console.log('ResetPassword: Recovery indicators:', { 
+        hasRecoveryType, 
+        hasToken,
+        fullUrl
+      });
       
       if (!hasRecoveryType) {
         console.log('ResetPassword: No recovery type found in URL');
+        setErrorDetails('No recovery type found in URL');
         throw new Error('No recovery type found');
+      }
+
+      if (!hasToken) {
+        console.log('ResetPassword: No token found in URL');
+        setErrorDetails('No token found in URL');
+        throw new Error('No token found');
       }
 
       // Try to get the current session first
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log('ResetPassword: Current session:', { session: !!session, error: sessionError });
+      console.log('ResetPassword: Current session check:', { 
+        hasSession: !!session, 
+        sessionError,
+        userId: session?.user?.id 
+      });
 
       if (session && session.user) {
-        console.log('ResetPassword: Valid session found');
+        console.log('ResetPassword: Valid session found for user:', session.user.id);
         setIsValidSession(true);
         return;
       }
 
-      // If no session but we have hash parameters, try to extract and set tokens
-      if (location.hash) {
-        const hashParams = new URLSearchParams(location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        const type = hashParams.get('type');
-        
-        console.log('ResetPassword: Hash tokens:', { 
-          type, 
-          hasAccessToken: !!accessToken, 
-          hasRefreshToken: !!refreshToken 
-        });
-        
-        if (type === 'recovery' && accessToken) {
-          console.log('ResetPassword: Setting session from hash tokens');
+      // If no session, try to handle the URL tokens
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(location.hash.substring(1));
+      
+      // Get tokens from either URL params or hash
+      const accessToken = urlParams.get('access_token') || hashParams.get('access_token');
+      const refreshToken = urlParams.get('refresh_token') || hashParams.get('refresh_token');
+      const tokenHash = urlParams.get('token') || hashParams.get('token');
+      const type = urlParams.get('type') || hashParams.get('type');
+      
+      console.log('ResetPassword: Extracted tokens:', { 
+        type, 
+        hasAccessToken: !!accessToken, 
+        hasRefreshToken: !!refreshToken,
+        hasTokenHash: !!tokenHash
+      });
+      
+      if (type === 'recovery') {
+        if (accessToken) {
+          console.log('ResetPassword: Setting session from tokens');
           
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
@@ -70,33 +92,40 @@ const ResetPasswordForm = () => {
           
           if (error) {
             console.error('ResetPassword: Error setting session:', error);
+            setErrorDetails(`Session error: ${error.message}`);
             throw error;
           }
           
           if (data.session) {
-            console.log('ResetPassword: Session set successfully');
+            console.log('ResetPassword: Session set successfully for user:', data.session.user.id);
             setIsValidSession(true);
             return;
           }
+        } else if (tokenHash) {
+          // This might be a direct Supabase verify link
+          console.log('ResetPassword: Direct verify link detected, allowing password reset');
+          setIsValidSession(true);
+          return;
         }
       }
       
-      // If we still don't have a valid session, this might be a direct link
-      // In some cases, Supabase automatically handles the session
-      console.log('ResetPassword: No valid session, but recovery type detected');
-      setIsValidSession(true); // Allow password reset if recovery type is present
+      // If we reach here, we couldn't establish a valid session
+      console.log('ResetPassword: Could not establish valid recovery session');
+      setErrorDetails('Could not establish valid recovery session');
+      throw new Error('Invalid or expired reset link');
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('ResetPassword: Session validation error:', error);
+      setErrorDetails(error.message || 'Unknown validation error');
       toast({
         title: "Invalid reset link",
-        description: "This password reset link is invalid or has expired. Please request a new one.",
+        description: `This password reset link is invalid or has expired: ${error.message}`,
         variant: "destructive"
       });
       
       setTimeout(() => {
         navigate('/auth');
-      }, 2000);
+      }, 3000);
     } finally {
       setIsChecking(false);
     }
@@ -185,6 +214,9 @@ const ResetPasswordForm = () => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Verifying Reset Link</h1>
           <p className="text-gray-600">Please wait while we verify your password reset link...</p>
+          {errorDetails && (
+            <p className="text-sm text-red-600 mt-2">Debug: {errorDetails}</p>
+          )}
         </div>
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600 mx-auto"></div>
@@ -199,6 +231,9 @@ const ResetPasswordForm = () => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Invalid Reset Link</h1>
           <p className="text-gray-600">This reset link is invalid or has expired.</p>
+          {errorDetails && (
+            <p className="text-sm text-red-600 mt-2">Error details: {errorDetails}</p>
+          )}
         </div>
         <div className="text-center">
           <ButtonCustom
