@@ -15,6 +15,7 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
+  const [isRecoveryFlowDetected, setIsRecoveryFlowDetected] = useState(false);
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,8 +36,28 @@ const Auth = () => {
     return hasRecoveryType;
   };
 
-  // Check for password reset flow
+  // Check for password reset flow FIRST - this must happen before any other logic
   useEffect(() => {
+    const isRecoveryFlow = detectRecoveryFlow();
+    console.log('Auth: Initial recovery flow check:', isRecoveryFlow);
+    
+    if (isRecoveryFlow) {
+      console.log('Auth: Recovery flow detected, setting reset password mode');
+      setIsResetPassword(true);
+      setIsRecoveryFlowDetected(true);
+      setIsSignUp(false);
+      setIsForgotPassword(false);
+    } else {
+      setIsRecoveryFlowDetected(false);
+    }
+  }, []); // Only run once on mount
+
+  // Check for other URL parameters only if not in recovery flow
+  useEffect(() => {
+    if (isRecoveryFlowDetected) {
+      return; // Skip if we're in recovery flow
+    }
+
     const params = new URLSearchParams(location.search);
     
     console.log('Auth: URL change detected:', { 
@@ -46,38 +67,37 @@ const Auth = () => {
       fullUrl: window.location.href
     });
     
-    // Check for recovery flow first - this takes priority
+    // Check for recovery flow again on URL changes
     if (detectRecoveryFlow()) {
-      console.log('Auth: Setting reset password mode');
+      console.log('Auth: Recovery flow detected on URL change, setting reset password mode');
       setIsResetPassword(true);
+      setIsRecoveryFlowDetected(true);
       setIsSignUp(false);
       setIsForgotPassword(false);
       return;
     }
     
     // Check for signup/signin params only if not in recovery flow
-    if (!isResetPassword) {
-      if (params.get('signup') === 'true') {
-        console.log('Auth: Signup flow detected');
-        setIsSignUp(true);
-        setAutoFocusFirstName(true);
-      } else if (params.get('signin') === 'true') {
-        console.log('Auth: Signin flow detected');
-        setIsSignUp(false);
-      }
+    if (params.get('signup') === 'true') {
+      console.log('Auth: Signup flow detected');
+      setIsSignUp(true);
+      setAutoFocusFirstName(true);
+    } else if (params.get('signin') === 'true') {
+      console.log('Auth: Signin flow detected');
+      setIsSignUp(false);
     }
-  }, [location, isResetPassword]);
+  }, [location, isRecoveryFlowDetected]);
 
-  // Only redirect if user is logged in AND it's not a password reset flow
+  // Only redirect if user is logged in AND it's not a password reset flow AND recovery flow is not detected
   useEffect(() => {
-    if (!isLoading && user && !isResetPassword) {
+    if (!isLoading && user && !isResetPassword && !isRecoveryFlowDetected) {
       console.log('Auth: User is logged in and not in reset flow, redirecting to dashboard');
       navigate('/dashboard');
     }
-  }, [user, navigate, isResetPassword, isLoading]);
+  }, [user, navigate, isResetPassword, isLoading, isRecoveryFlowDetected]);
 
-  // Show loading state
-  if (isLoading && !isResetPassword) {
+  // Show loading state (but not during reset flow as it has its own loading)
+  if (isLoading && !isResetPassword && !isRecoveryFlowDetected) {
     return (
       <AuthContainer>
         <div className="text-center">
@@ -89,7 +109,7 @@ const Auth = () => {
   }
 
   // Don't render anything if user is logged in and not in reset flow (will redirect)
-  if (user && !isResetPassword) {
+  if (user && !isResetPassword && !isRecoveryFlowDetected) {
     return null;
   }
 
@@ -120,7 +140,7 @@ const Auth = () => {
 
   return (
     <AuthContainer>
-      {isResetPassword ? (
+      {isResetPassword || isRecoveryFlowDetected ? (
         <ResetPasswordForm />
       ) : isForgotPassword ? (
         <ForgotPasswordForm onBackToLogin={handleBackToLogin} />
