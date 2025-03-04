@@ -19,7 +19,7 @@ const ResetPasswordForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Enhanced recovery session validation with better error handling
+  // Enhanced recovery session validation with proper token handling
   const validateRecoverySession = async () => {
     console.log('ResetPassword: Starting session validation');
     console.log('ResetPassword: Full URL:', window.location.href);
@@ -27,51 +27,35 @@ const ResetPasswordForm = () => {
     console.log('ResetPassword: Search:', location.search);
     
     try {
-      // Check for recovery indicators in URL
       const fullUrl = window.location.href;
-      const hasRecoveryType = fullUrl.includes('type=recovery');
-      const hasToken = fullUrl.includes('token=');
       
-      console.log('ResetPassword: Recovery indicators:', { 
-        hasRecoveryType, 
-        hasToken,
+      // Check for Supabase recovery tokens
+      const hasAccessToken = fullUrl.includes('access_token=');
+      const hasRefreshToken = fullUrl.includes('refresh_token=');
+      const hasTokenHash = fullUrl.includes('token_hash=');
+      const hasRecoveryType = fullUrl.includes('type=recovery');
+      
+      console.log('ResetPassword: Token detection:', { 
+        hasAccessToken, 
+        hasRefreshToken,
+        hasTokenHash,
+        hasRecoveryType,
         fullUrl
       });
       
-      if (!hasRecoveryType) {
-        console.log('ResetPassword: No recovery type found in URL');
-        setErrorDetails('No recovery type found in URL');
-        throw new Error('No recovery type found');
+      if (!hasAccessToken && !hasTokenHash) {
+        console.log('ResetPassword: No recovery tokens found in URL');
+        setErrorDetails('No recovery tokens found in URL');
+        throw new Error('No recovery tokens found');
       }
 
-      if (!hasToken) {
-        console.log('ResetPassword: No token found in URL');
-        setErrorDetails('No token found in URL');
-        throw new Error('No token found');
-      }
-
-      // Try to get the current session first
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log('ResetPassword: Current session check:', { 
-        hasSession: !!session, 
-        sessionError,
-        userId: session?.user?.id 
-      });
-
-      if (session && session.user) {
-        console.log('ResetPassword: Valid session found for user:', session.user.id);
-        setIsValidSession(true);
-        return;
-      }
-
-      // If no session, try to handle the URL tokens
+      // Extract tokens from URL (can be in search params or hash)
       const urlParams = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(location.hash.substring(1));
       
-      // Get tokens from either URL params or hash
       const accessToken = urlParams.get('access_token') || hashParams.get('access_token');
       const refreshToken = urlParams.get('refresh_token') || hashParams.get('refresh_token');
-      const tokenHash = urlParams.get('token') || hashParams.get('token');
+      const tokenHash = urlParams.get('token_hash') || hashParams.get('token_hash');
       const type = urlParams.get('type') || hashParams.get('type');
       
       console.log('ResetPassword: Extracted tokens:', { 
@@ -80,33 +64,42 @@ const ResetPasswordForm = () => {
         hasRefreshToken: !!refreshToken,
         hasTokenHash: !!tokenHash
       });
-      
-      if (type === 'recovery') {
-        if (accessToken) {
-          console.log('ResetPassword: Setting session from tokens');
-          
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken || ''
-          });
-          
-          if (error) {
-            console.error('ResetPassword: Error setting session:', error);
-            setErrorDetails(`Session error: ${error.message}`);
-            throw error;
-          }
-          
-          if (data.session) {
-            console.log('ResetPassword: Session set successfully for user:', data.session.user.id);
-            setIsValidSession(true);
-            return;
-          }
-        } else if (tokenHash) {
-          // This might be a direct Supabase verify link
-          console.log('ResetPassword: Direct verify link detected, allowing password reset');
+
+      // If we have access token, try to set the session
+      if (accessToken) {
+        console.log('ResetPassword: Setting session from access token');
+        
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || ''
+        });
+        
+        if (error) {
+          console.error('ResetPassword: Error setting session:', error);
+          setErrorDetails(`Session error: ${error.message}`);
+          throw error;
+        }
+        
+        if (data.session) {
+          console.log('ResetPassword: Session set successfully for user:', data.session.user.id);
           setIsValidSession(true);
           return;
         }
+      }
+
+      // If we have token hash, it might be a direct recovery link
+      if (tokenHash && type === 'recovery') {
+        console.log('ResetPassword: Direct recovery link detected with token hash');
+        setIsValidSession(true);
+        return;
+      }
+
+      // Check if we already have a valid session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (session && session.user) {
+        console.log('ResetPassword: Valid existing session found for user:', session.user.id);
+        setIsValidSession(true);
+        return;
       }
       
       // If we reach here, we couldn't establish a valid session

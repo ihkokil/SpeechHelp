@@ -22,7 +22,7 @@ const Auth = () => {
   const { toast } = useToast();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
 
-  // Enhanced function to detect recovery flow
+  // Enhanced function to detect recovery flow - check for actual Supabase recovery tokens
   const detectRecoveryFlow = () => {
     const fullUrl = window.location.href;
     const searchParams = location.search;
@@ -34,23 +34,24 @@ const Auth = () => {
       hashParams 
     });
     
-    // Check multiple ways the recovery type can be present
-    const hasRecoveryInSearch = searchParams.includes('type=recovery');
-    const hasRecoveryInHash = hashParams.includes('type=recovery');
-    const hasRecoveryInUrl = fullUrl.includes('type=recovery');
-    const hasTokenInUrl = fullUrl.includes('token=');
+    // Check for actual Supabase recovery tokens
+    const hasAccessToken = fullUrl.includes('access_token=') || hashParams.includes('access_token=');
+    const hasRefreshToken = fullUrl.includes('refresh_token=') || hashParams.includes('refresh_token=');
+    const hasTokenHash = fullUrl.includes('token_hash=') || hashParams.includes('token_hash=');
+    const hasRecoveryType = fullUrl.includes('type=recovery') || hashParams.includes('type=recovery');
     
-    const isRecoveryFlow = hasRecoveryInSearch || hasRecoveryInHash || hasRecoveryInUrl;
+    // Also check if this is coming from a password reset email link
+    const isPasswordResetLink = hasAccessToken && (hasRecoveryType || hasTokenHash);
     
-    console.log('Auth: Recovery detection:', {
-      hasRecoveryInSearch,
-      hasRecoveryInHash, 
-      hasRecoveryInUrl,
-      hasTokenInUrl,
-      isRecoveryFlow
+    console.log('Auth: Recovery detection details:', {
+      hasAccessToken,
+      hasRefreshToken,
+      hasTokenHash,
+      hasRecoveryType,
+      isPasswordResetLink
     });
     
-    return isRecoveryFlow;
+    return isPasswordResetLink;
   };
 
   // Check for password reset flow FIRST - this must happen before any other logic
