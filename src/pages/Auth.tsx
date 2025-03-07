@@ -21,6 +21,31 @@ const Auth = () => {
   const { toast } = useToast();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
 
+  // Handle form transitions - declare these functions first
+  const handleSwitchToSignUp = () => {
+    setIsSignUp(true);
+    setIsForgotPassword(false);
+    setIsPasswordReset(false);
+  };
+  
+  const handleSwitchToSignIn = () => {
+    setIsSignUp(false);
+    setIsForgotPassword(false);
+    setIsPasswordReset(false);
+  };
+  
+  const handleSwitchToForgotPassword = () => {
+    setIsForgotPassword(true);
+    setIsSignUp(false);
+    setIsPasswordReset(false);
+  };
+  
+  const handleBackToLogin = () => {
+    setIsForgotPassword(false);
+    setIsSignUp(false);
+    setIsPasswordReset(false);
+  };
+
   // Check for URL parameters - this needs to run first to prevent redirect
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -102,31 +127,6 @@ const Auth = () => {
   if (user) {
     return null;
   }
-
-  // Handle form transitions
-  const handleSwitchToSignUp = () => {
-    setIsSignUp(true);
-    setIsForgotPassword(false);
-    setIsPasswordReset(false);
-  };
-  
-  const handleSwitchToSignIn = () => {
-    setIsSignUp(false);
-    setIsForgotPassword(false);
-    setIsPasswordReset(false);
-  };
-  
-  const handleSwitchToForgotPassword = () => {
-    setIsForgotPassword(true);
-    setIsSignUp(false);
-    setIsPasswordReset(false);
-  };
-  
-  const handleBackToLogin = () => {
-    setIsForgotPassword(false);
-    setIsSignUp(false);
-    setIsPasswordReset(false);
-  };
 
   return (
     <AuthContainer>
