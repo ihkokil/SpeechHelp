@@ -190,11 +190,11 @@ export const sendPasswordReset = async (
 	try {
 		console.log('Password reset: Starting password reset for:', email);
 		
-		// Call our edge function to send the password reset email
+		// Call our edge function to send the password reset email with custom URL
 		const { data, error } = await supabase.functions.invoke('send-password-reset', {
 			body: { 
 				email,
-				resetUrl: `${window.location.origin}/auth?type=recovery`
+				resetUrl: `${window.location.origin}/auth` // Don't include type param here
 			}
 		});
 

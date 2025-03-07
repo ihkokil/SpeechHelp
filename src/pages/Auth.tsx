@@ -21,7 +21,7 @@ const Auth = () => {
   const { toast } = useToast();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
 
-  // Check for URL parameters
+  // Check for URL parameters - this needs to run first to prevent redirect
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const hash = window.location.hash;
@@ -34,16 +34,22 @@ const Auth = () => {
       fullUrl: window.location.href
     });
     
-    // Check if this is a password reset link
+    // Check if this is a password reset link - prioritize URL params over hash
     const type = params.get('type') || hashParams.get('type');
-    const access_token = hashParams.get('access_token') || params.get('access_token');
+    const access_token = params.get('access_token') || hashParams.get('access_token');
+    const refresh_token = params.get('refresh_token') || hashParams.get('refresh_token');
     
-    if (type === 'recovery' && access_token) {
+    // Handle password reset flow FIRST - this takes priority
+    if (type === 'recovery' && access_token && refresh_token) {
       console.log('Auth: Password reset flow detected');
       setIsPasswordReset(true);
       setIsSignUp(false);
       setIsForgotPassword(false);
-    } else if (params.get('signup') === 'true') {
+      return; // Exit early to prevent other flows
+    }
+    
+    // Only check other flows if it's not a password reset
+    if (params.get('signup') === 'true') {
       console.log('Auth: Signup flow detected');
       setIsSignUp(true);
       setAutoFocusFirstName(true);
@@ -57,16 +63,22 @@ const Auth = () => {
     }
   }, [location]);
 
-  // Redirect if user is logged in
+  // Redirect if user is logged in - but NOT during password reset
   useEffect(() => {
-    if (!isLoading && user && !isPasswordReset) {
+    // Don't redirect during password reset flow
+    if (isPasswordReset) {
+      console.log('Auth: Password reset in progress, not redirecting');
+      return;
+    }
+    
+    if (!isLoading && user) {
       console.log('Auth: User is logged in, redirecting to dashboard');
       navigate('/dashboard');
     }
   }, [user, navigate, isLoading, isPasswordReset]);
 
   // Show loading state
-  if (isLoading) {
+  if (isLoading && !isPasswordReset) {
     return (
       <AuthContainer>
         <div className="text-center">
@@ -77,8 +89,17 @@ const Auth = () => {
     );
   }
 
-  // Don't render anything if user is logged in (will redirect) unless it's password reset
-  if (user && !isPasswordReset) {
+  // For password reset, always show the form regardless of user state
+  if (isPasswordReset) {
+    return (
+      <AuthContainer>
+        <PasswordResetForm onBackToLogin={handleBackToLogin} />
+      </AuthContainer>
+    );
+  }
+
+  // Don't render anything if user is logged in (will redirect)
+  if (user) {
     return null;
   }
 
@@ -109,9 +130,7 @@ const Auth = () => {
 
   return (
     <AuthContainer>
-      {isPasswordReset ? (
-        <PasswordResetForm onBackToLogin={handleBackToLogin} />
-      ) : isForgotPassword ? (
+      {isForgotPassword ? (
         <ForgotPasswordForm onBackToLogin={handleBackToLogin} />
       ) : isSignUp ? (
         <SignUpForm 
