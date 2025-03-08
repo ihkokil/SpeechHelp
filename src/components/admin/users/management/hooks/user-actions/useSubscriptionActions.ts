@@ -1,98 +1,55 @@
-
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { SubscriptionPlan } from '@/lib/plan_rules';
 
-export const useSubscriptionActions = () => {
+export const useSubscriptionActions = (
+  setActionLoading?: (isLoading: boolean) => void
+) => {
   const { toast } = useToast();
-  const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Toggle user active status
   const handleToggleUserStatus = useCallback(async (
     userId: string, 
     isActive: boolean,
-    users: User[] = [], 
-    setUsers: ((users: User[]) => void) | null = null
+    users: User[], 
+    setUsers: (users: User[]) => void
   ) => {
     if (!userId) return;
     
-    setIsActionLoading(true);
+    if (setActionLoading) setActionLoading(true);
     
     try {
       console.log(`Toggling user status: ${userId} to ${!isActive}`);
       
-      // Since we can't directly access user_metadata from profiles table,
-      // we'll use any name data from our users array if available
-      let displayName = '';
-      let phoneNumber = '';
-      
-      // Check if we have this user in our local state
-      const currentUser = users.find(user => user.id === userId);
-      if (currentUser) {
-        // Get display name and phone from the user object
-        displayName = currentUser.user_metadata?.name || 
-                      currentUser.user_metadata?.full_name || 
-                      currentUser.email.split('@')[0] || '';
-        phoneNumber = currentUser.user_metadata?.phone || '';
-      } else {
-        // If user not in local state, get profile data from auth users via function
-        try {
-          const { data: userData, error: funcError } = await supabase.functions.invoke('fetch-users', {
-            method: 'GET'
-          });
-          
-          if (!funcError && userData?.users) {
-            const authUser = userData.users.find((u: any) => u.id === userId);
-            if (authUser) {
-              displayName = authUser.profile?.username || 
-                           authUser.user_metadata?.name || 
-                           authUser.user_metadata?.full_name || 
-                           authUser.email?.split('@')[0] || '';
-              phoneNumber = authUser.profile?.phone || authUser.user_metadata?.phone || '';
-            }
-          }
-        } catch (funcError) {
-          console.error('Error fetching user data from function:', funcError);
-        }
-      }
-      
       // Update the user's active status in the database
-      const { data, error } = await supabase.rpc('admin_update_user_profile', {
-        user_id_param: userId,
-        display_name: displayName,
-        user_email: '', // Not changing email
-        phone_number: phoneNumber,
-        is_active_status: !isActive
-      });
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ is_active: !isActive })
+        .eq('id', userId)
+        .select()
+        .single();
       
       if (error) {
         throw error;
       }
       
-      console.log('Toggle user status response:', data);
-      
-      // Update local state if setUsers is provided
-      if (setUsers && users.length > 0) {
-        setUsers(
-          users.map(user => 
-            user.id === userId 
-              ? { ...user, is_active: !isActive } 
-              : user
-          )
-        );
-      }
+      // Update local state
+      setUsers(
+        users.map(user => 
+          user.id === userId 
+            ? { ...user, is_active: !isActive } 
+            : user
+        )
+      );
       
       toast({
         title: `User ${!isActive ? 'Activated' : 'Deactivated'}`,
         description: `User has been ${!isActive ? 'activated' : 'deactivated'} successfully.`,
       });
-
-      // Refresh the page to ensure data consistency
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
       
+      return data;
     } catch (error) {
       console.error('Error toggling user status:', error);
       toast({
@@ -101,64 +58,82 @@ export const useSubscriptionActions = () => {
         variant: 'destructive',
       });
     } finally {
-      setIsActionLoading(false);
+      if (setActionLoading) setActionLoading(false);
     }
   }, [toast]);
 
-  // Update user subscription
-  const handleUpdateSubscription = useCallback(async (
+  // Toggle user subscription status with days
+  const handleToggleUserSubscription = useCallback(async (
     userId: string, 
-    subscriptionTier: string, 
-    subscriptionEndDate: Date,
-    users: User[] = [], 
-    setUsers: ((users: User[]) => void) | null = null
+    days: number = 30, 
+    users: User[],
+    setUsers: (users: User[]) => void
   ) => {
     if (!userId) return;
     
-    setIsActionLoading(true);
+    if (setActionLoading) setActionLoading(true);
     
     try {
-      console.log(`Updating subscription for user ${userId}: tier=${subscriptionTier}, end date=${subscriptionEndDate.toISOString()}`);
+      console.log(`Toggling user subscription: ${userId} for ${days} days`);
       
-      // Call the RPC function to update subscription details
-      const { data, error } = await supabase.rpc('update_user_subscription', {
-        user_id: userId,
-        plan: subscriptionTier,
-        end_date: subscriptionEndDate.toISOString()
-      });
+      // Get current user
+      const user = users.find(u => u.id === userId);
+      if (!user) throw new Error('User not found');
+      
+      // Calculate end date - either extend current or create new
+      const currentDate = new Date();
+      let endDate = new Date();
+      
+      if (user.subscription_end_date) {
+        endDate = new Date(user.subscription_end_date);
+        if (endDate < currentDate) {
+          endDate = new Date();
+        }
+      }
+      
+      // Add specified days
+      endDate.setDate(endDate.getDate() + days);
+      
+      // Update subscription status in the database
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ 
+          subscription_plan: 'premium', 
+          subscription_tier: 'premium',
+          subscription_status: 'active',
+          subscription_end_date: endDate.toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select()
+        .single();
       
       if (error) {
+        console.error('Error updating subscription:', error);
         throw error;
       }
       
-      console.log('Subscription update response:', data);
-      
-      // Update local state if setUsers is provided
-      if (setUsers && users.length > 0) {
-        setUsers(
-          users.map(user => 
-            user.id === userId 
-              ? { 
-                  ...user, 
-                  subscription_status: 'active',
-                  subscription_plan: subscriptionTier,
-                  subscription_end_date: subscriptionEndDate.toISOString() 
-                } 
-              : user
-          )
-        );
-      }
+      // Update local state
+      setUsers(
+        users.map(user => 
+          user.id === userId 
+            ? { 
+                ...user, 
+                subscription_status: 'active',
+                subscription_plan: 'premium',
+                subscription_tier: 'premium',
+                subscription_end_date: endDate.toISOString() 
+              } 
+            : user
+        )
+      );
       
       toast({
         title: 'Subscription Updated',
-        description: `User's subscription has been updated to ${subscriptionTier} plan.`,
+        description: `User's subscription has been extended by ${days} days.`,
       });
       
-      // Refresh the page to ensure data consistency
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-      
+      return data;
     } catch (error) {
       console.error('Error updating subscription:', error);
       toast({
@@ -166,14 +141,127 @@ export const useSubscriptionActions = () => {
         description: 'Failed to update subscription. Please try again.',
         variant: 'destructive',
       });
+      return null;
     } finally {
-      setIsActionLoading(false);
+      if (setActionLoading) setActionLoading(false);
+    }
+  }, [toast]);
+
+  // Update user subscription with custom plan and end date
+  const handleUpdateUserSubscription = useCallback(async (
+    userId: string,
+    planType: SubscriptionPlan,
+    endDate: Date,
+    users: User[],
+    setUsers: (users: User[]) => void
+  ) => {
+    if (!userId) {
+      console.error('No userId provided to handleUpdateUserSubscription');
+      return null;
+    }
+    
+    if (setActionLoading) setActionLoading(true);
+    
+    try {
+      // Validate inputs to avoid errors
+      if (!Object.values(SubscriptionPlan).includes(planType)) {
+        console.error(`Invalid plan type: ${planType}`);
+        throw new Error(`Invalid plan type: ${planType}`);
+      }
+
+      if (!endDate || isNaN(endDate.getTime())) {
+        console.error('Invalid end date provided:', endDate);
+        throw new Error('Please select a valid end date');
+      }
+
+      // Make sure the date is in the future
+      const now = new Date();
+      if (endDate <= now) {
+        console.error('End date must be in the future:', endDate);
+        throw new Error('End date must be in the future');
+      }
+      
+      console.log(`Updating user subscription: ${userId} to plan ${planType} until ${endDate.toISOString()}`);
+      
+      // Format the end date correctly to avoid timezone issues
+      const formattedEndDate = endDate.toISOString();
+      console.log(`Formatted end date: ${formattedEndDate}`);
+      
+      // Create update payload with all required fields
+      const updatePayload = {
+        subscription_plan: planType,
+        subscription_tier: planType,
+        subscription_status: 'active',
+        subscription_end_date: formattedEndDate,
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('Update payload:', updatePayload);
+      
+      // Update subscription in the database
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updatePayload)
+        .eq('id', userId)
+        .select();
+      
+      if (error) {
+        console.error('Database error updating subscription:', error);
+        throw error;
+      }
+      
+      if (!data || data.length === 0) {
+        console.error('No data returned after update');
+        throw new Error('No data returned after update');
+      }
+      
+      console.log('Update successful, returned data:', data);
+      
+      // Update local state with all updated fields
+      setUsers(
+        users.map(user => 
+          user.id === userId 
+            ? { 
+                ...user, 
+                subscription_plan: planType,
+                subscription_tier: planType,
+                subscription_status: 'active',
+                subscription_end_date: formattedEndDate
+              } 
+            : user
+        )
+      );
+      
+      toast({
+        title: 'Subscription Updated',
+        description: `User's subscription has been updated to ${planType} ending on ${endDate.toLocaleDateString()}.`,
+        // Remove the 'success' variant as it's not supported
+      });
+      
+      return data[0];
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      
+      // More specific error message based on the error
+      let errorMessage = 'Failed to update subscription. Please try again.';
+      if (error instanceof Error) {
+        errorMessage = `Error: ${error.message}`;
+      }
+      
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      return null;
+    } finally {
+      if (setActionLoading) setActionLoading(false);
     }
   }, [toast]);
 
   return {
-    isActionLoading,
     handleToggleUserStatus,
-    handleUpdateSubscription
+    handleToggleUserSubscription,
+    handleUpdateUserSubscription
   };
 };

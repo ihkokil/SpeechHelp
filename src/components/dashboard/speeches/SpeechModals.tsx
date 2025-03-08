@@ -4,6 +4,7 @@ import ViewSpeechModal from './modals/ViewSpeechModal';
 import EditSpeechModal from './modals/EditSpeechModal';
 import DeleteSpeechAlert from './modals/DeleteSpeechAlert';
 import { useSpeechModals } from './hooks/useSpeechModals';
+import { useEffect } from 'react';
 
 interface SpeechModalsProps {
   selectedSpeech: Speech | null;
@@ -31,21 +32,38 @@ const SpeechModals = ({
     setTitle,
     content,
     setContent,
+    handleEditModalOpen,
     handleUpdateSpeech,
     handleDeleteSpeech
   } = useSpeechModals();
   
-  const handleEditModalOpenChange = (open: boolean) => {
-    setIsEditModalOpen(open);
-    if (open && selectedSpeech) {
+  // Debug log when selected speech changes
+  useEffect(() => {
+    if (selectedSpeech) {
+      console.log('Selected speech changed:', {
+        id: selectedSpeech.id,
+        title: selectedSpeech.title,
+        content: selectedSpeech.content ? (selectedSpeech.content.substring(0, 100) + '...') : 'empty'
+      });
+    }
+  }, [selectedSpeech]);
+  
+  // Handle edit modal opening/closing
+  useEffect(() => {
+    if (isEditModalOpen && selectedSpeech) {
+      // Initialize edit form when opening modal
       setTitle(selectedSpeech.title);
       
-      // Process content based on its format
       try {
+        // Process content based on its format
         if (selectedSpeech.content && typeof selectedSpeech.content === 'string') {
           if (selectedSpeech.content.trim().startsWith('{')) {
             const parsedContent = JSON.parse(selectedSpeech.content);
-            setContent(parsedContent.content || selectedSpeech.content);
+            if (parsedContent.content) {
+              setContent(parsedContent.content);
+            } else {
+              setContent(selectedSpeech.content);
+            }
           } else {
             setContent(selectedSpeech.content);
           }
@@ -53,58 +71,74 @@ const SpeechModals = ({
           setContent(selectedSpeech.content || '');
         }
       } catch (error) {
-        console.error('Error processing content:', error);
+        console.error('Error processing content when modal opens:', error);
         setContent(selectedSpeech.content || '');
       }
     }
+  }, [isEditModalOpen, selectedSpeech, setTitle, setContent]);
+  
+  const onEditModalOpenChange = (open: boolean) => {
+    console.log('Edit modal open state changing to:', open);
+    setIsEditModalOpen(handleEditModalOpen(open, selectedSpeech));
   };
   
-  const handleSaveEdit = async () => {
-    if (!selectedSpeech) return;
+  // Handle speech update
+  const onSaveEdit = async () => {
+    console.log('Saving edit with:', {
+      speechId: selectedSpeech?.id,
+      title,
+      content: content.substring(0, 100) + '...' // Log just the beginning
+    });
     
-    const success = await handleUpdateSpeech(selectedSpeech, title, content);
+    const success = await handleUpdateSpeech(selectedSpeech);
     if (success) {
       setIsEditModalOpen(false);
     }
   };
   
-  const handleConfirmDelete = async () => {
-    if (!selectedSpeech) return;
-    
+  // Handle speech deletion
+  const onConfirmDelete = async () => {
     const success = await handleDeleteSpeech(selectedSpeech);
     if (success) {
       setIsDeleteAlertOpen(false);
     }
   };
 
-  if (!selectedSpeech) return null;
-
   return (
     <>
-      <ViewSpeechModal
-        speech={selectedSpeech}
-        isOpen={isViewModalOpen}
-        onOpenChange={setIsViewModalOpen}
-        onEditClick={() => onEditClick(selectedSpeech)}
-      />
+      {/* View Speech Modal */}
+      {selectedSpeech && (
+        <ViewSpeechModal
+          speech={selectedSpeech}
+          isOpen={isViewModalOpen}
+          onOpenChange={setIsViewModalOpen}
+          onEditClick={() => onEditClick(selectedSpeech)}
+        />
+      )}
       
-      <EditSpeechModal
-        speech={selectedSpeech}
-        isOpen={isEditModalOpen}
-        onOpenChange={handleEditModalOpenChange}
-        editTitle={title}
-        editContent={content}
-        setEditTitle={setTitle}
-        setEditContent={setContent}
-        onSave={handleSaveEdit}
-      />
+      {/* Edit Speech Modal */}
+      {selectedSpeech && (
+        <EditSpeechModal
+          speech={selectedSpeech}
+          isOpen={isEditModalOpen}
+          onOpenChange={onEditModalOpenChange}
+          editTitle={title}
+          editContent={content}
+          setEditTitle={setTitle}
+          setEditContent={setContent}
+          onSave={onSaveEdit}
+        />
+      )}
       
-      <DeleteSpeechAlert
-        speech={selectedSpeech}
-        isOpen={isDeleteAlertOpen}
-        onOpenChange={setIsDeleteAlertOpen}
-        onConfirm={handleConfirmDelete}
-      />
+      {/* Delete Speech Modal */}
+      {selectedSpeech && (
+        <DeleteSpeechAlert
+          speech={selectedSpeech}
+          isOpen={isDeleteAlertOpen}
+          onOpenChange={setIsDeleteAlertOpen}
+          onConfirm={onConfirmDelete}
+        />
+      )}
     </>
   );
 };

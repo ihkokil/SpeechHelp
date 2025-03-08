@@ -1,28 +1,29 @@
 
 import * as React from 'react';
-import { Hr, Link, Section, Text } from '@react-email/components';
+import { Section, Text, Hr, Link } from '@react-email/components';
 import * as styles from '../styles/welcome-email-styles';
 
 export const EmailFooter = () => {
-	return (
-		<>
-			<Hr style={styles.divider} />
-			<Section style={styles.footerSection}>
-				<Text style={styles.footerText}>
-					If you have any questions or need help getting started, don't hesitate to reach out to us at{' '}
-					<Link href="mailto:hello@speechhelp.ai" style={styles.link}>
-						hello@speechhelp.ai
-					</Link>
-				</Text>
-				
-				<Text style={styles.footerCopyright}>
-					© 2024 SpeechHelp. All rights reserved.
-				</Text>
-				
-				<Text style={styles.footerText}>
-					SpeechHelp, Inc. | Your AI Speech Assistant
-				</Text>
-			</Section>
-		</>
-	);
+  return (
+    <>
+      <Hr style={styles.divider} />
+
+      <Section style={styles.footerSection}>
+        <Text style={styles.footerText}>
+          We're excited to be part of your public speaking journey!<br />
+          The SpeechHelp Team
+        </Text>
+        
+        <Section style={styles.socialLinks}>
+          <Link href="https://twitter.com/speechhelpai" style={styles.socialLink}>Twitter</Link>
+          <Link href="https://facebook.com/speechhelpai" style={styles.socialLink}>Facebook</Link>
+          <Link href="https://instagram.com/speechhelpai" style={styles.socialLink}>Instagram</Link>
+        </Section>
+        
+        <Text style={styles.footerCopyright}>
+          © {new Date().getFullYear()} SpeechHelp. All rights reserved.
+        </Text>
+      </Section>
+    </>
+  );
 };

@@ -1,8 +1,6 @@
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import Stripe from 'https://esm.sh/stripe@13.2.0?target=deno';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8?target=deno';
 
 interface CheckoutRequestBody {
 	plan: string;
@@ -94,43 +92,8 @@ serve(async (req) => {
 			);
 		}
 
-		// Initialize Supabase client with service role key
-		const supabase = createClient(
-			Deno.env.get('SUPABASE_URL') ?? '',
-			Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-		);
-
-		// Get user email for customer creation if user is logged in
-		let customerEmail: string | undefined;
-		if (userId) {
-			const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
-			if (!userError && userData.user) {
-				customerEmail = userData.user.email;
-			}
-		}
-
-		// Check if customer exists or create one
-		let customerId: string | undefined;
-		if (customerEmail) {
-			const customers = await stripe.customers.list({ email: customerEmail, limit: 1 });
-			if (customers.data.length > 0) {
-				customerId = customers.data[0].id;
-				log('Found existing customer:', customerId);
-			}
-		}
-
-		// Extract the origin from returnUrl to ensure correct redirect
-		const url = new URL(returnUrl);
-		const origin = `${url.protocol}//${url.host}`;
-		
-		// FIXED: Use /settings instead of /account for success URL
-		const successUrl = `${origin}/settings?success=true&session_id={CHECKOUT_SESSION_ID}`;
-		const cancelUrl = `${origin}/pricing?canceled=true`;
-		
-		log('Using URLs:', { successUrl, cancelUrl });
-
 		// Prepare checkout session parameters
-		const sessionParams: any = {
+		const sessionParams = {
 			payment_method_types: ['card'],
 			line_items: [
 				{
@@ -139,8 +102,8 @@ serve(async (req) => {
 				},
 			],
 			mode: 'subscription',
-			success_url: successUrl,
-			cancel_url: cancelUrl,
+			success_url: `${returnUrl}?success=true&session_id={CHECKOUT_SESSION_ID}`,
+			cancel_url: `${returnUrl}?canceled=true`,
 			client_reference_id: userId, // Store user ID for identification
 			metadata: {
 				userId,
@@ -149,13 +112,6 @@ serve(async (req) => {
 			},
 			allow_promotion_codes: true,
 		};
-
-		// Add customer information
-		if (customerId) {
-			sessionParams.customer = customerId;
-		} else if (customerEmail) {
-			sessionParams.customer_email = customerEmail;
-		}
 
 		log('Creating checkout session with params:', JSON.stringify(sessionParams, null, 2));
 
@@ -209,4 +165,4 @@ serve(async (req) => {
 			}
 		);
 	}
-});
+}); 

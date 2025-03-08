@@ -7,19 +7,19 @@ import { Switch } from '@/components/ui/switch';
 import { UseFormReturn } from 'react-hook-form';
 import { FormValues } from './hooks/useAddUserForm';
 
-interface FieldProps {
+interface NameFieldProps {
   form: UseFormReturn<FormValues>;
 }
 
-export const FirstNameField: React.FC<FieldProps> = ({ form }) => (
+export const NameField: React.FC<NameFieldProps> = ({ form }) => (
   <FormField
     control={form.control}
-    name="firstName"
+    name="name"
     render={({ field }) => (
       <FormItem>
-        <FormLabel htmlFor="user-first-name">First Name</FormLabel>
+        <FormLabel htmlFor="user-name">Full Name</FormLabel>
         <FormControl>
-          <Input id="user-first-name" placeholder="John" {...field} />
+          <Input id="user-name" placeholder="John Doe" {...field} />
         </FormControl>
         <FormMessage />
       </FormItem>
@@ -27,23 +27,7 @@ export const FirstNameField: React.FC<FieldProps> = ({ form }) => (
   />
 );
 
-export const LastNameField: React.FC<FieldProps> = ({ form }) => (
-  <FormField
-    control={form.control}
-    name="lastName"
-    render={({ field }) => (
-      <FormItem>
-        <FormLabel htmlFor="user-last-name">Last Name</FormLabel>
-        <FormControl>
-          <Input id="user-last-name" placeholder="Doe" {...field} />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-);
-
-export const EmailField: React.FC<FieldProps> = ({ form }) => (
+export const EmailField: React.FC<NameFieldProps> = ({ form }) => (
   <FormField
     control={form.control}
     name="email"
@@ -59,7 +43,7 @@ export const EmailField: React.FC<FieldProps> = ({ form }) => (
   />
 );
 
-export const PasswordField: React.FC<FieldProps> = ({ form }) => (
+export const PasswordField: React.FC<NameFieldProps> = ({ form }) => (
   <FormField
     control={form.control}
     name="password"
@@ -78,7 +62,7 @@ export const PasswordField: React.FC<FieldProps> = ({ form }) => (
   />
 );
 
-export const RoleField: React.FC<FieldProps> = ({ form }) => (
+export const RoleField: React.FC<NameFieldProps> = ({ form }) => (
   <FormField
     control={form.control}
     name="role"
@@ -103,7 +87,7 @@ export const RoleField: React.FC<FieldProps> = ({ form }) => (
   />
 );
 
-export const ActiveStatusField: React.FC<FieldProps> = ({ form }) => (
+export const ActiveStatusField: React.FC<NameFieldProps> = ({ form }) => (
   <FormField
     control={form.control}
     name="isActive"

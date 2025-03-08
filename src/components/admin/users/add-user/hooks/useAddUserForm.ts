@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { User } from '../../types';
-import { supabase } from '@/integrations/supabase/client';
 
 // Form validation schema
 const formSchema = z.object({
@@ -15,8 +14,7 @@ const formSchema = z.object({
     .regex(/[A-Z]/, { message: 'Password must contain at least one uppercase letter' })
     .regex(/[a-z]/, { message: 'Password must contain at least one lowercase letter' })
     .regex(/[0-9]/, { message: 'Password must contain at least one number' }),
-  firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),
-  lastName: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
+  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
   role: z.string().default('user'),
   isActive: z.boolean().default(true),
 });
@@ -37,8 +35,7 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
     defaultValues: {
       email: '',
       password: '',
-      firstName: '',
-      lastName: '',
+      name: '',
       role: 'user',
       isActive: true,
     },
@@ -53,56 +50,32 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
     setIsSubmitting(true);
     
     try {
-      console.log('Creating new user via edge function:', values);
+      console.log('Creating new user with values:', values);
       
-      // Call the admin-create-user edge function
-      const { data: functionData, error: functionError } = await supabase.functions.invoke('admin-create-user', {
-        body: {
-          email: values.email,
-          password: values.password,
-          firstName: values.firstName,
-          lastName: values.lastName,
-          role: values.role,
-          isActive: values.isActive
-        }
-      });
-      
-      if (functionError) {
-        console.error('Error calling admin-create-user function:', functionError);
-        throw new Error(functionError.message || 'Failed to create user');
-      }
-      
-      if (!functionData?.success) {
-        console.error('Function returned error:', functionData);
-        throw new Error(functionData?.error || 'Failed to create user');
-      }
-      
-      console.log('User created successfully:', functionData.user);
+      // Mock the API call for now
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Create a user object to pass back that matches our User type
       const newUser: User = {
-        id: functionData.user.id,
-        email: functionData.user.email || values.email,
+        id: crypto.randomUUID(),
+        email: values.email,
         is_active: values.isActive,
-        is_admin: values.role !== 'user',
+        is_admin: values.role === 'admin',
         admin_role: values.role !== 'user' ? values.role : undefined,
-        created_at: functionData.user.created_at,
-        updated_at: functionData.user.updated_at || functionData.user.created_at,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         last_sign_in_at: null,
         app_metadata: {
           provider: 'email',
           providers: ['email']
         },
         user_metadata: {
-          first_name: values.firstName,
-          last_name: values.lastName,
-          full_name: `${values.firstName} ${values.lastName}`,
-          name: `${values.firstName} ${values.lastName}`,
+          name: values.name,
           email: values.email
         },
         subscription_status: 'none',
         subscription_end_date: null,
-        subscription_plan: null
+        subscription_tier: null
       };
       
       toast({
@@ -118,11 +91,11 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
       
       // Only close the dialog after successful submission
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Exception creating user:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create user. Please try again.',
+        description: 'An unexpected error occurred. Please try again.',
         variant: 'destructive',
       });
     } finally {

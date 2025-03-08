@@ -210,36 +210,6 @@ export type Database = {
         }
         Relationships: []
       }
-      admin_settings: {
-        Row: {
-          admin_user_id: string
-          created_at: string
-          id: string
-          setting_category: string
-          setting_key: string
-          setting_value: Json
-          updated_at: string
-        }
-        Insert: {
-          admin_user_id: string
-          created_at?: string
-          id?: string
-          setting_category: string
-          setting_key: string
-          setting_value: Json
-          updated_at?: string
-        }
-        Update: {
-          admin_user_id?: string
-          created_at?: string
-          id?: string
-          setting_category?: string
-          setting_key?: string
-          setting_value?: Json
-          updated_at?: string
-        }
-        Relationships: []
-      }
       admin_user_roles: {
         Row: {
           admin_user_id: string
@@ -315,160 +285,21 @@ export type Database = {
         }
         Relationships: []
       }
-      password_reset_otps: {
-        Row: {
-          created_at: string
-          email: string
-          expires_at: string
-          id: string
-          is_used: boolean
-          otp_code: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          expires_at: string
-          id?: string
-          is_used?: boolean
-          otp_code: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          expires_at?: string
-          id?: string
-          is_used?: boolean
-          otp_code?: string
-        }
-        Relationships: []
-      }
-      payment_history: {
-        Row: {
-          amount: number
-          billing_period: string | null
-          created_at: string | null
-          currency: string | null
-          id: string
-          payment_date: string | null
-          plan_type: string
-          status: string
-          stripe_payment_intent_id: string | null
-          stripe_session_id: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          amount: number
-          billing_period?: string | null
-          created_at?: string | null
-          currency?: string | null
-          id?: string
-          payment_date?: string | null
-          plan_type: string
-          status: string
-          stripe_payment_intent_id?: string | null
-          stripe_session_id?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          amount?: number
-          billing_period?: string | null
-          created_at?: string | null
-          currency?: string | null
-          id?: string
-          payment_date?: string | null
-          plan_type?: string
-          status?: string
-          stripe_payment_intent_id?: string | null
-          stripe_session_id?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      payment_methods: {
-        Row: {
-          billing_city: string | null
-          billing_country: string | null
-          billing_state: string | null
-          billing_street: string | null
-          billing_zip: string | null
-          brand: string
-          card_holder: string
-          card_type: string
-          created_at: string
-          expiry_month: number
-          expiry_year: number
-          id: string
-          is_default: boolean
-          last4: string
-          stripe_payment_method_id: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          billing_city?: string | null
-          billing_country?: string | null
-          billing_state?: string | null
-          billing_street?: string | null
-          billing_zip?: string | null
-          brand: string
-          card_holder: string
-          card_type: string
-          created_at?: string
-          expiry_month: number
-          expiry_year: number
-          id?: string
-          is_default?: boolean
-          last4: string
-          stripe_payment_method_id?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          billing_city?: string | null
-          billing_country?: string | null
-          billing_state?: string | null
-          billing_street?: string | null
-          billing_zip?: string | null
-          brand?: string
-          card_holder?: string
-          card_type?: string
-          created_at?: string
-          expiry_month?: number
-          expiry_year?: number
-          id?: string
-          is_default?: boolean
-          last4?: string
-          stripe_payment_method_id?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           admin_role: string | null
           avatar_url: string | null
           created_at: string
-          first_name: string | null
           id: string
           is_active: boolean | null
           is_admin: boolean | null
-          last_name: string | null
           permissions: Json | null
           phone: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
-          subscription_amount: number | null
-          subscription_currency: string | null
           subscription_end_date: string | null
-          subscription_period: string | null
           subscription_plan: string | null
-          subscription_price_id: string | null
           subscription_start_date: string | null
-          subscription_status: string | null
           updated_at: string
           username: string | null
         }
@@ -476,23 +307,16 @@ export type Database = {
           admin_role?: string | null
           avatar_url?: string | null
           created_at?: string
-          first_name?: string | null
           id: string
           is_active?: boolean | null
           is_admin?: boolean | null
-          last_name?: string | null
           permissions?: Json | null
           phone?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
-          subscription_amount?: number | null
-          subscription_currency?: string | null
           subscription_end_date?: string | null
-          subscription_period?: string | null
           subscription_plan?: string | null
-          subscription_price_id?: string | null
           subscription_start_date?: string | null
-          subscription_status?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -500,23 +324,16 @@ export type Database = {
           admin_role?: string | null
           avatar_url?: string | null
           created_at?: string
-          first_name?: string | null
           id?: string
           is_active?: boolean | null
           is_admin?: boolean | null
-          last_name?: string | null
           permissions?: Json | null
           phone?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
-          subscription_amount?: number | null
-          subscription_currency?: string | null
           subscription_end_date?: string | null
-          subscription_period?: string | null
           subscription_plan?: string | null
-          subscription_price_id?: string | null
           subscription_start_date?: string | null
-          subscription_status?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -552,36 +369,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_2fa: {
-        Row: {
-          backup_codes: string[] | null
-          created_at: string
-          id: string
-          is_enabled: boolean
-          secret_key: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          backup_codes?: string[] | null
-          created_at?: string
-          id?: string
-          is_enabled?: boolean
-          secret_key: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          backup_codes?: string[] | null
-          created_at?: string
-          id?: string
-          is_enabled?: boolean
-          secret_key?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -590,40 +377,6 @@ export type Database = {
       admin_has_permission: {
         Args: { permission_name: string }
         Returns: boolean
-      }
-      admin_update_user_profile: {
-        Args:
-          | {
-              user_id_param: string
-              display_name: string
-              user_email: string
-              phone_number: string
-              is_active_status: boolean
-              user_metadata?: Json
-            }
-          | {
-              user_id_param: string
-              first_name_param: string
-              last_name_param: string
-              user_email: string
-              phone_number: string
-              is_active_status: boolean
-              user_metadata?: Json
-            }
-          | {
-              user_id_param: string
-              first_name_param: string
-              last_name_param: string
-              user_email: string
-              phone_number?: string
-              street_address_param?: string
-              city_param?: string
-              state_param?: string
-              zip_code_param?: string
-              country_param?: string
-              is_active_status?: boolean
-            }
-        Returns: Json
       }
       authenticate_admin: {
         Args: { email_input: string; password_input: string }
@@ -634,10 +387,6 @@ export type Database = {
           is_super_admin: boolean
         }[]
       }
-      cleanup_expired_otps: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       create_first_admin: {
         Args: {
           email_input: string
@@ -646,22 +395,9 @@ export type Database = {
         }
         Returns: string
       }
-      generate_backup_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
-      }
       get_admin_dashboard_stats: {
         Args: Record<PropertyKey, never>
         Returns: Json
-      }
-      get_admin_settings: {
-        Args: { category_filter?: string }
-        Returns: {
-          setting_key: string
-          setting_value: Json
-          setting_category: string
-          updated_at: string
-        }[]
       }
       is_admin: {
         Args: Record<PropertyKey, never>
@@ -685,30 +421,6 @@ export type Database = {
           is_admin_status?: boolean
           admin_role_value?: string
           permissions_value?: Json
-        }
-        Returns: Json
-      }
-      update_user_subscription: {
-        Args: { user_id: string; plan: string; end_date: string }
-        Returns: Json
-      }
-      update_user_subscription_after_payment: {
-        Args: {
-          user_id_param: string
-          plan_type_param: string
-          billing_period_param: string
-          stripe_customer_id_param: string
-          stripe_subscription_id_param: string
-          amount_param: number
-          price_id_param: string
-        }
-        Returns: Json
-      }
-      upsert_admin_setting: {
-        Args: {
-          setting_key_param: string
-          setting_value_param: Json
-          setting_category_param: string
         }
         Returns: Json
       }

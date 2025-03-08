@@ -7,61 +7,48 @@ export const useSpeechService = () => {
 	const { toast } = useToast();
 
 	const fetchSpeeches = async (userId: string | undefined) => {
-		if (!userId) {
-			console.log('No userId provided, returning empty speeches array');
-			return [];
-		}
+		if (!userId) return [];
 
 		console.log('Fetching speeches for user:', userId);
 
-		try {
-			const { data, error } = await supabase
-				.from('speeches')
-				.select('*')
-				.eq('user_id', userId)
-				.order('created_at', { ascending: false });
+		const { data, error } = await supabase
+			.from('speeches')
+			.select('*')
+			.eq('user_id', userId)
+			.order('created_at', { ascending: false });
 
-			if (error) {
-				console.error('Error fetching speeches:', error);
-				toast({
-					title: "Error fetching speeches",
-					description: error.message,
-					variant: "destructive"
-				});
-				return [];
-			}
-
-			// Debug: log the raw data from the database
-			console.log('Raw speech data from database:', data);
-
-			// Ensure timestamps are properly formatted and never null or empty
-			const processedSpeeches = data?.map(speech => {
-				const now = new Date().toISOString();
-				const created = typeof speech.created_at === 'string' && speech.created_at.trim() !== '' 
-					? speech.created_at 
-					: now;
-				const updated = typeof speech.updated_at === 'string' && speech.updated_at.trim() !== '' 
-					? speech.updated_at 
-					: created;
-
-				return {
-					...speech,
-					created_at: created,
-					updated_at: updated
-				};
-			}) || [];
-
-			console.log('Processed speeches with timestamps:', processedSpeeches);
-			return processedSpeeches as Speech[];
-		} catch (fetchError) {
-			console.error('Exception in fetchSpeeches:', fetchError);
+		if (error) {
+			console.error('Error fetching speeches:', error);
 			toast({
 				title: "Error fetching speeches",
-				description: "There was a problem retrieving your speeches",
+				description: error.message,
 				variant: "destructive"
 			});
 			return [];
 		}
+
+		// Debug: log the raw data from the database
+		console.log('Raw speech data from database:', data);
+
+		// Ensure timestamps are properly formatted and never null or empty
+		const processedSpeeches = data?.map(speech => {
+			const now = new Date().toISOString();
+			const created = typeof speech.created_at === 'string' && speech.created_at.trim() !== '' 
+				? speech.created_at 
+				: now;
+			const updated = typeof speech.updated_at === 'string' && speech.updated_at.trim() !== '' 
+				? speech.updated_at 
+				: created;
+
+			return {
+				...speech,
+				created_at: created,
+				updated_at: updated
+			};
+		}) || [];
+
+		console.log('Processed speeches with timestamps:', processedSpeeches);
+		return processedSpeeches as Speech[];
 	};
 
 	const saveSpeech = async (userId: string, title: string, content: string, speechType: string) => {

@@ -60,9 +60,7 @@ serve(async (req) => {
 			isModification: requestData.isModification,
 			hasInstruction: !!requestData.instruction,
 			hasExistingSpeech: !!requestData.existingSpeech,
-			speechTitle: requestData.speechTitle,
-			speechType: requestData.speechType,
-			detailsCount: Object.keys(requestData.speechDetails || {}).length
+			speechTitle: requestData.speechTitle
 		}));
 		
 		// Check if this is a modification request or a new speech generation
@@ -96,39 +94,24 @@ async function handleSpeechModification(
 	const { existingSpeech, instruction } = requestData;
 	console.log('Starting speech modification process');
 
-	// Create enhanced system message for speech modification
+	// Create the system message for speech modification
 	const systemMessage: OpenAIMessage = {
 		role: 'system',
-		content: `You are an expert professional speechwriter with decades of experience crafting compelling speeches for all occasions.
-
-MODIFICATION GUIDELINES:
-- Carefully analyze the user's instruction and apply the changes precisely
-- Maintain the original speech's core message, purpose, and emotional impact
-- Preserve the existing structure unless specifically asked to change it
-- Ensure the modified speech flows naturally and maintains coherence
-- Keep the same tone and style unless the instruction specifically requests a change
-- Make sure all modifications enhance rather than detract from the speech's effectiveness
-
-QUALITY STANDARDS:
-- Every sentence should serve a purpose and advance the speech's message
-- Use vivid, engaging language that connects with the audience
-- Ensure smooth transitions between ideas and sections
-- Maintain appropriate pacing and rhythm for spoken delivery
-- Include natural pauses and emphasis points for effective delivery
-
-Return ONLY the complete modified speech content with no additional commentary.`
+		content: `You are an expert speechwriter tasked with modifying existing speeches.
+    Carefully follow the user's instructions to improve the speech while maintaining its core message and purpose.
+    Preserve the overall structure and key points but apply the requested changes.
+    Return ONLY the modified speech content, no additional commentary.`
 	};
 
 	// Create user message with the existing speech and modification instructions
 	const userMessage: OpenAIMessage = {
 		role: 'user',
 		content: `
-MODIFICATION INSTRUCTION: ${instruction}
+INSTRUCTION: ${instruction}
 
-ORIGINAL SPEECH TO MODIFY:
+ORIGINAL SPEECH:
 ${existingSpeech}
-
-Please apply the requested modification while maintaining the speech's quality and effectiveness.`
+`
 	};
 
 	// Prepare the request body
@@ -204,75 +187,28 @@ async function handleSpeechGeneration(
 		);
 	}
 
-	// Analyze the requested duration
-	const durationDetails = analyzeDurationRequirements(speechDetails || {});
-	console.log('Duration analysis:', durationDetails);
-
-	// Create enhanced system message that ensures high-quality speech generation
+	// Create the system message that instructs OpenAI how to generate the speech
 	const systemMessage: OpenAIMessage = {
 		role: 'system',
-		content: `You are a world-class professional speechwriter with expertise in crafting exceptional speeches for all occasions. You have written speeches for presidents, CEOs, wedding parties, and graduation ceremonies.
-
-SPEECH GENERATION EXCELLENCE STANDARDS:
-- Create speeches that are engaging, memorable, and emotionally resonant
-- Use sophisticated yet accessible language appropriate for the occasion
-- Incorporate storytelling techniques, vivid imagery, and compelling narratives
-- Structure speeches with powerful openings, coherent development, and memorable conclusions
-- Adapt tone, style, and content precisely to the audience and occasion
-- Include natural speech patterns, pauses, and emphasis for effective delivery
-- Ensure every element serves the speech's overall purpose and message
-
-DURATION REQUIREMENTS:
-${durationDetails.isLongSpeech ? `
-CRITICAL: This is a LONG SPEECH (${durationDetails.targetMinutes} minutes). You MUST create substantial content that justifies this duration:
-- Target word count: approximately ${durationDetails.targetWords} words
-- Include multiple detailed sections with comprehensive coverage
-- Add extensive examples, stories, and elaborations
-- Incorporate multiple perspectives and angles on the topic
-- Include substantial introduction, multiple main sections, and comprehensive conclusion
-- Use detailed storytelling and comprehensive explanations throughout
-- Ensure the content is rich, detailed, and thoroughly developed
-- Add philosophical reflections, practical applications, and meaningful insights
-` : `
-This is a standard speech (${durationDetails.targetMinutes} minutes).
-- Target word count: approximately ${durationDetails.targetWords} words
-- Focus on clear, concise, and impactful content
-`}
-
-DETAILED REQUIREMENTS:
-1. OPENING: Create a compelling hook that immediately captures attention
-2. STRUCTURE: Organize content logically with smooth transitions
-3. CONTENT: Weave in all provided details naturally and meaningfully
-4. LANGUAGE: Use varied sentence structure and engaging vocabulary
-5. EMOTION: Include appropriate emotional moments that resonate with the audience
-6. CONCLUSION: End with a powerful, memorable statement that reinforces the key message
-7. DELIVERY: Write for spoken delivery with natural rhythm and flow
-
-PERSONALIZATION:
-- Incorporate ALL provided questionnaire details meaningfully
-- Reflect the specific speech type and occasion appropriately
-- Match the requested tone, length, and style precisely
-- Include personal anecdotes and stories as provided
-- Address the specific audience mentioned in the details
-
-Generate a complete, professionally crafted speech that exceeds expectations and delivers real impact. ${durationDetails.isLongSpeech ? 'Remember: this must be a substantial, comprehensive speech that fills the requested time.' : ''}`
+		content: `You are an expert speechwriter who creates compelling, professional speeches.
+      Create a speech that follows the user's requirements precisely.
+      Your speech should be authentic, emotionally resonant, and structured for maximum impact.
+      The speech should be well-organized with a clear introduction, body, and conclusion.
+      Adapt your style to match the requested tone, humor level, and formality.`
 	};
 
-	// Generate enhanced user message with all speech details
+	// Generate the user message containing all the speech details
 	const userMessage: OpenAIMessage = {
 		role: 'user',
-		content: createEnhancedPromptFromDetails(speechTitle, speechType, speechDetails, durationDetails)
+		content: createPromptFromDetails(speechTitle, speechType, speechDetails)
 	};
 
-	// Adjust max_tokens based on speech length requirements
-	const maxTokens = durationDetails.isLongSpeech ? 8000 : 4000;
-
-	// Prepare the request body with optimized parameters
+	// Prepare the request body
 	const requestBody: OpenAIRequestBody = {
 		model: MODEL,
 		messages: [systemMessage, userMessage],
-		temperature: 0.8, // Slightly higher for more creativity while maintaining quality
-		max_tokens: maxTokens, // Increased for longer speeches
+		temperature: 0.7, // Balance between creativity and consistency
+		max_tokens: 4000, // Allow for a substantial speech
 	};
 
 	console.log('Sending generation request to OpenAI');
@@ -318,190 +254,44 @@ Generate a complete, professionally crafted speech that exceeds expectations and
 }
 
 /**
- * Analyzes duration requirements from speech details
+ * Creates a detailed prompt for OpenAI based on speech details
  */
-function analyzeDurationRequirements(speechDetails: SpeechDetails) {
-	const detailsEntries = Object.entries(speechDetails);
-	
-	// Look for duration-related information
-	const durationInfo = detailsEntries.find(([question, answer]) => {
-		const q = question.toLowerCase();
-		return (q.includes('length') || q.includes('duration') || q.includes('time') || q.includes('how long')) && answer && answer.trim();
-	});
-
-	let targetMinutes = 5; // default
-	let isLongSpeech = false;
-
-	if (durationInfo && durationInfo[1]) {
-		const input = durationInfo[1].toLowerCase().trim();
-		
-		// Parse various duration formats
-		if (input.includes('hour') || input.includes('hr')) {
-			const hourMatch = input.match(/(\d+(?:\.\d+)?)\s*(?:hour|hr)/);
-			if (hourMatch) {
-				targetMinutes = parseFloat(hourMatch[1]) * 60;
-				isLongSpeech = targetMinutes >= 30;
-			}
-		} else if (input.includes('minute') || input.includes('min')) {
-			const minuteMatch = input.match(/(\d+(?:\.\d+)?)\s*(?:minute|min)/);
-			if (minuteMatch) {
-				targetMinutes = parseFloat(minuteMatch[1]);
-				isLongSpeech = targetMinutes >= 30;
-			}
-		} else {
-			// Try to extract just numbers
-			const numberMatch = input.match(/(\d+(?:\.\d+)?)/);
-			if (numberMatch) {
-				const number = parseFloat(numberMatch[1]);
-				if (number >= 60) {
-					targetMinutes = number; // Assume minutes
-				} else if (number <= 3) {
-					targetMinutes = number * 60; // Likely hours
-				} else {
-					targetMinutes = number; // Assume minutes
-				}
-				isLongSpeech = targetMinutes >= 30;
-			}
-		}
-	}
-
-	const targetWords = Math.round(targetMinutes * 130); // 130 words per minute
-
-	return {
-		targetMinutes,
-		targetWords,
-		isLongSpeech,
-		durationInput: durationInfo ? durationInfo[1] : null
-	};
-}
-
-/**
- * Creates an enhanced, detailed prompt for OpenAI based on speech details
- */
-function createEnhancedPromptFromDetails(
+function createPromptFromDetails(
 	speechTitle: string,
 	speechType: string,
-	speechDetails: SpeechDetails,
-	durationDetails: any
+	speechDetails: SpeechDetails
 ): string {
-	// Analyze the speech details to extract key information
-	const detailsEntries = Object.entries(speechDetails || {});
-	
-	// Categorize the information for better organization
-	const audienceInfo = extractInformation(detailsEntries, ['audience', 'who are you addressing', 'listeners']);
-	const toneInfo = extractInformation(detailsEntries, ['tone', 'mood', 'style', 'feeling']);
-	const lengthInfo = extractInformation(detailsEntries, ['length', 'duration', 'time', 'long']);
-	const personalInfo = extractInformation(detailsEntries, ['story', 'memory', 'experience', 'anecdote', 'personal']);
-	const keyPoints = extractInformation(detailsEntries, ['points', 'topics', 'themes', 'message', 'include']);
-	const contextInfo = extractInformation(detailsEntries, ['occasion', 'event', 'ceremony', 'celebration']);
-
-	// Create comprehensive prompt
-	let prompt = `# SPEECH GENERATION REQUEST
+	// Start with the basic information
+	let prompt = `
+# Speech Generation Request
 
 ## CORE INFORMATION
-- **Speech Title**: "${speechTitle}"
-- **Speech Type**: ${speechType}
-- **Primary Occasion**: ${contextInfo || 'As specified in details'}
+- Speech Title: "${speechTitle}"
+- Speech Type: ${speechType}
 
-## CRITICAL DURATION REQUIREMENTS
-- **Target Duration**: ${durationDetails.targetMinutes} minutes
-- **Target Word Count**: approximately ${durationDetails.targetWords} words
-- **Speech Length Category**: ${durationDetails.isLongSpeech ? 'LONG SPEECH - Requires substantial, comprehensive content' : 'Standard Speech'}
-${durationDetails.durationInput ? `- **Original Duration Request**: "${durationDetails.durationInput}"` : ''}
+## USER-PROVIDED DETAILS
+`;
 
-${durationDetails.isLongSpeech ? `
-🚨 CRITICAL: This is a LONG SPEECH requiring extensive content development:
-- Multiple detailed sections with comprehensive coverage
-- Extensive examples, stories, case studies, and elaborations
-- Multiple perspectives and angles on the topic
-- Detailed storytelling and comprehensive explanations
-- Philosophical reflections and practical applications
-- Rich, detailed, and thoroughly developed content throughout
-` : ''}
-
-## AUDIENCE & CONTEXT`;
-
-	if (audienceInfo) {
-		prompt += `\n- **Target Audience**: ${audienceInfo}`;
-	}
-	
-	if (contextInfo) {
-		prompt += `\n- **Event Context**: ${contextInfo}`;
-	}
-
-	prompt += `\n\n## SPEECH SPECIFICATIONS`;
-
-	if (toneInfo) {
-		prompt += `\n- **Tone & Style**: ${toneInfo}`;
-	}
-
-	if (lengthInfo) {
-		prompt += `\n- **Length Requirements**: ${lengthInfo}`;
-	}
-
-	prompt += `\n\n## CONTENT REQUIREMENTS`;
-
-	if (keyPoints) {
-		prompt += `\n- **Key Points to Include**: ${keyPoints}`;
-	}
-
-	if (personalInfo) {
-		prompt += `\n- **Personal Elements**: ${personalInfo}`;
-	}
-
-	// Add all questionnaire details
-	prompt += `\n\n## DETAILED QUESTIONNAIRE RESPONSES`;
-	detailsEntries.forEach(([question, answer]) => {
+	// Add all user-provided questionnaire answers
+	Object.entries(speechDetails || {}).forEach(([question, answer]) => {
 		if (answer && answer.trim()) {
-			prompt += `\n- **${question}**: ${answer}`;
+			prompt += `- ${question}: ${answer}\n`;
 		}
 	});
 
-	// Add specific generation instructions
-	prompt += `\n\n## GENERATION INSTRUCTIONS
+	// Add detailed instructions
+	prompt += `
+## INSTRUCTIONS
 
-Please create a complete, professionally crafted speech that:
+Please write a complete, ready-to-deliver speech based on these specifications.
+The speech should be structured for maximum impact with a compelling opening,
+coherent flow between ideas, and a memorable conclusion.
 
-1. **MEETS THE EXACT DURATION REQUIREMENT**: Generate approximately ${durationDetails.targetWords} words to fill ${durationDetails.targetMinutes} minutes of speaking time
-2. **INCORPORATES ALL PROVIDED DETAILS**: Every questionnaire response should be meaningfully woven into the speech content
-3. **MATCHES THE SPECIFIED TONE**: Ensure the speech reflects the requested emotional tone and style
-4. **ENGAGES THE AUDIENCE**: Write specifically for the mentioned audience with appropriate language and references
-5. **FOLLOWS PROPER STRUCTURE**: Include a compelling opening, well-organized body, and memorable conclusion
-6. **INCLUDES PERSONAL ELEMENTS**: Naturally incorporate any stories, memories, or personal details provided
-7. **MAINTAINS AUTHENTICITY**: Create content that sounds genuine and heartfelt, not artificial or generic
-8. **OPTIMIZES FOR DELIVERY**: Write for spoken presentation with natural rhythm and emphasis points
+The speech should feel natural and conversational, with appropriate emotional moments
+and emphasis. It should be authentic and tailored to the audience information provided.
 
-${durationDetails.isLongSpeech ? `
-🎯 SPECIAL INSTRUCTIONS FOR LONG SPEECH:
-- Create multiple substantial sections with detailed coverage of the topic
-- Include extensive examples, anecdotes, and detailed explanations
-- Add comprehensive storytelling elements throughout
-- Incorporate multiple perspectives and detailed analysis
-- Ensure every section is fully developed and substantial
-- Use detailed transitions between major sections
-- Include philosophical reflections and practical applications
-- Make sure the content truly justifies the requested ${durationDetails.targetMinutes}-minute duration
-` : ''}
-
-The speech should be ready for immediate delivery and should make a lasting impact on the audience.
-
-Generate the complete speech now:`;
+Please organize the speech with clear sections and paragraphs for easy reading and delivery.
+`;
 
 	return prompt;
-}
-
-/**
- * Helper function to extract specific information from questionnaire entries
- */
-function extractInformation(entries: [string, string][], keywords: string[]): string | null {
-	for (const [question, answer] of entries) {
-		if (answer && answer.trim()) {
-			for (const keyword of keywords) {
-				if (question.toLowerCase().includes(keyword.toLowerCase())) {
-					return answer;
-				}
-			}
-		}
-	}
-	return null;
 }

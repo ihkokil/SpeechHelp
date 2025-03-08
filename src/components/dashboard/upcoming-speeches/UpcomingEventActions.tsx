@@ -125,7 +125,7 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
             <Button
               variant="outline"
               size="icon"
-              className="h-7 w-7 rounded-md"
+              className="h-7 w-7"
               title="Edit date"
             >
               <CalendarIcon className="h-3.5 w-3.5" />
@@ -146,7 +146,7 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
         <Button
           variant="outline" 
           size="icon"
-          className="h-7 w-7 rounded-md"
+          className="h-7 w-7"
           onClick={() => setIsDeleteDialogOpen(true)}
           title="Delete event"
         >
@@ -158,7 +158,7 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
       <Button 
         variant="outline" 
         size="sm" 
-        className="h-8 px-4 py-1 bg-pink-500 text-white hover:bg-pink-600 transition-colors rounded-md border-0"
+        className="text-xs"
         onClick={() => onCreateSpeech(event)}
       >
         Create
@@ -174,13 +174,8 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-md">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteEvent}
-              className="bg-pink-500 text-white hover:bg-pink-600 transition-colors rounded-md"
-            >
-              Delete
-            </AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteEvent}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

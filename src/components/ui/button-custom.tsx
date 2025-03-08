@@ -9,15 +9,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-pink-500 text-white shadow-sm hover:bg-pink-600",
+          "bg-primary text-primary-foreground shadow-sm hover:opacity-90",
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm hover:opacity-90",
         outline:
-          "border border-pink-500 bg-background shadow-sm hover:bg-pink-50 text-pink-500",
+          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
         secondary:
           "bg-secondary text-secondary-foreground shadow-sm hover:opacity-90",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-pink-600 hover:text-pink-800 font-medium underline-offset-4 hover:underline",
+        link: "text-primary underline-offset-4 hover:underline",
         premium: "bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-sm hover:shadow-md hover:opacity-95 transition-all",
         pink: "bg-pink-500 text-white shadow-sm hover:bg-pink-600 transition-all",
         minimal: "bg-white border border-gray-200 text-gray-800 shadow-sm hover:shadow hover:border-gray-300 transition-all",

@@ -60,15 +60,6 @@ export const generateSpeechFromDetails = async (
 	}
 
 	try {
-		// Store the original request for recovery purposes
-		const requestData = {
-			speechTitle,
-			speechType,
-			speechDetails,
-			timestamp: new Date().toISOString()
-		};
-		localStorage.setItem('lastSpeechRequest', JSON.stringify(requestData));
-
 		// Generate the speech using Supabase Edge Function
 		const generatedSpeech = await generateSpeechWithSupabaseFunction(
 			speechTitle,
@@ -76,30 +67,18 @@ export const generateSpeechFromDetails = async (
 			speechDetails
 		);
 
-		// Create multiple backup copies for recovery
-		localStorage.setItem('generatedSpeech', generatedSpeech);
-		localStorage.setItem('speechBackup', generatedSpeech);
-		localStorage.setItem('tempGeneratedSpeech', generatedSpeech);
-
 		// Process duration if specified to ensure appropriate length
 		const durationInfo = detailsArray.find(([question]) =>
 			question.toLowerCase().includes('length') ||
 			question.toLowerCase().includes('duration') ||
-			question.toLowerCase().includes('time') ||
-			question.toLowerCase().includes('how long')
+			question.toLowerCase().includes('time')
 		);
 
 		let finalSpeech = generatedSpeech;
 
 		if (durationInfo && durationInfo[1]) {
 			const targetDuration = parseDurationToMinutes(durationInfo[1]);
-			console.log(`Target duration identified: ${targetDuration} minutes for speech of ${durationInfo[1]}`);
 			finalSpeech = enhanceSpeechForDuration(finalSpeech, targetDuration);
-			
-			// Update all storage with the enhanced speech
-			localStorage.setItem('generatedSpeech', finalSpeech);
-			localStorage.setItem('speechBackup', finalSpeech);
-			localStorage.setItem('tempGeneratedSpeech', finalSpeech);
 		}
 
 		return finalSpeech;
@@ -126,8 +105,7 @@ export const generateSpeechFromDetails = async (
 		const durationInfo = detailsArray.find(([question]) =>
 			question.toLowerCase().includes('length') ||
 			question.toLowerCase().includes('duration') ||
-			question.toLowerCase().includes('time') ||
-			question.toLowerCase().includes('how long')
+			question.toLowerCase().includes('time')
 		);
 
 		if (durationInfo && durationInfo[1]) {
@@ -137,10 +115,6 @@ export const generateSpeechFromDetails = async (
 			// Even if no specific duration is mentioned, apply some enhancement for consistency
 			completeSpeech = enhanceSpeechForDuration(completeSpeech, 5); // Default to a 5-minute speech enhancement
 		}
-
-		// Store fallback speech for recovery
-		localStorage.setItem('generatedSpeech', completeSpeech);
-		localStorage.setItem('speechBackup', completeSpeech);
 
 		return completeSpeech;
 	}

@@ -92,14 +92,14 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
             </Button>
           </>
         )}
-        {/* <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm">
           <Download className="mr-2 h-4 w-4" />
           Export
         </Button>
         <Button variant="outline" size="sm">
           <FileUp className="mr-2 h-4 w-4" />
           Import
-        </Button> */}
+        </Button>
         <Button onClick={handleAddUserClick} type="button">
           <UserPlus className="mr-2 h-4 w-4" />
           Add User

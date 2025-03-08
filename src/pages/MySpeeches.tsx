@@ -1,15 +1,15 @@
 
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useIsMobile } from '@/hooks/use-mobile';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
-import { toast } from 'sonner';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const MySpeeches = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [initialFilter, setInitialFilter] = useState('all');
   const isMobile = useIsMobile();
 
@@ -17,18 +17,48 @@ const MySpeeches = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const filterParam = params.get('filter');
-    setInitialFilter(filterParam === 'upcoming' ? 'upcoming' : 'all');
+
+    if (filterParam === 'upcoming') {
+      setInitialFilter('upcoming');
+    } else {
+      setInitialFilter('all');
+    }
   }, [location]);
 
   // Fetch speeches when component mounts
   useEffect(() => {
     if (user) {
-      fetchSpeeches().catch(error => {
-        console.error('Error fetching speeches:', error);
-        toast.error('Failed to load speeches. Please try again.');
-      });
+      console.log('MySpeeches component mounted, fetching speeches for user:', user.id);
+      // Always fetch fresh data when component mounts
+      fetchSpeeches();
     }
   }, [user, fetchSpeeches]);
+
+  // Debug log all speeches when they change
+  useEffect(() => {
+    console.log(`MySpeeches has ${speeches.length} total speeches to display`);
+    
+    // Log regular speeches from the backend
+    console.log('Regular speeches from database:', speeches.map(s => ({
+      id: s.id,
+      title: s.title,
+      type: s.speech_type,
+      isUpcoming: s.isUpcoming || false // Ensure isUpcoming is explicitly set
+    })));
+
+    // Check for localStorage upcoming events
+    try {
+      const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
+      if (upcomingEventsJSON) {
+        const parsedEvents = JSON.parse(upcomingEventsJSON);
+        console.log(`Found ${parsedEvents.length} upcoming events in localStorage`, parsedEvents);
+      } else {
+        console.log('No upcoming events found in localStorage');
+      }
+    } catch (error) {
+      console.error('Error checking localStorage events:', error);
+    }
+  }, [speeches]);
 
   if (isLoading) {
     return (
@@ -51,7 +81,7 @@ const MySpeeches = () => {
             <h1 className="text-2xl font-bold text-gray-900">
               {initialFilter === 'upcoming' ? 'Upcoming Speeches' : 'My Speeches'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600">
               {initialFilter === 'upcoming'
                 ? 'View and manage your scheduled upcoming speeches'
                 : 'Manage, edit and organize your speeches'}

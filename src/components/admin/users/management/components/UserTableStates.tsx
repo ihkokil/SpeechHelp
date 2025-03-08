@@ -19,9 +19,7 @@ export const LoadingState: React.FC = () => (
 export const EmptyState: React.FC = () => (
   <TableRow>
     <TableCell colSpan={9} className="h-24 text-center">
-      <div className="text-sm text-muted-foreground">
-        No users found.
-      </div>
+      No users found.
     </TableCell>
   </TableRow>
 );

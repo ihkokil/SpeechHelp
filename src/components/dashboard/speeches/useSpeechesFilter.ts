@@ -2,7 +2,6 @@
 import { useMemo } from 'react';
 import { Speech } from '@/types/speech';
 import { FilterOption, SortOption } from './FilterBar';
-import { useUpcomingEventsFilter } from './hooks/useUpcomingEventsFilter';
 
 export const useSpeechesFilter = (
   speeches: Speech[],
@@ -10,32 +9,74 @@ export const useSpeechesFilter = (
   filterType: FilterOption,
   sortBy: SortOption
 ) => {
-  const { upcomingSpeeches } = useUpcomingEventsFilter();
-  
   const filteredSpeeches = useMemo(() => {
-    // Combine regular speeches with upcoming speeches
-    const allSpeeches = [...speeches, ...upcomingSpeeches];
+    // Log input speeches for debugging
+    console.log('Original speeches array count:', speeches.length);
+    console.log('Original speeches:', speeches.map(s => ({ 
+      id: s.id, 
+      title: s.title, 
+      type: s.speech_type,
+      isUpcoming: s.isUpcoming 
+    })));
     
-    // Apply search filter
-    let filtered = allSpeeches;
+    // Ensure each regular speech has correct isUpcoming flag
+    let allSpeeches = speeches.map(speech => ({
+      ...speech,
+      isUpcoming: speech.isUpcoming || false // Default to false for regular speeches
+    }));
+    
+    console.log('Regular speeches after mapping:', allSpeeches.length);
+    
+    // Get upcoming events from localStorage
+    let upcomingEvents: any[] = [];
+    try {
+      const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
+      if (upcomingEventsJSON) {
+        upcomingEvents = JSON.parse(upcomingEventsJSON);
+        console.log('Found upcoming events in localStorage:', upcomingEvents.length);
+      }
+    } catch (error) {
+      console.error('Error parsing upcoming events:', error);
+      upcomingEvents = [];
+    }
+    
+    // Create speech objects for upcoming events
+    const upcomingSpeeches = upcomingEvents.map((event) => ({
+      id: event.id,
+      user_id: '', 
+      title: event.title || 'Untitled Event',
+      content: event.notes || '',
+      created_at: event.date || '', // Use event date for sorting
+      updated_at: event.date || '',
+      speech_type: event.category || 'upcoming',
+      isUpcoming: true,
+      event_date: event.date
+    }));
+
+    // Apply search filter if provided
+    let searchFiltered = [...allSpeeches, ...upcomingSpeeches];
     if (searchQuery) {
       const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(speech => 
+      searchFiltered = searchFiltered.filter(speech => 
         speech.title?.toLowerCase().includes(query) || 
         speech.content?.toLowerCase().includes(query)
       );
     }
     
     // Apply type filter
+    let filtered: Speech[] = [];
     if (filterType === 'all') {
-      // Show all speeches
+      filtered = searchFiltered; // Show all speeches without filtering by type
     } else if (filterType === 'upcoming') {
-      filtered = filtered.filter(speech => speech.isUpcoming === true);
+      filtered = searchFiltered.filter(speech => speech.isUpcoming === true);
     } else {
-      filtered = filtered.filter(speech => 
-        speech.speech_type === filterType && !speech.isUpcoming
-      );
+      filtered = searchFiltered.filter(speech => speech.speech_type === filterType);
     }
+    
+    // Log filtering results for debugging
+    console.log(`Filtered speeches (${filterType}):`, filtered.length);
+    console.log('Regular speeches:', filtered.filter(s => !s.isUpcoming).length);
+    console.log('Upcoming speeches:', filtered.filter(s => s.isUpcoming).length);
     
     // Remove duplicates based on ID
     const uniqueSpeeches = Array.from(
@@ -47,19 +88,11 @@ export const useSpeechesFilter = (
       if (sortBy === 'newest') {
         if (a.isUpcoming && b.isUpcoming) {
           return new Date(b.event_date || '').getTime() - new Date(a.event_date || '').getTime();
-        } else if (a.isUpcoming) {
-          return -1;
-        } else if (b.isUpcoming) {
-          return 1;
         }
         return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
       } else if (sortBy === 'oldest') {
         if (a.isUpcoming && b.isUpcoming) {
           return new Date(a.event_date || '').getTime() - new Date(b.event_date || '').getTime();
-        } else if (a.isUpcoming) {
-          return -1;
-        } else if (b.isUpcoming) {
-          return 1;
         }
         return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
       } else if (sortBy === 'title-asc') {
@@ -68,7 +101,7 @@ export const useSpeechesFilter = (
         return (b.title || '').localeCompare(a.title || '');
       }
     });
-  }, [speeches, upcomingSpeeches, searchQuery, filterType, sortBy]);
+  }, [speeches, searchQuery, filterType, sortBy]);
   
   return { filteredSpeeches };
 };
