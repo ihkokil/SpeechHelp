@@ -1,9 +1,25 @@
 
+import { memo, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useScrollDetection } from "@/hooks/useScrollDetection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import DesktopNav from "./navigation/DesktopNav";
 import MobileNav from "./navigation/MobileNav";
+
+// Memoized logo component to prevent re-rendering
+const Logo = memo(({ logoPath, isMobile }: { logoPath: string; isMobile: boolean }) => (
+  <Link
+    to="/"
+    className="flex items-center space-x-2"
+    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+  >
+    <img 
+      src={logoPath}
+      alt="SpeechHelp Logo" 
+      className={`${isMobile ? "h-8" : "h-10"} w-auto`}
+    />
+  </Link>
+));
 
 const Navbar = () => {
   const isScrolled = useScrollDetection();
@@ -14,13 +30,16 @@ const Navbar = () => {
   const sidebarRoutes = ['/speech-lab', '/settings', '/help', '/my-speeches', '/writing-tips', '/dashboard', '/subscription'];
   
   // Check if current route should use sidebar instead of navbar
-  const usesSidebar = sidebarRoutes.some(route => location.pathname.startsWith(route));
+  const usesSidebar = useMemo(() => 
+    sidebarRoutes.some(route => location.pathname.startsWith(route)),
+    [location.pathname]
+  );
   
   // If current route uses sidebar, don't render the navbar
   if (usesSidebar) return null;
   
   // Using the correct SVG logo file for better visibility and sharpness
-  const logoPath = "/Speech Help - Logo.svg";
+  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
 
   return (
     <nav
@@ -32,17 +51,7 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          <Link
-            to="/"
-            className="flex items-center space-x-2"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          >
-            <img 
-              src={logoPath}
-              alt="SpeechHelp Logo" 
-              className={`${isMobile ? "h-10" : "h-12"} w-auto`}
-            />
-          </Link>
+          <Logo logoPath={logoPath} isMobile={isMobile} />
 
           {/* Desktop Navigation */}
           <DesktopNav />
@@ -55,4 +64,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default memo(Navbar);

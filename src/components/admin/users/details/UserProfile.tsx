@@ -4,7 +4,8 @@ import { User } from '@/components/admin/users/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { Mail, Phone, MapPin, Calendar } from 'lucide-react';
+import { Mail, Phone, Calendar } from 'lucide-react';
+import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
 
 interface UserProfileProps {
   user: User;
@@ -37,7 +38,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <h3 className="text-sm font-medium text-muted-foreground">Full Name</h3>
-            <p>{user.user_metadata?.full_name || 'Not provided'}</p>
+            <p className="font-medium">{formatUserDisplayName(user)}</p>
           </div>
           
           <div className="space-y-1">
@@ -53,16 +54,6 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
             <p className="flex items-center">
               <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
               {user.user_metadata?.phone || 'Not provided'}
-            </p>
-          </div>
-          
-          <div className="space-y-1">
-            <h3 className="text-sm font-medium text-muted-foreground">Address</h3>
-            <p className="flex items-center">
-              <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-              {user.user_metadata?.street_address 
-                ? `${user.user_metadata.street_address}, ${user.user_metadata.city || ''} ${user.user_metadata.state || ''} ${user.user_metadata.zip_code || ''}`
-                : 'Not provided'}
             </p>
           </div>
         </div>

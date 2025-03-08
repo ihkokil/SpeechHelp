@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PricingHeader from '@/components/pricing/PricingHeader';
 import PricingPeriodToggle from '@/components/pricing/PricingPeriodToggle';
@@ -21,6 +22,7 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Navbar />
       <main className="flex-1">
         <section className="container mx-auto px-4 md:px-6 pt-24 pb-16 md:pb-24">
           <PricingHeader />

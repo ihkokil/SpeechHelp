@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -10,7 +10,7 @@ interface UserTableHeaderProps {
   selectedCount: number;
 }
 
-const UserTableHeader: React.FC<UserTableHeaderProps> = ({ 
+const UserTableHeader: React.FC<UserTableHeaderProps> = memo(({ 
   onToggleAll, 
   isAllSelected,
   disabled,
@@ -19,7 +19,7 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
   return (
     <TableHeader>
       <TableRow>
-        <TableHead className="w-[40px]">
+        <TableHead className="w-12 px-2">
           <Checkbox 
             checked={isAllSelected}
             onCheckedChange={onToggleAll}
@@ -27,19 +27,19 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
             aria-label="Select all users"
           />
         </TableHead>
-        <TableHead className="w-[200px]">User</TableHead>
-        <TableHead>Email</TableHead>
-        <TableHead className="hidden md:table-cell">Phone</TableHead>
-        <TableHead className="hidden md:table-cell">Plan</TableHead>
-        <TableHead className="hidden md:table-cell">Joined</TableHead>
-        <TableHead className="hidden lg:table-cell">Last Sign In</TableHead>
-        <TableHead className="hidden md:table-cell">Status</TableHead>
-        <TableHead>
-          <span>Actions</span>
-        </TableHead>
+        <TableHead className="min-w-[150px] px-2">User</TableHead>
+        <TableHead className="min-w-[180px] px-2 hidden sm:table-cell">Email</TableHead>
+        <TableHead className="min-w-[100px] px-2 hidden lg:table-cell">Phone</TableHead>
+        <TableHead className="w-20 text-center px-2 hidden md:table-cell">Plan</TableHead>
+        <TableHead className="min-w-[120px] px-2 hidden xl:table-cell">Joined</TableHead>
+        <TableHead className="min-w-[120px] px-2 hidden xl:table-cell">Last Sign In</TableHead>
+        <TableHead className="w-20 text-center px-2 hidden md:table-cell">Status</TableHead>
+        <TableHead className="w-16 text-center px-2">Actions</TableHead>
       </TableRow>
     </TableHeader>
   );
-};
+});
+
+UserTableHeader.displayName = "UserTableHeader";
 
 export default UserTableHeader;

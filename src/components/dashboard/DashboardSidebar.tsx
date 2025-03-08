@@ -31,12 +31,12 @@ const DashboardSidebar = () => {
             : "fixed w-64 -translate-x-full"
           : "fixed w-64",
       )}>
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="p-4 border-b border-gray-100 flex items-center justify-center">
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src={logoPath} alt="Speech Help" className="h-8 w-auto" />
+            <img src={logoPath} alt="Speech Help" className="h-10 w-auto" />
           </Link>
           {isMobile && isOpen && (
-            <button onClick={toggleSidebar} className="p-1">
+            <button onClick={toggleSidebar} className="absolute right-2 p-1">
               <X className="h-5 w-5" />
             </button>
           )}

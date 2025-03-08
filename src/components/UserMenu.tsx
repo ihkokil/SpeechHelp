@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +16,6 @@ import {
   HelpCircle, 
   LogOut 
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const UserMenu = () => {
@@ -24,6 +23,7 @@ const UserMenu = () => {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
+    console.log('UserMenu: Handling sign out');
     await signOut();
     navigate('/');
   };
@@ -56,15 +56,37 @@ const UserMenu = () => {
     );
   }
 
-  // Get user's name from metadata or email
+  // Helper function to safely extract string values
+  const safeString = (value: any): string => {
+    if (typeof value === 'string') return value.trim();
+    if (value === null || value === undefined) return '';
+    return String(value).trim();
+  };
+
+  // Helper function to construct full name from first and last name
+  const constructFullName = (firstName: string, lastName: string): string => {
+    const first = safeString(firstName);
+    const last = safeString(lastName);
+    if (first && last) {
+      return `${first} ${last}`;
+    }
+    if (first) return first;
+    if (last) return last;
+    return '';
+  };
+
+  // Get user's name from metadata - always prioritize first + last name construction
   const metadata = user.user_metadata || {};
-  const firstName = metadata.first_name;
-  const lastName = metadata.last_name;
+  const firstName = safeString(metadata.first_name);
+  const lastName = safeString(metadata.last_name);
   
-  // Display name preference: first name + last name > email username
+  // Construct full name from components
+  const fullName = constructFullName(firstName, lastName);
+  
+  // Display name preference: constructed full name > email username
   const emailUsername = user.email?.split('@')[0] || '';
   const displayName = firstName || emailUsername;
-  const fullName = firstName && lastName ? `${firstName} ${lastName}` : displayName;
+  const displayFullName = fullName || displayName;
 
   return (
     <DropdownMenu>
@@ -78,7 +100,7 @@ const UserMenu = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <div className="px-2 py-1.5">
-          <p className="text-sm font-bold truncate">{fullName}</p>
+          <p className="text-sm font-bold truncate">{displayFullName}</p>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -112,7 +134,7 @@ const UserMenu = () => {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <button 
-            className="w-full flex cursor-default items-center text-red-600 focus:text-red-600"
+            className="w-full flex cursor-default items-center text-red-600 hover:bg-red-600 hover:text-white focus:bg-red-600 focus:text-white"
             onClick={handleSignOut}
           >
             <LogOut className="h-4 w-4 mr-2" />

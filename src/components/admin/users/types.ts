@@ -1,64 +1,68 @@
-export type User = {
+
+export interface User {
   id: string;
   email: string;
-  last_sign_in_at: string | null;
   created_at: string;
-  updated_at: string | null;
-  app_metadata: {
+  updated_at?: string | null;
+  last_sign_in_at?: string | null;
+  is_active?: boolean;
+  is_admin?: boolean;
+  admin_role?: string;
+  permissions?: string[];
+  subscription_status?: string;
+  subscription_plan?: string | null;
+  subscription_end_date?: string | null;
+  app_metadata?: {
     provider?: string;
     providers?: string[];
   };
-  user_metadata: {
+  user_metadata?: {
     name?: string;
     full_name?: string;
     first_name?: string;
     last_name?: string;
     email?: string;
     phone?: string;
+    country_code?: string;
     street_address?: string;
     city?: string;
     state?: string;
     zip_code?: string;
     country?: string;
-    country_code?: string;
   };
-  is_active?: boolean;
-  // Admin role related fields
-  is_admin?: boolean;
-  admin_role?: string;
-  permissions?: string[];
-  // Subscription related fields
-  subscription_status?: string;
-  subscription_end_date?: string;
-  subscription_tier?: string;
+  // Direct fields from profiles table
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  phone?: string;
   // Stripe related fields
   stripe_customer_id?: string;
   stripe_subscription_id?: string;
-};
+}
 
 export interface Speech {
   id: string;
-  user_id: string;
   title: string;
   content: string;
   speech_type: string;
   created_at: string;
-  updated_at: string | null;
+  updated_at: string;
+  user_id: string;
 }
 
-export type SpeechTypeStats = {
+export interface SpeechTypeStats {
   type: string;
   count: number;
-};
+}
 
-export type AdminRole = {
+export interface AdminRole {
   id: string;
   name: string;
   description: string;
-};
+}
 
-export type AdminPermission = {
+export interface AdminPermission {
   id: string;
   name: string;
   description: string;
-};
+}

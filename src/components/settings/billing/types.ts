@@ -1,11 +1,12 @@
 
 export interface PaymentMethod {
+  id?: string; // Stripe payment method ID
   type: string;
   last4: string;
   expiryMonth: number;
   expiryYear: number;
   brand: string;
-  isDefault?: boolean;
+  isDefault: boolean;
   cardHolder: string;
   billingAddress: {
     street: string;

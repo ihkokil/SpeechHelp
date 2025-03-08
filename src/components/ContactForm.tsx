@@ -2,28 +2,65 @@
 import { useState } from 'react';
 import { Mail, MessageSquare } from 'lucide-react';
 import Translate from '@/components/Translate';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const ContactForm = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    setTimeout(() => {
-      // Reset form
-      setName('');
-      setEmail('');
-      setMessage('');
+    try {
+      // Call the contact form edge function
+      const { data, error } = await supabase.functions.invoke('send-contact-form', {
+        body: {
+          name: name,
+          email: email,
+          message: message
+        }
+      });
+
+      if (error) {
+        console.error('Contact form submission error:', error);
+        toast({
+          title: "Error sending message",
+          description: "Failed to send your message. Please try again or contact us directly at hello@speechhelp.ai",
+          variant: "destructive",
+        });
+      } else if (data?.success) {
+        // Reset form
+        setName('');
+        setEmail('');
+        setMessage('');
+        toast({
+          title: "Message sent successfully!",
+          description: "We'll get back to you soon.",
+          variant: "success",
+        });
+      } else {
+        console.error('Contact form submission failed:', data);
+        toast({
+          title: "Error sending message",
+          description: "Failed to send your message. Please try again or contact us directly at hello@speechhelp.ai",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error('Contact form submission error:', err);
+      toast({
+        title: "Error sending message",
+        description: "Failed to send your message. Please try again or contact us directly at hello@speechhelp.ai",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-      
-      // Show success message (would use toast in a real app)
-      alert('Message sent! We\'ll get back to you soon.');
-    }, 1500);
+    }
   };
 
   return (
@@ -56,7 +93,7 @@ const ContactForm = () => {
                   type="text"
                   id="name"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500"
-                  placeholder={name}
+                  placeholder="Your name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -71,7 +108,7 @@ const ContactForm = () => {
                   type="email"
                   id="email"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500"
-                  placeholder={email}
+                  placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -86,7 +123,7 @@ const ContactForm = () => {
                   id="message"
                   rows={5}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500"
-                  placeholder={message}
+                  placeholder="How can we help you?"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   required
@@ -104,7 +141,7 @@ const ContactForm = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Processing...
+                    Sending...
                   </span>
                 ) : (
                   <Translate text="contact.sendButton" />
