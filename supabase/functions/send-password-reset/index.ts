@@ -190,7 +190,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Generate password reset using Supabase Auth - but we'll extract the tokens manually
+    // Generate password reset using Supabase Auth
     const { data, error } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email: email,
@@ -223,16 +223,44 @@ serve(async (req) => {
       );
     }
 
-    // Extract tokens from the Supabase-generated URL
+    log('Supabase generated reset link:', resetLinkUrl);
+
+    // Parse the Supabase-generated URL to extract tokens
     const urlObj = new URL(resetLinkUrl);
-    const access_token = urlObj.searchParams.get('access_token') || urlObj.hash.match(/access_token=([^&]+)/)?.[1];
-    const refresh_token = urlObj.searchParams.get('refresh_token') || urlObj.hash.match(/refresh_token=([^&]+)/)?.[1];
+    let access_token = urlObj.searchParams.get('access_token');
+    let refresh_token = urlObj.searchParams.get('refresh_token');
     
-    // Create our custom reset URL with tokens as parameters (not hash)
+    // If tokens are not in search params, try hash
+    if (!access_token || !refresh_token) {
+      const hash = urlObj.hash.substring(1); // Remove the #
+      const hashParams = new URLSearchParams(hash);
+      access_token = access_token || hashParams.get('access_token');
+      refresh_token = refresh_token || hashParams.get('refresh_token');
+    }
+
+    log('Extracted tokens:', { 
+      hasAccessToken: !!access_token, 
+      hasRefreshToken: !!refresh_token,
+      accessTokenLength: access_token?.length || 0,
+      refreshTokenLength: refresh_token?.length || 0
+    });
+    
+    if (!access_token || !refresh_token) {
+      log('Failed to extract tokens from Supabase link');
+      return new Response(
+        JSON.stringify({ error: 'Failed to extract authentication tokens' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Create our custom reset URL with tokens as parameters
     const customResetUrl = new URL(resetUrl);
     customResetUrl.searchParams.set('type', 'recovery');
-    customResetUrl.searchParams.set('access_token', access_token || '');
-    customResetUrl.searchParams.set('refresh_token', refresh_token || '');
+    customResetUrl.searchParams.set('access_token', access_token);
+    customResetUrl.searchParams.set('refresh_token', refresh_token);
     
     const finalResetUrl = customResetUrl.toString();
 
