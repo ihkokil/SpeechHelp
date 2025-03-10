@@ -1,10 +1,10 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 import { Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface ResetPasswordFormProps {
   onBackToLogin: () => void;
@@ -16,12 +16,78 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sessionEstablished, setSessionEstablished] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const establishSession = async () => {
+      try {
+        // Get tokens from URL parameters
+        const params = new URLSearchParams(location.search);
+        const access_token = params.get('access_token');
+        const refresh_token = params.get('refresh_token');
+        const type = params.get('type');
+        
+        console.log('Password reset tokens from URL:', { 
+          hasAccessToken: !!access_token, 
+          hasRefreshToken: !!refresh_token,
+          type: type
+        });
+        
+        if (type === 'recovery' && access_token && refresh_token) {
+          console.log('Setting session for password reset...');
+          
+          // Set the session using the tokens from the reset link
+          const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+            access_token: access_token,
+            refresh_token: refresh_token
+          });
+
+          if (sessionError) {
+            console.error('Session error:', sessionError);
+            toast({
+              title: "Reset link expired",
+              description: "This password reset link has expired. Please request a new one.",
+              variant: "destructive"
+            });
+            return;
+          }
+
+          console.log('Session established successfully:', sessionData);
+          setSessionEstablished(true);
+        } else {
+          toast({
+            title: "Invalid reset link",
+            description: "This password reset link is invalid or has expired. Please request a new one.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        console.error('Error establishing session:', error);
+        toast({
+          title: "Reset link error",
+          description: "There was an error processing your reset link. Please try again.",
+          variant: "destructive"
+        });
+      }
+    };
+
+    establishSession();
+  }, [location.search, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    
+    if (!sessionEstablished) {
+      toast({
+        title: "Session not ready",
+        description: "Please wait for the reset link to be processed.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     if (newPassword !== confirmPassword) {
       toast({
@@ -29,35 +95,85 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
         description: "Please make sure your passwords match.",
         variant: "destructive"
       });
-      setLoading(false);
       return;
     }
 
-    try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) throw error;
-
+    if (newPassword.length < 6) {
       toast({
-        title: "Password updated",
-        description: "Your password has been updated successfully. You can now log in with your new password.",
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      console.log('Updating password...');
+
+      // Update the password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
       });
 
-      setNewPassword('');
-      setConfirmPassword('');
-      
-      // Navigate to login page after successful password reset
-      navigate('/auth?signin=true');
-    } catch (error: any) {
-      console.error('Password update error:', error);
+      if (updateError) {
+        console.error('Password update error:', updateError);
+        toast({
+          title: "Password reset failed",
+          description: updateError.message || "Failed to update password. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Password updated successfully');
+
       toast({
-        title: "Error updating password",
-        description: error.message || "An error occurred while updating your password",
+        title: "Password reset successful",
+        description: "Your password has been updated successfully. You can now sign in with your new password.",
+      });
+
+      // Sign out to clear the temporary session and redirect to login
+      await supabase.auth.signOut();
+      
+      // Navigate to login page
+      navigate('/auth?signin=true');
+
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      toast({
+        title: "Password reset failed",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
+
+  if (!sessionEstablished) {
+    return (
+      <>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Processing Reset Link</h1>
+          <p className="text-gray-600">Please wait while we process your password reset link...</p>
+        </div>
+        
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600 mx-auto mb-4"></div>
+          <button
+            type="button"
+            onClick={onBackToLogin}
+            className="inline-flex items-center text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Sign In
+          </button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
