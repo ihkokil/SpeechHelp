@@ -1,4 +1,3 @@
-
 import { Facebook, Twitter, Instagram, Linkedin, MessageSquare } from 'lucide-react';
 
 const Footer = () => {
@@ -72,7 +71,7 @@ const Footer = () => {
 
         <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-500 text-sm mb-4 md:mb-0">
-            © {currentYear} SpeechHelp is a registered service of Eloquence LLC | All rights reserved.
+            © {currentYear} SpeechHelp is a registered service of Creativity Crisis, LLC | All rights reserved.
           </p>
           <div className="flex space-x-6 text-sm">
             <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">Privacy Policy</a>
