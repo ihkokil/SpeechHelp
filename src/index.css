@@ -167,6 +167,6 @@ html {
 
 /* Hero section background */
 .hero-bg {
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/lovable-uploads/50679c49-77b5-4516-8ae8-b5e58c68187e.png') no-repeat center center;
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('/lovable-uploads/5e4d4d60-37ee-4a74-8fbb-da5352efc92b.png') no-repeat center center;
   background-size: cover;
 }
