@@ -16,7 +16,7 @@ const Hero = () => {
         <div className="max-w-5xl mx-auto text-center">
           {/* Main Headline */}
           <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in' : ''}`}>
-            Need a <span className="text-pink-400">creative speech?</span>
+            <span className="font-phenix">Need a</span> <span className="text-pink-400">creative speech?</span>
           </h1>
           
           {/* Subheadline */}
