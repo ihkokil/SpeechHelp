@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
@@ -35,13 +34,10 @@ const Navbar = () => {
               <span className={`font-black text-2xl ${isScrolled ? 'text-black' : 'text-white'}`}>
                 SPEECH
               </span>
-              <div className="ml-2 relative">
-                <div className="bg-purple-600 rounded-lg px-3 py-1 relative">
-                  <span className="text-white font-black text-2xl">
-                    HELP
-                  </span>
-                  <div className="absolute -bottom-2 -right-1 w-4 h-4 bg-purple-600 transform rotate-45"></div>
-                </div>
+              <div className="ml-2 bg-purple-600 rounded-lg px-3 py-1">
+                <span className="text-white font-black text-2xl">
+                  HELP
+                </span>
               </div>
             </div>
           </Link>
