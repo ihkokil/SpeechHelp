@@ -1,22 +1,30 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
 import { Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const isSignUpParam = queryParams.get('signup') === 'true';
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(isSignUpParam);
   const [loading, setLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Set isSignUp state based on URL parameter when it changes
+  useEffect(() => {
+    setIsSignUp(isSignUpParam);
+  }, [isSignUpParam]);
 
   // Redirect if already logged in
   useEffect(() => {
