@@ -55,19 +55,29 @@ const UserMenu = () => {
     );
   }
 
+  // Get user's name from metadata or email
+  const metadata = user.user_metadata || {};
+  const firstName = metadata.first_name;
+  const lastName = metadata.last_name;
+  
+  // Display name preference: first name > email username
+  const displayName = firstName || user.email?.split('@')[0];
+  const fullName = firstName && lastName ? `${firstName} ${lastName}` : displayName;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-gray-100">
           <UserCircle className="h-8 w-8 text-pink-600" />
           <span className="text-sm font-medium hidden md:block">
-            {user.email?.split('@')[0]}
+            {displayName}
           </span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <div className="px-2 py-1.5">
-          <p className="text-sm font-medium truncate">{user.email}</p>
+          <p className="text-sm font-medium truncate">{fullName}</p>
+          <p className="text-xs text-gray-500 truncate">{user.email}</p>
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem
