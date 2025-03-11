@@ -31,7 +31,7 @@ const Navbar = () => {
             to="/"
             className="flex items-center space-x-2"
           >
-            <span className="bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text text-2xl font-bold">
+            <span className={`text-2xl font-bold ${isScrolled ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-transparent bg-clip-text' : 'text-white'}`}>
               SpeechHelp
             </span>
           </Link>
@@ -40,31 +40,31 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             <Link
               to="/"
-              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+              className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-pink-600 font-medium transition-colors`}
             >
               Home
             </Link>
             <Link
               to="#features"
-              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+              className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-pink-600 font-medium transition-colors`}
             >
               Features
             </Link>
             <Link
               to="#how-it-works"
-              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+              className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-pink-600 font-medium transition-colors`}
             >
               How It Works
             </Link>
             <Link
               to="#testimonials"
-              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+              className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-pink-600 font-medium transition-colors`}
             >
               Testimonials
             </Link>
             <Link
               to="#contact"
-              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+              className={`${isScrolled ? 'text-gray-700' : 'text-white'} hover:text-pink-600 font-medium transition-colors`}
             >
               Contact
             </Link>
@@ -77,7 +77,7 @@ const Navbar = () => {
             <UserMenu />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700"
+              className={`${isScrolled ? 'text-gray-700' : 'text-white'}`}
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" />
