@@ -40,7 +40,7 @@ const Auth = () => {
   // Redirect if already logged in (except for reset password flow)
   useEffect(() => {
     if (user && !isResetPassword) {
-      navigate('/');
+      navigate('/dashboard');
     }
   }, [user, navigate, isResetPassword]);
 
