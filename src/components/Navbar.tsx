@@ -34,7 +34,7 @@ const Navbar = () => {
             <img 
               src="/SpeechHelp-Logo.png" 
               alt="SpeechHelp Logo" 
-              className="h-12.5" 
+              className="h-9" 
             />
           </Link>
 
