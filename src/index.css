@@ -127,6 +127,20 @@
   animation-delay: 0.6s;
 }
 
+/* Delay classes */
+.delay-100 {
+  animation-delay: 0.1s;
+}
+.delay-200 {
+  animation-delay: 0.2s;
+}
+.delay-300 {
+  animation-delay: 0.3s;
+}
+.delay-400 {
+  animation-delay: 0.4s;
+}
+
 /* Custom hover effects */
 .hover-lift {
   @apply transition-transform duration-300;
@@ -151,6 +165,6 @@ html {
 
 /* Hero section background */
 .hero-bg {
-  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/public/lovable-uploads/11e8d1b0-6fd1-45c1-935c-bbdf9edffc46.png') no-repeat center center;
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/lovable-uploads/af189d4e-060b-49b0-9ebd-2b9fb8e15c52.png') no-repeat center center;
   background-size: cover;
 }
