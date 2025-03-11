@@ -90,14 +90,6 @@ const ContactForm = () => {
                 <ContactIcon title="Live Chat Support">
                   <MessageSquare className="h-5 w-5 text-pink-600" />
                 </ContactIcon>
-                
-                <div className="mt-12">
-                  <img 
-                    src="/lovable-uploads/af189d4e-060b-49b0-9ebd-2b9fb8e15c52.png" 
-                    alt="Speech Help Illustration" 
-                    className="max-w-xs mx-auto opacity-80"
-                  />
-                </div>
               </div>
             </div>
           </div>
