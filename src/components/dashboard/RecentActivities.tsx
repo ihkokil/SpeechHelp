@@ -1,0 +1,86 @@
+
+import { CircleCheckBig, MicIcon, FileTextIcon, Clock } from 'lucide-react';
+import { format, formatDistanceToNow } from 'date-fns';
+
+type Activity = {
+  id: string;
+  type: 'practice' | 'feedback' | 'completion';
+  title: string;
+  timestamp: Date;
+  details?: string;
+};
+
+const MOCK_ACTIVITIES: Activity[] = [
+  {
+    id: '1',
+    type: 'practice',
+    title: 'Practiced "Marketing Pitch"',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+    details: '15 minutes practice session'
+  },
+  {
+    id: '2',
+    type: 'feedback',
+    title: 'Received Feedback',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+    details: 'On "Team Update" speech'
+  },
+  {
+    id: '3',
+    type: 'completion',
+    title: 'Completed "Introduction to AI" preparation',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48), // 2 days ago
+  }
+];
+
+const RecentActivities = () => {
+  const getActivityIcon = (type: Activity['type']) => {
+    switch (type) {
+      case 'practice':
+        return <MicIcon className="h-6 w-6 text-pink-500" />;
+      case 'feedback':
+        return <FileTextIcon className="h-6 w-6 text-purple-500" />;
+      case 'completion':
+        return <CircleCheckBig className="h-6 w-6 text-green-500" />;
+      default:
+        return <Clock className="h-6 w-6 text-gray-500" />;
+    }
+  };
+
+  const getTimeAgo = (date: Date) => {
+    return formatDistanceToNow(date, { addSuffix: true });
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm">
+      <div className="border-b p-4">
+        <h2 className="text-lg font-semibold text-gray-800">Recent Activities</h2>
+      </div>
+      <div className="p-4">
+        <ul className="space-y-4">
+          {MOCK_ACTIVITIES.map((activity) => (
+            <li key={activity.id} className="flex">
+              <div className="flex-shrink-0 mr-3">
+                {getActivityIcon(activity.type)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                {activity.details && (
+                  <p className="text-sm text-gray-500">{activity.details}</p>
+                )}
+                <p className="text-xs text-gray-400 mt-1">{getTimeAgo(activity.timestamp)}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="border-t p-4 text-center">
+        <button className="text-pink-600 hover:text-pink-800 text-sm font-medium">
+          View All Activities
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default RecentActivities;

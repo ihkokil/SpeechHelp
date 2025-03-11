@@ -5,8 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import WelcomeCard from '@/components/dashboard/WelcomeCard';
 import SpeechSummaryCard from '@/components/dashboard/SpeechSummaryCard';
+import UpcomingSpeeches from '@/components/dashboard/UpcomingSpeeches';
+import RecentActivities from '@/components/dashboard/RecentActivities';
+import PerformanceMetrics from '@/components/dashboard/PerformanceMetrics';
 import LanguageSelector from '@/components/dashboard/LanguageSelector';
-import { CalendarIcon, FileTextIcon, ShieldIcon } from 'lucide-react';
+import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-react';
 import { format } from 'date-fns';
 
 const Dashboard = () => {
@@ -52,9 +55,9 @@ const Dashboard = () => {
       <DashboardSidebar />
       
       {/* Main Content */}
-      <div className="flex-1 bg-gray-50">
+      <div className="flex-1 bg-gray-50 overflow-auto">
         {/* Header with date and language selector */}
-        <header className="flex justify-between items-center p-6">
+        <header className="flex justify-between items-center p-6 sticky top-0 bg-gray-50 z-10">
           <div className="flex items-center">
             <div className="bg-purple-600 text-white px-4 py-2 rounded-md flex items-center">
               <CalendarIcon className="mr-2 h-5 w-5" />
@@ -65,32 +68,59 @@ const Dashboard = () => {
         </header>
 
         {/* Main dashboard content */}
-        <main className="px-8 pb-8">
+        <main className="px-6 pb-12">
           {/* Welcome card */}
           <WelcomeCard userName={userName} />
           
-          {/* Speech Summary Section */}
-          <div className="mt-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Speech Summary</h2>
-            
-            <div className="grid grid-cols-1 gap-4">
-              {/* Total Speeches Card */}
-              <SpeechSummaryCard 
-                icon={<FileTextIcon className="h-6 w-6 text-gray-600" />}
-                count={8}
-                label="Total Speeches"
-                period="This month"
-                bgColor="bg-gray-100"
-              />
+          {/* Dashboard Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+            {/* Left Column */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Speech Summary Section */}
+              <div>
+                <h2 className="text-xl font-bold text-gray-800 mb-4">Summary</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Total Speeches Card */}
+                  <SpeechSummaryCard 
+                    icon={<FileTextIcon className="h-6 w-6 text-gray-600" />}
+                    count={8}
+                    label="Total Speeches"
+                    period="This month"
+                    bgColor="bg-gray-100"
+                  />
+                  
+                  {/* Speeches in Progress Card */}
+                  <SpeechSummaryCard 
+                    icon={<ShieldIcon className="h-6 w-6 text-gray-600" />}
+                    count={2}
+                    label="In Progress"
+                    period="This month"
+                    bgColor="bg-red-50"
+                  />
+                  
+                  {/* Improvement Score Card */}
+                  <SpeechSummaryCard 
+                    icon={<TrendingUpIcon className="h-6 w-6 text-gray-600" />}
+                    count={15}
+                    label="Improvement %"
+                    period="Last 30 days"
+                    bgColor="bg-green-50"
+                  />
+                </div>
+              </div>
               
-              {/* Speeches in Progress Card */}
-              <SpeechSummaryCard 
-                icon={<ShieldIcon className="h-6 w-6 text-gray-600" />}
-                count={2}
-                label="Speeches in Progress"
-                period="This month"
-                bgColor="bg-red-50"
-              />
+              {/* Performance Metrics */}
+              <PerformanceMetrics />
+              
+              {/* Upcoming Speeches */}
+              <UpcomingSpeeches />
+            </div>
+            
+            {/* Right Column */}
+            <div className="space-y-6">
+              {/* Recent Activities */}
+              <RecentActivities />
             </div>
           </div>
         </main>
