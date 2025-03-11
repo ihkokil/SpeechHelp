@@ -8,10 +8,9 @@ interface StepProps {
   description: string;
   number: number;
   isVisible: boolean;
-  imageUrl?: string;
 }
 
-const Step = ({ icon, title, description, number, isVisible, imageUrl }: StepProps) => {
+const Step = ({ icon, title, description, number, isVisible }: StepProps) => {
   return (
     <div className={`mb-16 relative opacity-0 ${isVisible ? `animate-slide-in stagger-${number}` : ''}`}>
       <div className="flex items-start">
@@ -26,16 +25,6 @@ const Step = ({ icon, title, description, number, isVisible, imageUrl }: StepPro
         <div className="flex-1 pt-1">
           <h3 className="text-xl font-semibold text-pink-600 mb-2">{title}</h3>
           <p className="text-gray-600 mb-6 max-w-md">{description}</p>
-          
-          {imageUrl && (
-            <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm mt-6 max-w-2xl">
-              <img 
-                src={imageUrl} 
-                alt={`Step ${number} visualization`} 
-                className="w-full h-auto rounded-md"
-              />
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -71,26 +60,22 @@ const HowItWorks = () => {
     {
       icon: <PencilIcon className="h-5 w-5 text-pink-600" />,
       title: "Tell about your occasion",
-      description: "Start by selecting the type of speech and providing key details about your audience, topic, and goals.",
-      imageUrl: "/lovable-uploads/af189d4e-060b-49b0-9ebd-2b9fb8e15c52.png"
+      description: "Start by selecting the type of speech and providing key details about your audience, topic, and goals."
     },
     {
       icon: <SparklesIcon className="h-5 w-5 text-pink-600" />,
       title: "Choose Your Style",
-      description: "Our advanced AI analyzes your inputs and creates a tailored speech draft that matches your specific needs.",
-      imageUrl: "/lovable-uploads/af189d4e-060b-49b0-9ebd-2b9fb8e15c52.png"
+      description: "Our advanced AI analyzes your inputs and creates a tailored speech draft that matches your specific needs."
     },
     {
       icon: <PencilIcon className="h-5 w-5 text-pink-600" />,
       title: "Customize Perfect Speech",
-      description: "Customize the generated speech with our intuitive editor, adding personal touches and refining content.",
-      imageUrl: "/lovable-uploads/af189d4e-060b-49b0-9ebd-2b9fb8e15c52.png"
+      description: "Customize the generated speech with our intuitive editor, adding personal touches and refining content."
     },
     {
       icon: <MicIcon className="h-5 w-5 text-pink-600" />,
       title: "Edit and Practice",
-      description: "Use our delivery tools to practice your speech, receive feedback, and deliver with confidence.",
-      imageUrl: "/lovable-uploads/af189d4e-060b-49b0-9ebd-2b9fb8e15c52.png"
+      description: "Use our delivery tools to practice your speech, receive feedback, and deliver with confidence."
     }
   ];
 
@@ -115,7 +100,6 @@ const HowItWorks = () => {
               description={step.description}
               number={index + 1}
               isVisible={isVisible}
-              imageUrl={step.imageUrl}
             />
           ))}
         </div>
