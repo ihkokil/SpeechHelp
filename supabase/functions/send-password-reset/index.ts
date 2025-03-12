@@ -190,19 +190,15 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Generate password reset using Supabase Auth
-    const { data, error } = await supabase.auth.admin.generateLink({
-      type: 'recovery',
-      email: email,
-      options: {
-        redirectTo: resetUrl
-      }
+    // Use Supabase's built-in password reset
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: resetUrl
     });
 
     if (error) {
-      log('Error generating reset link:', error);
+      log('Error sending password reset:', error);
       return new Response(
-        JSON.stringify({ error: 'Failed to generate reset link' }),
+        JSON.stringify({ error: 'Failed to send password reset email' }),
         {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -210,234 +206,22 @@ serve(async (req) => {
       );
     }
 
-    const resetLinkUrl = data.properties?.action_link;
-    
-    if (!resetLinkUrl) {
-      log('No reset link generated');
-      return new Response(
-        JSON.stringify({ error: 'Failed to generate reset link' }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
+    log('Password reset email sent successfully via Supabase');
 
-    log('Generated action link:', resetLinkUrl);
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Password reset email sent successfully',
+        emailSent: true,
+        recipient: email,
+        timestamp: new Date().toISOString()
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
 
-    // Parse the Supabase-generated URL to extract tokens
-    const urlObj = new URL(resetLinkUrl);
-    let access_token = '';
-    let refresh_token = '';
-
-    // First try to get from URL parameters
-    access_token = urlObj.searchParams.get('access_token') || '';
-    refresh_token = urlObj.searchParams.get('refresh_token') || '';
-
-    // If not found in parameters, try to extract from hash
-    if (!access_token || !refresh_token) {
-      const hash = urlObj.hash.substring(1); // Remove the #
-      const hashParams = new URLSearchParams(hash);
-      access_token = hashParams.get('access_token') || access_token;
-      refresh_token = hashParams.get('refresh_token') || refresh_token;
-    }
-
-    // Log what we extracted
-    log('Extracted tokens:', { 
-      hasAccessToken: !!access_token, 
-      hasRefreshToken: !!refresh_token,
-      accessTokenLength: access_token.length,
-      refreshTokenLength: refresh_token.length
-    });
-
-    if (!access_token || !refresh_token) {
-      log('Failed to extract tokens from Supabase link:', {
-        fullUrl: resetLinkUrl,
-        searchParams: Array.from(urlObj.searchParams.entries()),
-        hash: urlObj.hash
-      });
-      
-      return new Response(
-        JSON.stringify({ 
-          error: 'Failed to extract authentication tokens',
-          debug: {
-            originalUrl: resetLinkUrl,
-            searchParams: Array.from(urlObj.searchParams.entries()),
-            hash: urlObj.hash
-          }
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-    
-    // Create our custom reset URL with tokens as parameters
-    const customResetUrl = new URL(resetUrl);
-    customResetUrl.searchParams.set('type', 'recovery');
-    customResetUrl.searchParams.set('access_token', access_token);
-    customResetUrl.searchParams.set('refresh_token', refresh_token);
-    
-    const finalResetUrl = customResetUrl.toString();
-
-    log('Final reset URL generated:', finalResetUrl);
-
-    // Check SMTP configuration
-    const smtpHost = Deno.env.get('SMTP_HOST');
-    const smtpPort = Deno.env.get('SMTP_PORT');
-    const smtpUser = Deno.env.get('SMTP_USER');
-    const smtpPassword = Deno.env.get('SMTP_PASSWORD');
-
-    log('SMTP Configuration check:', {
-      hasHost: !!smtpHost,
-      hasPort: !!smtpPort,
-      hasUser: !!smtpUser,
-      hasPassword: !!smtpPassword,
-      host: smtpHost,
-      port: smtpPort,
-      user: smtpUser ? `${smtpUser.substring(0, 3)}***${smtpUser.substring(smtpUser.length - 3)}` : 'N/A'
-    });
-
-    if (!smtpHost || !smtpPort || !smtpUser || !smtpPassword) {
-      log('SMTP configuration incomplete');
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Password reset link generated successfully',
-          note: 'Email service not configured - please contact support for the reset link',
-          resetLink: finalResetUrl // Include for debugging/testing
-        }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    try {
-      log('Sending password reset email via SMTP with TLS');
-      
-      const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reset Your SpeechHelp Password</title>
-</head>
-<body style="background-color: #f6f9fc; font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif; padding: 50px 0; margin: 0;">
-  <div style="background-color: #ffffff; border: 1px solid #eee; border-radius: 10px; box-shadow: 0 5px 15px rgba(20, 50, 70, 0.08); margin: 0 auto; max-width: 600px; padding: 40px 30px;">
-    
-    <div style="text-align: center; margin-bottom: 30px;">
-      <img src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg" 
-           alt="SpeechHelp" 
-           style="width: 150px; height: auto; display: block; margin: 0 auto;" />
-    </div>
-
-    <div>
-      <h1 style="color: #be185d; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; font-size: 32px; font-weight: bold; margin: 0 0 30px; text-align: center;">
-        Reset Your Password
-      </h1>
-      
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 16px 0;">
-        We received a request to reset the password for your SpeechHelp account (${email}).
-      </p>
-
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 16px 0;">
-        Click the button below to create a new password. This link will expire in 24 hours for security reasons.
-      </p>
-
-      <div style="margin: 40px 0; text-align: center;">
-        <a href="${finalResetUrl}" style="background-color: #be185d; border-radius: 8px; color: #fff; display: inline-block; font-size: 16px; font-weight: bold; padding: 16px 32px; text-decoration: none; text-transform: uppercase;">
-          Reset Your Password
-        </a>
-      </div>
-
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 16px 0;">
-        If the button above doesn't work, copy and paste this link into your browser:
-      </p>
-      
-      <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 16px 0;">
-        <a href="${finalResetUrl}" style="color: #be185d; font-weight: 500; text-decoration: none; word-break: break-all;">
-          ${finalResetUrl}
-        </a>
-      </p>
-
-      <hr style="border: none; border-top: 1px solid #eaeaea; margin: 30px 0;">
-
-      <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; color: #92400e; font-size: 14px; margin: 20px 0; padding: 16px;">
-        <strong>Security Note:</strong> If you didn't request this password reset, you can safely ignore this email. Your password will remain unchanged.
-      </div>
-    </div>
-
-    <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eaeaea;">
-      <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 12px 0;">
-        Need help? Contact our support team at 
-        <a href="mailto:hello@speechhelp.ai" style="color: #be185d; font-weight: 500; text-decoration: none;">
-          hello@speechhelp.ai
-        </a>
-      </p>
-      
-      <p style="color: #9ca3af; font-size: 12px; margin-top: 20px; margin-bottom: 8px;">
-        © 2024 SpeechHelp. All rights reserved.
-      </p>
-      
-      <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 12px 0;">
-        SpeechHelp, Inc. | Your AI Speech Assistant
-      </p>
-    </div>
-  </div>
-</body>
-</html>
-      `;
-
-      // Send email using SMTP with TLS
-      await sendSMTPEmail(
-        smtpHost,
-        smtpPort,
-        smtpUser,
-        smtpPassword,
-        email,
-        'Reset Your SpeechHelp Password',
-        htmlContent
-      );
-
-      log('Password reset email sent successfully to:', email);
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Password reset email sent successfully',
-          emailSent: true,
-          recipient: email,
-          timestamp: new Date().toISOString()
-        }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-
-    } catch (emailError) {
-      log('Email sending failed:', emailError);
-      
-      // Return success even if email fails since the reset link exists
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'Password reset link generated (email delivery may have failed)',
-          note: 'If you don\'t receive the email, please contact support',
-          resetLink: finalResetUrl, // Include for debugging/testing
-          emailError: emailError.message
-        }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
   } catch (error) {
     log('Error in password reset function:', error);
     return new Response(
