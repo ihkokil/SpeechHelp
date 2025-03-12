@@ -190,15 +190,19 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Use Supabase's built-in password reset functionality
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: resetUrl
+    // Generate password reset using Supabase Auth - but we'll extract the tokens manually
+    const { data, error } = await supabase.auth.admin.generateLink({
+      type: 'recovery',
+      email: email,
+      options: {
+        redirectTo: resetUrl
+      }
     });
 
     if (error) {
-      log('Error sending reset email:', error);
+      log('Error generating reset link:', error);
       return new Response(
-        JSON.stringify({ error: 'Failed to send reset email' }),
+        JSON.stringify({ error: 'Failed to generate reset link' }),
         {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -206,9 +210,35 @@ serve(async (req) => {
       );
     }
 
-    log('Supabase password reset email sent successfully');
+    const resetLinkUrl = data.properties?.action_link;
+    
+    if (!resetLinkUrl) {
+      log('No reset link generated');
+      return new Response(
+        JSON.stringify({ error: 'Failed to generate reset link' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
-    // Check SMTP configuration for custom email
+    // Extract tokens from the Supabase-generated URL
+    const urlObj = new URL(resetLinkUrl);
+    const access_token = urlObj.searchParams.get('access_token') || urlObj.hash.match(/access_token=([^&]+)/)?.[1];
+    const refresh_token = urlObj.searchParams.get('refresh_token') || urlObj.hash.match(/refresh_token=([^&]+)/)?.[1];
+    
+    // Create our custom reset URL with tokens as parameters (not hash)
+    const customResetUrl = new URL(resetUrl);
+    customResetUrl.searchParams.set('type', 'recovery');
+    customResetUrl.searchParams.set('access_token', access_token || '');
+    customResetUrl.searchParams.set('refresh_token', refresh_token || '');
+    
+    const finalResetUrl = customResetUrl.toString();
+
+    log('Custom reset URL generated successfully');
+
+    // Check SMTP configuration
     const smtpHost = Deno.env.get('SMTP_HOST');
     const smtpPort = Deno.env.get('SMTP_PORT');
     const smtpUser = Deno.env.get('SMTP_USER');
@@ -224,12 +254,27 @@ serve(async (req) => {
       user: smtpUser ? `${smtpUser.substring(0, 3)}***${smtpUser.substring(smtpUser.length - 3)}` : 'N/A'
     });
 
-    // If SMTP is configured, also send a custom email
-    if (smtpHost && smtpPort && smtpUser && smtpPassword) {
-      try {
-        log('Sending custom password reset email via SMTP');
-        
-        const htmlContent = `
+    if (!smtpHost || !smtpPort || !smtpUser || !smtpPassword) {
+      log('SMTP configuration incomplete');
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Password reset link generated successfully',
+          note: 'Email service not configured - please contact support for the reset link',
+          resetLink: finalResetUrl // Include for debugging/testing
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    try {
+      log('Sending password reset email via SMTP with TLS');
+      
+      const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -260,7 +305,7 @@ serve(async (req) => {
       </p>
 
       <div style="margin: 40px 0; text-align: center;">
-        <a href="${resetUrl}" style="background-color: #be185d; border-radius: 8px; color: #fff; display: inline-block; font-size: 16px; font-weight: bold; padding: 16px 32px; text-decoration: none; text-transform: uppercase;">
+        <a href="${finalResetUrl}" style="background-color: #be185d; border-radius: 8px; color: #fff; display: inline-block; font-size: 16px; font-weight: bold; padding: 16px 32px; text-decoration: none; text-transform: uppercase;">
           Reset Your Password
         </a>
       </div>
@@ -270,8 +315,8 @@ serve(async (req) => {
       </p>
       
       <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 16px 0;">
-        <a href="${resetUrl}" style="color: #be185d; font-weight: 500; text-decoration: none; word-break: break-all;">
-          ${resetUrl}
+        <a href="${finalResetUrl}" style="color: #be185d; font-weight: 500; text-decoration: none; word-break: break-all;">
+          ${finalResetUrl}
         </a>
       </p>
 
@@ -301,42 +346,53 @@ serve(async (req) => {
   </div>
 </body>
 </html>
-        `;
+      `;
 
-        // Send custom email using SMTP
-        await sendSMTPEmail(
-          smtpHost,
-          smtpPort,
-          smtpUser,
-          smtpPassword,
-          email,
-          'Reset Your SpeechHelp Password',
-          htmlContent
-        );
+      // Send email using SMTP with TLS
+      await sendSMTPEmail(
+        smtpHost,
+        smtpPort,
+        smtpUser,
+        smtpPassword,
+        email,
+        'Reset Your SpeechHelp Password',
+        htmlContent
+      );
 
-        log('Custom password reset email sent successfully via SMTP');
-      } catch (emailError) {
-        log('Custom email sending failed (but Supabase email was sent):', emailError);
-        // Don't fail the request if custom email fails, Supabase email was sent
-      }
+      log('Password reset email sent successfully to:', email);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Password reset email sent successfully',
+          emailSent: true,
+          recipient: email,
+          timestamp: new Date().toISOString()
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+
+    } catch (emailError) {
+      log('Email sending failed:', emailError);
+      
+      // Return success even if email fails since the reset link exists
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Password reset link generated (email delivery may have failed)',
+          note: 'If you don\'t receive the email, please contact support',
+          resetLink: finalResetUrl, // Include for debugging/testing
+          emailError: emailError.message
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
-
-    log('Password reset process completed successfully');
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Password reset email sent successfully',
-        emailSent: true,
-        recipient: email,
-        timestamp: new Date().toISOString()
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
-
   } catch (error) {
     log('Error in password reset function:', error);
     return new Response(
