@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -8,12 +9,12 @@ import AuthContainer from '@/components/auth/AuthContainer';
 import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
-import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
+import PasswordResetForm from '@/components/auth/PasswordResetForm';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const [isResetPassword, setIsResetPassword] = useState(false);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,25 +25,25 @@ const Auth = () => {
   const handleSwitchToSignUp = () => {
     setIsSignUp(true);
     setIsForgotPassword(false);
-    setIsResetPassword(false);
+    setIsPasswordReset(false);
   };
   
   const handleSwitchToSignIn = () => {
     setIsSignUp(false);
     setIsForgotPassword(false);
-    setIsResetPassword(false);
+    setIsPasswordReset(false);
   };
   
   const handleSwitchToForgotPassword = () => {
     setIsForgotPassword(true);
     setIsSignUp(false);
-    setIsResetPassword(false);
+    setIsPasswordReset(false);
   };
   
   const handleBackToLogin = () => {
     setIsForgotPassword(false);
     setIsSignUp(false);
-    setIsResetPassword(false);
+    setIsPasswordReset(false);
   };
 
   // Check for URL parameters - this needs to run first to prevent redirect
@@ -60,11 +61,13 @@ const Auth = () => {
     
     // Check if this is a password reset link - check both URL params and hash
     const type = params.get('type') || hashParams.get('type');
+    const access_token = hashParams.get('access_token');
+    const refresh_token = hashParams.get('refresh_token');
     
     // Handle password reset flow FIRST - this takes priority
-    if (type === 'recovery') {
-      console.log('Auth: Password reset flow detected');
-      setIsResetPassword(true);
+    if (type === 'recovery' && access_token && refresh_token) {
+      console.log('Auth: Password reset flow detected with valid tokens');
+      setIsPasswordReset(true);
       setIsSignUp(false);
       setIsForgotPassword(false);
       return; // Exit early to prevent other flows
@@ -75,12 +78,12 @@ const Auth = () => {
       console.log('Auth: Signup flow detected');
       setIsSignUp(true);
       setAutoFocusFirstName(true);
-      setIsResetPassword(false);
+      setIsPasswordReset(false);
       setIsForgotPassword(false);
     } else if (params.get('signin') === 'true') {
       console.log('Auth: Signin flow detected');
       setIsSignUp(false);
-      setIsResetPassword(false);
+      setIsPasswordReset(false);
       setIsForgotPassword(false);
     }
   }, [location]);
@@ -88,7 +91,7 @@ const Auth = () => {
   // Redirect if user is logged in - but NOT during password reset
   useEffect(() => {
     // Don't redirect during password reset flow
-    if (isResetPassword) {
+    if (isPasswordReset) {
       console.log('Auth: Password reset in progress, not redirecting');
       return;
     }
@@ -97,10 +100,10 @@ const Auth = () => {
       console.log('Auth: User is logged in, redirecting to dashboard');
       navigate('/dashboard');
     }
-  }, [user, navigate, isLoading, isResetPassword]);
+  }, [user, navigate, isLoading, isPasswordReset]);
 
   // Show loading state
-  if (isLoading && !isResetPassword) {
+  if (isLoading && !isPasswordReset) {
     return (
       <AuthContainer>
         <div className="text-center">
@@ -112,10 +115,10 @@ const Auth = () => {
   }
 
   // For password reset, always show the form regardless of user state
-  if (isResetPassword) {
+  if (isPasswordReset) {
     return (
       <AuthContainer>
-        <ResetPasswordForm onBackToLogin={handleBackToLogin} />
+        <PasswordResetForm onBackToLogin={handleBackToLogin} />
       </AuthContainer>
     );
   }
