@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Eye, EyeOff, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(8, 'Password must be at least 8 characters'),
@@ -39,9 +40,20 @@ const PasswordChangeForm = () => {
   const onSubmit = async (data: PasswordFormValues) => {
     setIsSubmitting(true);
     try {
-      // In a real app, you would call your backend API to update the password
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Changing password:', data);
+      // Update password using Supabase
+      const { error } = await supabase.auth.updateUser({
+        password: data.newPassword
+      });
+
+      if (error) {
+        console.error('Error changing password:', error);
+        toast({
+          title: "Update failed",
+          description: error.message || "There was a problem updating your password. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
       
       toast({
         title: "Password updated",

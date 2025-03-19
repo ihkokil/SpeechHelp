@@ -183,56 +183,6 @@ export const completeLogin = async (
 	}
 };
 
-export const sendPasswordReset = async (
-	email: string,
-	showToast: ShowToastFunction
-) => {
-	try {
-		console.log('Password reset: Starting password reset for:', email);
-		
-		// Call our edge function to send the password reset email with custom URL
-		const { data, error } = await supabase.functions.invoke('send-password-reset', {
-			body: { 
-				email,
-				resetUrl: `${window.location.origin}/auth` // Don't include type param here
-			}
-		});
-
-		if (error) {
-			console.error('Password reset error:', error);
-			showToast({
-				title: "Reset failed",
-				description: "Unable to send password reset email. Please try again.",
-				variant: "destructive"
-			});
-			return { success: false };
-		}
-
-		if (data.success) {
-			showToast({
-				title: "Reset email sent",
-				description: "Check your email for password reset instructions.",
-			});
-			return { success: true };
-		} else {
-			showToast({
-				title: "Reset failed",
-				description: data.message || "Unable to send password reset email.",
-				variant: "destructive"
-			});
-			return { success: false };
-		}
-	} catch (error: any) {
-		console.error('Password reset error:', error);
-		showToast({
-			title: "Reset failed",
-			description: "Unable to send password reset email. Please try again.",
-			variant: "destructive"
-		});
-		return { success: false };
-	}
-};
-
 export const signUp = async (
 	email: string,
 	password: string,
