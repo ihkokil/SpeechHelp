@@ -11,7 +11,17 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="hero-bg text-white pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
+    <section className="text-white pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden relative">
+      {/* Image Background */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png" 
+          alt="Woman giving speech to an audience" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/60"></div>
+      </div>
+      
       <div className="container relative z-10 mx-auto px-6 md:px-12">
         <div className="max-w-5xl mx-auto text-center">
           {/* Main Headline */}
