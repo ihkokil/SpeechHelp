@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
@@ -20,9 +19,9 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
     setLoading(true);
 
     try {
-      // Use Supabase's built-in password reset functionality
+      // Use Supabase's built-in password reset functionality with explicit redirect
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`
+        redirectTo: `${window.location.origin}/auth#type=recovery`
       });
 
       if (error) {
