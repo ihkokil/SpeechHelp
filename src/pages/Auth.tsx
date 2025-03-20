@@ -44,7 +44,7 @@ const Auth = () => {
     setIsResetPassword(false);
   };
 
-  // Check URL parameters for specific flows
+  // Check URL parameters for specific flows - this runs FIRST
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     
@@ -74,6 +74,7 @@ const Auth = () => {
     }
     
     if (isPasswordReset) {
+      console.log('Auth: Setting reset password state to true');
       setIsResetPassword(true);
       setIsSignUp(false);
       setIsForgotPassword(false);
@@ -101,13 +102,22 @@ const Auth = () => {
     }
   }, [location.search, location.hash]);
 
-  // Redirect if user is logged in (but not during password reset)
+  // Redirect if user is logged in (but NEVER during password reset)
   useEffect(() => {
-    if (!isLoading && user && !isResetPassword) {
-      console.log('Auth: User is logged in, redirecting to dashboard');
+    // Only redirect if:
+    // 1. Not loading
+    // 2. User is logged in
+    // 3. NOT in password reset flow
+    // 4. URL doesn't contain recovery tokens
+    const hasRecoveryTokens = location.hash.includes('type=recovery') && 
+                              location.hash.includes('access_token') && 
+                              location.hash.includes('refresh_token');
+    
+    if (!isLoading && user && !isResetPassword && !hasRecoveryTokens) {
+      console.log('Auth: User is logged in and not resetting password, redirecting to dashboard');
       navigate('/dashboard');
     }
-  }, [user, navigate, isLoading, isResetPassword]);
+  }, [user, navigate, isLoading, isResetPassword, location.hash]);
 
   // Show loading state
   if (isLoading) {
@@ -122,15 +132,20 @@ const Auth = () => {
   }
 
   // Don't render anything if user is logged in and not resetting password (will redirect)
-  if (user && !isResetPassword) {
+  // BUT always show reset form if we have recovery tokens in URL
+  const hasRecoveryTokens = location.hash.includes('type=recovery') && 
+                            location.hash.includes('access_token') && 
+                            location.hash.includes('refresh_token');
+  
+  if (user && !isResetPassword && !hasRecoveryTokens) {
     console.log('Auth: User logged in, rendering null (will redirect)');
     return null;
   }
 
-  console.log('Auth: Rendering main auth forms, isResetPassword:', isResetPassword);
+  console.log('Auth: Rendering main auth forms, isResetPassword:', isResetPassword, 'hasRecoveryTokens:', hasRecoveryTokens);
   return (
     <AuthContainer>
-      {isResetPassword ? (
+      {isResetPassword || hasRecoveryTokens ? (
         <ResetPasswordForm onBackToLogin={handleBackToLogin} />
       ) : isForgotPassword ? (
         <ForgotPasswordForm onBackToLogin={handleBackToLogin} />
