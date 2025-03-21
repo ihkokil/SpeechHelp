@@ -313,9 +313,7 @@ const SpeechLab = () => {
   const [isQuestionnaire, setIsQuestionnaire] = useState(false);
   const [questionnaireAnswers, setQuestionnaireAnswers] = useState<Record<string, any>>({});
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
-  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [speechTitle, setSpeechTitle] = useState('');
-  const [isNewSpeechDialogOpen, setIsNewSpeechDialogOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
 
   useEffect(() => {
@@ -341,12 +339,10 @@ const SpeechLab = () => {
     setQuestionnaireAnswers({});
     setCurrentQuestion(0);
     
-    // Update immediately to step 3 (skipping the name step)
     setCurrentStep(3);
     
     const speechType = speechTypes.find(type => type.value === value)?.label;
     
-    // Auto-generate a default title based on the speech type
     const defaultTitle = `${speechType} - ${new Date().toLocaleDateString()}`;
     setSpeechTitle(defaultTitle);
     
@@ -364,7 +360,6 @@ const SpeechLab = () => {
     setShowQuestionnaire(true);
     setIsQuestionnaire(true);
     
-    // Move directly to step 4 (Details) from step 3 (Select Type)
     setCurrentStep(4);
     
     const userMessage: Message = {
@@ -396,7 +391,7 @@ const SpeechLab = () => {
   const handleQuestionnaireSubmit = () => {
     setIsGeneratingSpeech(true);
     setShowQuestionnaire(false);
-    setCurrentStep(5); // Review & Save
+    setCurrentStep(5);
     
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -421,8 +416,6 @@ const SpeechLab = () => {
       setGeneratedSpeech(speech);
       setIsGeneratingSpeech(false);
       setActiveTab('result');
-      
-      // Title is already set when selecting speech type
       
       toast({
         title: "Speech Generated!",
@@ -719,12 +712,7 @@ const SpeechLab = () => {
     });
   };
 
-  const handleSaveSpeech = () => {
-    if (!generatedSpeech) return;
-    setIsSaveDialogOpen(true);
-  };
-
-  const confirmSaveSpeech = async () => {
+  const handleSaveSpeech = async () => {
     if (!generatedSpeech || !user) return;
     
     try {
@@ -733,8 +721,6 @@ const SpeechLab = () => {
         generatedSpeech,
         selectedSpeechType
       );
-      
-      setIsSaveDialogOpen(false);
       
       toast({
         title: "Speech Saved",
@@ -751,10 +737,8 @@ const SpeechLab = () => {
   };
 
   const handleCreateNewSpeech = () => {
-    // Move directly to speech type selection (step 2)
     setCurrentStep(2);
     
-    // Generate a default title
     const defaultTitle = `New Speech - ${new Date().toLocaleDateString()}`;
     setSpeechTitle(defaultTitle);
     
@@ -806,7 +790,6 @@ const SpeechLab = () => {
         );
       
       case 2:
-        // Skip the "Name your speech" step and go directly to speech type selection
         return (
           <div className="flex flex-col h-full p-8">
             <h2 className="text-2xl font-bold mb-4">Choose Your Speech Type</h2>
@@ -1015,7 +998,10 @@ const SpeechLab = () => {
                 <Card>
                   <CardHeader className="pb-3">
                     <div className="flex justify-between items-center">
-                      <CardTitle>Generated Speech</CardTitle>
+                      <div className="flex flex-col">
+                        <CardTitle>Generated Speech</CardTitle>
+                        <CardDescription>Title: {speechTitle}</CardDescription>
+                      </div>
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
@@ -1088,32 +1074,6 @@ const SpeechLab = () => {
           </div>
         </div>
       </div>
-      
-      <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Save Speech</DialogTitle>
-            <DialogDescription>
-              Confirm or edit the name of your speech before saving it to your account.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Input
-              placeholder="Enter speech title..."
-              value={speechTitle}
-              onChange={(e) => setSpeechTitle(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsSaveDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={confirmSaveSpeech} className="bg-purple-600 hover:bg-purple-700">
-              Save
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
