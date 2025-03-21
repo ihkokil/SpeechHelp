@@ -905,16 +905,22 @@ const SpeechLab = () => {
               <Card className="mb-6">
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <div>
+                    <div className="space-y-3">
                       <CardTitle>Speech Generator</CardTitle>
                       <CardDescription>
-                        {speechTitle ? `Current speech: ${speechTitle}` : 'Select a speech type and generate a personalized speech'}
+                        {speechTitle ? (
+                          <span className="block pt-2 text-base text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 font-medium">
+                            Current speech: {speechTitle}
+                          </span>
+                        ) : (
+                          'Select a speech type and generate a personalized speech'
+                        )}
                       </CardDescription>
                     </div>
                     <div className="flex space-x-2">
                       <ButtonCustom 
                         onClick={handleCreateNewSpeech} 
-                        variant="primary" 
+                        variant="magenta" 
                         size="sm"
                         className="flex items-center gap-1"
                       >
@@ -1188,3 +1194,4 @@ const SpeechLab = () => {
 };
 
 export default SpeechLab;
+
