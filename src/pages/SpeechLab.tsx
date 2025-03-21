@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -10,6 +9,7 @@ import {
   CardTitle,
   CardFooter
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
@@ -22,7 +22,8 @@ import {
   ChevronDownIcon,
   TrashIcon,
   SaveIcon,
-  PlusIcon
+  PlusIcon,
+  ArrowRightIcon
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -311,6 +312,7 @@ const SpeechLab = () => {
   const [speechTitle, setSpeechTitle] = useState('');
   const [isNewSpeechDialogOpen, setIsNewSpeechDialogOpen] = useState(false);
   const [newSpeechTitle, setNewSpeechTitle] = useState('');
+  const [currentStep, setCurrentStep] = useState(1);
 
   useEffect(() => {
     if (activeTab === 'chat' && messages.length === 0) {
@@ -333,6 +335,7 @@ const SpeechLab = () => {
     setSelectedSpeechType(value);
     setQuestionnaireAnswers({});
     setCurrentQuestion(0);
+    setCurrentStep(3);
     
     const speechType = speechTypes.find(type => type.value === value)?.label;
     
@@ -403,6 +406,7 @@ const SpeechLab = () => {
       setGeneratedSpeech(speech);
       setIsGeneratingSpeech(false);
       setActiveTab('result');
+      setCurrentStep(4);
       
       const speechTypeLabel = speechTypes.find(type => type.value === selectedSpeechType)?.label || 'Custom Speech';
       setSpeechTitle(`${speechTypeLabel} - ${new Date().toLocaleDateString()}`);
@@ -442,6 +446,7 @@ const SpeechLab = () => {
         return;
       } else {
         setIsQuestionnaire(false);
+        setCurrentStep(4);
         
         setTimeout(() => {
           const firstQuestion = speechQuestions[selectedSpeechType as keyof typeof speechQuestions]?.[0] || 
@@ -500,12 +505,14 @@ const SpeechLab = () => {
         role: 'assistant',
         content: "I've generated a speech based on our conversation. Here it is:",
         timestamp: new Date(),
+        
       };
       
       setMessages(prev => [...prev, newMessage]);
       setGeneratedSpeech(speechContent);
       setIsGeneratingSpeech(false);
       setActiveTab('result');
+      setCurrentStep(5);
       
       const speechTypeLabel = speechTypes.find(type => type.value === selectedSpeechType)?.label || 'Custom Speech';
       setSpeechTitle(`${speechTypeLabel} - ${new Date().toLocaleDateString()}`);
@@ -755,6 +762,7 @@ const SpeechLab = () => {
     setActiveTab('chat');
     setSpeechTitle('');
     setNewSpeechTitle('');
+    setCurrentStep(1);
     
     toast({
       title: "Speech Generator Reset",
@@ -779,426 +787,10 @@ const SpeechLab = () => {
     handleClearAll();
     
     setSpeechTitle(newSpeechTitle);
+    setCurrentStep(2);
     
     setIsNewSpeechDialogOpen(false);
     
     toast({
       title: "New Speech Created",
-      description: `Your speech "${newSpeechTitle}" has been created. Please select a speech type to begin.`,
-    });
-  };
-
-  const renderQuestionnaire = () => {
-    if (!selectedSpeechType || !showQuestionnaire) return null;
-    
-    const questions = speechQuestions[selectedSpeechType as keyof typeof speechQuestions];
-    
-    if (!questions) return (
-      <div className="text-center py-4">
-        <p>Detailed questionnaire not available for this speech type yet.</p>
-      </div>
-    );
-    
-    return (
-      <div className="border rounded-md p-4 bg-white space-y-6">
-        <h3 className="font-semibold text-lg mb-4">
-          {speechTypes.find(type => type.value === selectedSpeechType)?.label} Questionnaire
-        </h3>
-        
-        <div className="space-y-6">
-          {questions.map((q) => {
-            if (q.conditional && questionnaireAnswers[q.conditional.field] !== q.conditional.value) {
-              return null;
-            }
-            
-            return (
-              <div key={q.id} className="space-y-2">
-                <h4 className="font-medium">{q.question}</h4>
-                
-                {q.type === 'text' && (
-                  <Input
-                    placeholder={q.placeholder}
-                    value={questionnaireAnswers[q.id] || ''}
-                    onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                  />
-                )}
-                
-                {q.type === 'longtext' && (
-                  <Textarea
-                    placeholder={q.placeholder}
-                    value={questionnaireAnswers[q.id] || ''}
-                    onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                    className="min-h-20"
-                  />
-                )}
-                
-                {q.type === 'select' && q.options && (
-                  <Select 
-                    value={questionnaireAnswers[q.id] || ''} 
-                    onValueChange={(value) => handleAnswerChange(q.id, value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={q.placeholder} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {q.options.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                
-                {q.type === 'radio' && q.options && (
-                  <RadioGroup 
-                    value={questionnaireAnswers[q.id] || ''} 
-                    onValueChange={(value) => handleAnswerChange(q.id, value)}
-                  >
-                    {q.options.map((option) => (
-                      <div key={option.value} className="flex items-center space-x-2">
-                        <RadioGroupItem value={option.value} id={`${q.id}-${option.value}`} />
-                        <FormLabel htmlFor={`${q.id}-${option.value}`}>{option.label}</FormLabel>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                )}
-                
-                {q.type === 'checkbox' && (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={q.id} 
-                      checked={questionnaireAnswers[q.id] || false}
-                      onCheckedChange={(checked) => handleAnswerChange(q.id, checked)}
-                    />
-                    <label htmlFor={q.id} className="text-sm font-normal">
-                      {q.placeholder}
-                    </label>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        
-        <div className="flex justify-end mt-6">
-          <ButtonCustom 
-            onClick={handleQuestionnaireSubmit}
-            disabled={isGeneratingSpeech}
-          >
-            {isGeneratingSpeech ? (
-              <>
-                <RefreshCwIcon className="w-4 h-4 mr-2 animate-spin" />
-                Generating Speech...
-              </>
-            ) : (
-              <>
-                Generate Speech
-              </>
-            )}
-          </ButtonCustom>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="flex h-screen bg-gray-50">
-      <DashboardSidebar />
-      
-      <main className="flex-1 overflow-auto p-6">
-        <div className="container mx-auto">
-          <div className="flex flex-col lg:flex-row gap-6">
-            <div className="lg:w-2/3">
-              <Card className="mb-6">
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div className="space-y-3">
-                      <CardTitle>Speech Generator</CardTitle>
-                      <CardDescription>
-                        {speechTitle ? (
-                          <span className="block pt-2 text-base text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 font-medium">
-                            Current speech: {speechTitle}
-                          </span>
-                        ) : (
-                          'Select a speech type and generate a personalized speech'
-                        )}
-                      </CardDescription>
-                    </div>
-                    <div className="flex space-x-2">
-                      <ButtonCustom 
-                        onClick={handleCreateNewSpeech} 
-                        variant="magenta" 
-                        size="sm"
-                        className="flex items-center gap-1"
-                      >
-                        <PlusIcon className="w-4 h-4" />
-                        Create A New Speech
-                      </ButtonCustom>
-                      <ButtonCustom 
-                        onClick={handleClearAll} 
-                        variant="outline" 
-                        size="sm"
-                        className="flex items-center gap-1"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                        Clear All
-                      </ButtonCustom>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium mb-1">Select Speech Type</label>
-                    <Select 
-                      value={selectedSpeechType} 
-                      onValueChange={handleSpeechTypeChange}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select speech type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {speechTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <Tabs defaultValue="chat" onValueChange={setActiveTab} value={activeTab}>
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="chat">Chat</TabsTrigger>
-                      <TabsTrigger 
-                        value="result" 
-                        className={generatedSpeech ? "text-green-600 font-semibold" : ""}
-                      >
-                        Your Speech Is Ready
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </CardHeader>
-                
-                <CardContent>
-                  <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsContent value="chat" className="space-y-4">
-                      <div className="h-96 overflow-y-auto border rounded-md p-4 bg-slate-50">
-                        {messages.map((message) => (
-                          <div 
-                            key={message.id} 
-                            className={`mb-4 ${
-                              message.role === 'user' 
-                                ? 'flex justify-end' 
-                                : 'flex justify-start'
-                            }`}
-                          >
-                            <div 
-                              className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                                message.role === 'user' 
-                                  ? 'bg-primary text-primary-foreground' 
-                                  : 'bg-muted'
-                              }`}
-                            >
-                              <p className="text-sm">{message.content}</p>
-                            </div>
-                          </div>
-                        ))}
-                        {isTyping && (
-                          <div className="flex justify-start">
-                            <div className="bg-muted rounded-lg px-4 py-2">
-                              <p className="text-sm">Typing...</p>
-                            </div>
-                          </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                      </div>
-                      
-                      {showQuestionnaire && renderQuestionnaire()}
-                      
-                      <div className="flex items-center space-x-2">
-                        <Input
-                          placeholder="Type your message..."
-                          value={inputMessage}
-                          onChange={(e) => setInputMessage(e.target.value)}
-                          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                          disabled={isGeneratingSpeech || showQuestionnaire}
-                        />
-                        <ButtonCustom 
-                          onClick={handleSendMessage}
-                          disabled={isGeneratingSpeech || !inputMessage.trim() || showQuestionnaire}
-                        >
-                          <SendIcon className="w-4 h-4" />
-                        </ButtonCustom>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="result">
-                      <div className="space-y-4">
-                        {generatedSpeech ? (
-                          <>
-                            <div className="border rounded-md p-4 bg-white h-96 overflow-y-auto whitespace-pre-line">
-                              {generatedSpeech}
-                            </div>
-                            <div className="flex justify-end space-x-2">
-                              <ButtonCustom 
-                                variant="outline" 
-                                onClick={handleClearAll}
-                              >
-                                <TrashIcon className="w-4 h-4 mr-2" />
-                                Start Over
-                              </ButtonCustom>
-                              <ButtonCustom 
-                                variant="outline"
-                                onClick={handleSaveSpeech}
-                              >
-                                <SaveIcon className="w-4 h-4 mr-2" />
-                                Save
-                              </ButtonCustom>
-                              <ButtonCustom onClick={handleDownloadSpeech}>
-                                <DownloadIcon className="w-4 h-4 mr-2" />
-                                Download
-                              </ButtonCustom>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="flex items-center justify-center h-96 border rounded-md bg-slate-50">
-                            <p className="text-gray-500">
-                              {isGeneratingSpeech 
-                                ? "Generating your speech..." 
-                                : "Generated speech will appear here"}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="lg:w-1/3">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Speech Tips</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Collapsible>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left font-medium">
-                      <span>Preparation</span>
-                      <ChevronDownIcon className="w-4 h-4" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-2 space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Practice your speech multiple times before the event.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Time yourself to ensure you're within the appropriate timeframe.
-                      </p>
-                    </CollapsibleContent>
-                  </Collapsible>
-                  
-                  <Separator className="my-4" />
-                  
-                  <Collapsible>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left font-medium">
-                      <span>Delivery</span>
-                      <ChevronDownIcon className="w-4 h-4" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-2 space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Speak clearly and at a moderate pace.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Make eye contact with different audience members.
-                      </p>
-                    </CollapsibleContent>
-                  </Collapsible>
-                  
-                  <Separator className="my-4" />
-                  
-                  <Collapsible>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left font-medium">
-                      <span>Structure</span>
-                      <ChevronDownIcon className="w-4 h-4" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-2 space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Start with a strong opening to grab attention.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Include personal stories and anecdotes to engage the audience.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        End with a heartfelt conclusion or toast.
-                      </p>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {isSaveDialogOpen && (
-        <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Save Speech</DialogTitle>
-              <DialogDescription>
-                Enter a title for your speech to save it to your account.
-              </DialogDescription>
-            </DialogHeader>
-            <Input
-              placeholder="Speech Title"
-              value={speechTitle}
-              onChange={(e) => setSpeechTitle(e.target.value)}
-            />
-            <DialogFooter>
-              <ButtonCustom variant="outline" onClick={() => setIsSaveDialogOpen(false)}>
-                Cancel
-              </ButtonCustom>
-              <ButtonCustom onClick={confirmSaveSpeech}>
-                Save
-              </ButtonCustom>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {isNewSpeechDialogOpen && (
-        <Dialog open={isNewSpeechDialogOpen} onOpenChange={setIsNewSpeechDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create A New Speech</DialogTitle>
-              <DialogDescription>
-                Please enter a title for your new speech.
-              </DialogDescription>
-            </DialogHeader>
-            <Input
-              placeholder="Speech Title"
-              value={newSpeechTitle}
-              onChange={(e) => setNewSpeechTitle(e.target.value)}
-              className="mt-2"
-            />
-            <DialogFooter className="mt-4">
-              <ButtonCustom variant="outline" onClick={() => setIsNewSpeechDialogOpen(false)}>
-                Cancel
-              </ButtonCustom>
-              <ButtonCustom onClick={handleStartNewSpeech}>
-                Continue
-              </ButtonCustom>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
-  );
-};
-
-export default SpeechLab;
+      description: `
