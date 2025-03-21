@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { 
@@ -24,8 +23,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
-// Message type definition for the chat
 type Message = {
   id: string;
   role: 'user' | 'assistant';
@@ -33,7 +39,6 @@ type Message = {
   timestamp: Date;
 };
 
-// Speech types
 const speechTypes = [
   { value: 'wedding', label: 'Wedding Toast' },
   { value: 'birthday', label: 'Birthday Speech' },
@@ -46,9 +51,230 @@ const speechTypes = [
   { value: 'award', label: 'Award Acceptance Speech' },
 ];
 
+const weddingRoles = [
+  { value: 'bride', label: 'Bride' },
+  { value: 'groom', label: 'Groom' },
+  { value: 'bestman', label: 'Best Man' },
+  { value: 'maidofhonor', label: 'Maid of Honor' },
+  { value: 'fatherofbride', label: 'Father of the Bride' },
+  { value: 'motherofbride', label: 'Mother of the Bride' },
+  { value: 'fatherofgroom', label: 'Father of the Groom' },
+  { value: 'motherofgroom', label: 'Mother of the Groom' },
+  { value: 'bridesmaid', label: 'Bridesmaid' },
+  { value: 'groomsman', label: 'Groomsman' },
+  { value: 'other', label: 'Other' },
+];
+
+const speechDurations = [
+  { value: '2min', label: '2 minutes (approx. 250-300 words)' },
+  { value: '5min', label: '5 minutes (approx. 650-750 words)' },
+  { value: '8min', label: '8 minutes (approx. 1000-1200 words)' },
+  { value: '10min', label: '10 minutes (approx. 1300-1500 words)' },
+  { value: 'custom', label: 'Custom length' },
+];
+
+const speechTones = [
+  { value: 'funny', label: 'Funny & Light-hearted' },
+  { value: 'heartwarming', label: 'Heartwarming & Emotional' },
+  { value: 'romantic', label: 'Romantic & Sentimental' },
+  { value: 'inspirational', label: 'Inspirational & Uplifting' },
+  { value: 'formal', label: 'Formal & Traditional' },
+  { value: 'mixed', label: 'Mixed (Humor with Sentiment)' },
+];
+
+const speechQuestions = {
+  wedding: [
+    {
+      id: 'role',
+      question: "Who are you in relation to the wedding?",
+      type: 'select',
+      options: weddingRoles,
+      placeholder: "Select your role",
+    },
+    {
+      id: 'relationship',
+      question: "What is your specific relationship to the couple?",
+      type: 'text',
+      placeholder: "E.g., Groom's childhood friend, Bride's college roommate",
+    },
+    {
+      id: 'names',
+      question: "What are the names of the people mentioned in your speech?",
+      type: 'longtext',
+      placeholder: "E.g., Bride: Sarah, Groom: Michael, Bride's Parents: John and Mary",
+    },
+    {
+      id: 'duration',
+      question: "How long would you like the speech to be?",
+      type: 'select',
+      options: speechDurations,
+      placeholder: "Select desired length",
+    },
+    {
+      id: 'tone',
+      question: "What would you like the tone of the speech to be?",
+      type: 'select',
+      options: speechTones,
+      placeholder: "Select speech tone",
+    },
+    {
+      id: 'funny_anecdote',
+      question: "Can you share a funny anecdote about the couple?",
+      type: 'longtext',
+      placeholder: "E.g., A humorous story about how they met or a memorable experience",
+    },
+    {
+      id: 'opening_quote',
+      question: "Would you like to open with a famous romantic quote?",
+      type: 'radio',
+      options: [
+        { value: 'yes', label: 'Yes, I have one in mind' },
+        { value: 'suggestion', label: 'Yes, I would like a suggestion' },
+        { value: 'no', label: 'No, skip the opening quote' },
+      ],
+    },
+    {
+      id: 'quote_text',
+      question: "Please provide the quote you'd like to use",
+      type: 'longtext',
+      placeholder: "Enter your quote",
+      conditional: { field: 'opening_quote', value: 'yes' },
+    },
+    {
+      id: 'bride_qualities',
+      question: "What are some qualities you admire about the bride?",
+      type: 'longtext',
+      placeholder: "E.g., Her kindness, sense of humor, intelligence, etc.",
+    },
+    {
+      id: 'groom_qualities',
+      question: "What are some qualities you admire about the groom?",
+      type: 'longtext',
+      placeholder: "E.g., His loyalty, sense of adventure, generosity, etc.",
+    },
+    {
+      id: 'memorable_moment',
+      question: "Can you share a heartwarming or memorable moment you've shared with the couple?",
+      type: 'longtext',
+      placeholder: "E.g., A special trip, a meaningful conversation, etc.",
+    },
+    {
+      id: 'message_theme',
+      question: "Is there a particular message or theme you would like to convey?",
+      type: 'longtext',
+      placeholder: "E.g., Love, friendship, family, etc.",
+    },
+    {
+      id: 'cultural_religious',
+      question: "Would you like to include any specific cultural or religious references?",
+      type: 'longtext',
+      placeholder: "If yes, please specify",
+    },
+    {
+      id: 'inside_jokes',
+      question: "Are there any inside jokes or personal references you would like to include?",
+      type: 'longtext',
+      placeholder: "E.g., A nickname, a shared experience, etc.",
+    },
+    {
+      id: 'toast_ending',
+      question: "Would you like to end the speech with a toast?",
+      type: 'radio',
+      options: [
+        { value: 'yes', label: 'Yes, I have specific wording in mind' },
+        { value: 'suggestion', label: 'Yes, I would like a suggestion' },
+        { value: 'no', label: 'No toast' },
+      ],
+    },
+    {
+      id: 'toast_text',
+      question: "Please provide the toast wording you'd like to use",
+      type: 'longtext',
+      placeholder: "Enter your toast wording",
+      conditional: { field: 'toast_ending', value: 'yes' },
+    },
+    {
+      id: 'additional_elements',
+      question: "Is there anything else you would like to include?",
+      type: 'longtext',
+      placeholder: "E.g., A special thank you, a piece of advice, mentioning deceased loved ones",
+    },
+    {
+      id: 'avoid_topics',
+      question: "Are there any topics or subjects you would like to avoid?",
+      type: 'longtext',
+      placeholder: "E.g., Personal struggles, certain relationships, etc.",
+    },
+  ],
+  birthday: [
+    {
+      id: 'relationship',
+      question: "What is your relationship to the birthday person?",
+      type: 'text',
+      placeholder: "E.g., Friend, Parent, Sibling, etc.",
+    },
+    {
+      id: 'age',
+      question: "How old is the person turning?",
+      type: 'text',
+      placeholder: "Enter age",
+    },
+    {
+      id: 'duration',
+      question: "How long would you like the speech to be?",
+      type: 'select',
+      options: speechDurations,
+      placeholder: "Select desired length",
+    },
+    {
+      id: 'tone',
+      question: "What would you like the tone of the speech to be?",
+      type: 'select',
+      options: speechTones,
+      placeholder: "Select speech tone",
+    },
+    {
+      id: 'qualities',
+      question: "What are some qualities you admire about this person?",
+      type: 'longtext',
+      placeholder: "E.g., Their kindness, humor, intelligence, etc.",
+    },
+    {
+      id: 'memories',
+      question: "What are some of your favorite memories with this person?",
+      type: 'longtext',
+      placeholder: "Share 2-3 memorable stories or moments",
+    },
+    {
+      id: 'achievements',
+      question: "What achievements or milestones would you like to highlight?",
+      type: 'longtext',
+      placeholder: "Personal or professional accomplishments",
+    },
+    {
+      id: 'inside_jokes',
+      question: "Are there any inside jokes or personal references you would like to include?",
+      type: 'longtext',
+      placeholder: "E.g., Nicknames, recurring jokes, etc.",
+    },
+    {
+      id: 'wishes',
+      question: "What wishes do you have for their future?",
+      type: 'longtext',
+      placeholder: "Your hopes and dreams for them",
+    },
+    {
+      id: 'avoid_topics',
+      question: "Are there any topics you would like to avoid?",
+      type: 'longtext',
+      placeholder: "E.g., Personal struggles, certain relationships, etc.",
+    },
+  ],
+};
+
 const SpeechLab = () => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('practice');
+  const [activeTab, setActiveTab] = useState('chat');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [selectedSpeechType, setSelectedSpeechType] = useState<string>('');
@@ -56,8 +282,11 @@ const SpeechLab = () => {
   const [isGeneratingSpeech, setIsGeneratingSpeech] = useState(false);
   const [generatedSpeech, setGeneratedSpeech] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [isQuestionnaire, setIsQuestionnaire] = useState(false);
+  const [questionnaireAnswers, setQuestionnaireAnswers] = useState<Record<string, any>>({});
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
 
-  // Initial assistant message when chat tab is selected
   useEffect(() => {
     if (activeTab === 'chat' && messages.length === 0) {
       setMessages([
@@ -71,66 +300,94 @@ const SpeechLab = () => {
     }
   }, [activeTab, messages.length]);
 
-  // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Handle speech type selection
   const handleSpeechTypeChange = (value: string) => {
     setSelectedSpeechType(value);
+    setQuestionnaireAnswers({});
+    setCurrentQuestion(0);
+    
     const speechType = speechTypes.find(type => type.value === value)?.label;
     
-    // Add assistant message about the selected speech type
     const newMessage: Message = {
       id: Date.now().toString(),
       role: 'assistant',
-      content: `Great! I'll help you create a ${speechType}. Let me ask you some questions to personalize it.`,
+      content: `Great! I'll help you create a ${speechType}. Would you like to fill out a detailed questionnaire to personalize your speech, or would you prefer a conversational approach?`,
       timestamp: new Date(),
     };
     
     setMessages(prev => [...prev, newMessage]);
+  };
+
+  const handleShowQuestionnaire = () => {
+    setShowQuestionnaire(true);
+    setIsQuestionnaire(true);
     
-    // Simulate assistant thinking and asking first question
-    setIsTyping(true);
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: "I'd like to fill out the detailed questionnaire.",
+      timestamp: new Date(),
+    };
+    
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      content: `Perfect! Please fill out the questionnaire below to help me create a personalized ${
+        speechTypes.find(type => type.value === selectedSpeechType)?.label
+      } for you. The more details you provide, the better I can tailor the speech to your needs.`,
+      timestamp: new Date(),
+    };
+    
+    setMessages(prev => [...prev, userMessage, assistantMessage]);
+  };
+
+  const handleAnswerChange = (questionId: string, value: any) => {
+    setQuestionnaireAnswers(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+  };
+
+  const handleQuestionnaireSubmit = () => {
+    setIsGeneratingSpeech(true);
+    setShowQuestionnaire(false);
+    
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: "I've completed the questionnaire with all the details for my speech.",
+      timestamp: new Date(),
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    
     setTimeout(() => {
-      let question = '';
+      const speech = generateSpeechFromQuestionnaire(questionnaireAnswers, selectedSpeechType);
       
-      // Different first questions based on speech type
-      switch (value) {
-        case 'wedding':
-          question = "What's your relationship to the couple getting married?";
-          break;
-        case 'birthday':
-          question = "How old is the person celebrating their birthday?";
-          break;
-        case 'bridesmaid':
-          question = "How long have you known the bride?";
-          break;
-        case 'bestman':
-          question = "What's your relationship with the groom?";
-          break;
-        default:
-          question = "Who is the audience for this speech?";
-      }
-      
-      const followUpMessage: Message = {
+      const assistantMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: question,
+        content: "I've generated a speech based on your questionnaire responses. Here it is:",
         timestamp: new Date(),
       };
       
-      setMessages(prev => [...prev, followUpMessage]);
-      setIsTyping(false);
-    }, 1000);
+      setMessages(prev => [...prev, assistantMessage]);
+      setGeneratedSpeech(speech);
+      setIsGeneratingSpeech(false);
+      
+      toast({
+        title: "Speech Generated!",
+        description: "Your personalized speech is ready to view and download.",
+      });
+    }, 3000);
   };
 
-  // Handle send message
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
     
-    // Add user message
     const newUserMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -141,110 +398,71 @@ const SpeechLab = () => {
     setMessages(prev => [...prev, newUserMessage]);
     setInputMessage('');
     
-    // Simulate assistant thinking
+    if (messages.length === 2 && messages[1].role === 'assistant' && 
+        messages[1].content.includes('Would you like to fill out a detailed questionnaire')) {
+      
+      if (inputMessage.toLowerCase().includes('questionnaire')) {
+        handleShowQuestionnaire();
+        return;
+      } else {
+        setIsQuestionnaire(false);
+        
+        setTimeout(() => {
+          const firstQuestion = speechQuestions[selectedSpeechType as keyof typeof speechQuestions]?.[0] || 
+                              { question: "Tell me more about the speech you're planning to give." };
+          
+          const assistantMessage: Message = {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: firstQuestion.question,
+            timestamp: new Date(),
+          };
+          
+          setMessages(prev => [...prev, assistantMessage]);
+        }, 500);
+        
+        return;
+      }
+    }
+    
     setIsTyping(true);
     
-    // Intelligent question flow logic
     setTimeout(() => {
-      // Get the last 3 messages to create context
-      const recentMessages = messages.slice(-3).map(m => m.content);
-      let assistantResponse = '';
-      
-      // Check conversation state and message count to determine flow
-      const messageCount = messages.length;
-      
-      if (messageCount < 4) {
-        // Early in conversation - ask about occasion details
-        assistantResponse = getNextQuestion(0, selectedSpeechType);
-      } else if (messageCount < 7) {
-        // Middle of conversation - ask about personal touches
-        assistantResponse = getNextQuestion(1, selectedSpeechType);
-      } else if (messageCount < 10) {
-        // Later in conversation - ask about tone and style
-        assistantResponse = getNextQuestion(2, selectedSpeechType);
-      } else {
-        // Final question before generation
-        assistantResponse = "Thanks for all that information! I think I have enough to create your speech. Would you like me to generate it now?";
+      if (!isQuestionnaire) {
+        const questions = speechQuestions[selectedSpeechType as keyof typeof speechQuestions] || [];
+        const nextQuestion = currentQuestion < questions.length ? 
+          questions[currentQuestion].question : 
+          "Thank you for all that information! I think I have enough to create your speech. Would you like me to generate it now?";
+        
+        const newAssistantMessage: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: nextQuestion,
+          timestamp: new Date(),
+        };
+        
+        setMessages(prev => [...prev, newAssistantMessage]);
+        setCurrentQuestion(prev => prev + 1);
+        
+        if (currentQuestion >= questions.length && inputMessage.toLowerCase().includes('yes')) {
+          handleGenerateSpeech();
+        }
       }
       
-      // Add assistant response
-      const newAssistantMessage: Message = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: assistantResponse,
-        timestamp: new Date(),
-      };
-      
-      setMessages(prev => [...prev, newAssistantMessage]);
       setIsTyping(false);
-      
-      // Check if we should offer to generate the speech
-      if (messageCount >= 10 && inputMessage.toLowerCase().includes('yes')) {
-        handleGenerateSpeech();
-      }
-    }, 1500);
+    }, 1000);
   };
 
-  // Helper function to get next question based on conversation stage
-  const getNextQuestion = (stage: number, speechType: string): string => {
-    // Different questions based on speech type and stage
-    const questions = {
-      wedding: [
-        "How long have the couple been together?",
-        "Are there any memorable moments or stories you'd like to include?",
-        "Would you prefer a humorous or sentimental tone for the speech?"
-      ],
-      birthday: [
-        "What are some of the person's achievements or qualities you'd like to highlight?",
-        "Any funny stories or memories you want to include?",
-        "Should the speech be more playful or reflective?"
-      ],
-      bridesmaid: [
-        "How did you meet the bride?",
-        "What are some qualities you admire about the bride?",
-        "Do you have any advice for the couple you'd like to include?"
-      ],
-      bestman: [
-        "How did you meet the groom?",
-        "Any funny or memorable stories about your friendship?",
-        "What would you like to say about the couple's relationship?"
-      ],
-      default: [
-        "What's the main message you want to convey in this speech?",
-        "How long should the speech be approximately?",
-        "Any specific points you definitely want to include or avoid?"
-      ]
-    };
-    
-    // Return appropriate question or fallback to default
-    return questions[speechType as keyof typeof questions]?.[stage] || questions.default[stage];
-  };
-
-  // Handle generating speech
   const handleGenerateSpeech = () => {
     setIsGeneratingSpeech(true);
     
-    // Simulate AI processing time
     setTimeout(() => {
-      // Example generated speech based on the selected type
-      let speechContent = '';
+      const speechContent = generateSpeechFromConversation(messages, selectedSpeechType);
       
-      switch (selectedSpeechType) {
-        case 'wedding':
-          speechContent = "Ladies and gentlemen, family and friends, we are gathered here today to celebrate the union of two extraordinary people. It is my absolute pleasure to stand before you all and raise a toast to this beautiful couple.\n\nI've had the privilege of watching their love story unfold, and what a journey it has been. Through every high and low, they've stood by each other with unwavering support and genuine affection.\n\nWhat makes their relationship so special is not just the love they share, but the friendship that forms its foundation. They make each other laugh, they comfort each other in times of need, and most importantly, they bring out the best in one another.\n\nAs they begin this new chapter together, I want to wish them a lifetime filled with joy, adventure, and growth. May your home always be a place of peace, your relationship a source of strength, and your love a beacon of hope.\n\nPlease join me in raising your glasses to the happy couple. To a marriage filled with love, laughter, and happily ever after!";
-          break;
-        case 'bridesmaid':
-          speechContent = "Hello everyone! For those who don't know me, I'm [Your Name], and I have the honor of being one of the bridesmaids today.\n\nI still remember the day when [Bride's Name] told me about meeting [Groom's Name]. There was something different in her voice, a spark that I hadn't heard before. And standing here today, seeing them together, it's clear that spark has only grown stronger.\n\n[Bride's Name], you've been my friend through thick and thin. Your kindness, your strength, and your ability to find joy in the smallest things are just a few of the qualities that make you so special. And [Groom's Name], thank you for making my friend so incredibly happy. The way you look at her, with such love and admiration, is everything she deserves and more.\n\nTo the newly married couple: May your love continue to grow with each passing day. May you always find reasons to laugh together, to dream together, and to celebrate the beautiful life you're building.\n\nLadies and gentlemen, please raise your glasses to [Bride's Name] and [Groom's Name]. May your marriage be as beautiful as your wedding day and as special as your love for each other. Cheers!";
-          break;
-        default:
-          speechContent = "Distinguished guests, ladies and gentlemen,\n\nIt is my great pleasure to address you all today. As we gather here for this important occasion, I'm reminded of the power of human connection and shared experiences.\n\nIn a world that often moves too quickly, moments like these give us a chance to pause, to reflect, and to appreciate the journey that has brought us to this point. Whether we're celebrating achievements, marking milestones, or simply acknowledging the passage of time, these gatherings remind us of what truly matters.\n\nAs I look around the room, I see faces that represent different chapters of life's story - each with unique perspectives, experiences, and contributions. It is this diversity that enriches our community and strengthens our collective purpose.\n\nIn closing, I want to express my gratitude for the opportunity to share this moment with all of you. May we carry the spirit of today forward in all our future endeavors.\n\nThank you.";
-      }
-      
-      // Add assistant message with the generated speech
       const newMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: "I've generated a speech based on your inputs. Here it is:",
+        content: "I've generated a speech based on our conversation. Here it is:",
         timestamp: new Date(),
       };
       
@@ -252,16 +470,84 @@ const SpeechLab = () => {
       setGeneratedSpeech(speechContent);
       setIsGeneratingSpeech(false);
       
-      // Success toast
       toast({
         title: "Speech Generated!",
         description: "Your personalized speech is ready to view and download.",
       });
-      
     }, 3000);
   };
 
-  // Handle download speech
+  const generateSpeechFromQuestionnaire = (answers: Record<string, any>, speechType: string) => {
+    switch (speechType) {
+      case 'wedding':
+        const role = answers.role || 'friend';
+        const brideName = extractName(answers.names, 'Bride') || 'the bride';
+        const groomName = extractName(answers.names, 'Groom') || 'the groom';
+        const relationship = answers.relationship || 'friend';
+        const brideQualities = answers.bride_qualities || 'wonderful qualities';
+        const groomQualities = answers.groom_qualities || 'wonderful qualities';
+        const tone = answers.tone || 'heartwarming';
+        const anecdote = answers.funny_anecdote || 'their beautiful journey together';
+        const moment = answers.memorable_moment || 'special moments';
+        
+        let opening = '';
+        if (answers.opening_quote === 'yes' && answers.quote_text) {
+          opening = `"${answers.quote_text}" `;
+        } else if (answers.opening_quote === 'suggestion') {
+          opening = `"Love is not about how many days, months, or years you have been together. Love is about how much you love each other every single day." `;
+        }
+        
+        let closing = '';
+        if (answers.toast_ending === 'yes' && answers.toast_text) {
+          closing = `${answers.toast_text}`;
+        } else if (answers.toast_ending === 'suggestion') {
+          closing = `So let's raise our glasses to ${brideName} and ${groomName}. May your love story continue to unfold, chapter after beautiful chapter. To a lifetime of love, laughter, and happily ever after!`;
+        }
+        
+        return `${opening}Ladies and gentlemen, family and friends, I am honored to stand before you today as ${role} to celebrate the union of ${brideName} and ${groomName}.
+        
+My name is ${answers.relationship ? answers.relationship : "a close friend"}, and I've had the privilege of witnessing their beautiful journey together.
+
+${anecdote ? `I still remember ${anecdote}. ` : ""}
+
+What makes ${brideName} so special is ${brideQualities}. And ${groomName}, your ${groomQualities} complement each other perfectly.
+
+${moment ? `One of my favorite memories with them is ${moment}. ` : ""}
+
+${answers.message_theme ? `As I reflect on their relationship, I'm reminded of ${answers.message_theme}. ` : ""}
+
+${answers.cultural_religious ? `${answers.cultural_religious} ` : ""}
+
+${answers.inside_jokes ? `${answers.inside_jokes} ` : ""}
+
+${answers.additional_elements ? `${answers.additional_elements} ` : ""}
+
+${closing}`;
+      
+      default:
+        return "Ladies and gentlemen, distinguished guests...\n\nIt is my great pleasure to address you all today. This personalized speech would normally be generated based on all the detailed information you provided in the questionnaire, creating a meaningful and tailored message for your specific occasion.\n\nThe speech would include your personal anecdotes, the qualities you admire about the relevant people, and all the special moments you've shared. It would maintain the tone you selected and avoid any topics you mentioned.\n\nIn closing, thank you for the opportunity to be part of this special occasion. May this day be just the beginning of many more wonderful memories to come.";
+    }
+  };
+
+  const extractName = (namesText: string, role: string) => {
+    if (!namesText) return null;
+    
+    const regex = new RegExp(`${role}:\\s*([^,]+)`, 'i');
+    const match = namesText.match(regex);
+    return match ? match[1].trim() : null;
+  };
+
+  const generateSpeechFromConversation = (messages: Message[], speechType: string) => {
+    switch (speechType) {
+      case 'wedding':
+        return "Ladies and gentlemen, family and friends, we are gathered here today to celebrate the union of two extraordinary people. It is my absolute pleasure to stand before you all and raise a toast to this beautiful couple.\n\nI've had the privilege of watching their love story unfold, and what a journey it has been. Through every high and low, they've stood by each other with unwavering support and genuine affection.\n\nWhat makes their relationship so special is not just the love they share, but the friendship that forms its foundation. They make each other laugh, they comfort each other in times of need, and most importantly, they bring out the best in one another.\n\nAs they begin this new chapter together, I want to wish them a lifetime filled with joy, adventure, and growth. May your home always be a place of peace, your relationship a source of strength, and your love a beacon of hope.\n\nPlease join me in raising your glasses to the happy couple. To a marriage filled with love, laughter, and happily ever after!";
+      case 'bridesmaid':
+        return "Hello everyone! For those who don't know me, I'm [Your Name], and I have the honor of being one of the bridesmaids today.\n\nI still remember the day when [Bride's Name] told me about meeting [Groom's Name]. There was something different in her voice, a spark that I hadn't heard before. And standing here today, seeing them together, it's clear that spark has only grown stronger.\n\n[Bride's Name], you've been my friend through thick and thin. Your kindness, your strength, and your ability to find joy in the smallest things are just a few of the qualities that make you so special. And [Groom's Name], thank you for making my friend so incredibly happy. The way you look at her, with such love and admiration, is everything she deserves and more.\n\nTo the newly married couple: May your love continue to grow with each passing day. May you always find reasons to laugh together, to dream together, and to celebrate the beautiful life you're building.\n\nLadies and gentlemen, please raise your glasses to [Bride's Name] and [Groom's Name]. May your marriage be as beautiful as your wedding day and as special as your love for each other. Cheers!";
+      default:
+        return "Distinguished guests, ladies and gentlemen,\n\nIt is my great pleasure to address you all today. As we gather here for this important occasion, I'm reminded of the power of human connection and shared experiences.\n\nIn a world that often moves too quickly, moments like these give us a chance to pause, to reflect, and to appreciate the journey that has brought us to this point. Whether we're celebrating achievements, marking milestones, or simply acknowledging the passage of time, these gatherings remind us of what truly matters.\n\nAs I look around the room, I see faces that represent different chapters of life's story - each with unique perspectives, experiences, and contributions. It is this diversity that enriches our community and strengthens our collective purpose.\n\nIn closing, I want to express my gratitude for the opportunity to share this moment with all of you. May we carry the spirit of today forward in all our future endeavors.\n\nThank you.";
+    }
+  };
+
   const handleDownloadSpeech = () => {
     if (!generatedSpeech) return;
     
@@ -279,12 +565,112 @@ const SpeechLab = () => {
     });
   };
 
+  const renderQuestionnaire = () => {
+    if (!selectedSpeechType || !showQuestionnaire) return null;
+    
+    const questions = speechQuestions[selectedSpeechType as keyof typeof speechQuestions];
+    
+    if (!questions) return (
+      <div className="text-center py-4">
+        <p>Detailed questionnaire not available for this speech type yet.</p>
+      </div>
+    );
+    
+    return (
+      <div className="border rounded-md p-4 bg-white space-y-6">
+        <h3 className="font-semibold text-lg mb-4">
+          {speechTypes.find(type => type.value === selectedSpeechType)?.label} Questionnaire
+        </h3>
+        
+        <div className="space-y-6">
+          {questions.map((q) => {
+            if (q.conditional && questionnaireAnswers[q.conditional.field] !== q.conditional.value) {
+              return null;
+            }
+            
+            return (
+              <div key={q.id} className="space-y-2">
+                <h4 className="font-medium">{q.question}</h4>
+                
+                {q.type === 'text' && (
+                  <Input
+                    placeholder={q.placeholder}
+                    value={questionnaireAnswers[q.id] || ''}
+                    onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                  />
+                )}
+                
+                {q.type === 'longtext' && (
+                  <Textarea
+                    placeholder={q.placeholder}
+                    value={questionnaireAnswers[q.id] || ''}
+                    onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                    className="min-h-20"
+                  />
+                )}
+                
+                {q.type === 'select' && q.options && (
+                  <Select 
+                    value={questionnaireAnswers[q.id] || ''} 
+                    onValueChange={(value) => handleAnswerChange(q.id, value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={q.placeholder} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {q.options.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                
+                {q.type === 'radio' && q.options && (
+                  <RadioGroup 
+                    value={questionnaireAnswers[q.id] || ''} 
+                    onValueChange={(value) => handleAnswerChange(q.id, value)}
+                  >
+                    {q.options.map((option) => (
+                      <div key={option.value} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option.value} id={`${q.id}-${option.value}`} />
+                        <FormLabel htmlFor={`${q.id}-${option.value}`}>{option.label}</FormLabel>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                )}
+                
+                {q.type === 'checkbox' && (
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={q.id} 
+                      checked={questionnaireAnswers[q.id] || false}
+                      onCheckedChange={(checked) => handleAnswerChange(q.id, checked)}
+                    />
+                    <label htmlFor={q.id} className="text-sm font-normal">
+                      {q.placeholder}
+                    </label>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        
+        <div className="flex justify-end pt-4">
+          <ButtonCustom onClick={handleQuestionnaireSubmit}>
+            Generate Speech
+          </ButtonCustom>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen flex">
-      {/* Sidebar */}
       <DashboardSidebar />
       
-      {/* Main Content */}
       <div className="flex-1 bg-gray-50 overflow-auto">
         <div className="p-6">
           <h1 className="text-2xl font-bold mb-6">Speech Lab</h1>
@@ -296,7 +682,6 @@ const SpeechLab = () => {
               <TabsTrigger value="analyze">Analysis Mode</TabsTrigger>
             </TabsList>
             
-            {/* New Chat Interface Tab */}
             <TabsContent value="chat" className="space-y-6">
               <Card className="shadow-md">
                 <CardHeader>
@@ -305,7 +690,6 @@ const SpeechLab = () => {
                     Create personalized speeches with our AI assistant
                   </CardDescription>
                   
-                  {/* Speech Type Selector */}
                   <div className="mt-4">
                     <Select onValueChange={handleSpeechTypeChange} value={selectedSpeechType}>
                       <SelectTrigger className="w-full">
@@ -323,7 +707,6 @@ const SpeechLab = () => {
                 </CardHeader>
                 
                 <CardContent>
-                  {/* Chat Messages */}
                   <div className="border rounded-md h-[400px] mb-4 overflow-y-auto p-4 bg-gray-50">
                     {messages.map((message) => (
                       <div 
@@ -345,7 +728,6 @@ const SpeechLab = () => {
                       </div>
                     ))}
                     
-                    {/* Typing indicator */}
                     {isTyping && (
                       <div className="mr-12 mb-4">
                         <div className="p-3 rounded-lg bg-gray-100 text-gray-800">
@@ -358,11 +740,11 @@ const SpeechLab = () => {
                       </div>
                     )}
                     
-                    {/* Reference for auto-scroll */}
                     <div ref={messagesEndRef} />
                   </div>
                   
-                  {/* Generated Speech Display */}
+                  {renderQuestionnaire()}
+                  
                   {generatedSpeech && (
                     <div className="border rounded-md p-4 mb-4 bg-white">
                       <div className="flex justify-between items-center mb-2">
@@ -383,27 +765,35 @@ const SpeechLab = () => {
                     </div>
                   )}
                   
-                  {/* Input Area */}
-                  <div className="flex gap-2">
-                    <Input
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      placeholder="Type your message here..."
-                      onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                      disabled={!selectedSpeechType || isGeneratingSpeech}
-                    />
-                    <ButtonCustom
-                      onClick={handleSendMessage}
-                      disabled={!inputMessage.trim() || !selectedSpeechType || isGeneratingSpeech}
-                    >
-                      <SendIcon className="h-4 w-4" />
-                    </ButtonCustom>
-                  </div>
+                  {!showQuestionnaire && (
+                    <div className="flex gap-2">
+                      <Input
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        placeholder="Type your message here..."
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                        disabled={!selectedSpeechType || isGeneratingSpeech}
+                      />
+                      <ButtonCustom
+                        onClick={handleSendMessage}
+                        disabled={!inputMessage.trim() || !selectedSpeechType || isGeneratingSpeech}
+                      >
+                        <SendIcon className="h-4 w-4" />
+                      </ButtonCustom>
+                    </div>
+                  )}
+                  
+                  {selectedSpeechType && messages.length === 2 && !showQuestionnaire && (
+                    <div className="flex justify-center mt-4">
+                      <ButtonCustom onClick={handleShowQuestionnaire}>
+                        Fill out detailed questionnaire
+                      </ButtonCustom>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
             
-            {/* Practice Mode Tab */}
             <TabsContent value="practice" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -451,7 +841,6 @@ const SpeechLab = () => {
               </Card>
             </TabsContent>
             
-            {/* Analysis Mode Tab */}
             <TabsContent value="analyze" className="space-y-6">
               <Card>
                 <CardHeader>
