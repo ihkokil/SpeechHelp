@@ -882,7 +882,12 @@ const SpeechLab = () => {
                   <Tabs defaultValue="chat" onValueChange={setActiveTab} value={activeTab}>
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="chat">Chat</TabsTrigger>
-                      <TabsTrigger value="result">Result</TabsTrigger>
+                      <TabsTrigger 
+                        value="result" 
+                        className={generatedSpeech ? "text-green-600 font-semibold" : ""}
+                      >
+                        Your Speech Is Ready
+                      </TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </CardHeader>
