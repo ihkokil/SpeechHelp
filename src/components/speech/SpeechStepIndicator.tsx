@@ -12,7 +12,7 @@ const SpeechStepIndicator = ({ currentStep }: StepIndicatorProps) => {
     { number: 2, title: 'Select Speech Type' },
     { number: 3, title: 'Name Your Speech' },
     { number: 4, title: 'Let\'s Get Creative' },
-    { number: 5, title: 'Review & Save' }
+    { number: 5, title: 'Review/Edit & Save' }
   ];
 
   return (
