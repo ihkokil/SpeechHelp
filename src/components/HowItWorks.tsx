@@ -59,23 +59,23 @@ const HowItWorks = () => {
   const steps = [
     {
       icon: <PencilIcon className="h-5 w-5 text-pink-600" />,
-      title: "Tell about your occasion",
-      description: "Start by selecting the type of speech and providing key details about your audience, topic, and goals."
+      title: "Tell Us About the Occasion or Event",
+      description: "Our wizard isn't nosy, but it thrives on details. The more information you share (by simply answering our prompt questionnaire), the better our system can understand your needs and enhance the results you're aiming for."
     },
     {
       icon: <SparklesIcon className="h-5 w-5 text-pink-600" />,
-      title: "Choose Your Style",
-      description: "Our advanced AI analyzes your inputs and creates a tailored speech draft that matches your specific needs."
+      title: "Start with a Template or Upload What You Have",
+      description: "Our system is designed to accommodate your needs, whether you're starting from scratch or refining an existing speech. Choose from one of our templates or upload your current draft."
     },
     {
       icon: <PencilIcon className="h-5 w-5 text-pink-600" />,
-      title: "Customize Perfect Speech",
-      description: "Customize the generated speech with our intuitive editor, adding personal touches and refining content."
+      title: "Percolate to Perfection",
+      description: "Enter the Speech Lab and experience our user-friendly wizard, crafted to distill the essential details needed to create a remarkable and unforgettable speech."
     },
     {
       icon: <MicIcon className="h-5 w-5 text-pink-600" />,
-      title: "Edit and Practice",
-      description: "Use our delivery tools to practice your speech, receive feedback, and deliver with confidence."
+      title: "Edit and Personalize",
+      description: "After our system crafts your speech, you can easily fine-tune it using our intuitive tools. Unlike a friend or family member, our wizard welcomes your adjustments."
     }
   ];
 
