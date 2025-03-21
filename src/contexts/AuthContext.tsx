@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
     
     toast({
-      title: "Speech saved",
+      title: "Speech Saved",
       description: "Your speech has been saved to your account.",
     });
     
