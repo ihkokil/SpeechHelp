@@ -27,7 +27,8 @@ import {
   ListIcon,
   FileTextIcon,
   SparklesIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  PencilIcon
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -315,6 +316,7 @@ const SpeechLab = () => {
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [speechTitle, setSpeechTitle] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
+  const [showNameInput, setShowNameInput] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'chat' && messages.length === 0) {
@@ -339,28 +341,45 @@ const SpeechLab = () => {
     setQuestionnaireAnswers({});
     setCurrentQuestion(0);
     
-    setCurrentStep(3);
-    
     const speechType = speechTypes.find(type => type.value === value)?.label;
     
     const defaultTitle = `${speechType} - ${new Date().toLocaleDateString()}`;
     setSpeechTitle(defaultTitle);
     
-    const newMessage: Message = {
+    setCurrentStep(3);
+    setShowNameInput(true);
+  };
+
+  const handleNameSubmit = () => {
+    setCurrentStep(4);
+    setShowNameInput(false);
+    
+    const userMessage: Message = {
       id: Date.now().toString(),
-      role: 'assistant',
-      content: `Great! I'll help you create a ${speechType}. Would you like to answer a few questions from our SpeechHelp "wizard" to personalize your speech, or would you prefer a conversational approach? (If you'd like to use the wizard questionnaire, simply type "wizard" in the chat)`,
+      role: 'user',
+      content: `I'd like to create a ${
+        speechTypes.find(type => type.value === selectedSpeechType)?.label
+      } titled "${speechTitle}".`,
       timestamp: new Date(),
     };
     
-    setMessages(prev => [...prev, newMessage]);
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      content: `Great! I'll help you create a ${
+        speechTypes.find(type => type.value === selectedSpeechType)?.label
+      } titled "${speechTitle}". Would you like to answer a few questions from our SpeechHelp "wizard" to personalize your speech, or would you prefer a conversational approach? (If you'd like to use the wizard questionnaire, simply type "wizard" in the chat)`,
+      timestamp: new Date(),
+    };
+    
+    setMessages([...messages, userMessage, assistantMessage]);
   };
 
   const handleShowQuestionnaire = () => {
     setShowQuestionnaire(true);
     setIsQuestionnaire(true);
     
-    setCurrentStep(4);
+    setCurrentStep(5);
     
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -701,7 +720,7 @@ const SpeechLab = () => {
     const element = document.createElement("a");
     const file = new Blob([generatedSpeech], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
-    element.download = `${selectedSpeechType}-speech.txt`;
+    element.download = `${speechTitle.trim() || 'speech'}.txt`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -739,10 +758,13 @@ const SpeechLab = () => {
   const handleCreateNewSpeech = () => {
     setCurrentStep(2);
     
-    const defaultTitle = `New Speech - ${new Date().toLocaleDateString()}`;
-    setSpeechTitle(defaultTitle);
+    setSpeechTitle('');
     
     handleClearAll();
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSpeechTitle(e.target.value);
   };
 
   const handleClearAll = () => {
@@ -813,6 +835,30 @@ const SpeechLab = () => {
         );
       
       case 3:
+        return (
+          <div className="flex flex-col h-full p-8">
+            <h2 className="text-2xl font-bold mb-4">Name Your Speech</h2>
+            <p className="text-lg mb-6">Give your speech a memorable name that will help you identify it later</p>
+            
+            <div className="w-full max-w-md mb-6">
+              <Input
+                type="text"
+                placeholder="Enter a title for your speech"
+                value={speechTitle}
+                onChange={handleTitleChange}
+                className="mb-4"
+              />
+              <Button 
+                onClick={handleNameSubmit}
+                className="w-full bg-purple-600 hover:bg-purple-700 flex items-center justify-center gap-2"
+              >
+                <ArrowRightIcon className="h-4 w-4" />
+                Continue to Next Step
+              </Button>
+            </div>
+          </div>
+        );
+      
       case 4:
       case 5:
       default:
