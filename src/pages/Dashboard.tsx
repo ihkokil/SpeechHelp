@@ -9,15 +9,23 @@ import UpcomingSpeeches from '@/components/dashboard/UpcomingSpeeches';
 import RecentActivities from '@/components/dashboard/RecentActivities';
 import PerformanceMetrics from '@/components/dashboard/PerformanceMetrics';
 import LanguageSelector from '@/components/dashboard/LanguageSelector';
+import PreviousSpeeches from '@/components/dashboard/PreviousSpeeches';
 import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-react';
 import { format } from 'date-fns';
 
 const Dashboard = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, speeches, fetchSpeeches } = useAuth();
   const navigate = useNavigate();
   const [userName, setUserName] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  
+  // Fetch speeches when component mounts
+  useEffect(() => {
+    if (user) {
+      fetchSpeeches();
+    }
+  }, [user, fetchSpeeches]);
   
   // Redirect if not logged in
   useEffect(() => {
@@ -103,9 +111,9 @@ const Dashboard = () => {
                   {/* Total Speeches Card */}
                   <SpeechSummaryCard 
                     icon={<FileTextIcon className="h-6 w-6 text-gray-600" />}
-                    count={8}
+                    count={speeches.length}
                     label="Total Speeches"
-                    period="This month"
+                    period="All time"
                     bgColor="bg-gray-100"
                   />
                   
@@ -129,15 +137,18 @@ const Dashboard = () => {
                 </div>
               </div>
               
+              {/* Previous Speeches */}
+              <PreviousSpeeches />
+              
               {/* Performance Metrics */}
               <PerformanceMetrics />
-              
-              {/* Upcoming Speeches */}
-              <UpcomingSpeeches />
             </div>
             
             {/* Right Column */}
             <div className="space-y-6">
+              {/* Upcoming Speeches */}
+              <UpcomingSpeeches />
+              
               {/* Recent Activities */}
               <RecentActivities />
             </div>
