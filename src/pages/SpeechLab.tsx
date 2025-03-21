@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { 
@@ -478,18 +479,32 @@ const SpeechLab = () => {
   };
 
   const generateSpeechFromQuestionnaire = (answers: Record<string, any>, speechType: string) => {
+    console.log("Generating speech with answers:", answers);
+    
     switch (speechType) {
       case 'wedding':
+        // Extract all information from the questionnaire
         const role = answers.role || 'friend';
-        const brideName = extractName(answers.names, 'Bride') || 'the bride';
-        const groomName = extractName(answers.names, 'Groom') || 'the groom';
-        const relationship = answers.relationship || 'friend';
-        const brideQualities = answers.bride_qualities || 'wonderful qualities';
-        const groomQualities = answers.groom_qualities || 'wonderful qualities';
-        const tone = answers.tone || 'heartwarming';
-        const anecdote = answers.funny_anecdote || 'their beautiful journey together';
-        const moment = answers.memorable_moment || 'special moments';
+        const speakerRelationship = answers.relationship || 'close friend';
+        const names = answers.names || '';
+        const brideName = extractName(names, 'Bride') || 'the bride';
+        const groomName = extractName(names, 'Groom') || 'the groom';
+        const brideParents = extractName(names, "Bride's Parents") || "the bride's parents";
+        const groomParents = extractName(names, "Groom's Parents") || "the groom's parents";
         
+        const duration = answers.duration || '5min';
+        const tone = answers.tone || 'heartwarming';
+        const brideQualities = answers.bride_qualities || '';
+        const groomQualities = answers.groom_qualities || '';
+        const anecdote = answers.funny_anecdote || '';
+        const memorableMoment = answers.memorable_moment || '';
+        const messageTheme = answers.message_theme || '';
+        const culturalReligious = answers.cultural_religious || '';
+        const insideJokes = answers.inside_jokes || '';
+        const additionalElements = answers.additional_elements || '';
+        const avoidTopics = answers.avoid_topics || '';
+        
+        // Handle opening quote
         let opening = '';
         if (answers.opening_quote === 'yes' && answers.quote_text) {
           opening = `"${answers.quote_text}" `;
@@ -497,6 +512,7 @@ const SpeechLab = () => {
           opening = `"Love is not about how many days, months, or years you have been together. Love is about how much you love each other every single day." `;
         }
         
+        // Handle toast ending
         let closing = '';
         if (answers.toast_ending === 'yes' && answers.toast_text) {
           closing = `${answers.toast_text}`;
@@ -504,28 +520,127 @@ const SpeechLab = () => {
           closing = `So let's raise our glasses to ${brideName} and ${groomName}. May your love story continue to unfold, chapter after beautiful chapter. To a lifetime of love, laughter, and happily ever after!`;
         }
         
-        return `${opening}Ladies and gentlemen, family and friends, I am honored to stand before you today as ${role} to celebrate the union of ${brideName} and ${groomName}.
+        // Build the speech with all provided information
+        let speech = '';
         
-My name is ${answers.relationship ? answers.relationship : "a close friend"}, and I've had the privilege of witnessing their beautiful journey together.
-
-${anecdote ? `I still remember ${anecdote}. ` : ""}
-
-What makes ${brideName} so special is ${brideQualities}. And ${groomName}, your ${groomQualities} complement each other perfectly.
-
-${moment ? `One of my favorite memories with them is ${moment}. ` : ""}
-
-${answers.message_theme ? `As I reflect on their relationship, I'm reminded of ${answers.message_theme}. ` : ""}
-
-${answers.cultural_religious ? `${answers.cultural_religious} ` : ""}
-
-${answers.inside_jokes ? `${answers.inside_jokes} ` : ""}
-
-${answers.additional_elements ? `${answers.additional_elements} ` : ""}
-
-${closing}`;
+        // Add opening
+        if (opening) {
+          speech += `${opening}\n\n`;
+        }
+        
+        // Add introduction
+        speech += `Ladies and gentlemen, family and friends, I am honored to stand before you today as ${getRoleTitle(role)} to celebrate the union of ${brideName} and ${groomName}.\n\n`;
+        speech += `My name is ${speakerRelationship}, and I've had the privilege of witnessing their beautiful journey together.\n\n`;
+        
+        // Add anecdote if provided
+        if (anecdote) {
+          speech += `${anecdote}\n\n`;
+        }
+        
+        // Add qualities for bride and groom
+        if (brideQualities) {
+          speech += `What makes ${brideName} so special is ${brideQualities}. `;
+        }
+        
+        if (groomQualities) {
+          speech += `And ${groomName}, your ${groomQualities} complement each other perfectly.\n\n`;
+        }
+        
+        // Add memorable moment if provided
+        if (memorableMoment) {
+          speech += `One of my favorite memories with them is ${memorableMoment}.\n\n`;
+        }
+        
+        // Add message theme if provided
+        if (messageTheme) {
+          speech += `As I reflect on their relationship, I'm reminded of ${messageTheme}.\n\n`;
+        }
+        
+        // Add cultural or religious references if provided
+        if (culturalReligious) {
+          speech += `${culturalReligious}\n\n`;
+        }
+        
+        // Add inside jokes if provided
+        if (insideJokes) {
+          speech += `${insideJokes}\n\n`;
+        }
+        
+        // Add additional elements if provided
+        if (additionalElements) {
+          speech += `${additionalElements}\n\n`;
+        }
+        
+        // Add closing toast
+        if (closing) {
+          speech += `${closing}`;
+        }
+        
+        console.log("Generated speech:", speech);
+        
+        return speech;
+      
+      case 'birthday':
+        // Extract all birthday speech information
+        const birthdayRelationship = answers.relationship || 'friend';
+        const birthdayAge = answers.age || '';
+        const birthdayTone = answers.tone || 'heartwarming';
+        const birthdayQualities = answers.qualities || '';
+        const birthdayMemories = answers.memories || '';
+        const birthdayAchievements = answers.achievements || '';
+        const birthdayInsideJokes = answers.inside_jokes || '';
+        const birthdayWishes = answers.wishes || '';
+        
+        // Build birthday speech
+        let birthdaySpeech = `Ladies and gentlemen, friends and family,\n\n`;
+        birthdaySpeech += `It's my privilege to stand before you today as ${birthdayRelationship} to celebrate this special birthday.\n\n`;
+        
+        if (birthdayAge) {
+          birthdaySpeech += `Turning ${birthdayAge} is a wonderful milestone, and I'm so happy we're all here to mark this occasion together.\n\n`;
+        }
+        
+        if (birthdayQualities) {
+          birthdaySpeech += `When I think about what makes this person so special, I think of ${birthdayQualities}.\n\n`;
+        }
+        
+        if (birthdayMemories) {
+          birthdaySpeech += `I cherish the memories we've shared, like ${birthdayMemories}.\n\n`;
+        }
+        
+        if (birthdayAchievements) {
+          birthdaySpeech += `I'm so proud of the accomplishments you've achieved, including ${birthdayAchievements}.\n\n`;
+        }
+        
+        if (birthdayInsideJokes) {
+          birthdaySpeech += `Of course, I couldn't give this speech without mentioning ${birthdayInsideJokes}.\n\n`;
+        }
+        
+        if (birthdayWishes) {
+          birthdaySpeech += `As we celebrate today, my wishes for you are ${birthdayWishes}.\n\n`;
+        }
+        
+        birthdaySpeech += `Happy birthday, and may this year bring you all the joy and happiness you deserve!`;
+        
+        return birthdaySpeech;
       
       default:
         return "Ladies and gentlemen, distinguished guests...\n\nIt is my great pleasure to address you all today. This personalized speech would normally be generated based on all the detailed information you provided in the questionnaire, creating a meaningful and tailored message for your specific occasion.\n\nThe speech would include your personal anecdotes, the qualities you admire about the relevant people, and all the special moments you've shared. It would maintain the tone you selected and avoid any topics you mentioned.\n\nIn closing, thank you for the opportunity to be part of this special occasion. May this day be just the beginning of many more wonderful memories to come.";
+    }
+  };
+
+  const getRoleTitle = (role: string): string => {
+    switch(role) {
+      case 'bride': return 'the bride';
+      case 'groom': return 'the groom';
+      case 'bestman': return 'the best man';
+      case 'maidofhonor': return 'the maid of honor';
+      case 'fatherofbride': return 'the father of the bride';
+      case 'motherofbride': return 'the mother of the bride';
+      case 'fatherofgroom': return 'the father of the groom';
+      case 'motherofgroom': return 'the mother of the groom';
+      case 'bridesmaid': return 'a bridesmaid';
+      case 'groomsman': return 'a groomsman';
+      default: return role;
     }
   };
 
