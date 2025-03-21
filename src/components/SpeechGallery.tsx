@@ -101,7 +101,7 @@ const SpeechGallery = () => {
       icon: <Mic className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b", 
+      image: "/lovable-uploads/fa0501ec-e268-4b60-8823-33cccfc3f9c9.png", 
       title: "Motivational Speech",
       subtitle: "Inspiring and Uplifting Messages",
       icon: <Flame className="h-4 w-4" />
