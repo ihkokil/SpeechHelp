@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { 
@@ -322,7 +321,7 @@ const SpeechLab = () => {
     const newMessage: Message = {
       id: Date.now().toString(),
       role: 'assistant',
-      content: `Great! I'll help you create a ${speechType}. Would you like to fill out a detailed questionnaire to personalize your speech, or would you prefer a conversational approach?`,
+      content: `Great! I'll help you create a ${speechType}. Would you like to answer a few questions from our SpeechHelp wizard to personalize your speech, or would you prefer a conversational approach?`,
       timestamp: new Date(),
     };
     
