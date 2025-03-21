@@ -95,7 +95,7 @@ const SpeechGallery = () => {
       icon: <Briefcase className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1561489413-985b06da5bee",
+      image: "/lovable-uploads/e4a82c35-24f4-4a85-bfa6-cdf784a2aeea.png",
       title: "TED Talk",
       subtitle: "Inspirational and Educational Talks",
       icon: <Mic className="h-4 w-4" />
