@@ -25,12 +25,12 @@ const Hero = () => {
       <div className="container relative z-10 mx-auto px-6 md:px-12">
         <div className="max-w-5xl mx-auto text-center">
           {/* Main Headline */}
-          <h1 className={`font-phenix text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in' : ''}`}>
+          <h1 className={`font-heading text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in' : ''}`}>
             Need a <span className="text-pink-400">creative speech?</span>
           </h1>
           
           {/* Subheadline */}
-          <p className={`font-phenix text-4xl md:text-5xl lg:text-6xl text-white/80 max-w-3xl mx-auto mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
+          <p className={`font-heading text-4xl md:text-5xl lg:text-6xl text-white/80 max-w-3xl mx-auto mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
             We can help!
           </p>
           
