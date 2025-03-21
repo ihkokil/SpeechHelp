@@ -83,7 +83,7 @@ const SpeechGallery = () => {
       icon: <GraduationCap className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1559223607-a43c990c692c",
+      image: "/lovable-uploads/8a6c2e93-6843-4eb9-8b07-e8456c653de8.png",
       title: "Birthday/Anniversary Speech",
       subtitle: "Special Occasion Celebrations",
       icon: <Cake className="h-4 w-4" />
