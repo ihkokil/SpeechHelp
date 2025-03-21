@@ -823,10 +823,10 @@ const SpeechLab = () => {
             
             <div className="w-full max-w-md mb-6">
               <Select onValueChange={handleSpeechTypeChange} value={selectedSpeechType}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full bg-white">
                   <SelectValue placeholder="Select a speech type" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white z-50">
                   {speechTypes.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
