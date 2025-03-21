@@ -28,7 +28,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import {
   Collapsible,
   CollapsibleContent,
@@ -431,7 +431,6 @@ const SpeechLab = () => {
     setMessages(prev => [...prev, newUserMessage]);
     setInputMessage('');
     
-    // Check if the user typed "wizard" to access the questionnaire
     if (inputMessage.toLowerCase().trim() === "wizard") {
       handleShowQuestionnaire();
       return;
@@ -793,4 +792,15 @@ const SpeechLab = () => {
     
     toast({
       title: "New Speech Created",
-      description: `
+      description: `You've started working on "${newSpeechTitle}". Now select a speech type to continue.`
+    });
+  };
+
+  return (
+    <div>
+      {/* JSX for SpeechLab component */}
+    </div>
+  );
+};
+
+export default SpeechLab;
