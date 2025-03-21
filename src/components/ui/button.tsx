@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -52,5 +53,29 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   }
 )
 Button.displayName = "Button"
+
+// Add CSS for the wizard button 
+// This will be injected into the global styles
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.innerHTML = `
+    .wizard-button {
+      display: inline;
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      color: #D946EF;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      transition: color 0.2s ease;
+    }
+    .wizard-button:hover {
+      color: #8B5CF6;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 export { Button, buttonVariants }

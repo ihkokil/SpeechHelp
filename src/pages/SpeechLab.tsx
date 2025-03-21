@@ -43,6 +43,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 type Message = {
   id: string;
@@ -338,12 +339,28 @@ const SpeechLab = () => {
     const newMessage: Message = {
       id: Date.now().toString(),
       role: 'assistant',
-      content: `Great! I'll help you create a ${speechType}. Would you like to answer a few questions from our SpeechHelp "wizard" to personalize your speech, or would you prefer a conversational approach?`,
+      content: `Great! I'll help you create a ${speechType}. Would you like to answer a few questions from our SpeechHelp <button class="wizard-button">wizard</button> to personalize your speech, or would you prefer a conversational approach?`,
       timestamp: new Date(),
     };
     
     setMessages(prev => [...prev, newMessage]);
   };
+
+  useEffect(() => {
+    const handleWizardButtonClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('wizard-button')) {
+        e.preventDefault();
+        handleShowQuestionnaire();
+      }
+    };
+
+    document.addEventListener('click', handleWizardButtonClick);
+    
+    return () => {
+      document.removeEventListener('click', handleWizardButtonClick);
+    };
+  }, [selectedSpeechType]);
 
   const handleShowQuestionnaire = () => {
     setShowQuestionnaire(true);
@@ -1194,4 +1211,3 @@ const SpeechLab = () => {
 };
 
 export default SpeechLab;
-
