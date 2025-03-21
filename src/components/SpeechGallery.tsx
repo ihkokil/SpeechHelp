@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { 
   Heart, 
@@ -143,7 +142,7 @@ const SpeechGallery = () => {
       icon: <Megaphone className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1569779213435-ba3167ecfcbe",
+      image: "/lovable-uploads/eb584538-b84a-4ada-82a3-3a65ba072531.png",
       title: "Entertaining Speech",
       subtitle: "Humorous and Engaging Presentations",
       icon: <Music className="h-4 w-4" />
