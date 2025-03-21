@@ -160,7 +160,7 @@ const SpeechGallery = () => {
       icon: <Award className="h-4 w-4" />
     },
     { 
-      image: "https://images.unsplash.com/photo-1560523159-6b681a1fc069",
+      image: "/lovable-uploads/02964ef1-c71e-43a1-bad8-ccb04d9c5080.png",
       title: "Other Speech/Special Event",
       subtitle: "For Any Unique Occasion",
       icon: <CalendarDays className="h-4 w-4" />
