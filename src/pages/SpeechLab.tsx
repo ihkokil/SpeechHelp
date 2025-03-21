@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -1090,5 +1091,33 @@ const SpeechLab = () => {
         </div>
       </main>
 
-      <
+      {isSaveDialogOpen && (
+        <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Save Speech</DialogTitle>
+              <DialogDescription>
+                Enter a title for your speech to save it to your account.
+              </DialogDescription>
+            </DialogHeader>
+            <Input
+              placeholder="Speech Title"
+              value={speechTitle}
+              onChange={(e) => setSpeechTitle(e.target.value)}
+            />
+            <DialogFooter>
+              <ButtonCustom variant="outline" onClick={() => setIsSaveDialogOpen(false)}>
+                Cancel
+              </ButtonCustom>
+              <ButtonCustom onClick={confirmSaveSpeech}>
+                Save
+              </ButtonCustom>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+};
 
+export default SpeechLab;
