@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
@@ -31,16 +32,32 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
 
       if (error) {
         console.error('Password reset error:', error);
-        toast({
-          title: "Password reset failed",
-          description: error.message || "Unable to send password reset email. Please try again.",
-          variant: "destructive"
-        });
+        
+        // Handle different error types
+        if (error.message?.includes('rate limit') || error.status === 429) {
+          toast({
+            title: "Too many requests",
+            description: "Please wait a few minutes before requesting another password reset.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Password reset failed",
+            description: error.message || "Unable to send password reset email. Please try again.",
+            variant: "destructive"
+          });
+        }
       } else if (data && data.success) {
         setEmailSent(true);
         toast({
           title: "Password reset email sent",
           description: "Please check your email for password reset instructions.",
+        });
+      } else if (data && data.rateLimited) {
+        toast({
+          title: "Too many requests",
+          description: data.message || "Please wait a few minutes before requesting another password reset.",
+          variant: "destructive"
         });
       } else {
         console.error('Password reset failed:', data);
