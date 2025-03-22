@@ -1069,7 +1069,9 @@ const SpeechLab = () => {
                     <div className="flex justify-between items-center">
                       <div className="flex flex-col">
                         <CardTitle>Generated Speech</CardTitle>
-                        <CardDescription>Title: {speechTitle}</CardDescription>
+                        <CardDescription className="mt-3">
+                          <span className="text-purple-600 font-medium">Title: {speechTitle}</span>
+                        </CardDescription>
                       </div>
                       <div className="flex gap-2">
                         <Button
@@ -1104,7 +1106,7 @@ const SpeechLab = () => {
                         </Button>
                       </div>
                     </div>
-                    <CardDescription>
+                    <CardDescription className="mt-2">
                       {isEditingGeneratedSpeech 
                         ? "Edit your speech below and click 'Apply Changes' when you're done."
                         : "Here's your personalized speech, ready to use!"}
