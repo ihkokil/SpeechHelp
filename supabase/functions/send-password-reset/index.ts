@@ -45,23 +45,36 @@ serve(async (req) => {
 
     log('Processing password reset request', { email, resetUrlDomain: new URL(resetUrl).hostname });
 
-    // Initialize Supabase client
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    // Initialize Supabase client with service role key
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      log('Missing Supabase configuration');
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
-    // Use Supabase's built-in password reset
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Use Supabase's built-in password reset with proper error handling
+    log('Calling Supabase resetPasswordForEmail...');
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: resetUrl
     });
 
     if (error) {
-      log('Error sending password reset:', error);
+      log('Error from Supabase resetPasswordForEmail:', error);
       
       // Handle rate limiting specifically
-      if (error.message?.includes('rate limit') || error.status === 429) {
-        log('Rate limit exceeded, advising user to wait');
+      if (error.message?.includes('rate limit') || error.message?.includes('too many requests')) {
+        log('Rate limit detected');
         return new Response(
           JSON.stringify({ 
             error: 'Rate limit exceeded',
@@ -75,11 +88,31 @@ serve(async (req) => {
         );
       }
 
+      // Handle email not found or other auth errors
+      if (error.message?.includes('User not found') || error.message?.includes('Email not confirmed')) {
+        log('User not found or email not confirmed');
+        // For security, we still return success even if user doesn't exist
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'If an account with that email exists, you will receive a password reset link.',
+            emailSent: true,
+            recipient: email,
+            timestamp: new Date().toISOString()
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
       // Handle other errors
+      log('Other error occurred:', error.message);
       return new Response(
         JSON.stringify({ 
           error: 'Failed to send password reset email',
-          message: error.message || 'An unknown error occurred'
+          message: 'Unable to send password reset email. Please try again later.'
         }),
         {
           status: 500,
@@ -105,11 +138,11 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    log('Error in password reset function:', error);
+    log('Unexpected error in password reset function:', error);
     return new Response(
       JSON.stringify({
         error: 'Server error',
-        message: error.message
+        message: 'An unexpected error occurred. Please try again later.'
       }),
       {
         status: 500,

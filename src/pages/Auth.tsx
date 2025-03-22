@@ -49,7 +49,7 @@ const Auth = () => {
   // Check for password reset flow on component mount
   useEffect(() => {
     const checkForPasswordReset = async () => {
-      const params = new URLSearchParams(location.search);
+      console.log('Auth: Checking for password reset flow...');
       
       // Check URL hash for recovery tokens (this is where Supabase puts them)
       let isPasswordReset = false;
@@ -63,28 +63,29 @@ const Auth = () => {
         console.log('Auth: Hash params detected:', { type, hasAccessToken: !!accessToken, hasRefreshToken: !!refreshToken });
         
         if (type === 'recovery' && accessToken && refreshToken) {
-          console.log('Auth: Password reset flow detected from hash');
+          console.log('Auth: Password reset flow detected - setting session for password update');
           isPasswordReset = true;
           
-          // Set the session manually to ensure user is logged in for password update
           try {
+            // Set the session for password reset but don't trigger normal auth flow
             const { data, error } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken
             });
             
             if (error) {
-              console.error('Error setting session:', error);
+              console.error('Error setting recovery session:', error);
             } else {
-              console.log('Session set successfully for password reset');
+              console.log('Recovery session set successfully');
             }
           } catch (err) {
-            console.error('Error in setSession:', err);
+            console.error('Error in setSession for recovery:', err);
           }
         }
       }
       
       // Also check search params as fallback
+      const params = new URLSearchParams(location.search);
       const searchType = params.get('type');
       if (searchType === 'recovery') {
         console.log('Auth: Password reset flow detected from search params');
@@ -105,21 +106,13 @@ const Auth = () => {
         console.log('Auth: Signup flow detected');
         setIsSignUp(true);
         setAutoFocusFirstName(true);
-        setIsForgotPassword(false);
-        setIsResetPassword(false);
       } else if (params.get('signin') === 'true') {
         console.log('Auth: Signin flow detected');
         setIsSignUp(false);
-        setIsForgotPassword(false);
-        setIsResetPassword(false);
-      } else {
-        // Default to sign in if no specific flow detected
-        console.log('Auth: No specific flow detected, defaulting to sign in');
-        setIsSignUp(false);
-        setIsForgotPassword(false);
-        setIsResetPassword(false);
       }
       
+      setIsForgotPassword(false);
+      setIsResetPassword(false);
       setAuthInitialized(true);
     };
 
@@ -136,7 +129,7 @@ const Auth = () => {
       return;
     }
     
-    // Check if we have recovery tokens in URL
+    // Check if we have recovery tokens in URL - don't redirect in this case
     const hasRecoveryTokens = location.hash.includes('type=recovery') && 
                               location.hash.includes('access_token') && 
                               location.hash.includes('refresh_token');
@@ -165,16 +158,15 @@ const Auth = () => {
     );
   }
 
-  // Check if we should show reset form
-  const hasRecoveryTokens = location.hash.includes('type=recovery') && 
-                            location.hash.includes('access_token') && 
-                            location.hash.includes('refresh_token');
-  
-  const shouldShowResetForm = isResetPassword || hasRecoveryTokens;
+  // Determine which form to show
+  const shouldShowResetForm = isResetPassword || (
+    location.hash.includes('type=recovery') && 
+    location.hash.includes('access_token') && 
+    location.hash.includes('refresh_token')
+  );
   
   console.log('Auth: Rendering auth forms:', { 
     isResetPassword, 
-    hasRecoveryTokens, 
     shouldShowResetForm,
     user: !!user,
     authInitialized 

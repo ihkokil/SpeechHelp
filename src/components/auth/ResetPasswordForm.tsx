@@ -45,13 +45,20 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
     }
 
     try {
+      console.log('ResetPasswordForm: Attempting to update password...');
+      
       const { error } = await supabase.auth.updateUser({ 
         password: newPassword 
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Password update error:', error);
+        throw error;
+      }
 
+      console.log('ResetPasswordForm: Password updated successfully');
       setResetSuccess(true);
+      
       toast({
         title: "Password updated successfully",
         description: "Your password has been updated. You will be redirected to sign in.",
@@ -60,11 +67,14 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
       // Sign out the user and redirect to sign in after a short delay
       setTimeout(async () => {
         try {
+          console.log('ResetPasswordForm: Signing out user...');
           await supabase.auth.signOut();
-          navigate('/auth?signin=true');
+          
+          // Clear the URL hash and redirect to sign in
+          window.location.href = '/auth?signin=true';
         } catch (err) {
           console.error('Error signing out:', err);
-          navigate('/auth?signin=true');
+          window.location.href = '/auth?signin=true';
         }
       }, 2000);
     } catch (error: any) {
