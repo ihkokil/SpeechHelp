@@ -317,6 +317,8 @@ const SpeechLab = () => {
   const [speechTitle, setSpeechTitle] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [showNameInput, setShowNameInput] = useState(false);
+  const [isEditingGeneratedSpeech, setIsEditingGeneratedSpeech] = useState(false);
+  const [editedSpeechContent, setEditedSpeechContent] = useState('');
 
   useEffect(() => {
     if (activeTab === 'chat' && messages.length === 0) {
@@ -715,10 +717,12 @@ const SpeechLab = () => {
   };
 
   const handleDownloadSpeech = () => {
-    if (!generatedSpeech) return;
+    if (!generatedSpeech && !isEditingGeneratedSpeech) return;
+    
+    const speechContentToDownload = isEditingGeneratedSpeech ? editedSpeechContent : generatedSpeech;
     
     const element = document.createElement("a");
-    const file = new Blob([generatedSpeech], {type: 'text/plain'});
+    const file = new Blob([speechContentToDownload as string], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
     element.download = `${speechTitle.trim() || 'speech'}.txt`;
     document.body.appendChild(element);
@@ -732,12 +736,14 @@ const SpeechLab = () => {
   };
 
   const handleSaveSpeech = async () => {
-    if (!generatedSpeech || !user) return;
+    if ((!generatedSpeech && !isEditingGeneratedSpeech) || !user) return;
+    
+    const contentToSave = isEditingGeneratedSpeech ? editedSpeechContent : generatedSpeech;
     
     try {
       await saveSpeech(
         speechTitle, 
-        generatedSpeech,
+        contentToSave as string,
         selectedSpeechType
       );
       
@@ -786,11 +792,28 @@ const SpeechLab = () => {
     setQuestionnaireAnswers({});
     setShowQuestionnaire(false);
     setActiveTab('chat');
+    setIsEditingGeneratedSpeech(false);
+    setEditedSpeechContent('');
     
     toast({
       title: "Speech Generator Reset",
       description: "All inputs have been cleared. You can start fresh!",
     });
+  };
+
+  const handleEditSpeech = () => {
+    setIsEditingGeneratedSpeech(true);
+    setEditedSpeechContent(generatedSpeech || '');
+  };
+
+  const handleFinishEditing = () => {
+    setGeneratedSpeech(editedSpeechContent);
+    setIsEditingGeneratedSpeech(false);
+  };
+
+  const handleCancelEditing = () => {
+    setIsEditingGeneratedSpeech(false);
+    setEditedSpeechContent('');
   };
 
   const renderStepContent = () => {
@@ -1059,6 +1082,18 @@ const SpeechLab = () => {
                           Download
                         </Button>
                         
+                        {!isEditingGeneratedSpeech && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleEditSpeech}
+                            className="flex items-center"
+                          >
+                            <PencilIcon className="mr-2 h-4 w-4" />
+                            Edit
+                          </Button>
+                        )}
+                        
                         <Button
                           size="sm"
                           onClick={handleSaveSpeech}
@@ -1070,27 +1105,58 @@ const SpeechLab = () => {
                       </div>
                     </div>
                     <CardDescription>
-                      Here's your personalized speech, ready to use!
+                      {isEditingGeneratedSpeech 
+                        ? "Edit your speech below and click 'Apply Changes' when you're done."
+                        : "Here's your personalized speech, ready to use!"}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="bg-slate-50 p-4 rounded-lg border whitespace-pre-line h-[400px] overflow-y-auto">
-                      {generatedSpeech}
-                    </div>
+                    {isEditingGeneratedSpeech ? (
+                      <Textarea
+                        value={editedSpeechContent}
+                        onChange={(e) => setEditedSpeechContent(e.target.value)}
+                        className="min-h-[400px] font-mono text-sm"
+                      />
+                    ) : (
+                      <div className="bg-slate-50 p-4 rounded-lg border whitespace-pre-line h-[400px] overflow-y-auto">
+                        {generatedSpeech}
+                      </div>
+                    )}
                   </CardContent>
                   <CardFooter className="flex justify-between">
                     <div className="text-sm text-muted-foreground">
                       Speech Type: {speechTypes.find(type => type.value === selectedSpeechType)?.label}
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCreateNewSpeech}
-                      className="flex items-center"
-                    >
-                      <PlusIcon className="mr-2 h-4 w-4" />
-                      New Speech
-                    </Button>
+                    {isEditingGeneratedSpeech ? (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleCancelEditing}
+                          className="flex items-center"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={handleFinishEditing}
+                          className="flex items-center"
+                        >
+                          Apply Changes
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCreateNewSpeech}
+                        className="flex items-center"
+                      >
+                        <PlusIcon className="mr-2 h-4 w-4" />
+                        New Speech
+                      </Button>
+                    )}
                   </CardFooter>
                 </Card>
               )}
