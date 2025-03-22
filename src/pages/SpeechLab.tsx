@@ -50,7 +50,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import SpeechStepIndicator from '@/components/speech/SpeechStepIndicator';
+import ReactConfetti from 'react-confetti';
 
 type Message = {
   id: string;
@@ -319,6 +321,25 @@ const SpeechLab = () => {
   const [showNameInput, setShowNameInput] = useState(false);
   const [isEditingGeneratedSpeech, setIsEditingGeneratedSpeech] = useState(false);
   const [editedSpeechContent, setEditedSpeechContent] = useState('');
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
+
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'chat' && messages.length === 0) {
@@ -438,6 +459,9 @@ const SpeechLab = () => {
       setIsGeneratingSpeech(false);
       setActiveTab('result');
       
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 6000);
+      
       toast({
         title: "Speech Generated!",
         description: "Your personalized speech is ready to view and download.",
@@ -537,8 +561,13 @@ const SpeechLab = () => {
       setIsGeneratingSpeech(false);
       setActiveTab('result');
       
+      setCurrentStep(5);
+      
       const speechTypeLabel = speechTypes.find(type => type.value === selectedSpeechType)?.label || 'Custom Speech';
       setSpeechTitle(`${speechTypeLabel} - ${new Date().toLocaleDateString()}`);
+      
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 6000);
       
       toast({
         title: "Speech Generated!",
@@ -1170,6 +1199,25 @@ const SpeechLab = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {showConfetti && (
+        <div className="fixed inset-0 z-50 pointer-events-none">
+          <ReactConfetti
+            width={windowSize.width}
+            height={windowSize.height}
+            recycle={false}
+            numberOfPieces={500}
+            colors={['#9b87f5', '#7E69AB', '#6E59A5', '#D6BCFA', '#8B5CF6', '#D946EF', '#F97316', '#0EA5E9']}
+          />
+          <div className="fixed top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-90 p-6 rounded-xl shadow-lg text-center animate-fade-in z-50 pointer-events-none">
+            <div className="text-purple-600 mb-2">
+              <SparklesIcon className="h-12 w-12 mx-auto mb-2" />
+            </div>
+            <h2 className="text-2xl font-bold text-purple-800 mb-2">Congratulations!</h2>
+            <p className="text-gray-700">Your speech has been successfully generated!</p>
+          </div>
+        </div>
+      )}
+      
       <div className="flex flex-1">
         <DashboardSidebar />
         
