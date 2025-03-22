@@ -1,49 +1,44 @@
 
-import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
-import { User, Mail, Lock, ArrowRight } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { signUp } from '@/services/authService';
 
 interface SignUpFormProps {
   onSwitchToSignIn: () => void;
-  onSwitchToForgotPassword: () => void;
   autoFocus?: boolean;
 }
 
-const SignUpForm = ({ 
-  onSwitchToSignIn, 
-  onSwitchToForgotPassword,
-  autoFocus = false
-}: SignUpFormProps) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+const SignUpForm = ({ onSwitchToSignIn, autoFocus = false }: SignUpFormProps) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
-  const firstNameInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (autoFocus && firstNameInputRef.current) {
-      setTimeout(() => {
-        if (firstNameInputRef.current) {
-          firstNameInputRef.current.focus();
-        }
-      }, 100);
-    }
-  }, [autoFocus]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Validate first and last name
-    if (!firstName.trim() || !lastName.trim()) {
+    if (password !== confirmPassword) {
       toast({
-        title: "Missing information",
-        description: "Please provide both first and last name.",
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match.",
+        variant: "destructive"
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
         variant: "destructive"
       });
       setLoading(false);
@@ -51,35 +46,20 @@ const SignUpForm = ({
     }
 
     try {
-      console.log('SignUpForm: Attempting to sign up');
       await signUp(email, password, toast, firstName, lastName);
-      console.log('SignUpForm: Sign up successful');
-      // Don't navigate automatically - let the user check their email if needed
     } catch (error: any) {
-      console.error('SignUpForm: Authentication error:', error);
+      console.error('Sign up error:', error);
       
-      // Handle specific error cases
-      if (error.message && error.message.includes('User already registered')) {
+      if (error.message === 'User already registered') {
         toast({
           title: "Account already exists",
-          description: "An account with this email already exists. Would you like to sign in instead?",
-          variant: "destructive"
-        });
-        // Optionally auto-switch to sign in after a delay
-        setTimeout(() => {
-          onSwitchToSignIn();
-        }, 3000);
-      } else if (error.message && error.message.includes('Password should be at least')) {
-        toast({
-          title: "Password too weak",
-          description: "Password should be at least 6 characters long.",
+          description: "An account with this email already exists. Please sign in instead.",
           variant: "destructive"
         });
       } else {
-        // Generic error handling for other cases
         toast({
           title: "Sign up failed",
-          description: error.message || "Unable to create account. Please try again.",
+          description: error.message || "An error occurred during registration. Please try again.",
           variant: "destructive"
         });
       }
@@ -91,8 +71,8 @@ const SignUpForm = ({
   return (
     <>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Your Account</h1>
-        <p className="text-gray-600">Join thousands of users improving their speech skills</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
+        <p className="text-gray-600">Join us today and start creating amazing speeches</p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -109,14 +89,15 @@ const SignUpForm = ({
                 id="firstName"
                 type="text"
                 required
-                ref={firstNameInputRef}
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
-                placeholder="John"
+                placeholder="First name"
+                autoFocus={autoFocus}
               />
             </div>
           </div>
+          
           <div className="space-y-2">
             <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700">
               Last Name
@@ -132,7 +113,7 @@ const SignUpForm = ({
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
-                placeholder="Doe"
+                placeholder="Last name"
               />
             </div>
           </div>
@@ -153,11 +134,11 @@ const SignUpForm = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
-              placeholder="your@email.com"
+              placeholder="Enter your email address"
             />
           </div>
         </div>
-        
+
         <div className="space-y-2">
           <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
             Password
@@ -168,18 +149,56 @@ const SignUpForm = ({
             </div>
             <input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
-              placeholder="Create a strong password"
-              minLength={6}
+              className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
+              placeholder="Create a password"
             />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5 text-gray-400" />
+              ) : (
+                <Eye className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Password must be at least 6 characters long
-          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
+            Confirm Password
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Lock className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              id="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
+              placeholder="Confirm your password"
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="h-5 w-5 text-gray-400" />
+              ) : (
+                <Eye className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
+          </div>
         </div>
 
         <ButtonCustom
@@ -198,39 +217,25 @@ const SignUpForm = ({
             </span>
           ) : (
             <span className="flex items-center justify-center">
+              <UserPlus className="mr-2 h-4 w-4" />
               Create Account
-              <ArrowRight className="ml-2 h-4 w-4" />
             </span>
           )}
         </ButtonCustom>
-      </form>
 
-      <div className="mt-8 space-y-4">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Already have an account?</span>
-          </div>
+        <div className="text-center">
+          <p className="text-gray-600">
+            Already have an account?{' '}
+            <button
+              type="button"
+              onClick={onSwitchToSignIn}
+              className="text-pink-600 hover:text-pink-800 font-semibold transition-colors"
+            >
+              Sign in here
+            </button>
+          </p>
         </div>
-        
-        <button
-          type="button"
-          onClick={onSwitchToSignIn}
-          className="w-full text-pink-600 hover:text-pink-800 text-sm font-semibold py-2 transition-colors"
-        >
-          Sign in to your account
-        </button>
-        
-        <button
-          type="button"
-          onClick={onSwitchToForgotPassword}
-          className="w-full text-gray-600 hover:text-gray-800 text-sm font-medium py-2 transition-colors"
-        >
-          Forgot your password?
-        </button>
-      </div>
+      </form>
     </>
   );
 };
