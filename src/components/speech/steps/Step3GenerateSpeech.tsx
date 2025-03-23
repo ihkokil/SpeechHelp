@@ -22,18 +22,21 @@ interface Step3Props {
     image: string;
     icon: React.ReactNode;
   }[];
+  speechTitle: string;
+  setSpeechTitle: (title: string) => void;
 }
 
 const Step3GenerateSpeech: React.FC<Step3Props> = ({
   nextStep,
   prevStep,
   selectedSpeechType,
-  speechTypes
+  speechTypes,
+  speechTitle,
+  setSpeechTitle
 }) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [speechTitle, setSpeechTitle] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
   const [generating, setGenerating] = useState(false);
 

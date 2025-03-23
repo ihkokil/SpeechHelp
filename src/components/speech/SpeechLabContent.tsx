@@ -14,6 +14,7 @@ const SpeechLabContent: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedSpeechType, setSelectedSpeechType] = useState('');
   const [speechDetails, setSpeechDetails] = useState({});
+  const [speechTitle, setSpeechTitle] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
@@ -144,6 +145,10 @@ const SpeechLabContent: React.FC = () => {
     }
   };
 
+  const handleSpeechTitleChange = (title: string) => {
+    setSpeechTitle(title);
+  };
+
   // Update the steps for the progress indicator to match our flow
   const steps = [
     { number: 1, title: 'Select Occasion' },
@@ -182,12 +187,17 @@ const SpeechLabContent: React.FC = () => {
               prevStep={prevStep} 
               selectedSpeechType={selectedSpeechType}
               speechTypes={speechTypes}
+              speechTitle={speechTitle}
+              setSpeechTitle={handleSpeechTitleChange}
             />
           )}
 
           {currentStep === 4 && (
             <Step4EditSpeech 
               prevStep={prevStep}
+              speechTitle={speechTitle}
+              speechType={selectedSpeechType}
+              onTitleChange={handleSpeechTitleChange}
             />
           )}
         </div>
