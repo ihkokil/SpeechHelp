@@ -37,26 +37,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for existing session
-    const getSession = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Error getting session:', error);
-      } else if (data?.session) {
-        setSession(data.session);
-        setUser(data.session.user);
-        await fetchSpeeches();
-      }
-      
-      setIsLoading(false);
-    };
-
-    getSession();
-
-    // Listen for auth state changes
-    const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+    // Set up auth state listener FIRST (to catch all auth state changes)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       console.log(`Auth state changed: ${event}`);
       setSession(newSession);
       setUser(newSession?.user ?? null);
@@ -70,30 +52,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(false);
     });
 
+    // THEN check for existing session
+    supabase.auth.getSession().then(async ({ data, error }) => {
+      if (error) {
+        console.error('Error getting session:', error);
+        setIsLoading(false);
+      } else if (data?.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+        await fetchSpeeches();
+      }
+      setIsLoading(false);
+    });
+
     return () => {
-      data.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
   const fetchSpeeches = async () => {
     if (!user) return;
     
-    const { data, error } = await supabase
-      .from('speeches')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching speeches:', error);
-      toast({
-        title: "Error fetching speeches",
-        description: error.message,
-        variant: "destructive"
-      });
-      return;
+    try {
+      const { data, error } = await supabase
+        .from('speeches')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching speeches:', error);
+        toast({
+          title: "Error fetching speeches",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      setSpeeches(data || []);
+    } catch (err) {
+      console.error('Exception in fetchSpeeches:', err);
     }
-    
-    setSpeeches(data || []);
   };
 
   const saveSpeech = async (title: string, content: string, speechType: string) => {
@@ -208,71 +207,83 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setIsLoading(false);
-    
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        throw error;
+      }
+      
       toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive"
+        title: "Login successful",
+        description: "Welcome back!",
       });
+    } catch (error) {
+      setIsLoading(false);
       throw error;
     }
-    
-    toast({
-      title: "Login successful",
-      description: "Welcome back!",
-    });
   };
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signUp({ 
-      email, 
-      password,
-      options: {
-        data: {
-          first_name: firstName,
-          last_name: lastName
+    try {
+      const { error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName
+          }
         }
-      }
-    });
-    setIsLoading(false);
-    
-    if (error) {
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive"
       });
+      
+      if (error) {
+        toast({
+          title: "Sign up failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        throw error;
+      }
+      
+      toast({
+        title: "Sign up successful",
+        description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
+      });
+    } catch (error) {
+      setIsLoading(false);
       throw error;
     }
-    
-    toast({
-      title: "Sign up successful",
-      description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
-    });
   };
 
   const signOut = async () => {
     setIsLoading(true);
-    const { error } = await supabase.auth.signOut();
-    setIsLoading(false);
-    
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        toast({
+          title: "Sign out failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        throw error;
+      }
+      
       toast({
-        title: "Sign out failed",
-        description: error.message,
-        variant: "destructive"
+        title: "Signed out",
+        description: "You have been signed out successfully.",
       });
+    } catch (error) {
+      setIsLoading(false);
       throw error;
     }
-    
-    toast({
-      title: "Signed out",
-      description: "You have been signed out successfully.",
-    });
   };
 
   return (

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -23,14 +22,12 @@ const Auth = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  // Check if the URL contains signup=true or if hash contains type=recovery
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('signup') === 'true') {
       setIsSignUp(true);
     }
 
-    // Check for password reset flow
     if (location.hash) {
       const hashParams = new URLSearchParams(location.hash.substring(1));
       if (hashParams.get('type') === 'recovery') {
@@ -39,7 +36,6 @@ const Auth = () => {
     }
   }, [location]);
 
-  // Redirect if already logged in (except for reset password flow)
   useEffect(() => {
     if (user && !isResetPassword) {
       navigate('/dashboard');
@@ -52,13 +48,13 @@ const Auth = () => {
 
     try {
       if (isResetPassword) {
-        // Handle reset password form submission
         if (newPassword !== confirmPassword) {
           toast({
             title: "Passwords don't match",
             description: "Please make sure your passwords match.",
             variant: "destructive"
           });
+          setLoading(false);
           return;
         }
 
@@ -73,11 +69,10 @@ const Auth = () => {
           description: "Your password has been updated successfully. You can now log in with your new password.",
         });
 
-        // Reset state and redirect to login
         setIsResetPassword(false);
         setNewPassword('');
         setConfirmPassword('');
-        
+        setLoading(false);
       } else if (isForgotPassword) {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/auth`,
@@ -90,8 +85,8 @@ const Auth = () => {
           description: "Check your email for the password reset link.",
         });
         setIsForgotPassword(false);
+        setLoading(false);
       } else if (isSignUp) {
-        // For sign up, validate first and last name
         if (!firstName.trim() || !lastName.trim()) {
           toast({
             title: "Missing information",
@@ -103,9 +98,10 @@ const Auth = () => {
         }
         
         await signUp(email, password, firstName, lastName);
+        setLoading(false);
       } else {
         await signIn(email, password);
-        navigate('/');
+        setLoading(false);
       }
     } catch (error: any) {
       console.error('Authentication error:', error);
@@ -114,7 +110,6 @@ const Auth = () => {
         description: error.message || "An error occurred during authentication",
         variant: "destructive"
       });
-    } finally {
       setLoading(false);
     }
   };
@@ -206,7 +201,7 @@ const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-                placeholder="••••••••"
+                placeholder="���•••••••"
                 minLength={6}
               />
             </div>

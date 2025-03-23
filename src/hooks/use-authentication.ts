@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 
@@ -7,6 +7,33 @@ export const useAuthentication = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Initialize auth state once on component mount
+  useEffect(() => {
+    // First set up the auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+      console.log(`Auth state changed: ${event}`);
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+      setIsLoading(false);
+    });
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (error) {
+        console.error('Error getting session:', error);
+      } else if (data?.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+      }
+      setIsLoading(false);
+    });
+
+    // Clean up subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const getSession = async () => {
     setIsLoading(true);
@@ -26,9 +53,9 @@ export const useAuthentication = () => {
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    setIsLoading(false);
     
     if (error) {
+      setIsLoading(false);
       throw error;
     }
     
@@ -44,9 +71,9 @@ export const useAuthentication = () => {
         data: metadata
       }
     });
-    setIsLoading(false);
     
     if (error) {
+      setIsLoading(false);
       throw error;
     }
     
@@ -56,9 +83,9 @@ export const useAuthentication = () => {
   const signOut = async () => {
     setIsLoading(true);
     const { error } = await supabase.auth.signOut();
-    setIsLoading(false);
     
     if (error) {
+      setIsLoading(false);
       throw error;
     }
   };

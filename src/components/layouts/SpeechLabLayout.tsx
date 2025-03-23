@@ -1,14 +1,16 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { useAuth } from '@/contexts/AuthContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SpeechLabLayoutProps {
   children: React.ReactNode;
 }
 
 const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const [isLocalLoading, setIsLocalLoading] = useState(true);
   
   // Get user's name from metadata or email
   const metadata = user?.user_metadata || {};
@@ -17,6 +19,37 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
   
   // Display name preference: first name > email username
   const displayName = firstName || (user?.email ? user.email.split('@')[0] : "User");
+
+  // Introduce a small delay to prevent flash of loading state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLocalLoading(false);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Show skeleton during initial load
+  if (isLoading || isLocalLoading) {
+    return (
+      <div className="min-h-screen flex">
+        <DashboardSidebar />
+        <div className="flex-1 bg-gray-50 overflow-auto">
+          <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+            <Skeleton className="h-8 w-32" />
+            <div className="flex items-center">
+              <Skeleton className="h-4 w-24 mr-3" />
+              <Skeleton className="h-8 w-8 rounded-full" />
+            </div>
+          </div>
+          <div className="p-6">
+            <Skeleton className="h-12 w-full mb-6" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex">
