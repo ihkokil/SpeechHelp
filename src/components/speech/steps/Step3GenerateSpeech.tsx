@@ -11,6 +11,7 @@ import Translate from '@/components/Translate';
 import { Label } from '@/components/ui/label';
 import Confetti from 'react-confetti';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Step3Props {
   nextStep: () => void;
@@ -38,6 +39,7 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const [showCongratulations, setShowCongratulations] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -74,6 +76,7 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     setTimeout(() => {
       setIsGenerating(false);
       setShowConfetti(true);
+      setShowCongratulations(true);
       
       toast({
         title: "Congratulations!",
@@ -81,10 +84,10 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         duration: 5000,
       });
       
-      // Automatically proceed to next step after 2.5 seconds
+      // Automatically proceed to next step after 3.5 seconds
       setTimeout(() => {
         nextStep();
-      }, 2500);
+      }, 3500);
     }, 1500);
   };
 
@@ -101,6 +104,33 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
           tweenDuration={5000}
         />
       )}
+      
+      <Dialog open={showCongratulations} onOpenChange={setShowCongratulations}>
+        <DialogContent className="sm:max-w-md bg-gradient-to-r from-purple-100 to-pink-100 border-purple-200">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-bold text-purple-800 flex items-center justify-center gap-2">
+              <PartyPopper className="h-6 w-6 text-purple-600" />
+              Congratulations - You Did It!
+              <PartyPopper className="h-6 w-6 text-purple-600" />
+            </DialogTitle>
+            <DialogDescription className="text-center text-lg text-purple-700">
+              Your speech has been successfully generated! Get ready to impress your audience.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-4">
+            <Sparkles className="h-24 w-24 text-purple-500 animate-pulse" />
+          </div>
+          <div className="flex justify-center">
+            <ButtonCustom 
+              variant="magenta" 
+              className="px-8"
+              onClick={() => setShowCongratulations(false)}
+            >
+              Awesome!
+            </ButtonCustom>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       <Card>
         <CardHeader>
@@ -157,7 +187,7 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
             </div>
           </div>
           
-          {showConfetti && (
+          {showConfetti && !showCongratulations && (
             <div className="bg-purple-100 p-4 rounded-md border border-purple-200 text-center">
               <PartyPopper className="h-12 w-12 text-purple-600 mx-auto mb-2" />
               <h3 className="text-lg font-bold text-purple-800 mb-1">

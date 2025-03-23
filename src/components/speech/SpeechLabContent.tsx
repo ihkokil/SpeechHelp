@@ -264,7 +264,7 @@ const SpeechLabContent: React.FC = () => {
             <Step4EditSpeech 
               prevStep={prevStep}
               generatedSpeech={generatedSpeech}
-              speechTitle={formData["speechTitle"] || "My Speech"}
+              speechTitle={formData["speechTitle"] || title || "My Speech"}
               selectedSpeechType={selectedSpeechType}
             />
           )}
