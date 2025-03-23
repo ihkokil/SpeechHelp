@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -17,13 +16,19 @@ interface Step2Props {
   nextStep: () => void;
   prevStep: () => void;
   selectedSpeechType: string;
+  setFormData: (data: Record<string, string>) => void;
 }
 
-const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selectedSpeechType }) => {
+const Step2SpeechDetails: React.FC<Step2Props> = ({ 
+  nextStep, 
+  prevStep, 
+  selectedSpeechType,
+  setFormData
+}) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [localFormData, setLocalFormData] = useState<Record<string, string>>({});
   const [progress, setProgress] = useState(0);
 
   // Speech type specific questions
@@ -860,6 +865,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selected
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // All questions answered, proceed to next step
+      setFormData(localFormData); // Send data back to parent component
       nextStep();
     }
   };
@@ -874,8 +880,8 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selected
   };
 
   const handleInputChange = (value: string) => {
-    setFormData({
-      ...formData,
+    setLocalFormData({
+      ...localFormData,
       [questions[currentQuestionIndex].question]: value
     });
   };
@@ -905,7 +911,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selected
           
           {currentQuestion.type === 'text' && (
             <Input 
-              value={formData[currentQuestion.question] || ''}
+              value={localFormData[currentQuestion.question] || ''}
               onChange={(e) => handleInputChange(e.target.value)}
               placeholder={currentQuestion.placeholder}
               className="w-full"
@@ -914,7 +920,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selected
           
           {currentQuestion.type === 'textarea' && (
             <Textarea 
-              value={formData[currentQuestion.question] || ''}
+              value={localFormData[currentQuestion.question] || ''}
               onChange={(e) => handleInputChange(e.target.value)}
               placeholder={currentQuestion.placeholder}
               className="w-full min-h-[100px]"
@@ -923,7 +929,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selected
           
           {currentQuestion.type === 'radio' && currentQuestion.options && (
             <RadioGroup 
-              value={formData[currentQuestion.question] || ''}
+              value={localFormData[currentQuestion.question] || ''}
               onValueChange={(value) => handleInputChange(value)}
               className="flex flex-col space-y-2"
             >
@@ -961,3 +967,4 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selected
 };
 
 export default Step2SpeechDetails;
+
