@@ -11,18 +11,15 @@ import Translate from '@/components/Translate';
 import { Label } from '@/components/ui/label';
 import Confetti from 'react-confetti';
 import { useToast } from '@/hooks/use-toast';
+import { SpeechType } from '../data/speechTypes';
+import { SpeechFormData } from '../hooks/useSpeechState';
 
 interface Step3Props {
   nextStep: () => void;
   prevStep: () => void;
   selectedSpeechType: string;
-  speechTypes: {
-    id: string;
-    label: string;
-    image: string;
-    icon: React.ReactNode;
-  }[];
-  formData?: Record<string, string>;
+  speechTypes: SpeechType[];
+  formData?: SpeechFormData;
 }
 
 const Step3GenerateSpeech: React.FC<Step3Props> = ({
@@ -68,6 +65,9 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       return;
     }
 
+    // Add the title to formData
+    formData["speechTitle"] = title;
+    
     setIsGenerating(true);
     
     // Simulate speech generation (in a real app, this would call an API)
