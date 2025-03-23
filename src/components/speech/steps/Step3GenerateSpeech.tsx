@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -83,9 +84,10 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       
       formData["speechTitle"] = title;
       
+      // Increased the delay to 6000ms (6 seconds) to show congratulations longer
       setTimeout(() => {
         nextStep();
-      }, 3500);
+      }, 6000);
     }, 1500);
   };
 
@@ -98,8 +100,10 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
           width={windowSize.width}
           height={windowSize.height}
           recycle={false}
-          numberOfPieces={500}
-          tweenDuration={5000}
+          numberOfPieces={800} // Increased from 500 to 800 for more confetti
+          tweenDuration={8000} // Increased from 5000 to 8000 for longer confetti animation
+          gravity={0.1} // Reduced gravity to make confetti fall slower
+          colors={['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39']} // More colorful confetti
         />
       )}
       
