@@ -97,33 +97,55 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const saveSpeech = async (title: string, content: string, speechType: string) => {
-    if (!user) return;
-    
-    const { error } = await supabase
-      .from('speeches')
-      .insert({
-        user_id: user.id,
-        title,
-        content,
-        speech_type: speechType
-      });
-    
-    if (error) {
-      console.error('Error saving speech:', error);
-      toast({
-        title: "Error saving speech",
-        description: error.message,
-        variant: "destructive"
-      });
-      throw error;
+    if (!user) {
+      throw new Error("You must be logged in to save speeches");
     }
     
-    toast({
-      title: "Speech Saved",
-      description: "Your speech has been saved to your account.",
+    // Form validation
+    if (!title.trim()) {
+      throw new Error("Speech title is required");
+    }
+    
+    if (!content.trim()) {
+      throw new Error("Speech content is required");
+    }
+    
+    if (!speechType.trim()) {
+      speechType = "other"; // Default fallback
+    }
+    
+    console.log("Inserting speech with data:", {
+      user_id: user.id,
+      title: title,
+      content: content,
+      speech_type: speechType
     });
     
-    await fetchSpeeches();
+    try {
+      const { error } = await supabase
+        .from('speeches')
+        .insert({
+          user_id: user.id,
+          title: title,
+          content: content,
+          speech_type: speechType
+        });
+      
+      if (error) {
+        console.error('Error details from Supabase:', error);
+        throw error;
+      }
+      
+      toast({
+        title: "Speech Saved",
+        description: "Your speech has been saved to your account.",
+      });
+      
+      await fetchSpeeches();
+    } catch (err) {
+      console.error('Exception in saveSpeech:', err);
+      throw err;
+    }
   };
 
   const updateSpeech = async (id: string, title: string, content: string) => {
