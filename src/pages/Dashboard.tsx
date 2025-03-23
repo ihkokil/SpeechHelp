@@ -14,6 +14,7 @@ import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-r
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -24,6 +25,8 @@ const Dashboard = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const [isProcessingUser, setIsProcessingUser] = useState(true);
+  const [isDashboardInitialized, setIsDashboardInitialized] = useState(false);
+  const { toast } = useToast();
   
   // Redirect if not logged in
   useEffect(() => {
@@ -47,18 +50,24 @@ const Dashboard = () => {
     });
     
     const initializeDashboard = async () => {
-      if (user && !isLoading) {
+      if (user && !isLoading && !isDashboardInitialized) {
         console.log("Initializing dashboard, fetching speeches");
         try {
           await fetchSpeeches();
+          setIsDashboardInitialized(true);
         } catch (error) {
           console.error("Error fetching speeches on dashboard mount:", error);
+          toast({
+            title: "Error loading speeches",
+            description: "We couldn't load your speeches. Please refresh the page.",
+            variant: "destructive"
+          });
         }
       }
     };
     
     initializeDashboard();
-  }, [user, isLoading, fetchSpeeches]);
+  }, [user, isLoading, fetchSpeeches, isDashboardInitialized, toast]);
   
   // Set user information from metadata
   useEffect(() => {

@@ -19,11 +19,25 @@ const LoginForm = ({
 }: LoginFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(email, password);
+    
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onSubmit(email, password);
+    } catch (error) {
+      console.error('Login form submission error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // Combined loading state to prevent double submissions
+  const isButtonDisabled = loading || isSubmitting;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -43,6 +57,7 @@ const LoginForm = ({
             onChange={(e) => setEmail(e.target.value)}
             className="w-full pl-10 px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
             placeholder="your@email.com"
+            disabled={isButtonDisabled}
           />
         </div>
       </div>
@@ -64,19 +79,21 @@ const LoginForm = ({
             className="w-full pl-10 px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
             placeholder="••••••••"
             minLength={6}
+            disabled={isButtonDisabled}
           />
         </div>
       </div>
 
-      <AuthFormButton loading={loading} label="Log In" />
+      <AuthFormButton loading={isButtonDisabled} label="Log In" />
       
-      <SocialLoginButtons isLoading={loading} className="mt-6" />
+      <SocialLoginButtons isLoading={isButtonDisabled} className="mt-6" />
 
       <div className="mt-6 text-center space-y-2">
         <button
           type="button"
           onClick={onToggleSignUp}
           className="text-pink-600 hover:text-pink-800 text-sm font-medium"
+          disabled={isButtonDisabled}
         >
           Need an account? Sign Up
         </button>
@@ -85,6 +102,7 @@ const LoginForm = ({
           type="button"
           onClick={onToggleForgotPassword}
           className="block w-full text-pink-600 hover:text-pink-800 text-sm font-medium"
+          disabled={isButtonDisabled}
         >
           Forgot your password?
         </button>
