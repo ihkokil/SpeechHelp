@@ -64,18 +64,6 @@ const Navbar = () => {
             >
               {t('nav.howItWorks', currentLanguage.code)}
             </Link>
-            <Link
-              to="#testimonials"
-              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-            >
-              {t('nav.testimonials', currentLanguage.code)}
-            </Link>
-            <Link
-              to="#contact"
-              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-            >
-              {t('nav.contact', currentLanguage.code)}
-            </Link>
 
             <UserMenu />
             <LanguageSelector />
@@ -122,20 +110,6 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 {t('nav.howItWorks', currentLanguage.code)}
-              </Link>
-              <Link
-                to="#testimonials"
-                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {t('nav.testimonials', currentLanguage.code)}
-              </Link>
-              <Link
-                to="#contact"
-                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {t('nav.contact', currentLanguage.code)}
               </Link>
             </div>
           </div>
