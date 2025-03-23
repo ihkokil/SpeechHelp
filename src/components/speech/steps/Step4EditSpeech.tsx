@@ -8,6 +8,7 @@ import Translate from '@/components/Translate';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Step4Props {
   prevStep: () => void;
@@ -26,7 +27,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
   const [copied, setCopied] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-  const { user, saveSpeech } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleCopy = () => {
@@ -82,8 +83,22 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         type: selectedSpeechType
       });
       
-      await saveSpeech(speechTitle, speechContent, selectedSpeechType);
+      // Direct insertion using Supabase client instead of using the saveSpeech method from context
+      const { error } = await supabase
+        .from('speeches')
+        .insert({
+          user_id: user.id,
+          title: speechTitle,
+          content: speechContent,
+          speech_type: selectedSpeechType
+        });
+      
       setIsSaving(false);
+      
+      if (error) {
+        console.error('Error details from Supabase:', error);
+        throw error;
+      }
       
       toast({
         title: "Speech Saved",
