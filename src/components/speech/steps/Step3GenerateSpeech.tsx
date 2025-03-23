@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Party } from 'lucide-react';
+import { ArrowLeft, PartyPopper } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import Translate from '@/components/Translate';
@@ -47,7 +47,7 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       timer = setTimeout(() => {
         setShowConfetti(false);
         nextStep();
-      }, 3000); // Show confetti for 3 seconds before moving to next step
+      }, 5000); // Show confetti for 5 seconds before moving to next step
     }
     return () => {
       if (timer) clearTimeout(timer);
@@ -81,7 +81,10 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
             recycle={false}
             numberOfPieces={500}
           />
-          <div className="bg-white/80 backdrop-blur-sm p-8 rounded-lg shadow-lg z-10 text-center">
+          <div className="rounded-full bg-white/90 backdrop-blur-sm p-10 shadow-lg z-10 text-center w-80 h-80 flex flex-col items-center justify-center border-4 border-pink-500 animate-scale-in">
+            <div className="mb-4">
+              <PartyPopper className="h-16 w-16 text-pink-600 mb-2" />
+            </div>
             <h2 className="text-3xl font-bold text-pink-600 mb-2">Congratulations - You Did It!</h2>
             <p className="text-gray-700">Your speech is being generated...</p>
           </div>
