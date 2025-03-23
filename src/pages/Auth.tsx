@@ -105,7 +105,7 @@ const Auth = () => {
         await signUp(email, password, firstName, lastName);
       } else {
         await signIn(email, password);
-        navigate('/');
+        navigate('/dashboard');
       }
     } catch (error: any) {
       console.error('Authentication error:', error);
