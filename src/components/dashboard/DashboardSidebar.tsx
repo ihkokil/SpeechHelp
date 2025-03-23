@@ -76,8 +76,15 @@ const DashboardSidebar = () => {
     },
   ];
 
-  // Extract first letter of email for avatar
-  const userInitial = user?.email ? user.email[0].toUpperCase() : '?';
+  // Get user's name from metadata or email
+  const metadata = user?.user_metadata || {};
+  const firstName = metadata.first_name;
+  const lastName = metadata.last_name;
+  
+  // Display name preference: first name + last name > email username
+  const emailUsername = user?.email?.split('@')[0] || '';
+  const displayName = firstName || emailUsername;
+  const fullName = firstName && lastName ? `${firstName} ${lastName}` : displayName;
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
@@ -92,11 +99,11 @@ const DashboardSidebar = () => {
       <div className="px-6 mb-6">
         <div className="flex items-center">
           <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-medium">
-            {userInitial}
+            {user?.email ? user.email[0].toUpperCase() : '?'}
           </div>
           <div className="ml-3">
             <p className="text-sm font-medium text-gray-900 truncate">
-              {user?.email?.split('@')[0]}
+              {fullName}
             </p>
             <p className="text-xs text-gray-500 truncate">
               {user?.email}
