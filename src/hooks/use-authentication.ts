@@ -12,90 +12,71 @@ export const useAuthentication = () => {
 
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password 
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
-      
-      return data;
-    } catch (error: any) {
-      console.error('Login error:', error);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setIsLoading(false);
+    
+    if (error) {
       toast({
         title: "Login failed",
-        description: error.message || "An error occurred during login",
+        description: error.message,
         variant: "destructive"
       });
       throw error;
-    } finally {
-      setIsLoading(false);
     }
+    
+    toast({
+      title: "Login successful",
+      description: "Welcome back!",
+    });
   };
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
     setIsLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signUp({ 
-        email, 
-        password,
-        options: {
-          data: {
-            first_name: firstName,
-            last_name: lastName
-          }
+    const { error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName
         }
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Sign up successful",
-        description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
-      });
-      
-      return data;
-    } catch (error: any) {
-      console.error('Signup error:', error);
+      }
+    });
+    setIsLoading(false);
+    
+    if (error) {
       toast({
         title: "Sign up failed",
-        description: error.message || "An error occurred during sign up",
+        description: error.message,
         variant: "destructive"
       });
       throw error;
-    } finally {
-      setIsLoading(false);
     }
+    
+    toast({
+      title: "Sign up successful",
+      description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
+    });
   };
 
   const signOut = async () => {
     setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Signed out",
-        description: "You have been signed out successfully.",
-      });
-    } catch (error: any) {
-      console.error('Signout error:', error);
+    const { error } = await supabase.auth.signOut();
+    setIsLoading(false);
+    
+    if (error) {
       toast({
         title: "Sign out failed",
-        description: error.message || "An error occurred during sign out",
+        description: error.message,
         variant: "destructive"
       });
       throw error;
-    } finally {
-      setIsLoading(false);
     }
+    
+    toast({
+      title: "Signed out",
+      description: "You have been signed out successfully.",
+    });
   };
 
   return {

@@ -113,25 +113,12 @@ const Features = () => {
     }
   ];
 
-  // Function to format the title with "Speech Help !" in pink
-  const formatTitle = (title: string) => {
-    const parts = title.split("Speech Help !");
-    if (parts.length > 1) {
-      return (
-        <>
-          {parts[0]}<span className="text-pink-600">Speech Help !</span>{parts[1]}
-        </>
-      );
-    }
-    return title;
-  };
-
   return (
     <section id="features" className="py-16 md:py-24 bg-white relative">
       <div className="container mx-auto px-6 md:px-12">
         <div className="max-w-3xl mx-auto text-center mb-12" ref={sectionRef}>
           <h2 className={`text-3xl md:text-4xl font-bold mb-4 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
-            {formatTitle(t('features.title', currentLanguage.code))}
+            {t('features.title', currentLanguage.code)} <span className="text-pink-600">Speech Help!</span>
           </h2>
           <p className={`text-lg text-gray-600 mb-6 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>
             {t('features.subtitle', currentLanguage.code)}

@@ -14,7 +14,6 @@ import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-r
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
-import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -24,55 +23,24 @@ const Dashboard = () => {
   const [lastName, setLastName] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  const [isProcessingUser, setIsProcessingUser] = useState(true);
-  const [isDashboardInitialized, setIsDashboardInitialized] = useState(false);
-  const { toast } = useToast();
+  
+  // Fetch speeches when component mounts and auth state changes
+  useEffect(() => {
+    if (user && !isLoading) {
+      fetchSpeeches();
+    }
+  }, [user, isLoading, fetchSpeeches]);
   
   // Redirect if not logged in
   useEffect(() => {
-    // Add a small delay to ensure auth state has been checked completely
-    const redirectTimer = setTimeout(() => {
-      if (!isLoading && !user) {
-        console.log("User not authenticated, redirecting to auth page");
-        navigate('/auth');
-      }
-    }, 500);
-    
-    return () => clearTimeout(redirectTimer);
+    if (!isLoading && !user) {
+      navigate('/auth');
+    }
   }, [user, isLoading, navigate]);
-  
-  // Manually fetch speeches when component mounts
-  useEffect(() => {
-    console.log("Dashboard mounted. Auth state:", { 
-      isLoggedIn: !!user, 
-      isLoading, 
-      speechesCount: speeches?.length 
-    });
-    
-    const initializeDashboard = async () => {
-      if (user && !isLoading && !isDashboardInitialized) {
-        console.log("Initializing dashboard, fetching speeches");
-        try {
-          await fetchSpeeches();
-          setIsDashboardInitialized(true);
-        } catch (error) {
-          console.error("Error fetching speeches on dashboard mount:", error);
-          toast({
-            title: "Error loading speeches",
-            description: "We couldn't load your speeches. Please refresh the page.",
-            variant: "destructive"
-          });
-        }
-      }
-    };
-    
-    initializeDashboard();
-  }, [user, isLoading, fetchSpeeches, isDashboardInitialized, toast]);
   
   // Set user information from metadata
   useEffect(() => {
     if (user) {
-      console.log("Setting user information from metadata", user.user_metadata);
       // Get first and last name from user metadata if available
       const metadata = user.user_metadata;
       const firstNameFromMeta = metadata?.first_name || '';
@@ -94,16 +62,10 @@ const Dashboard = () => {
       } else {
         setUserName(`${firstNameFromMeta} ${lastNameFromMeta}`);
       }
-      
-      // Mark user processing as complete
-      setIsProcessingUser(false);
     }
   }, [user]);
 
-  // Combined loading state to prevent flickering
-  const showLoading = isLoading || isProcessingUser;
-
-  if (showLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
         <div className="flex flex-col items-center">
