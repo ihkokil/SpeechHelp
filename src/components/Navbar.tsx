@@ -39,36 +39,46 @@ const Navbar = () => {
             <img 
               src="/lovable-uploads/84f00e48-230b-4b88-9f37-7a1ba9b6ffda.png" 
               alt="SpeechHelp Logo" 
-              className="h-10 w-auto object-contain" 
+              className="h-10" 
               style={{ display: 'block' }}
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center ml-12 space-x-4 lg:space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
             <Link
               to="/"
-              className="text-gray-700 hover:text-pink-600 font-medium transition-colors whitespace-nowrap"
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               {t('nav.home', currentLanguage.code)}
             </Link>
             <Link
+              to="#features"
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+            >
+              {t('nav.features', currentLanguage.code)}
+            </Link>
+            <Link
               to="#how-it-works"
-              className="text-gray-700 hover:text-pink-600 font-medium transition-colors whitespace-nowrap"
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               {t('nav.howItWorks', currentLanguage.code)}
             </Link>
             <Link
-              to="#pricing"
-              className="text-gray-700 hover:text-pink-600 font-medium transition-colors whitespace-nowrap"
+              to="#testimonials"
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
-              {t('nav.pricing', currentLanguage.code)}
+              {t('nav.testimonials', currentLanguage.code)}
+            </Link>
+            <Link
+              to="#contact"
+              className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+            >
+              {t('nav.contact', currentLanguage.code)}
             </Link>
 
-            <div className="flex items-center space-x-4">
-              <UserMenu />
-              <LanguageSelector />
-            </div>
+            <UserMenu />
+            <LanguageSelector />
           </div>
 
           {/* Mobile Menu Button */}
@@ -100,6 +110,13 @@ const Navbar = () => {
                 {t('nav.home', currentLanguage.code)}
               </Link>
               <Link
+                to="#features"
+                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {t('nav.features', currentLanguage.code)}
+              </Link>
+              <Link
                 to="#how-it-works"
                 className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
@@ -107,11 +124,18 @@ const Navbar = () => {
                 {t('nav.howItWorks', currentLanguage.code)}
               </Link>
               <Link
-                to="#pricing"
+                to="#testimonials"
                 className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t('nav.pricing', currentLanguage.code)}
+                {t('nav.testimonials', currentLanguage.code)}
+              </Link>
+              <Link
+                to="#contact"
+                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {t('nav.contact', currentLanguage.code)}
               </Link>
             </div>
           </div>
