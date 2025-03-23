@@ -6,21 +6,28 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Download, RefreshCw, Copy, Check } from 'lucide-react';
 import Translate from '@/components/Translate';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Step4Props {
   prevStep: () => void;
   generatedSpeech: string;
   speechTitle?: string;
+  selectedSpeechType?: string;
 }
 
 const Step4EditSpeech: React.FC<Step4Props> = ({ 
   prevStep, 
   generatedSpeech, 
-  speechTitle = "My Speech" 
+  speechTitle = "My Speech",
+  selectedSpeechType = "other" 
 }) => {
   const [speechContent, setSpeechContent] = useState(generatedSpeech || "Your speech will appear here once generated.");
   const [copied, setCopied] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const { saveSpeech } = useAuth();
+  const navigate = useNavigate();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(speechContent);
@@ -53,6 +60,27 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
       toast({
         title: "Speech Reset",
         description: "Your speech has been reset to the original generated content",
+      });
+    }
+  };
+
+  const handleSaveSpeech = async () => {
+    try {
+      setIsSaving(true);
+      await saveSpeech(speechTitle, speechContent, selectedSpeechType);
+      setIsSaving(false);
+      toast({
+        title: "Speech Saved",
+        description: "Your speech has been saved to your account",
+      });
+      navigate('/dashboard');
+    } catch (error) {
+      setIsSaving(false);
+      console.error('Error saving speech:', error);
+      toast({
+        title: "Save Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
       });
     }
   };
@@ -99,8 +127,16 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
           <ArrowLeft className="mr-2 h-4 w-4" />
           <Translate text="speechLab.backButton" />
         </ButtonCustom>
-        <ButtonCustom variant="magenta">
-          <Translate text="speechLab.saveButton" />
+        <ButtonCustom 
+          variant="magenta" 
+          onClick={handleSaveSpeech} 
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <Translate text="common.saving" fallback="Saving..." />
+          ) : (
+            <Translate text="speechLab.saveButton" fallback="Save Speech" />
+          )}
         </ButtonCustom>
       </CardFooter>
     </Card>
