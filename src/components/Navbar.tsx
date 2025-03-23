@@ -3,10 +3,15 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import UserMenu from "./UserMenu";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslation } from "@/translations";
+import LanguageSelector from "./dashboard/LanguageSelector";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,39 +50,41 @@ const Navbar = () => {
               to="/"
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
-              Home
+              {t('nav.home', currentLanguage.code)}
             </Link>
             <Link
               to="#features"
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
-              Features
+              {t('nav.features', currentLanguage.code)}
             </Link>
             <Link
               to="#how-it-works"
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
-              How It Works
+              {t('nav.howItWorks', currentLanguage.code)}
             </Link>
             <Link
               to="#testimonials"
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
-              Testimonials
+              {t('nav.testimonials', currentLanguage.code)}
             </Link>
             <Link
               to="#contact"
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
-              Contact
+              {t('nav.contact', currentLanguage.code)}
             </Link>
 
             <UserMenu />
+            <LanguageSelector />
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-4">
             <UserMenu />
+            <LanguageSelector />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-700"
@@ -100,35 +107,35 @@ const Navbar = () => {
                 className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Home
+                {t('nav.home', currentLanguage.code)}
               </Link>
               <Link
                 to="#features"
                 className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Features
+                {t('nav.features', currentLanguage.code)}
               </Link>
               <Link
                 to="#how-it-works"
                 className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                How It Works
+                {t('nav.howItWorks', currentLanguage.code)}
               </Link>
               <Link
                 to="#testimonials"
                 className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Testimonials
+                {t('nav.testimonials', currentLanguage.code)}
               </Link>
               <Link
                 to="#contact"
                 className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Contact
+                {t('nav.contact', currentLanguage.code)}
               </Link>
             </div>
           </div>

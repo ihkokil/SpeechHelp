@@ -1,0 +1,204 @@
+
+type TranslationsType = {
+  [languageCode: string]: {
+    [key: string]: string;
+  };
+};
+
+const translations: TranslationsType = {
+  'en-US': {
+    // General
+    'app.name': 'SpeechHelp',
+    'loading': 'Loading...',
+    
+    // Navigation
+    'nav.home': 'Home',
+    'nav.features': 'Features',
+    'nav.howItWorks': 'How It Works',
+    'nav.testimonials': 'Testimonials',
+    'nav.contact': 'Contact',
+
+    // Footer
+    'footer.about': 'About Us',
+    'footer.features': 'Features',
+    'footer.pricing': 'Pricing',
+    'footer.faq': 'FAQ',
+    'footer.description': 'Empower your voice with our AI-driven platform. Create unforgettable speeches for every occasion with ease and precision.',
+    'footer.contactUs': 'Contact Us',
+    'footer.support': 'Support',
+    'footer.community': 'Community',
+    'footer.privacy': 'Privacy Policy',
+    'footer.terms': 'Terms of Service',
+    'footer.cookies': 'Cookie Policy',
+    'footer.rights': 'All rights reserved.',
+    
+    // Dashboard
+    'dashboard.welcome': 'Welcome',
+    'dashboard.goodMorning': 'Good morning',
+    'dashboard.goodAfternoon': 'Good afternoon',
+    'dashboard.goodEvening': 'Good evening',
+    'dashboard.niceDay': 'Have a nice',
+    'dashboard.summary': 'Summary',
+    'dashboard.totalSpeeches': 'Total Speeches',
+    'dashboard.inProgress': 'In Progress',
+    'dashboard.improvement': 'Improvement %',
+    'dashboard.allTime': 'All time',
+    'dashboard.thisMonth': 'This month',
+    'dashboard.last30Days': 'Last 30 days',
+    'dashboard.previousSpeeches': 'Previous Speeches',
+    'dashboard.createNew': 'Create New Speech',
+    'dashboard.createFirst': 'Create Your First Speech',
+    'dashboard.noSpeeches': 'You haven\'t created any speeches yet.',
+    'dashboard.title': 'Title',
+    'dashboard.type': 'Type',
+    'dashboard.created': 'Created',
+    'dashboard.updated': 'Last Updated',
+    'dashboard.actions': 'Actions',
+    'dashboard.viewAll': 'View All',
+    'dashboard.close': 'Close',
+    'dashboard.edit': 'Edit',
+    'dashboard.save': 'Save Changes',
+    'dashboard.delete': 'Delete',
+    'dashboard.cancel': 'Cancel',
+    'dashboard.upcomingSpeeches': 'Upcoming Speeches',
+    'dashboard.prepare': 'Prepare',
+    'dashboard.recentActivities': 'Recent Activities',
+    'dashboard.performanceMetrics': 'Performance Metrics',
+    'dashboard.currentScore': 'Current Score',
+    'dashboard.monthlyChange': 'Monthly Change',
+    'dashboard.basedOn': 'Based on clarity, structure, delivery and content quality'
+  },
+  'en-GB': {
+    // British English variations
+    'nav.howItWorks': 'How It Works',
+    'dashboard.inProgress': 'In Progress',
+    'dashboard.niceDay': 'Have a pleasant',
+    'dashboard.thisMonth': 'This month',
+  },
+  'fr': {
+    // French translations
+    'app.name': 'SpeechHelp',
+    'loading': 'Chargement...',
+    
+    // Navigation
+    'nav.home': 'Accueil',
+    'nav.features': 'Fonctionnalités',
+    'nav.howItWorks': 'Comment ça marche',
+    'nav.testimonials': 'Témoignages',
+    'nav.contact': 'Contact',
+
+    // Footer
+    'footer.about': 'À propos de nous',
+    'footer.features': 'Fonctionnalités',
+    'footer.pricing': 'Tarifs',
+    'footer.faq': 'FAQ',
+    'footer.description': 'Donnez de la puissance à votre voix avec notre plateforme basée sur l\'IA. Créez des discours inoubliables pour chaque occasion avec facilité et précision.',
+    'footer.contactUs': 'Contactez-nous',
+    'footer.support': 'Support',
+    'footer.community': 'Communauté',
+    'footer.privacy': 'Politique de confidentialité',
+    'footer.terms': 'Conditions d\'utilisation',
+    'footer.cookies': 'Politique des cookies',
+    'footer.rights': 'Tous droits réservés.',
+    
+    // Dashboard
+    'dashboard.welcome': 'Bienvenue',
+    'dashboard.goodMorning': 'Bonjour',
+    'dashboard.goodAfternoon': 'Bon après-midi',
+    'dashboard.goodEvening': 'Bonsoir',
+    'dashboard.niceDay': 'Passez une bonne journée de',
+    'dashboard.summary': 'Résumé',
+    'dashboard.totalSpeeches': 'Discours totaux',
+    'dashboard.inProgress': 'En cours',
+    'dashboard.improvement': 'Amélioration %',
+    'dashboard.allTime': 'Tout le temps',
+    'dashboard.thisMonth': 'Ce mois-ci',
+    'dashboard.last30Days': 'Derniers 30 jours',
+    'dashboard.previousSpeeches': 'Discours précédents',
+    'dashboard.createNew': 'Créer un nouveau discours',
+    'dashboard.createFirst': 'Créez votre premier discours',
+    'dashboard.noSpeeches': 'Vous n\'avez pas encore créé de discours.',
+    'dashboard.title': 'Titre',
+    'dashboard.type': 'Type',
+    'dashboard.created': 'Créé',
+    'dashboard.updated': 'Dernière mise à jour',
+    'dashboard.actions': 'Actions',
+    'dashboard.viewAll': 'Voir tout',
+    'dashboard.close': 'Fermer',
+    'dashboard.edit': 'Modifier',
+    'dashboard.save': 'Enregistrer',
+    'dashboard.delete': 'Supprimer',
+    'dashboard.cancel': 'Annuler',
+    'dashboard.upcomingSpeeches': 'Discours à venir',
+    'dashboard.prepare': 'Préparer',
+    'dashboard.recentActivities': 'Activités récentes',
+    'dashboard.performanceMetrics': 'Métriques de performance',
+    'dashboard.currentScore': 'Score actuel',
+    'dashboard.monthlyChange': 'Changement mensuel',
+    'dashboard.basedOn': 'Basé sur la clarté, la structure, la livraison et la qualité du contenu'
+  },
+  'es': {
+    // Spanish translations
+    'app.name': 'SpeechHelp',
+    'loading': 'Cargando...',
+    
+    // Navigation
+    'nav.home': 'Inicio',
+    'nav.features': 'Características',
+    'nav.howItWorks': 'Cómo Funciona',
+    'nav.testimonials': 'Testimonios',
+    'nav.contact': 'Contacto',
+
+    // Footer
+    'footer.about': 'Sobre Nosotros',
+    'footer.features': 'Características',
+    'footer.pricing': 'Precios',
+    'footer.faq': 'Preguntas Frecuentes',
+    'footer.description': 'Potencia tu voz con nuestra plataforma impulsada por IA. Crea discursos inolvidables para cada ocasión con facilidad y precisión.',
+    'footer.contactUs': 'Contáctanos',
+    'footer.support': 'Soporte',
+    'footer.community': 'Comunidad',
+    'footer.privacy': 'Política de Privacidad',
+    'footer.terms': 'Términos de Servicio',
+    'footer.cookies': 'Política de Cookies',
+    'footer.rights': 'Todos los derechos reservados.',
+    
+    // Dashboard
+    'dashboard.welcome': 'Bienvenido',
+    'dashboard.goodMorning': 'Buenos días',
+    'dashboard.goodAfternoon': 'Buenas tardes',
+    'dashboard.goodEvening': 'Buenas noches',
+    'dashboard.niceDay': 'Que tengas un buen',
+    'dashboard.summary': 'Resumen',
+    'dashboard.totalSpeeches': 'Total de Discursos',
+    'dashboard.inProgress': 'En Progreso',
+    'dashboard.improvement': 'Mejora %',
+    'dashboard.allTime': 'Todo el tiempo',
+    'dashboard.thisMonth': 'Este mes',
+    'dashboard.last30Days': 'Últimos 30 días',
+    'dashboard.previousSpeeches': 'Discursos Anteriores',
+    'dashboard.createNew': 'Crear Nuevo Discurso',
+    'dashboard.createFirst': 'Crea tu Primer Discurso',
+    'dashboard.noSpeeches': 'Aún no has creado ningún discurso.',
+    'dashboard.title': 'Título',
+    'dashboard.type': 'Tipo',
+    'dashboard.created': 'Creado',
+    'dashboard.updated': 'Última Actualización',
+    'dashboard.actions': 'Acciones',
+    'dashboard.viewAll': 'Ver Todo',
+    'dashboard.close': 'Cerrar',
+    'dashboard.edit': 'Editar',
+    'dashboard.save': 'Guardar Cambios',
+    'dashboard.delete': 'Eliminar',
+    'dashboard.cancel': 'Cancelar',
+    'dashboard.upcomingSpeeches': 'Próximos Discursos',
+    'dashboard.prepare': 'Preparar',
+    'dashboard.recentActivities': 'Actividades Recientes',
+    'dashboard.performanceMetrics': 'Métricas de Rendimiento',
+    'dashboard.currentScore': 'Puntuación Actual',
+    'dashboard.monthlyChange': 'Cambio Mensual',
+    'dashboard.basedOn': 'Basado en claridad, estructura, entrega y calidad de contenido'
+  }
+};
+
+export default translations;

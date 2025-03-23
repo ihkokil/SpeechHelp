@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { ChevronDownIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/translations';
 
 interface SpeechSummaryCardProps {
   icon: React.ReactNode;
@@ -19,6 +21,12 @@ const SpeechSummaryCard = ({
   bgColor = 'bg-white' 
 }: SpeechSummaryCardProps) => {
   const [expanded, setExpanded] = useState(false);
+  const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
+  
+  // Translate label and period if they are translation keys
+  const translatedLabel = t(label, currentLanguage.code);
+  const translatedPeriod = t(period, currentLanguage.code);
   
   return (
     <div className={cn(
@@ -33,7 +41,7 @@ const SpeechSummaryCard = ({
             </div>
             <div>
               <h3 className="text-4xl font-bold text-gray-900">{count}</h3>
-              <p className="text-sm text-gray-600 mt-1">{label}</p>
+              <p className="text-sm text-gray-600 mt-1">{translatedLabel}</p>
             </div>
           </div>
           
@@ -41,7 +49,7 @@ const SpeechSummaryCard = ({
             onClick={() => setExpanded(!expanded)}
             className="flex items-center text-sm text-gray-500 hover:text-gray-700"
           >
-            {period}
+            {translatedPeriod}
             <ChevronDownIcon className={cn(
               "h-4 w-4 ml-1 transition-transform",
               expanded && "transform rotate-180"
