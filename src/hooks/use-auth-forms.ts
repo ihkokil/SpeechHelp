@@ -17,11 +17,15 @@ export const useAuthForms = () => {
   const handleLogin = async (email: string, password: string) => {
     setLoading(true);
     try {
-      await signIn(email, password);
-      // Toast notification is already handled in the signIn function
-      // Navigate to dashboard is handled by the Auth component's useEffect
+      const data = await signIn(email, password);
+      console.log('Login successful, session:', data?.session);
+      
+      // Explicitly navigate to dashboard after successful login
+      if (data?.session) {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('Login form error:', error);
     } finally {
       setLoading(false);
     }
@@ -39,11 +43,15 @@ export const useAuthForms = () => {
         return;
       }
       
-      await signUp(email, password, firstName, lastName);
-      // Toast notification is already handled in the signUp function
-      // Navigate to dashboard is handled by the Auth component's useEffect
+      const data = await signUp(email, password, firstName, lastName);
+      console.log('Signup successful:', data);
+      
+      // If email confirmation is disabled, redirect to dashboard
+      if (data?.session) {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (error: any) {
-      console.error('Signup error:', error);
+      console.error('Signup form error:', error);
     } finally {
       setLoading(false);
     }
