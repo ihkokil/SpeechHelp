@@ -14,6 +14,7 @@ export const useSpeeches = (user: User | null) => {
 
   const fetchSpeeches = useCallback(async () => {
     if (!user) {
+      console.log("No user detected in useSpeeches, clearing speeches");
       setSpeeches([]);
       setIsInitialized(true);
       return;
@@ -25,24 +26,24 @@ export const useSpeeches = (user: User | null) => {
     try {
       console.log("Fetching speeches for user ID:", user.id);
       
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('speeches')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) {
-        console.error('Error fetching speeches:', error);
-        setError(error.message);
+      if (fetchError) {
+        console.error('Error fetching speeches:', fetchError);
+        setError(fetchError.message);
         toast({
           title: "Error fetching speeches",
-          description: error.message,
+          description: fetchError.message,
           variant: "destructive"
         });
         return;
       }
       
-      console.log("Speeches fetched successfully:", data);
+      console.log("Speeches fetched successfully:", data?.length || 0, "speeches found");
       setSpeeches(data || []);
     } catch (err: any) {
       console.error('Unexpected error fetching speeches:', err);
@@ -58,25 +59,59 @@ export const useSpeeches = (user: User | null) => {
     }
   }, [user, toast]);
 
-  // Initial fetch when user changes
+  // Fetch speeches when user changes
   useEffect(() => {
-    if (user) {
-      console.log("User detected in useSpeeches, triggering fetch");
-      fetchSpeeches();
-    } else if (user === null) {
-      // Clear speeches when user is explicitly null (logged out)
-      setSpeeches([]);
-      setIsInitialized(true);
-    }
+    let mounted = true;
+    
+    const initializeSpeeches = async () => {
+      // Add small delay to ensure auth is fully processed
+      if (!mounted) return;
+      
+      if (user) {
+        console.log("User detected in useSpeeches, triggering fetch");
+        try {
+          await fetchSpeeches();
+        } catch (err) {
+          console.error("Failed to fetch speeches on initialization:", err);
+          // Don't show toast here as fetchSpeeches already handles that
+          if (mounted) {
+            setIsInitialized(true);
+          }
+        }
+      } else if (user === null) {
+        // Clear speeches when user is explicitly null (logged out)
+        console.log("User is null in useSpeeches, clearing speeches");
+        if (mounted) {
+          setSpeeches([]);
+          setIsInitialized(true);
+        }
+      }
+    };
+
+    initializeSpeeches();
+
+    return () => {
+      mounted = false;
+    };
   }, [user, fetchSpeeches]);
 
   const saveSpeech = async (title: string, content: string, speechType: string) => {
-    if (!user) return;
+    if (!user) {
+      console.error("Cannot save speech: No user is logged in");
+      toast({
+        title: "Cannot save speech",
+        description: "You must be logged in to save speeches",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsLoading(true);
     
     try {
       console.log("Saving speech for user ID:", user.id);
       
-      const { error } = await supabase
+      const { error: saveError } = await supabase
         .from('speeches')
         .insert({
           user_id: user.id,
@@ -85,14 +120,14 @@ export const useSpeeches = (user: User | null) => {
           speech_type: speechType
         });
       
-      if (error) {
-        console.error('Error saving speech:', error);
+      if (saveError) {
+        console.error('Error saving speech:', saveError);
         toast({
           title: "Error saving speech",
-          description: error.message,
+          description: saveError.message,
           variant: "destructive"
         });
-        throw error;
+        throw saveError;
       }
       
       toast({
@@ -104,16 +139,28 @@ export const useSpeeches = (user: User | null) => {
     } catch (err) {
       console.error('Unexpected error saving speech:', err);
       throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const updateSpeech = async (id: string, title: string, content: string) => {
-    if (!user) return;
+    if (!user) {
+      console.error("Cannot update speech: No user is logged in");
+      toast({
+        title: "Cannot update speech",
+        description: "You must be logged in to update speeches",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsLoading(true);
     
     try {
       console.log("Updating speech:", id);
       
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('speeches')
         .update({
           title,
@@ -123,14 +170,14 @@ export const useSpeeches = (user: User | null) => {
         .eq('id', id)
         .eq('user_id', user.id);
       
-      if (error) {
-        console.error('Error updating speech:', error);
+      if (updateError) {
+        console.error('Error updating speech:', updateError);
         toast({
           title: "Error updating speech",
-          description: error.message,
+          description: updateError.message,
           variant: "destructive"
         });
-        throw error;
+        throw updateError;
       }
       
       toast({
@@ -142,29 +189,41 @@ export const useSpeeches = (user: User | null) => {
     } catch (err) {
       console.error('Unexpected error updating speech:', err);
       throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const deleteSpeech = async (id: string) => {
-    if (!user) return;
+    if (!user) {
+      console.error("Cannot delete speech: No user is logged in");
+      toast({
+        title: "Cannot delete speech",
+        description: "You must be logged in to delete speeches",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsLoading(true);
     
     try {
       console.log("Deleting speech:", id);
       
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('speeches')
         .delete()
         .eq('id', id)
         .eq('user_id', user.id);
       
-      if (error) {
-        console.error('Error deleting speech:', error);
+      if (deleteError) {
+        console.error('Error deleting speech:', deleteError);
         toast({
           title: "Error deleting speech",
-          description: error.message,
+          description: deleteError.message,
           variant: "destructive"
         });
-        throw error;
+        throw deleteError;
       }
       
       toast({
@@ -176,6 +235,8 @@ export const useSpeeches = (user: User | null) => {
     } catch (err) {
       console.error('Unexpected error deleting speech:', err);
       throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
 
