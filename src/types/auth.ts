@@ -19,7 +19,7 @@ export type AuthContextType = {
   saveSpeech: (title: string, content: string, speechType: string) => Promise<void>;
   updateSpeech: (id: string, title: string, content: string) => Promise<void>;
   deleteSpeech: (id: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ user: User | null; session: Session | null }>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
