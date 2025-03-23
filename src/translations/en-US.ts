@@ -1,4 +1,3 @@
-
 export const enUS = {
   // General
   'app.name': 'SpeechHelp',
@@ -96,7 +95,7 @@ export const enUS = {
   'speechTypes.other': 'Other Speech',
   
   // Hero Section
-  'hero.headline': 'Need a creative speech?',
+  'hero.headline': 'Need a',
   'hero.subheadline': 'We can help!',
   'hero.cta': 'Try it Now',
   'hero.feature1': 'Smart Analysis',
