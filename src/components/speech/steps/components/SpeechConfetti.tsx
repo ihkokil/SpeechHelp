@@ -16,14 +16,15 @@ const SpeechConfetti: React.FC<SpeechConfettiProps> = ({ active, width, height }
       width={width}
       height={height}
       recycle={false}
-      numberOfPieces={800}
-      tweenDuration={8000}
-      gravity={0.1}
+      numberOfPieces={1000} // Increased for more confetti
+      tweenDuration={10000} // Slowed down for longer animation
+      gravity={0.05} // Reduced gravity for slower falling confetti
       colors={[
         '#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', 
         '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', 
-        '#8BC34A', '#CDDC39'
-      ]}
+        '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800',
+        '#FF5722', '#795548', '#9E9E9E', '#607D8B', '#FFEB3B'
+      ]} // Added more colors for variety
     />
   );
 };
