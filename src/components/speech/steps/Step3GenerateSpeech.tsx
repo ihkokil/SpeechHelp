@@ -81,10 +81,10 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       // Add speech title to formData
       formData["speechTitle"] = title;
       
-      // Increased the delay to 6000ms (6 seconds) to show congratulations longer
+      // Revert to the original 3 second delay
       setTimeout(() => {
         nextStep();
-      }, 6000);
+      }, 3000);
     }, 1500);
   };
 
