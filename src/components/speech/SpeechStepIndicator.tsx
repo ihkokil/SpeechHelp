@@ -16,11 +16,10 @@ type StepIndicatorProps = {
 const SpeechStepIndicator = ({ currentStep, steps: customSteps }: StepIndicatorProps) => {
   // Default steps if none are provided
   const defaultSteps = [
-    { number: 1, title: 'Generate New Speech' },
-    { number: 2, title: 'Select Speech Type' },
-    { number: 3, title: 'Name Your Speech' },
-    { number: 4, title: 'Let\'s Get Creative' },
-    { number: 5, title: 'Review/Edit & Save' }
+    { number: 1, title: 'Select Occasion' },
+    { number: 2, title: 'Speech Details' },
+    { number: 3, title: 'Generate Speech' },
+    { number: 4, title: 'Edit & Save' }
   ];
 
   // Use custom steps if provided, otherwise use default steps

@@ -13,6 +13,7 @@ import { useTranslation } from '@/translations';
 const SpeechLabContent: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedSpeechType, setSelectedSpeechType] = useState('');
+  const [speechDetails, setSpeechDetails] = useState({});
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
@@ -87,7 +88,6 @@ const SpeechLabContent: React.FC = () => {
       image: "/lovable-uploads/c0a526b7-d971-41ab-afd7-3345ffe18a83.png",
       icon: <Hand className="h-4 w-4" />
     },
-    // Adding the 5 missing speech types with descriptions
     { 
       id: 'informative', 
       label: "INFORMATIVE SPEECH",
@@ -144,12 +144,20 @@ const SpeechLabContent: React.FC = () => {
     }
   };
 
+  // Update the steps for the progress indicator to match our flow
+  const steps = [
+    { number: 1, title: 'Select Occasion' },
+    { number: 2, title: 'Speech Details' },
+    { number: 3, title: 'Generate Speech' },
+    { number: 4, title: 'Edit & Save' }
+  ];
+
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <SpeechLabHeader />
         
-        <SpeechStepIndicator currentStep={currentStep} />
+        <SpeechStepIndicator currentStep={currentStep} steps={steps} />
 
         <div className="mt-8">
           {currentStep === 1 && (
@@ -164,6 +172,7 @@ const SpeechLabContent: React.FC = () => {
             <Step2SpeechDetails 
               nextStep={nextStep} 
               prevStep={prevStep}
+              selectedSpeechType={selectedSpeechType}
             />
           )}
 
