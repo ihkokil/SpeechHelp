@@ -92,5 +92,82 @@ export const enUS = {
   'speechTypes.keynote': 'Keynote Address',
   'speechTypes.social': 'Social Speech',
   'speechTypes.farewell': 'Farewell Speech',
-  'speechTypes.other': 'Other Speech'
+  'speechTypes.other': 'Other Speech',
+  
+  // Hero Section
+  'hero.headline': 'Need a creative speech?',
+  'hero.subheadline': 'We can help!',
+  'hero.cta': 'Try it Now',
+  'hero.feature1': 'Smart Analysis',
+  'hero.feature2': 'Quick Results',
+  'hero.feature3': 'Premium Quality',
+  
+  // Features Section
+  'features.title': 'Welcome to Speech Help!',
+  'features.subtitle': 'Ever stared at a blank page and felt it judging you? Whether you\'re giving a wedding toast, rallying a team, or delivering a conference keynote, Speech Help is here to rescue you from idea paralysis and blank-page syndrome.',
+  'features.ai.title': 'AI-Powered Magic',
+  'features.ai.description': 'At Speech Help, we don\'t just write speeches – we help you create memorable moments! Our AI-powered system, SpeechHelp.ai, is like a personal speech wizard, crafting customized prompts that turn your ideas into a speech that will leave everyone talking.',
+  'features.writersBlock.title': 'No More Writer\'s Block',
+  'features.writersBlock.description': 'Goodbye, blank page! Say farewell to staring at an empty screen, wondering where to start. With Speech Help, you\'re never at a loss for words. Our AI is always ready to spark your creativity and guide you past writer\'s block, one prompt at a time.',
+  'features.tailored.title': 'Tailored Just For You',
+  'features.tailored.description': 'Whether you\'re making a toast, delivering a tribute, or crafting a speech for an important event, our prompts are custom-tailored to fit your needs, occasion, and mood. Humor? Sentimentality? We\'ve got you covered.',
+  'features.quick.title': 'Create Speeches in No Time',
+  'features.quick.description': 'Why stress over speeches for days when you can create impactful speeches in minutes? Our intuitive interface lets you generate, edit, and personalize your speech without hassle. Whether you\'re a pro or a first-time speaker, we make the process easy and fast.',
+  'features.occasions.title': 'For Every Occasion',
+  'features.occasions.description': 'From weddings to corporate events to personal speeches, Speech Help adapts to all occasions. We\'re ready to help you prepare speeches that range from heartfelt to hilarious, and everything in between.',
+  'features.subscription.title': 'No Subscription Hassles',
+  'features.subscription.description': 'Get started without a commitment. Try Speech Help with no pressure to buy. We believe in letting you see the value before making any decisions.',
+  
+  // How It Works Section
+  'howItWorks.title': 'How It Works',
+  'howItWorks.subtitle': 'Our streamlined process makes it easy to create powerful speeches',
+  'howItWorks.step1.title': 'Tell Us About the Occasion or Event',
+  'howItWorks.step1.description': 'Our wizard isn\'t nosy, but it thrives on details. The more information you share (by simply answering our prompt questionnaire), the better our system can understand your needs and enhance the results you\'re aiming for.',
+  'howItWorks.step2.title': 'Start with a Template or Upload What You Have',
+  'howItWorks.step2.description': 'Our system is designed to accommodate your needs, whether you\'re starting from scratch or refining an existing speech. Choose from one of our templates or upload your current draft.',
+  'howItWorks.step3.title': 'Percolate to Perfection',
+  'howItWorks.step3.description': 'Enter the Speech Lab and experience our user-friendly wizard, crafted to distill the essential details needed to create a remarkable and unforgettable speech.',
+  'howItWorks.step4.title': 'Edit and Personalize',
+  'howItWorks.step4.description': 'After our system crafts your speech, you can easily fine-tune it using our intuitive tools. Unlike a friend or family member, our wizard welcomes your adjustments.',
+  
+  // Testimonials Section
+  'testimonials.title': 'What our Clients say About Us',
+  'testimonials.quote1': 'SpeechHelp transformed my wedding toast from nervous rambling into a heartfelt message that everyone loved. I couldn\'t be more grateful.',
+  'testimonials.author1': 'Lauren Wilson',
+  'testimonials.role1': 'Marketing Director',
+  
+  // CTA Section
+  'cta.title': 'Ready to Transform Your Public Speaking?',
+  'cta.subtitle': 'Join thousands of professionals who use SpeechHelp to create and deliver impactful presentations. Start your journey today.',
+  'cta.benefit1': 'Free trial with full access to all features',
+  'cta.benefit2': 'No credit card required to start',
+  'cta.benefit3': 'Cancel anytime, no commitments',
+  'cta.benefit4': '24/7 support from our team',
+  'cta.trialButton': 'Start Free Trial',
+  'cta.proTitle': 'Pro Plan',
+  'cta.proPrice': '$19',
+  'cta.proPeriod': '/month',
+  'cta.proFeature1': 'Unlimited AI speech generation',
+  'cta.proFeature2': 'Advanced templates library',
+  'cta.proFeature3': 'Delivery coaching tools',
+  'cta.proFeature4': 'Export in multiple formats',
+  'cta.proButton': 'Choose Pro Plan',
+  'cta.enterprise': 'We also offer Enterprise plans for teams.',
+  'cta.contactUs': 'Contact us',
+  
+  // Contact Section
+  'contact.title': 'Who We Are & How We Help',
+  'contact.getInTouch': 'Get in Touch',
+  'contact.questions': 'Have questions about our services? Reach out to us and we\'ll get back to you as soon as possible.',
+  'contact.name': 'Name',
+  'contact.email': 'Email',
+  'contact.message': 'Message',
+  'contact.namePlaceholder': 'Your name',
+  'contact.emailPlaceholder': 'your@email.com',
+  'contact.messagePlaceholder': 'How can we help you?',
+  'contact.sendButton': 'Send Message',
+  'contact.infoTitle': 'Contact Information',
+  'contact.infoSubtitle': 'We\'re here to answer your questions and help you get the most out of SpeechHelp.',
+  'contact.emailAddress': 'hello@speechhelp.ai',
+  'contact.liveChatSupport': 'Live Chat Support'
 };

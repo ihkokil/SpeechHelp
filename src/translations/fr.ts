@@ -1,6 +1,6 @@
 
 export const fr = {
-  // French translations
+  // General
   'app.name': 'SpeechHelp',
   'loading': 'Chargement...',
   
@@ -16,7 +16,7 @@ export const fr = {
   'footer.features': 'Fonctionnalités',
   'footer.pricing': 'Tarifs',
   'footer.faq': 'FAQ',
-  'footer.description': 'Donnez de la puissance à votre voix avec notre plateforme basée sur l\'IA. Créez des discours inoubliables pour chaque occasion avec facilité et précision.',
+  'footer.description': 'Amplifiez votre voix avec notre plateforme alimentée par l\'IA. Créez des discours inoubliables pour chaque occasion avec facilité et précision.',
   'footer.contactUs': 'Contactez-nous',
   'footer.support': 'Support',
   'footer.community': 'Communauté',
@@ -32,12 +32,12 @@ export const fr = {
   'dashboard.goodEvening': 'Bonsoir',
   'dashboard.niceDay': 'Passez une bonne journée de',
   'dashboard.summary': 'Résumé',
-  'dashboard.totalSpeeches': 'Discours totaux',
+  'dashboard.totalSpeeches': 'Total des discours',
   'dashboard.inProgress': 'En cours',
   'dashboard.improvement': 'Amélioration %',
   'dashboard.allTime': 'Tout le temps',
   'dashboard.thisMonth': 'Ce mois-ci',
-  'dashboard.last30Days': 'Derniers 30 jours',
+  'dashboard.last30Days': 'Les 30 derniers jours',
   'dashboard.previousSpeeches': 'Discours précédents',
   'dashboard.createNew': 'Créer un nouveau discours',
   'dashboard.createFirst': 'Créez votre premier discours',
@@ -50,7 +50,7 @@ export const fr = {
   'dashboard.viewAll': 'Voir tout',
   'dashboard.close': 'Fermer',
   'dashboard.edit': 'Modifier',
-  'dashboard.save': 'Enregistrer',
+  'dashboard.save': 'Enregistrer les modifications',
   'dashboard.delete': 'Supprimer',
   'dashboard.cancel': 'Annuler',
   'dashboard.upcomingSpeeches': 'Discours à venir',
@@ -58,9 +58,9 @@ export const fr = {
   'dashboard.recentActivities': 'Activités récentes',
   'dashboard.performanceMetrics': 'Métriques de performance',
   'dashboard.currentScore': 'Score actuel',
-  'dashboard.monthlyChange': 'Changement mensuel',
-  'dashboard.basedOn': 'Basé sur la clarté, la structure, la livraison et la qualité du contenu',
-  
+  'dashboard.monthlyChange': 'Évolution mensuelle',
+  'dashboard.basedOn': 'Basé sur la clarté, la structure, la présentation et la qualité du contenu',
+
   // Common
   'common.title': 'Titre',
   'common.content': 'Contenu',
@@ -71,7 +71,7 @@ export const fr = {
   'common.edit': 'Modifier',
   'common.delete': 'Supprimer',
   'common.saveChanges': 'Enregistrer les modifications',
-  'common.areYouSure': 'Êtes-vous sûr ?',
+  'common.areYouSure': 'Êtes-vous sûr?',
 
   // Dashboard - Speeches
   'dashboard.editSpeech': 'Modifier le discours',
@@ -80,7 +80,7 @@ export const fr = {
   'dashboard.createNewSpeech': 'Créer un nouveau discours',
   'dashboard.lastUpdated': 'Dernière mise à jour',
   'dashboard.createFirstSpeech': 'Créez votre premier discours',
-
+  
   // Speech Types
   'speechTypes.wedding': 'Discours de mariage',
   'speechTypes.graduation': 'Discours de remise de diplôme',
@@ -92,5 +92,82 @@ export const fr = {
   'speechTypes.keynote': 'Discours d\'ouverture',
   'speechTypes.social': 'Discours social',
   'speechTypes.farewell': 'Discours d\'adieu',
-  'speechTypes.other': 'Autre discours'
+  'speechTypes.other': 'Autre discours',
+  
+  // Hero Section
+  'hero.headline': 'Besoin d\'un discours créatif?',
+  'hero.subheadline': 'Nous pouvons vous aider!',
+  'hero.cta': 'Essayez maintenant',
+  'hero.feature1': 'Analyse intelligente',
+  'hero.feature2': 'Résultats rapides',
+  'hero.feature3': 'Qualité premium',
+  
+  // Features Section
+  'features.title': 'Bienvenue sur Speech Help!',
+  'features.subtitle': 'Avez-vous déjà fixé une page blanche en vous sentant jugé? Que vous fassiez un toast de mariage, ralliez une équipe ou présentiez une conférence, Speech Help est là pour vous sauver de la paralysie des idées.',
+  'features.ai.title': 'Magie alimentée par l\'IA',
+  'features.ai.description': 'Chez Speech Help, nous ne nous contentons pas d\'écrire des discours - nous vous aidons à créer des moments mémorables! Notre système alimenté par l\'IA est comme un assistant personnel qui transforme vos idées en un discours qui impressionnera tout le monde.',
+  'features.writersBlock.title': 'Fini le syndrome de la page blanche',
+  'features.writersBlock.description': 'Adieu, page blanche! Dites au revoir à ces moments où vous fixez un écran vide, en vous demandant par où commencer. Avec Speech Help, vous ne manquerez jamais de mots.',
+  'features.tailored.title': 'Personnalisé pour vous',
+  'features.tailored.description': 'Que vous portiez un toast, rendiez hommage ou prépariez un discours pour un événement important, nos suggestions sont adaptées à vos besoins, à l\'occasion et à l\'ambiance souhaitée.',
+  'features.quick.title': 'Créez des discours en un rien de temps',
+  'features.quick.description': 'Pourquoi stresser pendant des jours quand vous pouvez créer des discours percutants en quelques minutes? Notre interface intuitive vous permet de générer, éditer et personnaliser votre discours sans tracas.',
+  'features.occasions.title': 'Pour chaque occasion',
+  'features.occasions.description': 'Des mariages aux événements d\'entreprise, Speech Help s\'adapte à toutes les occasions. Nous sommes prêts à vous aider à préparer des discours allant du sincère à l\'hilarant.',
+  'features.subscription.title': 'Pas de tracas d\'abonnement',
+  'features.subscription.description': 'Commencez sans engagement. Essayez Speech Help sans pression d\'achat. Nous croyons qu\'il faut vous laisser voir la valeur avant de prendre des décisions.',
+  
+  // How It Works Section
+  'howItWorks.title': 'Comment ça marche',
+  'howItWorks.subtitle': 'Notre processus simplifié facilite la création de discours puissants',
+  'howItWorks.step1.title': 'Parlez-nous de l\'occasion ou de l\'événement',
+  'howItWorks.step1.description': 'Notre assistant n\'est pas indiscret, mais il prospère grâce aux détails. Plus vous partagez d\'informations, mieux notre système peut comprendre vos besoins.',
+  'howItWorks.step2.title': 'Commencez avec un modèle ou téléchargez ce que vous avez',
+  'howItWorks.step2.description': 'Notre système est conçu pour s\'adapter à vos besoins, que vous commenciez de zéro ou que vous affiniez un discours existant.',
+  'howItWorks.step3.title': 'Perfectionner jusqu\'à la perfection',
+  'howItWorks.step3.description': 'Entrez dans le laboratoire de discours et découvrez notre assistant convivial, conçu pour distiller les détails essentiels nécessaires à la création d\'un discours remarquable.',
+  'howItWorks.step4.title': 'Modifier et personnaliser',
+  'howItWorks.step4.description': 'Après que notre système ait rédigé votre discours, vous pouvez facilement l\'affiner à l\'aide de nos outils intuitifs. Notre assistant accueille vos ajustements.',
+  
+  // Testimonials Section
+  'testimonials.title': 'Ce que nos clients disent de nous',
+  'testimonials.quote1': 'SpeechHelp a transformé mon toast de mariage, passant de divagations nerveuses à un message sincère que tout le monde a adoré. Je ne pourrais pas être plus reconnaissante.',
+  'testimonials.author1': 'Lauren Wilson',
+  'testimonials.role1': 'Directrice marketing',
+  
+  // CTA Section
+  'cta.title': 'Prêt à transformer votre art oratoire?',
+  'cta.subtitle': 'Rejoignez des milliers de professionnels qui utilisent SpeechHelp pour créer et présenter des présentations percutantes. Commencez votre parcours aujourd\'hui.',
+  'cta.benefit1': 'Essai gratuit avec accès complet à toutes les fonctionnalités',
+  'cta.benefit2': 'Aucune carte de crédit requise pour commencer',
+  'cta.benefit3': 'Annulez à tout moment, sans engagement',
+  'cta.benefit4': 'Support 24/7 de notre équipe',
+  'cta.trialButton': 'Commencer l\'essai gratuit',
+  'cta.proTitle': 'Plan Pro',
+  'cta.proPrice': '19€',
+  'cta.proPeriod': '/mois',
+  'cta.proFeature1': 'Génération illimitée de discours IA',
+  'cta.proFeature2': 'Bibliothèque de modèles avancés',
+  'cta.proFeature3': 'Outils de coaching pour la présentation',
+  'cta.proFeature4': 'Export dans plusieurs formats',
+  'cta.proButton': 'Choisir le plan Pro',
+  'cta.enterprise': 'Nous proposons également des plans Entreprise pour les équipes.',
+  'cta.contactUs': 'Contactez-nous',
+  
+  // Contact Section
+  'contact.title': 'Qui nous sommes et comment nous aidons',
+  'contact.getInTouch': 'Prenez contact',
+  'contact.questions': 'Vous avez des questions sur nos services? Contactez-nous et nous vous répondrons dès que possible.',
+  'contact.name': 'Nom',
+  'contact.email': 'Email',
+  'contact.message': 'Message',
+  'contact.namePlaceholder': 'Votre nom',
+  'contact.emailPlaceholder': 'votre@email.com',
+  'contact.messagePlaceholder': 'Comment pouvons-nous vous aider?',
+  'contact.sendButton': 'Envoyer le message',
+  'contact.infoTitle': 'Informations de contact',
+  'contact.infoSubtitle': 'Nous sommes là pour répondre à vos questions et vous aider à tirer le meilleur parti de SpeechHelp.',
+  'contact.emailAddress': 'hello@speechhelp.ai',
+  'contact.liveChatSupport': 'Support par chat en direct'
 };
