@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import AuthFormButton from './AuthFormButton';
 import { Mail, Lock } from 'lucide-react';
@@ -28,6 +27,7 @@ const LoginForm = ({
     setIsSubmitting(true);
     try {
       await onSubmit(email, password);
+      // The redirect will be handled by the Auth component
     } catch (error) {
       console.error('Login form submission error:', error);
     } finally {
