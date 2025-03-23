@@ -1,9 +1,9 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Speech } from '@/types/auth';
 import { User } from '@supabase/supabase-js';
+import { useSpeechOperations } from './use-speech-operations';
 
 export const useSpeeches = (user: User | null) => {
   const [speeches, setSpeeches] = useState<Speech[]>([]);
@@ -11,6 +11,12 @@ export const useSpeeches = (user: User | null) => {
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const { toast } = useToast();
+  const { 
+    fetchUserSpeeches, 
+    saveSpeech: saveUserSpeech, 
+    updateSpeech: updateUserSpeech, 
+    deleteSpeech: deleteUserSpeech 
+  } = useSpeechOperations(user);
 
   const fetchSpeeches = useCallback(async () => {
     if (!user) {
@@ -24,47 +30,27 @@ export const useSpeeches = (user: User | null) => {
     setError(null);
     
     try {
-      console.log("Fetching speeches for user ID:", user.id);
-      
-      const { data, error: fetchError } = await supabase
-        .from('speeches')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (fetchError) {
-        console.error('Error fetching speeches:', fetchError);
-        setError(fetchError.message);
-        toast({
-          title: "Error fetching speeches",
-          description: fetchError.message,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      console.log("Speeches fetched successfully:", data?.length || 0, "speeches found");
-      setSpeeches(data || []);
+      const fetchedSpeeches = await fetchUserSpeeches();
+      setSpeeches(fetchedSpeeches);
     } catch (err: any) {
-      console.error('Unexpected error fetching speeches:', err);
+      console.error('Error in fetchSpeeches:', err);
       setError(err?.message || "An unexpected error occurred");
       toast({
         title: "Error fetching speeches",
-        description: "Failed to load your speeches. Please try again later.",
+        description: err?.message || "Failed to load your speeches. Please try again later.",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
       setIsInitialized(true);
     }
-  }, [user, toast]);
+  }, [user, fetchUserSpeeches, toast]);
 
   // Fetch speeches when user changes
   useEffect(() => {
     let mounted = true;
     
     const initializeSpeeches = async () => {
-      // Add small delay to ensure auth is fully processed
       if (!mounted) return;
       
       if (user) {
@@ -73,7 +59,6 @@ export const useSpeeches = (user: User | null) => {
           await fetchSpeeches();
         } catch (err) {
           console.error("Failed to fetch speeches on initialization:", err);
-          // Don't show toast here as fetchSpeeches already handles that
           if (mounted) {
             setIsInitialized(true);
           }
@@ -96,38 +81,18 @@ export const useSpeeches = (user: User | null) => {
   }, [user, fetchSpeeches]);
 
   const saveSpeech = async (title: string, content: string, speechType: string) => {
-    if (!user) {
-      console.error("Cannot save speech: No user is logged in");
-      toast({
-        title: "Cannot save speech",
-        description: "You must be logged in to save speeches",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setIsLoading(true);
     
     try {
-      console.log("Saving speech for user ID:", user.id);
+      const result = await saveUserSpeech(title, content, speechType);
       
-      const { error: saveError } = await supabase
-        .from('speeches')
-        .insert({
-          user_id: user.id,
-          title,
-          content,
-          speech_type: speechType
-        });
-      
-      if (saveError) {
-        console.error('Error saving speech:', saveError);
+      if (!result.success) {
         toast({
           title: "Error saving speech",
-          description: saveError.message,
+          description: result.error || "Failed to save your speech. Please try again.",
           variant: "destructive"
         });
-        throw saveError;
+        throw new Error(result.error);
       }
       
       toast({
@@ -137,47 +102,25 @@ export const useSpeeches = (user: User | null) => {
       
       await fetchSpeeches();
     } catch (err) {
-      console.error('Unexpected error saving speech:', err);
-      throw err;
+      console.error('Error in saveSpeech:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const updateSpeech = async (id: string, title: string, content: string) => {
-    if (!user) {
-      console.error("Cannot update speech: No user is logged in");
-      toast({
-        title: "Cannot update speech",
-        description: "You must be logged in to update speeches",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setIsLoading(true);
     
     try {
-      console.log("Updating speech:", id);
+      const result = await updateUserSpeech(id, title, content);
       
-      const { error: updateError } = await supabase
-        .from('speeches')
-        .update({
-          title,
-          content,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .eq('user_id', user.id);
-      
-      if (updateError) {
-        console.error('Error updating speech:', updateError);
+      if (!result.success) {
         toast({
           title: "Error updating speech",
-          description: updateError.message,
+          description: result.error || "Failed to update your speech. Please try again.",
           variant: "destructive"
         });
-        throw updateError;
+        throw new Error(result.error);
       }
       
       toast({
@@ -187,43 +130,25 @@ export const useSpeeches = (user: User | null) => {
       
       await fetchSpeeches();
     } catch (err) {
-      console.error('Unexpected error updating speech:', err);
-      throw err;
+      console.error('Error in updateSpeech:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const deleteSpeech = async (id: string) => {
-    if (!user) {
-      console.error("Cannot delete speech: No user is logged in");
-      toast({
-        title: "Cannot delete speech",
-        description: "You must be logged in to delete speeches",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setIsLoading(true);
     
     try {
-      console.log("Deleting speech:", id);
+      const result = await deleteUserSpeech(id);
       
-      const { error: deleteError } = await supabase
-        .from('speeches')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
-      
-      if (deleteError) {
-        console.error('Error deleting speech:', deleteError);
+      if (!result.success) {
         toast({
           title: "Error deleting speech",
-          description: deleteError.message,
+          description: result.error || "Failed to delete your speech. Please try again.",
           variant: "destructive"
         });
-        throw deleteError;
+        throw new Error(result.error);
       }
       
       toast({
@@ -233,8 +158,7 @@ export const useSpeeches = (user: User | null) => {
       
       await fetchSpeeches();
     } catch (err) {
-      console.error('Unexpected error deleting speech:', err);
-      throw err;
+      console.error('Error in deleteSpeech:', err);
     } finally {
       setIsLoading(false);
     }
