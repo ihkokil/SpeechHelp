@@ -92,7 +92,6 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
       image: "/lovable-uploads/c0a526b7-d971-41ab-afd7-3345ffe18a83.png",
       icon: <Hand className="h-4 w-4" />
     },
-    // Adding the 5 missing speech types with descriptions
     { 
       id: 'informative', 
       label: "INFORMATIVE SPEECH",
