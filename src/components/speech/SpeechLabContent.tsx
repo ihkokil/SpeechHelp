@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import SpeechStepIndicator from './SpeechStepIndicator';
 import SpeechLabHeader from './SpeechLabHeader';
@@ -14,6 +15,7 @@ const SpeechLabContent: React.FC = () => {
   const [selectedSpeechType, setSelectedSpeechType] = useState('');
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [generatedSpeech, setGeneratedSpeech] = useState('');
+  const [speechTitle, setSpeechTitle] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
@@ -264,7 +266,7 @@ const SpeechLabContent: React.FC = () => {
             <Step4EditSpeech 
               prevStep={prevStep}
               generatedSpeech={generatedSpeech}
-              speechTitle={formData["speechTitle"] || title || "My Speech"}
+              speechTitle={formData["speechTitle"] || speechTitle || "My Speech"}
               selectedSpeechType={selectedSpeechType}
             />
           )}

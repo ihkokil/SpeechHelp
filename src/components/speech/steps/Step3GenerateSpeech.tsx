@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -43,7 +42,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set window size for confetti
     setWindowSize({
       width: window.innerWidth,
       height: window.innerHeight
@@ -72,7 +70,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
 
     setIsGenerating(true);
     
-    // Simulate speech generation (in a real app, this would call an API)
     setTimeout(() => {
       setIsGenerating(false);
       setShowConfetti(true);
@@ -84,7 +81,8 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         duration: 5000,
       });
       
-      // Automatically proceed to next step after 3.5 seconds
+      formData["speechTitle"] = title;
+      
       setTimeout(() => {
         nextStep();
       }, 3500);
@@ -161,7 +159,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
             <div className="text-sm text-gray-600 space-y-2">
               <p><Translate text="speechLab.summaryNotice" fallback="Speech details will be used to generate your content" /></p>
               
-              {/* Summary of questionnaire answers */}
               {Object.keys(formData).length > 0 && (
                 <div className="mt-4 p-3 bg-white rounded border border-gray-200">
                   <h4 className="font-medium text-sm mb-2">
