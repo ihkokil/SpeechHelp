@@ -8,11 +8,9 @@ import EditSpeechModal from './speeches/EditSpeechModal';
 import DeleteSpeechAlert from './speeches/DeleteSpeechAlert';
 import SpeechesTable from './speeches/SpeechesTable';
 import Translate from '@/components/Translate';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 const PreviousSpeeches = () => {
-  const { speeches, fetchSpeeches, user } = useAuth();
+  const { speeches, updateSpeech, deleteSpeech } = useAuth();
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -20,7 +18,6 @@ const PreviousSpeeches = () => {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleViewSpeech = (speech: Speech) => {
     setSelectedSpeech(speech);
@@ -35,38 +32,13 @@ const PreviousSpeeches = () => {
   };
 
   const handleSaveEdit = async () => {
-    if (!selectedSpeech || !user) return;
+    if (!selectedSpeech) return;
     
     try {
-      const { error } = await supabase
-        .from('speeches')
-        .update({
-          title: editTitle,
-          content: editContent,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', selectedSpeech.id)
-        .eq('user_id', user.id);
-      
-      if (error) {
-        console.error('Error updating speech:', error);
-        toast({
-          title: "Error updating speech",
-          description: error.message,
-          variant: "destructive"
-        });
-        throw error;
-      }
-      
-      toast({
-        title: "Speech updated",
-        description: "Your speech has been updated successfully.",
-      });
-      
-      await fetchSpeeches();
+      await updateSpeech(selectedSpeech.id, editTitle, editContent);
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error('Error in handleSaveEdit:', error);
+      console.error('Error updating speech:', error);
     }
   };
 
@@ -79,31 +51,10 @@ const PreviousSpeeches = () => {
     if (!selectedSpeech) return;
     
     try {
-      const { error } = await supabase
-        .from('speeches')
-        .delete()
-        .eq('id', selectedSpeech.id)
-        .eq('user_id', user?.id || '');
-      
-      if (error) {
-        console.error('Error deleting speech:', error);
-        toast({
-          title: "Error deleting speech",
-          description: error.message,
-          variant: "destructive"
-        });
-        throw error;
-      }
-      
-      toast({
-        title: "Speech deleted",
-        description: "Your speech has been deleted successfully.",
-      });
-      
-      await fetchSpeeches();
+      await deleteSpeech(selectedSpeech.id);
       setIsDeleteAlertOpen(false);
     } catch (error) {
-      console.error('Error in confirmDelete:', error);
+      console.error('Error deleting speech:', error);
     }
   };
 
@@ -148,10 +99,7 @@ const PreviousSpeeches = () => {
         isOpen={isViewModalOpen}
         onOpenChange={setIsViewModalOpen}
         speech={selectedSpeech}
-        onEditClick={(speech) => {
-          setIsViewModalOpen(false);
-          handleEditSpeech(speech);
-        }}
+        onEditClick={handleEditSpeech}
       />
       
       <EditSpeechModal 
