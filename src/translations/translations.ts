@@ -1,4 +1,3 @@
-
 type TranslationsType = {
   [languageCode: string]: {
     [key: string]: string;
@@ -66,7 +65,27 @@ const translations: TranslationsType = {
     'dashboard.performanceMetrics': 'Performance Metrics',
     'dashboard.currentScore': 'Current Score',
     'dashboard.monthlyChange': 'Monthly Change',
-    'dashboard.basedOn': 'Based on clarity, structure, delivery and content quality'
+    'dashboard.basedOn': 'Based on clarity, structure, delivery and content quality',
+
+    // Common
+    'common.title': 'Title',
+    'common.content': 'Content',
+    'common.type': 'Type',
+    'common.actions': 'Actions',
+    'common.close': 'Close',
+    'common.cancel': 'Cancel',
+    'common.edit': 'Edit',
+    'common.delete': 'Delete',
+    'common.saveChanges': 'Save Changes',
+    'common.areYouSure': 'Are you sure?',
+
+    // Dashboard - Speeches
+    'dashboard.editSpeech': 'Edit Speech',
+    'dashboard.editSpeechDesc': 'Make changes to your speech below.',
+    'dashboard.deleteWarning': 'This action cannot be undone. This will permanently delete your speech',
+    'dashboard.createNewSpeech': 'Create New Speech',
+    'dashboard.lastUpdated': 'Last Updated',
+    'dashboard.createFirstSpeech': 'Create Your First Speech',
   },
   'en-GB': {
     // British English variations
@@ -135,7 +154,27 @@ const translations: TranslationsType = {
     'dashboard.performanceMetrics': 'Métriques de performance',
     'dashboard.currentScore': 'Score actuel',
     'dashboard.monthlyChange': 'Changement mensuel',
-    'dashboard.basedOn': 'Basé sur la clarté, la structure, la livraison et la qualité du contenu'
+    'dashboard.basedOn': 'Basé sur la clarté, la structure, la livraison et la qualité du contenu',
+    
+    // Common
+    'common.title': 'Titre',
+    'common.content': 'Contenu',
+    'common.type': 'Type',
+    'common.actions': 'Actions',
+    'common.close': 'Fermer',
+    'common.cancel': 'Annuler',
+    'common.edit': 'Modifier',
+    'common.delete': 'Supprimer',
+    'common.saveChanges': 'Enregistrer les modifications',
+    'common.areYouSure': 'Êtes-vous sûr ?',
+
+    // Dashboard - Speeches
+    'dashboard.editSpeech': 'Modifier le discours',
+    'dashboard.editSpeechDesc': 'Apportez des modifications à votre discours ci-dessous.',
+    'dashboard.deleteWarning': 'Cette action ne peut pas être annulée. Cela supprimera définitivement votre discours',
+    'dashboard.createNewSpeech': 'Créer un nouveau discours',
+    'dashboard.lastUpdated': 'Dernière mise à jour',
+    'dashboard.createFirstSpeech': 'Créez votre premier discours',
   },
   'es': {
     // Spanish translations
@@ -188,7 +227,7 @@ const translations: TranslationsType = {
     'dashboard.viewAll': 'Ver Todo',
     'dashboard.close': 'Cerrar',
     'dashboard.edit': 'Editar',
-    'dashboard.save': 'Guardar Cambios',
+    'dashboard.save': 'Guardar cambios',
     'dashboard.delete': 'Eliminar',
     'dashboard.cancel': 'Cancelar',
     'dashboard.upcomingSpeeches': 'Próximos Discursos',
@@ -197,7 +236,27 @@ const translations: TranslationsType = {
     'dashboard.performanceMetrics': 'Métricas de Rendimiento',
     'dashboard.currentScore': 'Puntuación Actual',
     'dashboard.monthlyChange': 'Cambio Mensual',
-    'dashboard.basedOn': 'Basado en claridad, estructura, entrega y calidad de contenido'
+    'dashboard.basedOn': 'Basado en claridad, estructura, entrega y calidad de contenido',
+    
+    // Common
+    'common.title': 'Título',
+    'common.content': 'Contenido',
+    'common.type': 'Tipo',
+    'common.actions': 'Acciones',
+    'common.close': 'Cerrar',
+    'common.cancel': 'Cancelar',
+    'common.edit': 'Editar',
+    'common.delete': 'Eliminar',
+    'common.saveChanges': 'Guardar cambios',
+    'common.areYouSure': '¿Estás seguro?',
+
+    // Dashboard - Speeches
+    'dashboard.editSpeech': 'Editar discurso',
+    'dashboard.editSpeechDesc': 'Realiza cambios en tu discurso a continuación.',
+    'dashboard.deleteWarning': 'Esta acción no se puede deshacer. Esto eliminará permanentemente tu discurso',
+    'dashboard.createNewSpeech': 'Crear nuevo discurso',
+    'dashboard.lastUpdated': 'Última actualización',
+    'dashboard.createFirstSpeech': 'Crea tu primer discurso',
   }
 };
 
