@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import SpeechStepIndicator from '@/components/speech/SpeechStepIndicator';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,15 +60,7 @@ const SpeechLab = () => {
           <LanguageSelector />
         </div>
         
-        <SpeechStepIndicator 
-          currentStep={currentStep} 
-          steps={[
-            { number: 1, title: t('speechLab.occasionTitle', currentLanguage.code), description: t('speechLab.occasionDesc', currentLanguage.code) },
-            { number: 2, title: t('speechLab.detailsTitle', currentLanguage.code), description: t('speechLab.detailsDesc', currentLanguage.code) },
-            { number: 3, title: t('speechLab.generateTitle', currentLanguage.code), description: t('speechLab.generateDesc', currentLanguage.code) },
-            { number: 4, title: t('speechLab.editTitle', currentLanguage.code), description: t('speechLab.editDesc', currentLanguage.code) }
-          ]}
-        />
+        <SpeechStepIndicator currentStep={currentStep} />
 
         <div className="mt-8">
           {currentStep === 1 && (

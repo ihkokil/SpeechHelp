@@ -2,18 +2,29 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-type StepIndicatorProps = {
-  currentStep: number;
+export type Step = {
+  number: number;
+  title: string;
+  description?: string;
 };
 
-const SpeechStepIndicator = ({ currentStep }: StepIndicatorProps) => {
-  const steps = [
+type StepIndicatorProps = {
+  currentStep: number;
+  steps?: Step[];
+};
+
+const SpeechStepIndicator = ({ currentStep, steps: customSteps }: StepIndicatorProps) => {
+  // Default steps if none are provided
+  const defaultSteps = [
     { number: 1, title: 'Generate New Speech' },
     { number: 2, title: 'Select Speech Type' },
     { number: 3, title: 'Name Your Speech' },
     { number: 4, title: 'Let\'s Get Creative' },
     { number: 5, title: 'Review/Edit & Save' }
   ];
+
+  // Use custom steps if provided, otherwise use default steps
+  const steps = customSteps || defaultSteps;
 
   return (
     <div className="w-full mb-6">
