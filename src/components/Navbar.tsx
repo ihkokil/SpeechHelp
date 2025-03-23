@@ -65,10 +65,10 @@ const Navbar = () => {
               {t('nav.howItWorks', currentLanguage.code)}
             </Link>
             <Link
-              to="#contact"
+              to="#pricing"
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors whitespace-nowrap"
             >
-              {t('nav.contact', currentLanguage.code)}
+              {t('nav.pricing', currentLanguage.code)}
             </Link>
 
             <div className="flex items-center space-x-4">
@@ -120,11 +120,11 @@ const Navbar = () => {
                 {t('nav.howItWorks', currentLanguage.code)}
               </Link>
               <Link
-                to="#contact"
+                to="#pricing"
                 className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {t('nav.contact', currentLanguage.code)}
+                {t('nav.pricing', currentLanguage.code)}
               </Link>
             </div>
           </div>
