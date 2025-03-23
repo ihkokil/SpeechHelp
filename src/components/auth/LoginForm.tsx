@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import AuthFormButton from './AuthFormButton';
-import SocialLoginButtons from './SocialLoginButtons';
 import { Mail, Lock } from 'lucide-react';
 
 type LoginFormProps = {
@@ -85,8 +84,6 @@ const LoginForm = ({
       </div>
 
       <AuthFormButton loading={isButtonDisabled} label="Log In" />
-      
-      <SocialLoginButtons isLoading={isButtonDisabled} className="mt-6" />
 
       <div className="mt-6 text-center space-y-2">
         <button
