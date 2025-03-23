@@ -8,6 +8,7 @@ import { User } from '@supabase/supabase-js';
 export const useSpeeches = (user: User | null) => {
   const [speeches, setSpeeches] = useState<Speech[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchSpeeches = useCallback(async () => {
@@ -17,8 +18,11 @@ export const useSpeeches = (user: User | null) => {
     }
     
     setIsLoading(true);
+    setError(null);
     
     try {
+      console.log("Fetching speeches for user ID:", user.id);
+      
       const { data, error } = await supabase
         .from('speeches')
         .select('*')
@@ -27,6 +31,7 @@ export const useSpeeches = (user: User | null) => {
       
       if (error) {
         console.error('Error fetching speeches:', error);
+        setError(error.message);
         toast({
           title: "Error fetching speeches",
           description: error.message,
@@ -35,9 +40,11 @@ export const useSpeeches = (user: User | null) => {
         return;
       }
       
+      console.log("Speeches fetched successfully:", data);
       setSpeeches(data || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Unexpected error fetching speeches:', err);
+      setError(err?.message || "An unexpected error occurred");
       toast({
         title: "Error fetching speeches",
         description: "Failed to load your speeches. Please try again later.",
@@ -52,6 +59,8 @@ export const useSpeeches = (user: User | null) => {
     if (!user) return;
     
     try {
+      console.log("Saving speech for user ID:", user.id);
+      
       const { error } = await supabase
         .from('speeches')
         .insert({
@@ -87,6 +96,8 @@ export const useSpeeches = (user: User | null) => {
     if (!user) return;
     
     try {
+      console.log("Updating speech:", id);
+      
       const { error } = await supabase
         .from('speeches')
         .update({
@@ -123,6 +134,8 @@ export const useSpeeches = (user: User | null) => {
     if (!user) return;
     
     try {
+      console.log("Deleting speech:", id);
+      
       const { error } = await supabase
         .from('speeches')
         .delete()
@@ -154,6 +167,7 @@ export const useSpeeches = (user: User | null) => {
   return {
     speeches,
     isLoading,
+    error,
     fetchSpeeches,
     saveSpeech,
     updateSpeech,

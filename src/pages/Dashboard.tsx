@@ -24,17 +24,36 @@ const Dashboard = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const [isProcessingUser, setIsProcessingUser] = useState(true);
+  const [dashboardInitialized, setDashboardInitialized] = useState(false);
   
-  // Fetch speeches when component mounts and auth state changes
+  // Manually fetch speeches when component mounts to ensure data is loaded
   useEffect(() => {
-    if (user && !isLoading) {
-      fetchSpeeches();
-    }
-  }, [user, isLoading, fetchSpeeches]);
+    console.log("Dashboard mounted. Auth state:", { 
+      isLoggedIn: !!user, 
+      isLoading, 
+      speechesCount: speeches?.length 
+    });
+    
+    const initializeDashboard = async () => {
+      if (user && !isLoading && !dashboardInitialized) {
+        console.log("Initializing dashboard, fetching speeches");
+        try {
+          await fetchSpeeches();
+        } catch (error) {
+          console.error("Error fetching speeches on dashboard mount:", error);
+        } finally {
+          setDashboardInitialized(true);
+        }
+      }
+    };
+    
+    initializeDashboard();
+  }, [user, isLoading, speeches, fetchSpeeches, dashboardInitialized]);
   
   // Redirect if not logged in
   useEffect(() => {
     if (!isLoading && !user) {
+      console.log("User not authenticated, redirecting to auth page");
       navigate('/auth');
     }
   }, [user, isLoading, navigate]);
@@ -42,6 +61,7 @@ const Dashboard = () => {
   // Set user information from metadata
   useEffect(() => {
     if (user) {
+      console.log("Setting user information from metadata", user.user_metadata);
       // Get first and last name from user metadata if available
       const metadata = user.user_metadata;
       const firstNameFromMeta = metadata?.first_name || '';

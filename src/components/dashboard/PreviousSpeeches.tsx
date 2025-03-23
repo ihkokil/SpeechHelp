@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth, Speech } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useNavigate } from 'react-router-dom';
@@ -11,14 +11,33 @@ import Translate from '@/components/Translate';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const PreviousSpeeches = () => {
-  const { speeches, updateSpeech, deleteSpeech, isLoading } = useAuth();
+  const { speeches, updateSpeech, deleteSpeech, isLoading, fetchSpeeches } = useAuth();
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
+  const [componentLoaded, setComponentLoaded] = useState(false);
   const navigate = useNavigate();
+
+  // Make sure speeches are loaded when component mounts
+  useEffect(() => {
+    const loadSpeeches = async () => {
+      if (!componentLoaded) {
+        console.log("PreviousSpeeches component mounted, fetching speeches");
+        try {
+          await fetchSpeeches();
+        } catch (error) {
+          console.error("Error fetching speeches in PreviousSpeeches:", error);
+        } finally {
+          setComponentLoaded(true);
+        }
+      }
+    };
+    
+    loadSpeeches();
+  }, [fetchSpeeches, componentLoaded]);
 
   const handleViewSpeech = (speech: Speech) => {
     setSelectedSpeech(speech);
@@ -74,7 +93,7 @@ const PreviousSpeeches = () => {
       );
     }
 
-    if (speeches.length === 0) {
+    if (!speeches || speeches.length === 0) {
       return (
         <div className="p-8 text-center">
           <p className="text-gray-500 mb-4"><Translate text="dashboard.noSpeeches" /></p>
@@ -118,7 +137,10 @@ const PreviousSpeeches = () => {
         isOpen={isViewModalOpen}
         onOpenChange={setIsViewModalOpen}
         speech={selectedSpeech}
-        onEditClick={handleEditSpeech}
+        onEditClick={(speech) => {
+          setIsViewModalOpen(false);
+          handleEditSpeech(speech);
+        }}
       />
       
       <EditSpeechModal 
