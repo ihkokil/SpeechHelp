@@ -118,7 +118,7 @@ const Features = () => {
       <div className="container mx-auto px-6 md:px-12">
         <div className="max-w-3xl mx-auto text-center mb-12" ref={sectionRef}>
           <h2 className={`text-3xl md:text-4xl font-bold mb-4 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
-            {t('features.title', currentLanguage.code)} <span className="text-pink-600">Speech Help!</span>
+            {t('features.title', currentLanguage.code)}
           </h2>
           <p className={`text-lg text-gray-600 mb-6 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>
             {t('features.subtitle', currentLanguage.code)}

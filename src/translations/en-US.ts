@@ -104,7 +104,7 @@ export const enUS = {
   'hero.feature3': 'Premium Quality',
   
   // Features Section
-  'features.title': 'Welcome!',
+  'features.title': 'Welcome To Speech Help !',
   'features.subtitle': 'Ever stared at a blank page and felt it judging you? Whether you\'re giving a wedding toast, rallying a team, or delivering a conference keynote, Speech Help is here to rescue you from idea paralysis and blank-page syndrome.',
   'features.ai.title': 'AI-Powered Magic',
   'features.ai.description': 'At Speech Help, we don\'t just write speeches – we help you create memorable moments! Our AI-powered system, SpeechHelp.ai, is like a personal speech wizard, crafting customized prompts that turn your ideas into a speech that will leave everyone talking.',
