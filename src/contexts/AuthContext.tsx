@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AuthContextType } from '@/types/auth';
 import { useAuthentication } from '@/hooks/use-authentication';
@@ -23,6 +23,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signOut
   } = useAuthentication();
 
+  const [isInitialized, setIsInitialized] = useState(false);
+
   const {
     speeches,
     fetchSpeeches,
@@ -34,18 +36,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Check for existing session
     const getSession = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Error getting session:', error);
-      } else if (data?.session) {
-        setSession(data.session);
-        setUser(data.session.user);
-        await fetchSpeeches();
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+        } else if (data?.session) {
+          setSession(data.session);
+          setUser(data.session.user);
+          
+          // Only attempt to fetch speeches if we have a valid session
+          if (data.session.user) {
+            try {
+              await fetchSpeeches();
+            } catch (err) {
+              console.error('Failed to fetch speeches during initialization:', err);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Unexpected error during session check:', err);
+      } finally {
+        setIsLoading(false);
+        setIsInitialized(true);
       }
-      
-      setIsLoading(false);
     };
 
     getSession();
@@ -53,13 +68,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Listen for auth state changes
     const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       console.log(`Auth state changed: ${event}`);
+      
       setSession(newSession);
       setUser(newSession?.user ?? null);
       
       if (newSession?.user) {
-        await fetchSpeeches();
-      } else {
-        // Clear speeches when logged out
+        try {
+          await fetchSpeeches();
+        } catch (err) {
+          console.error('Failed to fetch speeches after auth state change:', err);
+        }
       }
       
       setIsLoading(false);
@@ -74,7 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider value={{ 
       user, 
       session, 
-      isLoading, 
+      isLoading: isLoading || !isInitialized, // Prevent UI changes until fully initialized
       speeches, 
       fetchSpeeches, 
       saveSpeech, 

@@ -24,12 +24,12 @@ const Dashboard = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
-  // Fetch speeches when component mounts
+  // Fetch speeches when component mounts and auth state changes
   useEffect(() => {
-    if (user) {
+    if (user && !isLoading) {
       fetchSpeeches();
     }
-  }, [user, fetchSpeeches]);
+  }, [user, isLoading, fetchSpeeches]);
   
   // Redirect if not logged in
   useEffect(() => {
