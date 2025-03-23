@@ -16,7 +16,7 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
     if (!isLoading && user) {
       const timer = setTimeout(() => {
         setIsStabilized(true);
-      }, 300);
+      }, 500); // Increased from 300ms to 500ms for more stability
       
       return () => clearTimeout(timer);
     }

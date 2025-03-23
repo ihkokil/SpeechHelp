@@ -27,8 +27,9 @@ const Auth = () => {
     if (user && !isLoading && !isResetPassword) {
       // Add a small delay to ensure all auth state has been properly updated
       const redirectTimer = setTimeout(() => {
+        console.log("Authenticated user detected, redirecting to dashboard");
         navigate('/dashboard', { replace: true });
-      }, 300);
+      }, 800); // Increased from 300ms to 800ms for better stability
       
       return () => clearTimeout(redirectTimer);
     }
