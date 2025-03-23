@@ -30,6 +30,11 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsMenuOpen(false);
+  };
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
@@ -43,6 +48,7 @@ const Navbar = () => {
           <Link
             to="/"
             className="flex items-center space-x-2"
+            onClick={scrollToTop}
           >
             <img 
               src="/lovable-uploads/84f00e48-230b-4b88-9f37-7a1ba9b6ffda.png" 
@@ -54,12 +60,12 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link
-              to="/"
+            <button
+              onClick={scrollToTop}
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
             >
               {t('nav.home', currentLanguage.code)}
-            </Link>
+            </button>
             <button
               onClick={() => scrollToSection('features')}
               className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
@@ -110,13 +116,12 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden mt-4 bg-white rounded-lg shadow-lg p-4">
             <div className="flex flex-col space-y-4">
-              <Link
-                to="/"
-                className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+              <button
+                onClick={scrollToTop}
+                className="text-gray-700 hover:text-pink-600 font-medium transition-colors text-left"
               >
                 {t('nav.home', currentLanguage.code)}
-              </Link>
+              </button>
               <button
                 onClick={() => scrollToSection('features')}
                 className="text-gray-700 hover:text-pink-600 font-medium transition-colors text-left"
