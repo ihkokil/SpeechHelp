@@ -8,6 +8,7 @@ export const enUS = {
   'nav.home': 'Home',
   'nav.features': 'Features',
   'nav.howItWorks': 'How It Works',
+  'nav.pricing': 'Pricing',
   'nav.testimonials': 'Testimonials',
   'nav.contact': 'Contact',
 
