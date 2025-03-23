@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import Translate from '@/components/Translate';
 import { Label } from '@/components/ui/label';
+import { useToast } from "@/hooks/use-toast";
 
 interface Step3Props {
   nextStep: () => void;
@@ -30,6 +31,24 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
 }) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const { toast } = useToast();
+  const [speechTitle, setSpeechTitle] = useState('');
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSpeechTitle(e.target.value);
+  };
+
+  const handleGenerateSpeech = () => {
+    if (!speechTitle.trim()) {
+      toast({
+        title: "Title Required",
+        description: "Please enter a title for your speech",
+        variant: "destructive",
+      });
+      return;
+    }
+    nextStep();
+  };
 
   return (
     <Card>
@@ -44,7 +63,15 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
             id="speechTitle" 
             placeholder={t('speechLab.speechTitlePlaceholder', currentLanguage.code)} 
             className="mt-1"
+            value={speechTitle}
+            onChange={handleTitleChange}
+            required
           />
+          {speechTitle.trim() === '' && (
+            <p className="text-sm text-red-500 mt-1">
+              <Translate text="common.fieldRequired" fallback="This field is required" />
+            </p>
+          )}
         </div>
         
         <div className="p-4 bg-gray-100 rounded-md">
@@ -61,7 +88,11 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
           <ArrowLeft className="mr-2 h-4 w-4" />
           <Translate text="speechLab.backButton" />
         </ButtonCustom>
-        <ButtonCustom onClick={nextStep} variant="magenta">
+        <ButtonCustom 
+          onClick={handleGenerateSpeech} 
+          variant="magenta" 
+          disabled={speechTitle.trim() === ''}
+        >
           <Translate text="speechLab.generateButton" />
         </ButtonCustom>
       </CardFooter>
