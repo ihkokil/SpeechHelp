@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { ArrowRight, Check, Heart, GraduationCap, Cake, Briefcase, Mic, Flame, Flower, Speaker, Users, Hand, CalendarDays } from 'lucide-react';
+import { ArrowRight, Check, Heart, GraduationCap, Cake, Briefcase, Mic, Flame, Flower, Speaker, Users, Hand, CalendarDays, BookOpen, Megaphone, Music, Armchair, Award } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import Translate from '@/components/Translate';
@@ -81,6 +81,37 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
       label: t('speechTypes.farewell', currentLanguage.code),
       image: "/lovable-uploads/c0a526b7-d971-41ab-afd7-3345ffe18a83.png",
       icon: <Hand className="h-4 w-4" />
+    },
+    // Adding the 5 missing speech types
+    { 
+      id: 'informative', 
+      label: t('speechTypes.informative', currentLanguage.code) || 'Informative Speech',
+      image: "/lovable-uploads/aeaae355-f442-4199-9e24-7e5be18d5085.png",
+      icon: <BookOpen className="h-4 w-4" />
+    },
+    { 
+      id: 'persuasive', 
+      label: t('speechTypes.persuasive', currentLanguage.code) || 'Persuasive Speech',
+      image: "/lovable-uploads/2bc35e53-2bc5-4af1-9a59-637cecc0e333.png",
+      icon: <Megaphone className="h-4 w-4" />
+    },
+    { 
+      id: 'entertaining', 
+      label: t('speechTypes.entertaining', currentLanguage.code) || 'Entertaining Speech',
+      image: "/lovable-uploads/eb584538-b84a-4ada-82a3-3a65ba072531.png",
+      icon: <Music className="h-4 w-4" />
+    },
+    { 
+      id: 'retirement', 
+      label: t('speechTypes.retirement', currentLanguage.code) || 'Retirement Speech',
+      image: "/lovable-uploads/2759cdfb-30f5-48e6-bbcc-7076095f6195.png",
+      icon: <Armchair className="h-4 w-4" />
+    },
+    { 
+      id: 'award', 
+      label: t('speechTypes.award', currentLanguage.code) || 'Award Ceremony Speech',
+      image: "/lovable-uploads/0ccb56bd-8358-4d39-bd27-1a676faf9ba6.png",
+      icon: <Award className="h-4 w-4" />
     },
     { 
       id: 'other', 
