@@ -32,9 +32,9 @@ const Navbar = () => {
             className="flex items-center space-x-2"
           >
             <img 
-              src="/SpeechHelp-Logo.png" 
+              src="/lovable-uploads/84f00e48-230b-4b88-9f37-7a1ba9b6ffda.png" 
               alt="SpeechHelp Logo" 
-              className="h-11" 
+              className="h-10" 
               style={{ display: 'block' }}
             />
           </Link>
