@@ -88,10 +88,10 @@ const DashboardSidebar = () => {
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
-      {/* Logo - Updated to use the same logo as navbar and link to homepage */}
+      {/* Logo */}
       <div className="p-6">
-        <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <img src="/lovable-uploads/84f00e48-230b-4b88-9f37-7a1ba9b6ffda.png" alt="Speech Help" className="h-10" />
+        <Link to="/">
+          <img src="/lovable-uploads/b6ea4638-2c5b-4af2-8d8a-69096499067b.png" alt="Speech Help" className="h-10" />
         </Link>
       </div>
 

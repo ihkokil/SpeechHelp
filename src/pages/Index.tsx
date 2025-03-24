@@ -7,14 +7,9 @@ import HowItWorks from '@/components/HowItWorks';
 import SpeechGallery from '@/components/SpeechGallery';
 import ContactForm from '@/components/ContactForm';
 import Footer from '@/components/Footer';
-import Testimonials from '@/components/Testimonials';
-import CallToAction from '@/components/CallToAction';
-import { useTranslation } from '@/translations';
-import Translate from '@/components/Translate';
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const { t } = useTranslation();
 
   useEffect(() => {
     // Simulate app loading
@@ -46,7 +41,7 @@ const Index = () => {
       <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-          <p className="mt-4 text-white text-lg font-medium"><Translate text="loading" /></p>
+          <p className="mt-4 text-white text-lg font-medium">Loading SpeechHelp...</p>
         </div>
       </div>
     );
@@ -63,8 +58,6 @@ const Index = () => {
           <HowItWorks />
         </div>
         <SpeechGallery />
-        <Testimonials />
-        <CallToAction />
         <div id="contact">
           <ContactForm />
         </div>

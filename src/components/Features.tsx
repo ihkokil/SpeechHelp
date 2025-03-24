@@ -3,17 +3,20 @@ import { useEffect, useState, useRef } from 'react';
 import { Wand2Icon, FileTextIcon, UsersIcon, ClockIcon, CalendarIcon, CreditCardIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
-import Translate from './Translate';
 
 interface FeatureProps {
   icon: JSX.Element;
+  title: string;
+  description: string;
   delay: number;
   translationPrefix: string;
 }
 
-const Feature = ({ icon, delay, translationPrefix }: FeatureProps) => {
+const Feature = ({ icon, title, description, delay, translationPrefix }: FeatureProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const featureRef = useRef<HTMLDivElement>(null);
+  const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -47,10 +50,10 @@ const Feature = ({ icon, delay, translationPrefix }: FeatureProps) => {
     >
       <div className="p-2 rounded-full bg-pink-100 w-fit mb-4 text-pink-600">{icon}</div>
       <h3 className="text-lg font-semibold mb-2 text-gray-800 group-hover:text-pink-600 transition-colors">
-        <Translate text={`${translationPrefix}.title`} />
+        {t(`${translationPrefix}.title`, currentLanguage.code)}
       </h3>
       <p className="text-gray-600">
-        <Translate text={`${translationPrefix}.description`} />
+        {t(`${translationPrefix}.description`, currentLanguage.code)}
       </p>
     </div>
   );
@@ -59,6 +62,8 @@ const Feature = ({ icon, delay, translationPrefix }: FeatureProps) => {
 const Features = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -116,7 +121,7 @@ const Features = () => {
             Welcome to <span className="text-pink-600">Speech Help!</span>
           </h2>
           <p className={`text-lg text-gray-600 mb-6 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>
-            <Translate text="features.subtitle" />
+            {t('features.subtitle', currentLanguage.code)}
           </p>
         </div>
 
@@ -125,6 +130,8 @@ const Features = () => {
             <Feature
               key={index}
               icon={feature.icon}
+              title=""
+              description=""
               delay={index * 100}
               translationPrefix={feature.translationPrefix}
             />
