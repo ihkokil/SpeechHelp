@@ -1,6 +1,7 @@
 
 import { useState, useMemo } from 'react';
-import { Speech, useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { Speech } from '@/types/auth';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

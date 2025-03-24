@@ -1,5 +1,4 @@
 
-import { Speech } from '@/contexts/AuthContext';
 import { 
   Dialog, 
   DialogContent, 
@@ -8,6 +7,7 @@ import {
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog';
+import { Speech } from '@/types/auth';
 import { Badge } from '@/components/ui/badge';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { format } from 'date-fns';

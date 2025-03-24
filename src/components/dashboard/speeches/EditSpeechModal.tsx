@@ -1,5 +1,4 @@
 
-import { Speech } from '@/contexts/AuthContext';
 import { 
   Dialog, 
   DialogContent, 
@@ -8,6 +7,7 @@ import {
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog';
+import { Speech } from '@/types/auth';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ButtonCustom } from '@/components/ui/button-custom';

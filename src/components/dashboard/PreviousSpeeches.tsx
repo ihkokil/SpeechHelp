@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
-import { useAuth, Speech } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { Speech } from '@/types/auth';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useNavigate } from 'react-router-dom';
 import ViewSpeechModal from './speeches/ViewSpeechModal';
