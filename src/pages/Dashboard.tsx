@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +7,7 @@ import SpeechSummaryCard from '@/components/dashboard/SpeechSummaryCard';
 import UpcomingSpeeches from '@/components/dashboard/UpcomingSpeeches';
 import RecentActivities from '@/components/dashboard/RecentActivities';
 import PerformanceMetrics from '@/components/dashboard/PerformanceMetrics';
-import LanguageSelector from '@/components/dashboard/LanguageSelector';
+import LanguageSelector from '@/components/common/LanguageSelector';
 import PreviousSpeeches from '@/components/dashboard/PreviousSpeeches';
 import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-react';
 import { format } from 'date-fns';
@@ -24,24 +23,20 @@ const Dashboard = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
-  // Fetch speeches when component mounts
   useEffect(() => {
     if (user) {
       fetchSpeeches();
     }
   }, [user, fetchSpeeches]);
   
-  // Redirect if not logged in
   useEffect(() => {
     if (!isLoading && !user) {
       navigate('/auth');
     }
   }, [user, isLoading, navigate]);
   
-  // Set user information from metadata
   useEffect(() => {
     if (user) {
-      // Get first and last name from user metadata if available
       const metadata = user.user_metadata;
       const firstNameFromMeta = metadata?.first_name || '';
       const lastNameFromMeta = metadata?.last_name || '';
@@ -49,11 +44,8 @@ const Dashboard = () => {
       setFirstName(firstNameFromMeta);
       setLastName(lastNameFromMeta);
       
-      // Fallback to email if no names are available
       if (!firstNameFromMeta && !lastNameFromMeta && user.email) {
-        // Extract first part of email as username
         const nameFromEmail = user.email.split('@')[0];
-        // Capitalize first letter and clean up
         const formattedName = nameFromEmail
           .split(/[._-]/)
           .map(part => part.charAt(0).toUpperCase() + part.slice(1))
@@ -78,12 +70,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Sidebar */}
       <DashboardSidebar />
       
-      {/* Main Content */}
       <div className="flex-1 bg-gray-50 overflow-auto">
-        {/* Header with date and language selector */}
         <header className="flex justify-between items-center p-6 sticky top-0 bg-gray-50 z-10">
           <div className="flex items-center">
             <div className="bg-purple-600 text-white px-4 py-2 rounded-md flex items-center">
@@ -94,25 +83,19 @@ const Dashboard = () => {
           <LanguageSelector />
         </header>
 
-        {/* Main dashboard content */}
         <main className="px-6 pb-12">
-          {/* Welcome card */}
           <WelcomeCard 
             userName={userName} 
             firstName={firstName} 
             lastName={lastName}
           />
           
-          {/* Dashboard Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-            {/* Left Column */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Speech Summary Section */}
               <div>
                 <h2 className="text-xl font-bold text-gray-800 mb-4">{t('dashboard.summary', currentLanguage.code)}</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Total Speeches Card */}
                   <SpeechSummaryCard 
                     icon={<FileTextIcon className="h-6 w-6 text-gray-600" />}
                     count={speeches.length}
@@ -121,7 +104,6 @@ const Dashboard = () => {
                     bgColor="bg-gray-100"
                   />
                   
-                  {/* Speeches in Progress Card */}
                   <SpeechSummaryCard 
                     icon={<ShieldIcon className="h-6 w-6 text-gray-600" />}
                     count={2}
@@ -130,7 +112,6 @@ const Dashboard = () => {
                     bgColor="bg-red-50"
                   />
                   
-                  {/* Improvement Score Card */}
                   <SpeechSummaryCard 
                     icon={<TrendingUpIcon className="h-6 w-6 text-gray-600" />}
                     count={15}
@@ -141,19 +122,14 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              {/* Previous Speeches */}
               <PreviousSpeeches />
               
-              {/* Performance Metrics */}
               <PerformanceMetrics />
             </div>
             
-            {/* Right Column */}
             <div className="space-y-6">
-              {/* Upcoming Speeches */}
               <UpcomingSpeeches />
               
-              {/* Recent Activities */}
               <RecentActivities />
             </div>
           </div>
