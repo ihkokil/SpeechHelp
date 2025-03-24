@@ -116,6 +116,10 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       // First create a placeholder speech entry
       const speechId = await createPlaceholderSpeech();
       
+      if (!speechId) {
+        throw new Error("Failed to create placeholder speech");
+      }
+      
       // Show confetti (this will also trigger the next step after a delay)
       setShowConfetti(true);
       
@@ -140,8 +144,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         callbackUrl: getCallbackUrl(),
         // Add the speech ID if we created a placeholder
         speechId: speechId,
-        // Add the Supabase anon key for the callback to work (will be masked in the request)
-        callbackApiKey: supabase.auth.getSession().then(({ data }) => data.session?.access_token)
       };
       
       console.log("Sending data to webhook:", webhookData);
@@ -155,12 +157,23 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         body: JSON.stringify(webhookData),
       });
       
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Webhook error response:", errorText);
+        throw new Error(`Webhook returned status ${response.status}`);
+      }
+      
       const responseData = await response.json();
       console.log("Webhook response:", responseData);
       
       // The nextStep() call is handled by the useEffect when showConfetti is set to true
     } catch (error) {
       console.error("Error sending data to webhook:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start speech generation. Please try again.",
+        variant: "destructive",
+      });
       // Still continue with the flow even if webhook fails
       if (!showConfetti) {
         setShowConfetti(true); // This will trigger nextStep() via the useEffect
