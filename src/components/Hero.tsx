@@ -15,7 +15,7 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="text-white pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden relative">
+    <section className="text-white pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden relative">
       {/* Video Background */}
       <div className="absolute inset-0 z-0">
         <video
