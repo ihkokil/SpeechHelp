@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from "@/hooks/use-toast";
 import Confetti from 'react-confetti';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Step3Props {
   nextStep: () => void;
@@ -61,6 +62,13 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     };
   }, [showConfetti, nextStep]);
 
+  // Get the callback URL for the Edge Function
+  const getCallbackUrl = () => {
+    // Production URL format
+    const projectId = "yotrueuqjxmgcwlbbyps";
+    return `https://${projectId}.supabase.co/functions/v1/receive-generated-speech`;
+  };
+
   const handleGenerateSpeech = async () => {
     if (!speechTitle.trim()) {
       toast({
@@ -92,7 +100,11 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         language: currentLanguage.code,
         timestamp: new Date().toISOString(),
         // Include all the speech details collected in Step 2
-        speechDetails: speechDetails
+        speechDetails: speechDetails,
+        // Add callback URL for Make.com to send the generated speech back
+        callbackUrl: getCallbackUrl(),
+        // Add the Supabase anon key for the callback to work
+        callbackApiKey: supabase.auth.getSession().then(({ data }) => data.session?.access_token)
       };
       
       console.log("Sending data to webhook:", webhookData);

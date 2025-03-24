@@ -15,7 +15,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSpeechService } from '@/services/speechService';
+import { supabase } from '@/integrations/supabase/client';
 
 // Create schema for form validation
 const formSchema = z.object({
@@ -43,22 +43,93 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { user } = useAuth();
-  const { saveSpeech } = useSpeechService();
+  const { user, saveSpeech } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  
-  // Generate placeholder content if no real content is available
-  const placeholderContent = `This is a sample ${speechType} speech. The real content will be provided by your make.com integration. You can edit this text to customize your speech.`;
+  const [isLoading, setIsLoading] = useState(true);
+  const [generatedContent, setGeneratedContent] = useState("");
   
   // Initialize form with the speech title and default content
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: speechTitle,
-      content: placeholderContent,
+      content: "Loading your generated speech...",
     },
   });
+
+  // Try to fetch the most recently generated speech for this user and title
+  useEffect(() => {
+    const fetchLatestSpeech = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Query for the most recent speech with this title
+        const { data, error } = await supabase
+          .from('speeches')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('title', speechTitle)
+          .eq('speech_type', speechType)
+          .order('created_at', { ascending: false })
+          .limit(1);
+          
+        if (error) {
+          console.error("Error fetching speech:", error);
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          // We found a generated speech
+          setGeneratedContent(data[0].content);
+          form.setValue('content', data[0].content);
+        } else {
+          // No speech found yet, check again after a delay
+          const placeholderContent = `This is a sample ${speechType} speech. The real content should arrive shortly from our AI service. If it doesn't appear within a few minutes, please try generating again.`;
+          setGeneratedContent(placeholderContent);
+          form.setValue('content', placeholderContent);
+          
+          // Set up polling to check for the generated speech
+          const checkInterval = setInterval(async () => {
+            const { data: newData, error: newError } = await supabase
+              .from('speeches')
+              .select('*')
+              .eq('user_id', user.id)
+              .eq('title', speechTitle)
+              .eq('speech_type', speechType)
+              .order('created_at', { ascending: false })
+              .limit(1);
+              
+            if (newError) {
+              console.error("Error polling for speech:", newError);
+              return;
+            }
+            
+            if (newData && newData.length > 0) {
+              setGeneratedContent(newData[0].content);
+              form.setValue('content', newData[0].content);
+              clearInterval(checkInterval);
+            }
+          }, 5000); // Check every 5 seconds
+          
+          // Clear interval after 2 minutes (24 checks)
+          setTimeout(() => {
+            clearInterval(checkInterval);
+          }, 120000);
+          
+          return () => clearInterval(checkInterval);
+        }
+      } catch (error) {
+        console.error("Error in speech fetch:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchLatestSpeech();
+  }, [user?.id, speechTitle, speechType, form]);
 
   // Update the local form when speechTitle prop changes
   useEffect(() => {
@@ -83,7 +154,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
       onTitleChange(values.title);
       
       // Save the speech to the database
-      await saveSpeech(user.id, values.title, values.content, speechType);
+      await saveSpeech(values.title, values.content, speechType);
       
       toast({
         title: "Success!",
@@ -164,6 +235,13 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
                 </FormItem>
               )}
             />
+            
+            {isLoading && (
+              <div className="text-center p-4">
+                <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-e-transparent align-[-0.125em] text-pink-600 motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+                <p className="mt-2 text-sm text-gray-500">Loading your generated speech...</p>
+              </div>
+            )}
           </CardContent>
           <CardFooter className="flex justify-between">
             <div className="flex space-x-2">
