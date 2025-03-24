@@ -36,30 +36,54 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // Insert the speech into the database
-    const { data, error } = await supabase
-      .from('speeches')
-      .insert({
-        user_id: payload.userId,
-        title: payload.speechTitle,
-        content: payload.content,
-        speech_type: payload.speechType
-      })
-      .select()
-      .single();
+    let speechId;
+    let data;
+    let error;
+
+    // Check if a specific speechId was provided (for updating an existing speech)
+    if (payload.speechId) {
+      // Update existing speech
+      ({ data, error } = await supabase
+        .from('speeches')
+        .update({
+          title: payload.speechTitle,
+          content: payload.content,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', payload.speechId)
+        .eq('user_id', payload.userId)
+        .select()
+        .single());
+      
+      speechId = payload.speechId;
+    } else {
+      // Insert new speech
+      ({ data, error } = await supabase
+        .from('speeches')
+        .insert({
+          user_id: payload.userId,
+          title: payload.speechTitle,
+          content: payload.content,
+          speech_type: payload.speechType
+        })
+        .select()
+        .single());
+      
+      speechId = data?.id;
+    }
 
     if (error) {
-      console.error("Error inserting speech:", error);
+      console.error("Error saving speech:", error);
       throw error;
     }
 
-    console.log("Speech saved successfully:", data.id);
+    console.log("Speech saved successfully:", speechId);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: "Speech saved successfully", 
-        speechId: data.id 
+        speechId: speechId 
       }),
       { 
         headers: { 

@@ -48,6 +48,8 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
   const [isCopied, setIsCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [generatedContent, setGeneratedContent] = useState("");
+  const [pollAttempts, setPollAttempts] = useState(0);
+  const MAX_POLL_ATTEMPTS = 24; // 2 minutes with 5 second intervals
   
   // Initialize form with the speech title and default content
   const form = useForm<z.infer<typeof formSchema>>({
@@ -66,7 +68,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
       try {
         setIsLoading(true);
         
-        // Query for the most recent speech with this title
+        // Query for the most recent speech with this title and type
         const { data, error } = await supabase
           .from('speeches')
           .select('*')
@@ -78,58 +80,78 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
           
         if (error) {
           console.error("Error fetching speech:", error);
+          toast({
+            title: "Error fetching speech",
+            description: "There was a problem loading your speech. Please try again.",
+            variant: "destructive",
+          });
           return;
         }
         
         if (data && data.length > 0) {
           // We found a generated speech
-          setGeneratedContent(data[0].content);
-          form.setValue('content', data[0].content);
+          const speech = data[0];
+          console.log("Found existing speech:", speech);
+          
+          // Check if this is a placeholder or a fully generated speech
+          const isPlaceholder = speech.content.includes("sample") && 
+                               speech.content.includes("should arrive shortly");
+          
+          if (!isPlaceholder) {
+            // This is a complete speech
+            setGeneratedContent(speech.content);
+            form.setValue('content', speech.content);
+            setIsLoading(false);
+            setPollAttempts(MAX_POLL_ATTEMPTS); // Stop polling
+          } else if (pollAttempts < MAX_POLL_ATTEMPTS) {
+            // Still a placeholder, continue polling
+            console.log(`Polling for generated speech (attempt ${pollAttempts + 1}/${MAX_POLL_ATTEMPTS})...`);
+            setTimeout(() => {
+              setPollAttempts(prev => prev + 1);
+            }, 5000); // Poll every 5 seconds
+          } else {
+            // Max polling attempts reached
+            setIsLoading(false);
+            toast({
+              title: "Speech Generation Timeout",
+              description: "Your speech hasn't been generated yet. You can edit this placeholder or try generating again.",
+              variant: "destructive",
+            });
+          }
         } else {
-          // No speech found yet, check again after a delay
+          // No speech found yet
           const placeholderContent = `This is a sample ${speechType} speech. The real content should arrive shortly from our AI service. If it doesn't appear within a few minutes, please try generating again.`;
           setGeneratedContent(placeholderContent);
           form.setValue('content', placeholderContent);
           
-          // Set up polling to check for the generated speech
-          const checkInterval = setInterval(async () => {
-            const { data: newData, error: newError } = await supabase
-              .from('speeches')
-              .select('*')
-              .eq('user_id', user.id)
-              .eq('title', speechTitle)
-              .eq('speech_type', speechType)
-              .order('created_at', { ascending: false })
-              .limit(1);
-              
-            if (newError) {
-              console.error("Error polling for speech:", newError);
-              return;
-            }
-            
-            if (newData && newData.length > 0) {
-              setGeneratedContent(newData[0].content);
-              form.setValue('content', newData[0].content);
-              clearInterval(checkInterval);
-            }
-          }, 5000); // Check every 5 seconds
-          
-          // Clear interval after 2 minutes (24 checks)
-          setTimeout(() => {
-            clearInterval(checkInterval);
-          }, 120000);
-          
-          return () => clearInterval(checkInterval);
+          if (pollAttempts < MAX_POLL_ATTEMPTS) {
+            // Continue polling
+            setTimeout(() => {
+              setPollAttempts(prev => prev + 1);
+            }, 5000);
+          } else {
+            // Max polling attempts reached
+            setIsLoading(false);
+            toast({
+              title: "Speech Not Found",
+              description: "We couldn't find your generated speech. You can edit this placeholder or try generating again.",
+              variant: "destructive",
+            });
+          }
         }
       } catch (error) {
         console.error("Error in speech fetch:", error);
-      } finally {
         setIsLoading(false);
+        toast({
+          title: "Error",
+          description: "There was a problem loading your speech. Please try again.",
+          variant: "destructive",
+        });
       }
     };
     
     fetchLatestSpeech();
-  }, [user?.id, speechTitle, speechType, form]);
+  }, [user?.id, speechTitle, speechType, pollAttempts, form, toast]);
 
   // Update the local form when speechTitle prop changes
   useEffect(() => {
