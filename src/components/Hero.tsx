@@ -1,8 +1,10 @@
+
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
 import { ButtonCustom } from './ui/button-custom';
+import { AspectRatio } from './ui/aspect-ratio';
 
 const Hero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -23,7 +25,9 @@ const Hero = () => {
           loop
           playsInline
           className="w-full h-full object-cover"
+          poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
         >
+          <source src="/Video Montage - Speech Help App.mov" type="video/quicktime" />
           <source src="/Video Montage - Speech Help App.mov" type="video/mp4" />
           {/* Fallback to image if video doesn't load */}
           <img 
