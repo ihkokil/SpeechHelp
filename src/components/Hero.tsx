@@ -17,13 +17,23 @@ const Hero = () => {
 
   return (
     <section className="text-white pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden relative">
-      {/* Image Background */}
+      {/* Video Background */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png" 
-          alt="Woman giving speech to an audience" 
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
           className="w-full h-full object-cover"
-        />
+        >
+          <source src="/Video Montage - Speech Help App.mov" type="video/mp4" />
+          {/* Fallback to image if video doesn't load */}
+          <img 
+            src="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png" 
+            alt="Woman giving speech to an audience" 
+            className="w-full h-full object-cover"
+          />
+        </video>
         <div className="absolute inset-0 bg-black/60"></div>
       </div>
       
