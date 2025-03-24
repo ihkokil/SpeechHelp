@@ -10,24 +10,15 @@ import { Heart, GraduationCap, Cake, Briefcase, Mic, Flame, Flower, Speaker, Use
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 
-// Define the speech type with its metadata
-interface SpeechType {
-  id: string;
-  label: string;
-  description: string;
-  image: string;
-  icon: React.ReactNode;
-}
-
 const SpeechLabContent: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedSpeechType, setSelectedSpeechType] = useState('');
-  const [speechDetails, setSpeechDetails] = useState<Record<string, string>>({});
+  const [speechDetails, setSpeechDetails] = useState({});
   const [speechTitle, setSpeechTitle] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
-  const speechTypes: SpeechType[] = [
+  const speechTypes = [
     { 
       id: 'wedding', 
       label: "WEDDING SPEECH",
@@ -158,10 +149,7 @@ const SpeechLabContent: React.FC = () => {
     setSpeechTitle(title);
   };
 
-  const handleSpeechDetailsChange = (details: Record<string, string>) => {
-    setSpeechDetails(details);
-  };
-
+  // Update the steps for the progress indicator to match our flow
   const steps = [
     { number: 1, title: 'Select Occasion' },
     { number: 2, title: 'Let\'s Get Creative' },
@@ -190,8 +178,6 @@ const SpeechLabContent: React.FC = () => {
               nextStep={nextStep} 
               prevStep={prevStep}
               selectedSpeechType={selectedSpeechType}
-              onSpeechDetailsChange={handleSpeechDetailsChange}
-              speechDetails={speechDetails}
             />
           )}
 
@@ -203,7 +189,6 @@ const SpeechLabContent: React.FC = () => {
               speechTypes={speechTypes}
               speechTitle={speechTitle}
               setSpeechTitle={handleSpeechTitleChange}
-              speechDetails={speechDetails}
             />
           )}
 

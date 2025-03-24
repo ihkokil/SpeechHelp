@@ -11,8 +11,6 @@ import Translate from '@/components/Translate';
 import { Label } from '@/components/ui/label';
 import { useToast } from "@/hooks/use-toast";
 import Confetti from 'react-confetti';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 
 interface Step3Props {
   nextStep: () => void;
@@ -26,7 +24,6 @@ interface Step3Props {
   }[];
   speechTitle: string;
   setSpeechTitle: (title: string) => void;
-  speechDetails?: Record<string, string>;
 }
 
 const Step3GenerateSpeech: React.FC<Step3Props> = ({
@@ -35,13 +32,11 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
   selectedSpeechType,
   speechTypes,
   speechTitle,
-  setSpeechTitle,
-  speechDetails = {}
+  setSpeechTitle
 }) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { user } = useAuth();
   const [showConfetti, setShowConfetti] = useState(false);
   const [generating, setGenerating] = useState(false);
 
@@ -62,38 +57,7 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     };
   }, [showConfetti, nextStep]);
 
-  // Add a placeholder speech to the database
-  const createPlaceholderSpeech = async () => {
-    if (!user?.id) return null;
-    
-    try {
-      const placeholderContent = `This is a sample ${selectedSpeechType} speech. The real content should arrive shortly from our AI service. If it doesn't appear within a few minutes, please try generating again.`;
-      
-      const { data, error } = await supabase
-        .from('speeches')
-        .insert({
-          user_id: user.id,
-          title: speechTitle,
-          content: placeholderContent,
-          speech_type: selectedSpeechType
-        })
-        .select()
-        .single();
-      
-      if (error) {
-        console.error("Error creating placeholder speech:", error);
-        return null;
-      }
-      
-      console.log("Created placeholder speech:", data);
-      return data.id;
-    } catch (error) {
-      console.error("Error in createPlaceholderSpeech:", error);
-      return null;
-    }
-  };
-
-  const handleGenerateSpeech = async () => {
+  const handleGenerateSpeech = () => {
     if (!speechTitle.trim()) {
       toast({
         title: "Title Required",
@@ -105,102 +69,9 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     
     // Start the generation process
     setGenerating(true);
+    setShowConfetti(true);
     
-    try {
-      // First create a placeholder speech entry
-      const speechId = await createPlaceholderSpeech();
-      
-      if (!speechId) {
-        throw new Error("Failed to create placeholder speech");
-      }
-      
-      // Get the project ID for constructing the callback URL
-      const projectId = "yotrueuqjxmgcwlbbyps";
-      
-      // Encode the speech title for the URL
-      const encodedTitle = encodeURIComponent(speechTitle);
-      
-      // Construct the callback URL with all necessary parameters
-      const callbackUrl = `https://${projectId}.supabase.co/functions/v1/receive-generated-speech?speechId=${speechId}&userId=${user?.id || "anonymous"}&speechType=${selectedSpeechType}&speechTitle=${encodedTitle}`;
-      
-      console.log("Callback URL:", callbackUrl);
-      
-      // Get the speech type details
-      const speechTypeDetails = speechTypes.find(type => type.id === selectedSpeechType);
-      
-      // Send data to make.com webhook
-      const webhookUrl = "https://hook.us2.make.com/i78d2sdyd3eewz2w5oytais6dpwrjh5h";
-      
-      // Prepare the data to send to the webhook
-      const webhookData = {
-        userId: user?.id || "anonymous",
-        userEmail: user?.email || "anonymous",
-        speechType: selectedSpeechType,
-        speechTypeLabel: speechTypeDetails?.label || selectedSpeechType,
-        speechTitle: speechTitle,
-        language: currentLanguage.code,
-        timestamp: new Date().toISOString(),
-        // Include all the speech details collected in Step 2
-        speechDetails: speechDetails,
-        // Add callback URL for Make.com to send the generated speech back
-        callbackUrl: callbackUrl,
-        // Add the speech ID for reference
-        speechId: speechId,
-      };
-      
-      console.log("Sending data to webhook:", webhookData);
-      
-      // Provide clear Make.com instructions in console for debugging
-      console.log("\n--- INSTRUCTIONS FOR MAKE.COM HTTP REQUEST MODULE ---");
-      console.log("1. In the final HTTP module, set the URL to the callbackUrl value exactly as received");
-      console.log("2. Set the Method to POST");
-      console.log("3. Set Content Type to text/plain (important!)");
-      console.log("4. In the Request Content field, put the generated speech text directly as plain text");
-      console.log("   DO NOT wrap it in JSON, just send the raw text of the speech");
-      console.log("--- END INSTRUCTIONS ---\n");
-      
-      // Send the data to the webhook with improved error handling
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(webhookData),
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Webhook error response:", errorText);
-        throw new Error(`Webhook returned status ${response.status}: ${errorText}`);
-      }
-      
-      let responseData;
-      const responseText = await response.text();
-      console.log("Raw webhook response:", responseText);
-      
-      try {
-        // Try to parse as JSON if possible
-        responseData = JSON.parse(responseText);
-        console.log("Parsed webhook response:", responseData);
-      } catch (e) {
-        // Not JSON, just log the text
-        console.log("Webhook text response (not JSON):", responseText);
-      }
-      
-      // Show confetti and proceed to next step
-      setShowConfetti(true);
-      
-      // The nextStep() call is handled by the useEffect when showConfetti is set to true
-    } catch (error) {
-      console.error("Error sending data to webhook:", error);
-      toast({
-        title: "Error",
-        description: "Failed to start speech generation. Please try again.",
-        variant: "destructive",
-      });
-      setGenerating(false);
-      // We don't move to the next step if there's an error
-    }
+    // The nextStep() call is now handled by the useEffect
   };
 
   return (
@@ -249,24 +120,9 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
           <div className="p-4 bg-gray-100 rounded-md">
             <h3 className="font-medium mb-2"><Translate text="common.type" />: {speechTypes.find(type => type.id === selectedSpeechType)?.label || ''}</h3>
             <Separator className="my-4" />
-            
+            {/* Show summary of speech details here */}
             <div className="text-sm text-gray-600">
               <p><Translate text="speechLab.summaryNotice" fallback="Speech details will be used to generate your content" /></p>
-              
-              {/* Display summary of speech details */}
-              {Object.keys(speechDetails).length > 0 && (
-                <div className="mt-4 p-3 bg-white rounded border border-gray-200">
-                  <h4 className="font-medium mb-2">Details Summary:</h4>
-                  <div className="max-h-40 overflow-y-auto">
-                    {Object.entries(speechDetails).map(([question, answer]) => (
-                      <div key={question} className="mb-2">
-                        <p className="text-xs font-medium text-gray-500">{question}</p>
-                        <p className="text-sm">{answer || "Not provided"}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </CardContent>

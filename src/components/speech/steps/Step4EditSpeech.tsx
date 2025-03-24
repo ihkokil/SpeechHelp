@@ -3,29 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Save, Copy } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTranslation } from '@/translations';
-import Translate from '@/components/Translate';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
+import { ArrowLeft, Download, RefreshCw, Save } from 'lucide-react';
+import Translate from '@/components/Translate';
+import { useToast } from "@/hooks/use-toast";
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-
-// Create schema for form validation
-const formSchema = z.object({
-  title: z.string().min(3, {
-    message: "Title must be at least 3 characters.",
-  }),
-  content: z.string().min(10, {
-    message: "Speech content must be at least 10 characters.",
-  }),
-});
 
 interface Step4Props {
   prevStep: () => void;
@@ -34,294 +17,172 @@ interface Step4Props {
   onTitleChange: (title: string) => void;
 }
 
-const Step4EditSpeech: React.FC<Step4Props> = ({
-  prevStep,
-  speechTitle,
+const Step4EditSpeech: React.FC<Step4Props> = ({ 
+  prevStep, 
+  speechTitle, 
   speechType,
-  onTitleChange,
+  onTitleChange 
 }) => {
-  const { currentLanguage } = useLanguage();
-  const { t } = useTranslation();
+  const [title, setTitle] = useState(speechTitle);
+  const [content, setContent] = useState('This is your generated speech. You can edit it here to customize it to your needs.');
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const { user, saveSpeech } = useAuth();
-  const [isSaving, setIsSaving] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [generatedContent, setGeneratedContent] = useState("");
-  const [pollAttempts, setPollAttempts] = useState(0);
-  const [fetchedSpeechId, setFetchedSpeechId] = useState<string | null>(null);
-  const MAX_POLL_ATTEMPTS = 24; // 2 minutes with 5 second intervals
-  
-  // Initialize form with the speech title and default content
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: speechTitle,
-      content: "Loading your generated speech...",
-    },
-  });
 
-  // Try to fetch the most recently generated speech for this user and title
+  // Update local title when prop changes
   useEffect(() => {
-    const fetchLatestSpeech = async () => {
-      if (!user?.id) return;
-      
-      try {
-        setIsLoading(true);
-        
-        // Query for the most recent speech with this title and type
-        console.log(`Fetching speech with title: "${speechTitle}" and type: "${speechType}" for user: ${user.id}`);
-        const { data, error } = await supabase
-          .from('speeches')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('title', speechTitle)
-          .eq('speech_type', speechType)
-          .order('created_at', { ascending: false })
-          .limit(1);
-          
-        if (error) {
-          console.error("Error fetching speech:", error);
-          toast({
-            title: "Error fetching speech",
-            description: "There was a problem loading your speech. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        if (data && data.length > 0) {
-          // We found a generated speech
-          const speech = data[0];
-          console.log("Found existing speech:", speech);
-          setFetchedSpeechId(speech.id);
-          
-          // Check if this is a placeholder or a fully generated speech
-          const isPlaceholder = speech.content.includes("sample") && 
-                               speech.content.includes("should arrive shortly");
-          
-          if (!isPlaceholder) {
-            // This is a complete speech
-            console.log("Found completed speech, displaying content");
-            setGeneratedContent(speech.content);
-            form.setValue('content', speech.content);
-            setIsLoading(false);
-            setPollAttempts(MAX_POLL_ATTEMPTS); // Stop polling
-          } else if (pollAttempts < MAX_POLL_ATTEMPTS) {
-            // Still a placeholder, continue polling
-            console.log(`Polling for generated speech (attempt ${pollAttempts + 1}/${MAX_POLL_ATTEMPTS})...`);
-            setTimeout(() => {
-              setPollAttempts(prev => prev + 1);
-            }, 5000); // Poll every 5 seconds
-          } else {
-            // Max polling attempts reached
-            setIsLoading(false);
-            toast({
-              title: "Speech Generation Timeout",
-              description: "Your speech hasn't been generated yet. You can edit this placeholder or try generating again.",
-              variant: "destructive",
-            });
-            form.setValue('content', speech.content);
-          }
-        } else {
-          // No speech found yet
-          console.log("No speech found, creating placeholder");
-          const placeholderContent = `This is a sample ${speechType} speech. The real content should arrive shortly from our AI service. If it doesn't appear within a few minutes, please try generating again.`;
-          setGeneratedContent(placeholderContent);
-          form.setValue('content', placeholderContent);
-          
-          if (pollAttempts < MAX_POLL_ATTEMPTS) {
-            // Continue polling
-            setTimeout(() => {
-              setPollAttempts(prev => prev + 1);
-            }, 5000);
-          } else {
-            // Max polling attempts reached
-            setIsLoading(false);
-            toast({
-              title: "Speech Not Found",
-              description: "We couldn't find your generated speech. You can edit this placeholder or try generating again.",
-              variant: "destructive",
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Error in speech fetch:", error);
-        setIsLoading(false);
-        toast({
-          title: "Error",
-          description: "There was a problem loading your speech. Please try again.",
-          variant: "destructive",
-        });
-      }
-    };
-    
-    fetchLatestSpeech();
-  }, [user?.id, speechTitle, speechType, pollAttempts, form, toast]);
+    setTitle(speechTitle);
+  }, [speechTitle]);
 
-  // Update the local form when speechTitle prop changes
-  useEffect(() => {
-    form.setValue('title', speechTitle);
-  }, [speechTitle, form]);
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+    onTitleChange(e.target.value);
+  };
 
-  // Handle form submission
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      setIsSaving(true);
-      
-      if (!user?.id) {
-        toast({
-          title: "Authentication Error",
-          description: "You must be logged in to save a speech",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Update the title in parent component
-      onTitleChange(values.title);
-      
-      // Save the speech to the database
-      await saveSpeech(values.title, values.content, speechType);
-      
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContent(e.target.value);
+  };
+
+  const handleSave = async () => {
+    if (!title.trim()) {
       toast({
-        title: "Success!",
-        description: "Your speech has been saved",
-      });
-    } catch (error) {
-      console.error("Error saving speech:", error);
-      toast({
-        title: "Error",
-        description: "There was a problem saving your speech",
+        title: "Title Required",
+        description: "Please enter a title for your speech",
         variant: "destructive",
       });
+      return;
+    }
+
+    if (!content.trim()) {
+      toast({
+        title: "Content Required",
+        description: "Please enter content for your speech",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      if (user) {
+        await saveSpeech(title, content, speechType);
+        toast({
+          title: "Speech Saved",
+          description: "Your speech has been saved successfully.",
+        });
+      } else {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to save your speech.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save speech. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error saving speech:", error);
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Handle copying to clipboard
-  const handleCopyToClipboard = () => {
-    const content = form.getValues('content');
-    navigator.clipboard.writeText(content).then(() => {
-      setIsCopied(true);
-      toast({
-        title: "Copied!",
-        description: "Speech copied to clipboard",
-      });
-      
-      setTimeout(() => {
-        setIsCopied(false);
-      }, 2000);
-    }).catch((err) => {
-      console.error('Could not copy text: ', err);
-      toast({
-        title: "Error",
-        description: "Could not copy to clipboard",
-        variant: "destructive",
-      });
+  const handleDownload = () => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title.trim() || 'speech'}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Download Started",
+      description: "Your speech is being downloaded as a text file.",
     });
   };
 
+  const handleReset = () => {
+    if (window.confirm("Are you sure you want to reset your speech? This will clear all your changes.")) {
+      setContent('This is your generated speech. You can edit it here to customize it to your needs.');
+      toast({
+        title: "Speech Reset",
+        description: "Your speech has been reset to the original generated content.",
+      });
+    }
+  };
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Card>
-          <CardHeader>
-            <CardTitle><Translate text="speechLab.editTitle" fallback="Edit Your Speech" /></CardTitle>
-            <CardDescription>
-              <Translate text="speechLab.editDesc" fallback="Review and edit your speech before saving" />
-              {fetchedSpeechId && <span className="text-xs text-gray-500 ml-2">(ID: {fetchedSpeechId})</span>}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel><Translate text="speechLab.speechTitleLabel" fallback="Speech Title" /></FormLabel>
-                  <FormControl>
-                    <Input placeholder={t('speechLab.speechTitlePlaceholder', currentLanguage.code)} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="content"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel><Translate text="speechLab.speechContentLabel" fallback="Speech Content" /></FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder={t('speechLab.speechContentPlaceholder', currentLanguage.code)} 
-                      className="min-h-[300px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            {isLoading && (
-              <div className="text-center p-4">
-                <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-e-transparent align-[-0.125em] text-pink-600 motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-                <p className="mt-2 text-sm text-gray-500">Loading your generated speech... (attempt {pollAttempts + 1}/{MAX_POLL_ATTEMPTS})</p>
-              </div>
-            )}
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <div className="flex space-x-2">
-              <ButtonCustom 
-                type="button"
-                onClick={prevStep} 
-                variant="outline"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                <Translate text="speechLab.backButton" fallback="Back" />
-              </ButtonCustom>
-              
-              <ButtonCustom
-                type="button"
-                onClick={handleCopyToClipboard}
-                variant="outline"
-              >
-                <Copy className="mr-2 h-4 w-4" />
-                {isCopied ? 
-                  <Translate text="common.copied" fallback="Copied!" /> : 
-                  <Translate text="common.copy" fallback="Copy" />
-                }
-              </ButtonCustom>
-            </div>
-            
-            <ButtonCustom 
-              type="submit"
-              variant="magenta" 
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <span className="inline-flex items-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <Translate text="common.saving" fallback="Saving..." />
-                </span>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  <Translate text="speechLab.saveButton" fallback="Save Speech" />
-                </>
-              )}
-            </ButtonCustom>
-          </CardFooter>
-        </Card>
-      </form>
-    </Form>
+    <Card>
+      <CardHeader>
+        <CardTitle><Translate text="speechLab.editTitle" /></CardTitle>
+        <CardDescription><Translate text="speechLab.editDesc" /></CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div>
+          <Label htmlFor="speechTitle"><Translate text="speechLab.speechTitleLabel" /></Label>
+          <Input 
+            id="speechTitle"
+            value={title}
+            onChange={handleTitleChange}
+            className="mb-4"
+            placeholder="Enter speech title"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="speechContent"><Translate text="speechLab.speechContent" /></Label>
+          <Textarea 
+            id="speechContent"
+            className="min-h-[300px]" 
+            value={content}
+            onChange={handleContentChange}
+          />
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
+          <ButtonCustom variant="outline" size="sm" onClick={handleDownload}>
+            <Translate text="speechLab.downloadButton" />
+            <Download className="ml-2 h-4 w-4" />
+          </ButtonCustom>
+          <ButtonCustom variant="outline" size="sm" onClick={handleReset}>
+            <Translate text="speechLab.resetButton" />
+            <RefreshCw className="ml-2 h-4 w-4" />
+          </ButtonCustom>
+        </div>
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <ButtonCustom onClick={prevStep} variant="outline">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          <Translate text="speechLab.backButton" />
+        </ButtonCustom>
+        <ButtonCustom 
+          variant="magenta" 
+          onClick={handleSave}
+          disabled={isSaving || !title.trim() || !content.trim()}
+        >
+          {isSaving ? (
+            <span className="inline-flex items-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <Translate text="common.saving" fallback="Saving..." />
+            </span>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              <Translate text="speechLab.saveButton" />
+            </>
+          )}
+        </ButtonCustom>
+      </CardFooter>
+    </Card>
   );
 };
 
