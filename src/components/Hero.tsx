@@ -29,12 +29,6 @@ const Hero = () => {
         >
           <source src="/Video Montage - Speech Help App.mov" type="video/quicktime" />
           <source src="/Video Montage - Speech Help App.mov" type="video/mp4" />
-          {/* Fallback to image if video doesn't load */}
-          <img 
-            src="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png" 
-            alt="Woman giving speech to an audience" 
-            className="w-full h-full object-cover"
-          />
         </video>
         <div className="absolute inset-0 bg-black/60"></div>
       </div>
