@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Wand2Icon, FileTextIcon, UsersIcon, ClockIcon, CalendarIcon, CreditCardIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useTranslation } from '@/translations';
+import Translate from '@/components/Translate';
 
 interface FeatureProps {
   icon: JSX.Element;
@@ -15,8 +15,6 @@ interface FeatureProps {
 const Feature = ({ icon, title, description, delay, translationPrefix }: FeatureProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const featureRef = useRef<HTMLDivElement>(null);
-  const { currentLanguage } = useLanguage();
-  const { t } = useTranslation();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -50,10 +48,10 @@ const Feature = ({ icon, title, description, delay, translationPrefix }: Feature
     >
       <div className="p-2 rounded-full bg-pink-100 w-fit mb-4 text-pink-600">{icon}</div>
       <h3 className="text-lg font-semibold mb-2 text-gray-800 group-hover:text-pink-600 transition-colors">
-        {t(`${translationPrefix}.title`, currentLanguage.code)}
+        <Translate text={`${translationPrefix}.title`} />
       </h3>
       <p className="text-gray-600">
-        {t(`${translationPrefix}.description`, currentLanguage.code)}
+        <Translate text={`${translationPrefix}.description`} />
       </p>
     </div>
   );
@@ -62,8 +60,6 @@ const Feature = ({ icon, title, description, delay, translationPrefix }: Feature
 const Features = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { currentLanguage } = useLanguage();
-  const { t } = useTranslation();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -121,7 +117,7 @@ const Features = () => {
             Welcome to <span className="text-pink-600">Speech Help!</span>
           </h2>
           <p className={`text-lg text-gray-600 mb-6 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>
-            {t('features.subtitle', currentLanguage.code)}
+            <Translate text="features.subtitle" />
           </p>
         </div>
 
