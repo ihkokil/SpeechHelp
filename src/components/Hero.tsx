@@ -4,6 +4,7 @@ import { PlayCircle } from 'lucide-react';
 import { ButtonCustom } from './ui/button-custom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -46,11 +47,13 @@ const Hero = () => {
             </div>
           </div>
           
-          {/* CTA Button */}
+          {/* CTA Button - Updated to link to pricing page */}
           <div className={`flex justify-center mb-12 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
-            <ButtonCustom variant="magenta" size="lg" className="group">
-              <span>{t('hero.cta', currentLanguage.code)}</span>
-            </ButtonCustom>
+            <Link to="/pricing">
+              <ButtonCustom variant="magenta" size="lg" className="group">
+                <span>{t('hero.cta', currentLanguage.code)}</span>
+              </ButtonCustom>
+            </Link>
           </div>
           
           {/* Features/Benefits Icons */}
