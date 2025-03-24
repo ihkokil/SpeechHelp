@@ -1,4 +1,3 @@
-
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -41,7 +40,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="font-medium text-gray-900 mb-4">You, the User</h3>
+            <h3 className="font-medium text-gray-900 mb-4">Quick Links</h3>
             <ul className="space-y-3">
               <li>
                 <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.about', currentLanguage.code)}</a>
