@@ -24,6 +24,8 @@ const Hero = () => {
           loop
           playsInline
           className="w-full h-full object-cover"
+          playsinline="true"
+          webkit-playsinline="true"
         >
           <source src="/Video Montage - Speech Help App.mov" type="video/mp4" />
           {/* Fallback to image if video doesn't load */}
@@ -47,8 +49,6 @@ const Hero = () => {
           <p className={`text-4xl md:text-5xl lg:text-6xl text-white/80 max-w-3xl mx-auto mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
             {t('hero.subheadline', currentLanguage.code)}
           </p>
-          
-          {/* Play button removed */}
           
           {/* CTA Button - Updated to link to pricing page */}
           <div className={`flex justify-center mb-12 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
