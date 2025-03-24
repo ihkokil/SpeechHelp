@@ -196,11 +196,7 @@ const Pricing = () => {
                   </ul>
                   
                   <Button 
-                    className={`w-full ${
-                      tier.name === 'Premium Plan' 
-                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700' 
-                        : 'bg-purple-600 hover:bg-purple-700'
-                    }`}
+                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
                   >
                     {tier.name === 'Basic / Free Trial' ? 'Start Free Trial' : 'Choose Plan'}
                   </Button>
