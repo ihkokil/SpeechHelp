@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4"
 
@@ -27,73 +26,59 @@ serve(async (req) => {
     
     console.log("URL parameters:", { speechId, userId, speechType, speechTitle });
 
-    // Get the request body - try several approaches to get the content
-    let content;
+    // Get the request body as plain text first
+    let content = '';
     try {
-      // First, let's just try to get the raw body as text
-      const rawText = await req.text();
-      console.log("Raw request body length:", rawText.length);
-      console.log("Raw request body preview:", rawText.substring(0, 200) + (rawText.length > 200 ? "..." : ""));
+      // Try to read the body as plain text first
+      content = await req.text();
+      console.log("Raw request body (first 200 chars):", content.substring(0, 200));
       
-      if (rawText.trim() && rawText.length > 50) {
-        // If we have substantial text content, use it directly
-        content = rawText;
-        console.log("Using raw text as content");
-      } else {
-        // If raw text is empty or very short, try parsing as JSON
+      // If it looks like JSON, try to parse it
+      if (content.trim().startsWith('{') && content.trim().endsWith('}')) {
         try {
-          // Try to parse original request text as JSON
-          const jsonBody = JSON.parse(rawText);
-          console.log("Parsed JSON body keys:", Object.keys(jsonBody));
+          const jsonData = JSON.parse(content);
+          console.log("Parsed JSON data keys:", Object.keys(jsonData));
           
-          // Check various possible fields where content might be stored
-          if (jsonBody.content && typeof jsonBody.content === 'string') {
-            content = jsonBody.content;
+          // Check for content in various possible fields
+          if (jsonData.content) {
+            content = jsonData.content;
             console.log("Found content in json.content field");
-          } else if (jsonBody.text && typeof jsonBody.text === 'string') {
-            content = jsonBody.text;
-            console.log("Found content in json.text field");
-          } else if (jsonBody.speech && typeof jsonBody.speech === 'string') {
-            content = jsonBody.speech;
+          } else if (jsonData.speech) {
+            content = jsonData.speech;
             console.log("Found content in json.speech field");
-          } else if (jsonBody.data && typeof jsonBody.data === 'string') {
-            content = jsonBody.data;
+          } else if (jsonData.text) {
+            content = jsonData.text;
+            console.log("Found content in json.text field");
+          } else if (jsonData.data) {
+            content = jsonData.data;
             console.log("Found content in json.data field");
-          } else if (typeof jsonBody === 'string') {
-            content = jsonBody;
-            console.log("JSON body is itself a string");
-          } else {
-            // Look through all string values to find one that looks like speech content
-            for (const [key, value] of Object.entries(jsonBody)) {
-              if (typeof value === 'string' && value.length > 100) {
-                content = value;
-                console.log(`Found likely content in json.${key} field`);
-                break;
-              }
-            }
-            
-            // If we still don't have content, use the stringified JSON
-            if (!content) {
-              content = JSON.stringify(jsonBody);
-              console.log("Using stringified JSON as content");
-            }
+          } else if (typeof jsonData === 'string') {
+            content = jsonData;
+            console.log("JSON data is itself a string");
           }
-        } catch (jsonError) {
-          console.log("Failed to parse as JSON, error:", jsonError.message);
-          // If not valid JSON and text is too short, create a fallback message
-          if (!content) {
-            content = `We were unable to generate a proper speech. The raw response was: ${rawText}`;
-            console.log("Using fallback error message as content");
-          }
+        } catch (e) {
+          console.log("Not valid JSON despite appearance, keeping as plain text");
+          // Keep the content as is if JSON parsing fails
         }
       }
     } catch (bodyError) {
       console.error("Error reading request body:", bodyError);
-      content = "There was an error processing the speech generation response. Please try again.";
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: "Failed to read request body" 
+        }),
+        { 
+          status: 400, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
     }
     
-    console.log("Final extracted content length:", content ? content.length : 0);
-    console.log("Content preview:", content ? content.substring(0, 100) + "..." : "No content");
+    console.log("Final content to save (first 200 chars):", content.substring(0, 200));
 
     // Validate required parameters
     if (!speechId || !userId) {

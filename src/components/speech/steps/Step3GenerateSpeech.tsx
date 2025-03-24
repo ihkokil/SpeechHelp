@@ -114,14 +114,16 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         throw new Error("Failed to create placeholder speech");
       }
       
-      // Show confetti (this will also trigger the next step after a delay)
-      setShowConfetti(true);
-      
       // Get the project ID for constructing the callback URL
       const projectId = "yotrueuqjxmgcwlbbyps";
       
+      // Encode the speech title for the URL
+      const encodedTitle = encodeURIComponent(speechTitle);
+      
       // Construct the callback URL with all necessary parameters
-      const callbackUrl = `https://${projectId}.supabase.co/functions/v1/receive-generated-speech?speechId=${speechId}&userId=${user?.id || "anonymous"}&speechType=${selectedSpeechType}&speechTitle=${encodeURIComponent(speechTitle)}`;
+      const callbackUrl = `https://${projectId}.supabase.co/functions/v1/receive-generated-speech?speechId=${speechId}&userId=${user?.id || "anonymous"}&speechType=${selectedSpeechType}&speechTitle=${encodedTitle}`;
+      
+      console.log("Callback URL:", callbackUrl);
       
       // Get the speech type details
       const speechTypeDetails = speechTypes.find(type => type.id === selectedSpeechType);
@@ -147,7 +149,6 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       };
       
       console.log("Sending data to webhook:", webhookData);
-      console.log("Callback URL:", callbackUrl);
       
       // Provide clear Make.com instructions in console for debugging
       console.log("\n--- INSTRUCTIONS FOR MAKE.COM HTTP REQUEST MODULE ---");
@@ -158,7 +159,7 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       console.log("   DO NOT wrap it in JSON, just send the raw text of the speech");
       console.log("--- END INSTRUCTIONS ---\n");
       
-      // Send the data to the webhook
+      // Send the data to the webhook with improved error handling
       const response = await fetch(webhookUrl, {
         method: "POST",
         headers: {
@@ -170,17 +171,24 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Webhook error response:", errorText);
-        throw new Error(`Webhook returned status ${response.status}`);
+        throw new Error(`Webhook returned status ${response.status}: ${errorText}`);
       }
       
+      let responseData;
+      const responseText = await response.text();
+      console.log("Raw webhook response:", responseText);
+      
       try {
-        const responseData = await response.json();
-        console.log("Webhook response:", responseData);
+        // Try to parse as JSON if possible
+        responseData = JSON.parse(responseText);
+        console.log("Parsed webhook response:", responseData);
       } catch (e) {
-        // Response may not be JSON
-        const textResponse = await response.text();
-        console.log("Webhook text response:", textResponse);
+        // Not JSON, just log the text
+        console.log("Webhook text response (not JSON):", responseText);
       }
+      
+      // Show confetti and proceed to next step
+      setShowConfetti(true);
       
       // The nextStep() call is handled by the useEffect when showConfetti is set to true
     } catch (error) {
@@ -190,10 +198,8 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         description: "Failed to start speech generation. Please try again.",
         variant: "destructive",
       });
-      // Still continue with the flow even if webhook fails
-      if (!showConfetti) {
-        setShowConfetti(true); // This will trigger nextStep() via the useEffect
-      }
+      setGenerating(false);
+      // We don't move to the next step if there's an error
     }
   };
 
