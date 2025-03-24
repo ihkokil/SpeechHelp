@@ -21,12 +21,14 @@ const Auth = () => {
   const { toast } = useToast();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
 
-  // Check if the URL contains signup=true or if hash contains type=recovery
+  // Check if the URL contains signup=true or signin=true or hash contains type=recovery
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('signup') === 'true') {
       setIsSignUp(true);
       setAutoFocusFirstName(true);
+    } else if (params.get('signin') === 'true') {
+      setIsSignUp(false);
     }
 
     // Check for password reset flow

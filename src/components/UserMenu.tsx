@@ -36,7 +36,7 @@ const UserMenu = () => {
   if (!user) {
     return (
       <div className="flex items-center gap-2">
-        <Link to="/auth">
+        <Link to="/auth?signin=true">
           <ButtonCustom 
             variant="ghost" 
             className="font-semibold text-pink-600 hover:bg-transparent px-4"
