@@ -18,8 +18,13 @@ export const enUS = {
   // Homepage
   'hero.title': 'Your AI Speech Writing Assistant',
   'hero.subtitle': 'Write compelling speeches in minutes, not hours',
+  'hero.headline': 'Need a',
+  'hero.subheadline': 'We can help!',
   'hero.cta': 'Get Started',
   'hero.secondary': 'Learn More',
+  'hero.feature1': 'Smart Analysis',
+  'hero.feature2': 'Fast Results',
+  'hero.feature3': 'Premium Quality',
   
   // Features
   'features.title': 'Features',
