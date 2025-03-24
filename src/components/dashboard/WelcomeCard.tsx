@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import Translate from '@/components/Translate';
+import { useTranslation } from '@/translations';
 
 interface WelcomeCardProps {
   userName: string;
@@ -12,6 +12,7 @@ interface WelcomeCardProps {
 const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
   const [greeting, setGreeting] = useState('');
   const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
   
   useEffect(() => {
     // Set greeting based on time of day
@@ -37,9 +38,9 @@ const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
     <div className="bg-white rounded-lg shadow-sm p-8 flex justify-between">
       <div>
         <h1 className="text-3xl font-bold text-purple-600">
-          <Translate text={greeting} />, <span className="text-pink-600">{displayName}!</span>
+          {t(greeting, currentLanguage.code)}, <span className="text-pink-600">{displayName}!</span>
         </h1>
-        <p className="text-gray-500 mt-2"><Translate text="dashboard.niceDay" /> {dayOfWeek}.</p>
+        <p className="text-gray-500 mt-2">{t('dashboard.niceDay', currentLanguage.code)} {dayOfWeek}.</p>
       </div>
       
       <div className="hidden md:block">
