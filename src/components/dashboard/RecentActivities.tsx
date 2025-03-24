@@ -4,6 +4,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { es, fr } from 'date-fns/locale';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
+import Translate from '@/components/Translate';
 
 type Activity = {
   id: string;
@@ -76,7 +77,9 @@ const RecentActivities = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm">
       <div className="border-b p-4">
-        <h2 className="text-lg font-semibold text-gray-800">{t('dashboard.recentActivities', currentLanguage.code)}</h2>
+        <h2 className="text-lg font-semibold text-gray-800">
+          <Translate text="dashboard.recentActivities" />
+        </h2>
       </div>
       <div className="p-4">
         <ul className="space-y-4">
@@ -98,7 +101,7 @@ const RecentActivities = () => {
       </div>
       <div className="border-t p-4 text-center">
         <button className="text-pink-600 hover:text-pink-800 text-sm font-medium">
-          {t('dashboard.viewAll', currentLanguage.code)}
+          <Translate text="dashboard.viewAll" />
         </button>
       </div>
     </div>

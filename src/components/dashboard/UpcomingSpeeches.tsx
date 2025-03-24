@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
+import Translate from '@/components/Translate';
 
 interface SpeechEvent {
   id: string;
@@ -71,7 +72,9 @@ const UpcomingSpeeches = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm">
       <div className="border-b p-4">
-        <h2 className="text-lg font-semibold text-gray-800">{t('dashboard.upcomingSpeeches', currentLanguage.code)}</h2>
+        <h2 className="text-lg font-semibold text-gray-800">
+          <Translate text="dashboard.upcomingSpeeches" />
+        </h2>
       </div>
       <div className="divide-y">
         {MOCK_SPEECHES.map((speech) => (
@@ -94,7 +97,7 @@ const UpcomingSpeeches = () => {
                 {speech.category.charAt(0).toUpperCase() + speech.category.slice(1)}
               </Badge>
               <Button variant="outline" size="sm" className="text-xs">
-                {t('dashboard.prepare', currentLanguage.code)}
+                <Translate text="dashboard.prepare" />
               </Button>
             </div>
           </div>
@@ -102,7 +105,7 @@ const UpcomingSpeeches = () => {
       </div>
       <div className="border-t p-4 text-center">
         <Button variant="link" className="text-pink-600 hover:text-pink-800 text-sm">
-          {t('dashboard.viewAll', currentLanguage.code)}
+          <Translate text="dashboard.viewAll" />
         </Button>
       </div>
     </div>
