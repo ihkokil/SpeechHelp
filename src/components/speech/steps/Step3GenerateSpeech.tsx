@@ -25,6 +25,7 @@ interface Step3Props {
   }[];
   speechTitle: string;
   setSpeechTitle: (title: string) => void;
+  speechDetails?: Record<string, string>;
 }
 
 const Step3GenerateSpeech: React.FC<Step3Props> = ({
@@ -33,7 +34,8 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
   selectedSpeechType,
   speechTypes,
   speechTitle,
-  setSpeechTitle
+  setSpeechTitle,
+  speechDetails = {}
 }) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
@@ -88,7 +90,9 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         speechTypeLabel: speechTypeDetails?.label || selectedSpeechType,
         speechTitle: speechTitle,
         language: currentLanguage.code,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        // Include all the speech details collected in Step 2
+        speechDetails: speechDetails
       };
       
       console.log("Sending data to webhook:", webhookData);
@@ -159,9 +163,24 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
           <div className="p-4 bg-gray-100 rounded-md">
             <h3 className="font-medium mb-2"><Translate text="common.type" />: {speechTypes.find(type => type.id === selectedSpeechType)?.label || ''}</h3>
             <Separator className="my-4" />
-            {/* Show summary of speech details here */}
+            
             <div className="text-sm text-gray-600">
               <p><Translate text="speechLab.summaryNotice" fallback="Speech details will be used to generate your content" /></p>
+              
+              {/* Display summary of speech details */}
+              {Object.keys(speechDetails).length > 0 && (
+                <div className="mt-4 p-3 bg-white rounded border border-gray-200">
+                  <h4 className="font-medium mb-2">Details Summary:</h4>
+                  <div className="max-h-40 overflow-y-auto">
+                    {Object.entries(speechDetails).map(([question, answer]) => (
+                      <div key={question} className="mb-2">
+                        <p className="text-xs font-medium text-gray-500">{question}</p>
+                        <p className="text-sm">{answer || "Not provided"}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
