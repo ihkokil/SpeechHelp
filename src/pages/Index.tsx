@@ -20,6 +20,22 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Handle direct navigation with hash
+  useEffect(() => {
+    // Check if there's a hash in the URL
+    if (window.location.hash) {
+      // Remove the # character
+      const id = window.location.hash.substring(1);
+      // Find element and scroll to it
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 500); // Small delay to ensure the page is fully loaded
+    }
+  }, []);
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
@@ -33,13 +49,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
-      <Navbar />
       <main>
         <Hero />
-        <Features />
-        <HowItWorks />
+        <div id="features">
+          <Features />
+        </div>
+        <div id="how-it-works">
+          <HowItWorks />
+        </div>
         <SpeechGallery />
-        <ContactForm />
+        <div id="contact">
+          <ContactForm />
+        </div>
       </main>
       <Footer />
     </div>
