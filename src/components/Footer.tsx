@@ -1,6 +1,8 @@
+
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -49,7 +51,13 @@ const Footer = () => {
                 <a href="#features" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.features', currentLanguage.code)}</a>
               </li>
               <li>
-                <a href="#pricing" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.pricing', currentLanguage.code)}</a>
+                <Link 
+                  to="/pricing" 
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
+                  className="text-gray-600 hover:text-pink-600 transition-colors"
+                >
+                  {t('footer.pricing', currentLanguage.code)}
+                </Link>
               </li>
               <li>
                 <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors">{t('footer.faq', currentLanguage.code)}</a>
