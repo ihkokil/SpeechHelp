@@ -124,6 +124,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
             <div className="relative flex items-center justify-center">
               <div className="w-64 h-64 bg-gradient-to-br from-purple-100 to-indigo-50 rounded-full shadow-lg flex items-center justify-center p-8 border border-purple-200">
                 <div className="text-center">
+                  <h4 className="font-bold text-purple-900 mb-2 uppercase text-sm">Speech Writing Tip</h4>
                   <p className="text-purple-800 font-medium">{message}</p>
                 </div>
               </div>
