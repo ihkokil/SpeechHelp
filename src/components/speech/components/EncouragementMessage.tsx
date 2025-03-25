@@ -90,6 +90,9 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
     }
   }, [currentQuestionIndex, totalQuestions, encouragingMessages, lastShownIndex, usedMessageIndices]);
 
+  // Only render if there's a message to show
+  if (!showMessage) return null;
+
   return (
     <>
       {showConfetti && (
