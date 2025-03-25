@@ -17,9 +17,15 @@ interface Step2Props {
   nextStep: () => void;
   prevStep: () => void;
   selectedSpeechType: string;
+  onDetailsChange: (details: Record<string, string>) => void;
 }
 
-const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selectedSpeechType }) => {
+const Step2SpeechDetails: React.FC<Step2Props> = ({ 
+  nextStep, 
+  prevStep, 
+  selectedSpeechType,
+  onDetailsChange 
+}) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -856,6 +862,9 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selected
   }, [currentQuestionIndex, questions.length]);
 
   const handleNextQuestion = () => {
+    // Pass the current form data up to the parent component
+    onDetailsChange(formData);
+    
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
@@ -874,10 +883,15 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({ nextStep, prevStep, selected
   };
 
   const handleInputChange = (value: string) => {
-    setFormData({
+    const updatedFormData = {
       ...formData,
       [questions[currentQuestionIndex].question]: value
-    });
+    };
+    
+    setFormData(updatedFormData);
+    
+    // Update the parent component with all form data
+    onDetailsChange(updatedFormData);
   };
 
   // Current question data

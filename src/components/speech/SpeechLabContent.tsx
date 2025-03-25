@@ -13,7 +13,7 @@ import { useTranslation } from '@/translations';
 const SpeechLabContent: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedSpeechType, setSelectedSpeechType] = useState('');
-  const [speechDetails, setSpeechDetails] = useState({});
+  const [speechDetails, setSpeechDetails] = useState<Record<string, string>>({});
   const [speechTitle, setSpeechTitle] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
@@ -149,6 +149,10 @@ const SpeechLabContent: React.FC = () => {
     setSpeechTitle(title);
   };
 
+  const handleSpeechDetailsChange = (details: Record<string, string>) => {
+    setSpeechDetails(details);
+  };
+
   // Update the steps for the progress indicator to match our flow
   const steps = [
     { number: 1, title: 'Select Occasion' },
@@ -178,6 +182,7 @@ const SpeechLabContent: React.FC = () => {
               nextStep={nextStep} 
               prevStep={prevStep}
               selectedSpeechType={selectedSpeechType}
+              onDetailsChange={handleSpeechDetailsChange}
             />
           )}
 
@@ -189,6 +194,7 @@ const SpeechLabContent: React.FC = () => {
               speechTypes={speechTypes}
               speechTitle={speechTitle}
               setSpeechTitle={handleSpeechTitleChange}
+              speechDetails={speechDetails}
             />
           )}
 
@@ -198,6 +204,7 @@ const SpeechLabContent: React.FC = () => {
               speechTitle={speechTitle}
               speechType={selectedSpeechType}
               onTitleChange={handleSpeechTitleChange}
+              speechDetails={speechDetails}
             />
           )}
         </div>
