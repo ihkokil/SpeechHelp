@@ -121,13 +121,13 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
             transition={{ duration: 0.5 }}
             className="relative w-full max-w-md"
           >
-            {/* Simple circle bubble */}
+            {/* Smaller circle bubble */}
             <div className="relative flex items-center justify-center">
-              <div className="w-64 h-64 bg-gradient-to-br from-purple-100 to-indigo-50 rounded-full shadow-lg flex items-center justify-center p-8 border border-purple-200">
+              <div className="w-56 h-56 bg-gradient-to-br from-purple-100 to-indigo-50 rounded-full shadow-lg flex items-center justify-center p-6 border border-purple-200">
                 <div className="text-center">
                   <Star className="h-6 w-6 text-purple-600 mb-1 mx-auto" fill="#E5DEFF" strokeWidth={2} />
                   <h4 className="font-bold text-purple-900 mb-2 uppercase text-sm">Speech Writing Tip</h4>
-                  <p className="text-purple-800 font-medium">{message}</p>
+                  <p className="text-purple-800 font-medium text-sm">{message}</p>
                 </div>
               </div>
             </div>
