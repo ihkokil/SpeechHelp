@@ -7,6 +7,7 @@ import { QuestionItem } from '../../questionnaires';
 import QuestionRenderer from './QuestionRenderer';
 import Translate from '@/components/Translate';
 import { useTranslation } from '@/translations';
+import EncouragementMessage from '../../components/EncouragementMessage';
 
 interface SpeechQuestionnaireProps {
   questions: QuestionItem[];
@@ -63,7 +64,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
   const currentQuestion = questions[currentQuestionIndex];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       {/* Progress bar */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
@@ -102,6 +103,12 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
           )}
         </ButtonCustom>
       </div>
+
+      {/* Encouraging message component */}
+      <EncouragementMessage 
+        currentQuestionIndex={currentQuestionIndex} 
+        totalQuestions={questions.length} 
+      />
     </div>
   );
 };

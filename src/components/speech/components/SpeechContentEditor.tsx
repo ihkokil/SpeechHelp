@@ -30,11 +30,11 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
         
         <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'edit' | 'preview')}>
           <ToggleGroupItem value="edit" aria-label="Edit mode" className="px-3 py-1">
-            <Edit className="h-4 w-4 mr-1" />
+            <Edit className="h-5 w-5 mr-1" />
             <Translate text="speechLab.edit" fallback="Edit" />
           </ToggleGroupItem>
           <ToggleGroupItem value="preview" aria-label="Preview mode" className="px-3 py-1">
-            <Eye className="h-4 w-4 mr-1" />
+            <Eye className="h-5 w-5 mr-1" />
             <Translate text="speechLab.preview" fallback="Preview" />
           </ToggleGroupItem>
         </ToggleGroup>
