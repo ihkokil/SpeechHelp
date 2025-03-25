@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'react-confetti';
 
 interface EncouragementMessageProps {
   currentQuestionIndex: number;
@@ -13,6 +14,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
 }) => {
   const [message, setMessage] = useState<string>('');
   const [showMessage, setShowMessage] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const encouragingMessages = [
     "Your insights are the secret ingredient to a brilliant speech!",
@@ -41,34 +43,55 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
       const randomIndex = Math.floor(Math.random() * encouragingMessages.length);
       setMessage(encouragingMessages[randomIndex]);
       
-      // Show the message
+      // Show the message and confetti
       setShowMessage(true);
+      setShowConfetti(true);
       
-      // Hide the message after a delay
-      const timer = setTimeout(() => {
+      // Hide the message and confetti after delays
+      const messageTimer = setTimeout(() => {
         setShowMessage(false);
-      }, 4000); // Show for 4 seconds
+      }, 4000); // Show message for 4 seconds
       
-      return () => clearTimeout(timer);
+      const confettiTimer = setTimeout(() => {
+        setShowConfetti(false);
+      }, 2000); // Show confetti for 2 seconds
+      
+      return () => {
+        clearTimeout(messageTimer);
+        clearTimeout(confettiTimer);
+      };
     }
   }, [currentQuestionIndex, totalQuestions, encouragingMessages]);
 
   return (
-    <div className="absolute bottom-4 right-4 z-50 pointer-events-none">
-      <AnimatePresence>
-        {showMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.8 }}
-            transition={{ duration: 0.5 }}
-            className="bg-gradient-to-r from-pink-500 to-purple-600 px-6 py-3 rounded-lg shadow-lg max-w-md"
-          >
-            <p className="text-white font-medium">{message}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <>
+      {showConfetti && (
+        <div className="absolute inset-0 pointer-events-none z-40">
+          <confetti
+            width={window.innerWidth}
+            height={window.innerHeight}
+            numberOfPieces={50}
+            recycle={false}
+            gravity={0.2}
+          />
+        </div>
+      )}
+      <div className="flex justify-center w-full mt-6 mb-2">
+        <AnimatePresence>
+          {showMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.8 }}
+              transition={{ duration: 0.5 }}
+              className="bg-gradient-to-r from-pink-500 to-purple-600 px-6 py-3 rounded-full shadow-lg max-w-md text-center"
+            >
+              <p className="text-white font-medium">{message}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
   );
 };
 

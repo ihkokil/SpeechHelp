@@ -104,7 +104,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
         </ButtonCustom>
       </div>
 
-      {/* Encouraging message component */}
+      {/* Encouraging message component - now positioned at the bottom of the form */}
       <EncouragementMessage 
         currentQuestionIndex={currentQuestionIndex} 
         totalQuestions={questions.length} 
