@@ -33,22 +33,29 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
   const [progress, setProgress] = useState(0);
 
   // Speech type specific questions
-  const questionnaires: Record<string, { question: string; type: 'text' | 'textarea' | 'radio'; options?: string[]; placeholder?: string }[]> = {
+  const questionnaires: Record<string, { question: string; type: 'text' | 'textarea' | 'radio'; options?: string[]; placeholder?: string; conditional?: { field: string; value: string } }[]> = {
     wedding: [
       { 
-        question: "Who are you in relation to the wedding?", 
+        question: "Will you be introduced before you speak?", 
         type: "radio", 
-        options: ["Best Man", "Maid of Honor", "Father of the Bride", "Mother of the Bride", "Groom", "Bride", "Other"] 
+        options: ["Yes", "No"] 
       },
       { 
         question: "What is your name?", 
         type: "text", 
-        placeholder: "E.g., John Smith" 
+        placeholder: "E.g., John Smith",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "What is your relationship to the couple?", 
         type: "text", 
-        placeholder: "E.g., Bride's Brother, Groom's Childhood Friend" 
+        placeholder: "E.g., Bride's Brother, Groom's Childhood Friend",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Who are you in relation to the wedding?", 
+        type: "radio", 
+        options: ["Best Man", "Maid of Honor", "Father of the Bride", "Mother of the Bride", "Groom", "Bride", "Other"] 
       },
       { 
         question: "How long should the speech be?", 
@@ -98,6 +105,23 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     graduation: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
+        question: "Your name and title/position?", 
+        type: "text", 
+        placeholder: "E.g., Dr. Jane Smith, Department Chair",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why have you been asked to speak at this graduation?", 
+        type: "textarea", 
+        placeholder: "E.g., As the class valedictorian, faculty advisor, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
         question: "Who are you addressing?", 
         type: "text", 
         placeholder: "E.g., Graduates, Faculty, Parents" 
@@ -106,11 +130,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         question: "Your role in the event?", 
         type: "radio", 
         options: ["Valedictorian", "Guest Speaker", "Faculty Member", "Administrator", "Other"] 
-      },
-      { 
-        question: "Your name and title/position?", 
-        type: "text", 
-        placeholder: "E.g., Dr. Jane Smith, Department Chair" 
       },
       { 
         question: "Desired length of the speech?", 
@@ -155,14 +174,20 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     birthday: [
       { 
-        question: "Who is the celebration for?", 
-        type: "text", 
-        placeholder: "E.g., Friend, Parent, Child" 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
       },
       { 
         question: "Your name and relationship to the celebrant?", 
         type: "text", 
-        placeholder: "E.g., Sarah, Sister of the birthday person" 
+        placeholder: "E.g., Sarah, Sister of the birthday person",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Who is the celebration for?", 
+        type: "text", 
+        placeholder: "E.g., Friend, Parent, Child" 
       },
       { 
         question: "Which birthday or anniversary is being celebrated?", 
@@ -207,14 +232,26 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     business: [
       { 
-        question: "Purpose of the speech?", 
+        question: "Will you be introduced before you speak?", 
         type: "radio", 
-        options: ["Product Launch", "Team Meeting", "Corporate Training", "Sales Pitch", "Company Announcement"] 
+        options: ["Yes", "No"] 
       },
       { 
         question: "Your name, title, and company?", 
         type: "text", 
-        placeholder: "E.g., John Davis, Marketing Director at XYZ Corp" 
+        placeholder: "E.g., John Davis, Marketing Director at XYZ Corp",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why have you been asked to speak at this event?", 
+        type: "textarea", 
+        placeholder: "E.g., To launch a new product, share company vision, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Purpose of the speech?", 
+        type: "radio", 
+        options: ["Product Launch", "Team Meeting", "Corporate Training", "Sales Pitch", "Company Announcement"] 
       },
       { 
         question: "Audience type and size?", 
@@ -259,9 +296,21 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     tedtalk: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name and relevant background?", 
         type: "text", 
-        placeholder: "E.g., Dr. Sarah Jones, Marine Biologist" 
+        placeholder: "E.g., Dr. Sarah Jones, Marine Biologist",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why are you qualified to speak on this topic?", 
+        type: "textarea", 
+        placeholder: "E.g., 15 years of research, personal experience with the issue, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "What is the main idea or topic?", 
@@ -311,9 +360,21 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     motivational: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name and why you're speaking?", 
         type: "text", 
-        placeholder: "E.g., Michael Chen, Entrepreneur and Coach" 
+        placeholder: "E.g., Michael Chen, Entrepreneur and Coach",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "What qualifies you to give this motivational speech?", 
+        type: "textarea", 
+        placeholder: "E.g., Personal achievements, professional background, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "Who is the audience?", 
@@ -363,9 +424,15 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     funeral: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name and relationship to the deceased?", 
         type: "text", 
-        placeholder: "E.g., James Wilson, Nephew" 
+        placeholder: "E.g., James Wilson, Nephew",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "Who is the speech for?", 
@@ -410,9 +477,21 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     keynote: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name, title, and organization?", 
         type: "text", 
-        placeholder: "E.g., Dr. Robert Lee, CEO of Future Tech" 
+        placeholder: "E.g., Dr. Robert Lee, CEO of Future Tech",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why have you been selected to deliver this keynote?", 
+        type: "textarea", 
+        placeholder: "E.g., Industry expertise, thought leadership, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "What is the event or conference?", 
@@ -462,9 +541,21 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     social: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name and relation to the event?", 
         type: "text", 
-        placeholder: "E.g., Lisa Johnson, Host of the Dinner" 
+        placeholder: "E.g., Lisa Johnson, Host of the Dinner",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why are you giving this speech?", 
+        type: "textarea", 
+        placeholder: "E.g., To welcome guests, commemorate an occasion, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "Who is the audience?", 
@@ -509,9 +600,21 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     farewell: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name and position?", 
         type: "text", 
-        placeholder: "E.g., Emma Davis, Team Leader" 
+        placeholder: "E.g., Emma Davis, Team Leader",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why are you giving this farewell speech?", 
+        type: "textarea", 
+        placeholder: "E.g., Leaving the company, retirement, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "Who is the audience?", 
@@ -561,9 +664,21 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     informative: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name and credentials?", 
         type: "text", 
-        placeholder: "E.g., Professor Alex Wang, PhD in Economics" 
+        placeholder: "E.g., Professor Alex Wang, PhD in Economics",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why are you qualified to speak on this topic?", 
+        type: "textarea", 
+        placeholder: "E.g., Research experience, professional background, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "What is the topic or subject?", 
@@ -608,9 +723,21 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     persuasive: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name and relevant background?", 
         type: "text", 
-        placeholder: "E.g., Maria Garcia, Environmental Activist" 
+        placeholder: "E.g., Maria Garcia, Environmental Activist",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why should the audience listen to you on this topic?", 
+        type: "textarea", 
+        placeholder: "E.g., Experience with the issue, expertise, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "What is the topic or issue?", 
@@ -660,9 +787,21 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     entertaining: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name and role at the event?", 
         type: "text", 
-        placeholder: "E.g., Sam Brown, Guest Speaker" 
+        placeholder: "E.g., Sam Brown, Guest Speaker",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why have you been asked to provide entertainment?", 
+        type: "textarea", 
+        placeholder: "E.g., Known for humor, special talent, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "Who is the audience?", 
@@ -702,9 +841,21 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     retirement: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name and relationship to the event?", 
         type: "text", 
-        placeholder: "E.g., David Miller, Colleague of 15 years" 
+        placeholder: "E.g., David Miller, Colleague of 15 years",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why were you chosen to give this retirement speech?", 
+        type: "textarea", 
+        placeholder: "E.g., Worked together for many years, special relationship, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "Who is retiring?", 
@@ -754,9 +905,21 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     award: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name and role in the ceremony?", 
         type: "text", 
-        placeholder: "E.g., Jennifer Kim, Award Committee Chair" 
+        placeholder: "E.g., Jennifer Kim, Award Committee Chair",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why are you presenting or accepting this award?", 
+        type: "textarea", 
+        placeholder: "E.g., Committee chair, recipient's manager, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "What is the award?", 
@@ -801,9 +964,21 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     ],
     other: [
       { 
+        question: "Will you be introduced before you speak?", 
+        type: "radio", 
+        options: ["Yes", "No"] 
+      },
+      { 
         question: "Your name and role at the event?", 
         type: "text", 
-        placeholder: "E.g., Taylor Wilson, Host" 
+        placeholder: "E.g., Taylor Wilson, Host",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
+      },
+      { 
+        question: "Why have you been asked to speak at this occasion?", 
+        type: "textarea", 
+        placeholder: "E.g., Special connection to the event, expertise, etc.",
+        conditional: { field: "Will you be introduced before you speak?", value: "No" } 
       },
       { 
         question: "What is the event or occasion?", 
@@ -853,10 +1028,23 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
     return questionnaires[selectedSpeechType] || questionnaires.other;
   };
 
-  // Current questions based on the selected speech type
-  const questions = getQuestionnaire();
+  // Get all questions including conditional ones
+  const getAllQuestions = () => {
+    const questions = getQuestionnaire();
+    
+    // Filter out conditional questions that don't apply based on previous answers
+    return questions.filter(question => {
+      if (!question.conditional) return true;
+      
+      const { field, value } = question.conditional;
+      return formData[field] === value;
+    });
+  };
 
-  // Update progress when moving through questions
+  // Current questions based on the selected speech type and conditions
+  const questions = getAllQuestions();
+
+  // Update progress when moving through questions or when questions change due to conditions
   useEffect(() => {
     setProgress(((currentQuestionIndex + 1) / questions.length) * 100);
   }, [currentQuestionIndex, questions.length]);
