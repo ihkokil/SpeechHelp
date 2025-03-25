@@ -34,7 +34,7 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
             <Translate text="speechLab.edit" fallback="Edit" />
           </ToggleGroupItem>
           <ToggleGroupItem value="preview" aria-label="Preview mode" className="px-4 py-1 min-w-[100px] w-[100px] flex justify-center">
-            <Eye className="h-4 w-4 mr-2" />
+            <Eye className="h-5 w-5 mr-2" />
             <Translate text="speechLab.preview" fallback="Preview" />
           </ToggleGroupItem>
         </ToggleGroup>
