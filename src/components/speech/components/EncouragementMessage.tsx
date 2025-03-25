@@ -50,7 +50,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
       // Hide the message and confetti after delays
       const messageTimer = setTimeout(() => {
         setShowMessage(false);
-      }, 4000); // Show message for 4 seconds
+      }, 5000); // Show message for 5 seconds (increased from 4)
       
       const confettiTimer = setTimeout(() => {
         setShowConfetti(false);
@@ -67,13 +67,13 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
     <>
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none z-40">
-          <confetti
-            width={window.innerWidth}
-            height={window.innerHeight}
-            numberOfPieces={50}
-            recycle={false}
-            gravity={0.2}
-          />
+          {React.createElement(confetti, {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            numberOfPieces: 50,
+            recycle: false,
+            gravity: 0.2
+          })}
         </div>
       )}
       <div className="flex justify-center w-full mt-6 mb-2">
