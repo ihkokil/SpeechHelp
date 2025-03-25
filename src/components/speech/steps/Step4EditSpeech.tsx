@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -33,24 +32,20 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
   const { user } = useAuth();
   const speechService = useSpeechService();
 
-  // Update local title when prop changes
   useEffect(() => {
     setTitle(speechTitle);
   }, [speechTitle]);
 
-  // Load the generated speech from localStorage when the component mounts
   useEffect(() => {
     const savedSpeech = localStorage.getItem('generatedSpeech');
     if (savedSpeech) {
       setContent(savedSpeech);
     } else {
-      // If no saved speech, create a placeholder that includes questionnaire data
       const placeholderSpeech = createPlaceholderSpeech();
       setContent(placeholderSpeech);
     }
   }, []);
 
-  // Create a placeholder speech using the questionnaire data
   const createPlaceholderSpeech = () => {
     const detailsArray = Object.entries(speechDetails || {});
     
@@ -61,7 +56,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
     let speech = `# ${title}\n\n`;
     speech += "## Your Speech Details\n\n";
     
-    // Add all questionnaire answers
     detailsArray.forEach(([question, answer]) => {
       if (answer && answer.trim()) {
         speech += `**${question}**\n${answer}\n\n`;
@@ -103,13 +97,11 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
     setIsSaving(true);
 
     try {
-      // Save speech details in JSON format within the content
       const speechWithMetadata = {
         content: content,
         details: speechDetails || {}
       };
       
-      // Convert to string for storage
       const contentToSave = JSON.stringify(speechWithMetadata);
 
       if (user) {
@@ -189,7 +181,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         </div>
         
         <div>
-          <Label htmlFor="speechContent"><Translate text="speechLab.speechContent" /></Label>
+          <Label htmlFor="speechContent">Speech Content</Label>
           <Textarea 
             id="speechContent"
             className="min-h-[300px]" 
