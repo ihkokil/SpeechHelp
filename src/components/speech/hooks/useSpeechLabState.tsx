@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SpeechType } from '../data/speechTypesData';
 
 export type SpeechDetails = Record<string, string>;
@@ -9,6 +9,15 @@ export const useSpeechLabState = () => {
   const [selectedSpeechType, setSelectedSpeechType] = useState('');
   const [speechDetails, setSpeechDetails] = useState<SpeechDetails>({});
   const [speechTitle, setSpeechTitle] = useState('');
+  const [generatedSpeech, setGeneratedSpeech] = useState('');
+  
+  // Initialize generatedSpeech from localStorage if it exists
+  useEffect(() => {
+    const savedSpeech = localStorage.getItem('generatedSpeech');
+    if (savedSpeech) {
+      setGeneratedSpeech(savedSpeech);
+    }
+  }, []);
   
   const nextStep = () => {
     if (currentStep < 4) {
@@ -43,10 +52,12 @@ export const useSpeechLabState = () => {
     selectedSpeechType,
     speechDetails,
     speechTitle,
+    generatedSpeech,
     steps,
     setSelectedSpeechType,
     setSpeechTitle,
     setSpeechDetails,
+    setGeneratedSpeech,
     nextStep,
     prevStep,
     handleSpeechTitleChange,
