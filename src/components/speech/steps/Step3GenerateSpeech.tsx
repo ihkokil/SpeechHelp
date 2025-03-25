@@ -1,11 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ButtonCustom } from '@/components/ui/button-custom';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import Translate from '@/components/Translate';
-import { Label } from '@/components/ui/label';
-import { speechTypes, SpeechType } from '../data/speechTypesData';
+import { SpeechType } from '../data/speechTypesData';
+import SpeechTitleSection from '../components/SpeechTitleSection';
+import SpeechDetailsConfirmation from '../components/SpeechDetailsConfirmation';
+import SpeechGenerationActions from '../components/SpeechGenerationActions';
 
 interface Step3Props {
   nextStep: () => void;
@@ -33,7 +33,7 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
     setSpeechTitle(e.target.value);
   };
 
-  const handleSubmit = () => {
+  const handleGenerate = () => {
     localStorage.setItem('generatedSpeech', 'This is a placeholder for the generated speech.');
     nextStep();
   };
@@ -45,35 +45,21 @@ const Step3GenerateSpeech: React.FC<Step3Props> = ({
         <CardDescription><Translate text="speechLab.generateDesc" /></CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="speechTitle"><Translate text="speechLab.speechTitleLabel" /></Label>
-          <Input
-            id="speechTitle"
-            placeholder="Enter speech title"
-            value={title}
-            onChange={handleTitleChange}
-          />
-        </div>
-        <div>
-          <p><Translate text="speechLab.confirmDetails" /></p>
-          <ul>
-            {Object.entries(speechDetails || {}).map(([key, value]) => (
-              <li key={key}>
-                <strong>{key}:</strong> {value}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <SpeechTitleSection 
+          title={title}
+          onTitleChange={handleTitleChange}
+        />
+        
+        <SpeechDetailsConfirmation 
+          speechDetails={speechDetails}
+        />
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <ButtonCustom onClick={prevStep} variant="outline">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          <Translate text="speechLab.backButton" />
-        </ButtonCustom>
-        <ButtonCustom onClick={handleSubmit} variant="magenta" disabled={!title}>
-          <Translate text="speechLab.generateButton" />
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </ButtonCustom>
+      <CardFooter>
+        <SpeechGenerationActions 
+          prevStep={prevStep}
+          onGenerate={handleGenerate}
+          isTitleEmpty={!title}
+        />
       </CardFooter>
     </Card>
   );
