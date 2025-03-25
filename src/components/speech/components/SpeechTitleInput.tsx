@@ -17,7 +17,7 @@ const SpeechTitleInput: React.FC<SpeechTitleInputProps> = ({
     <div>
       <Label 
         htmlFor="speechTitle" 
-        className="text-purple-700 font-medium mb-2 block"
+        className="text-purple-700 font-medium mb-2 block uppercase"
       >
         <Translate text="speechLab.speechTitleLabel" />
       </Label>

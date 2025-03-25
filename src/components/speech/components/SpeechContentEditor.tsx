@@ -23,7 +23,7 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
       <div className="flex items-center justify-between mb-2">
         <Label 
           htmlFor="speechContent" 
-          className="text-pink-600 font-medium"
+          className="text-pink-600 font-medium uppercase"
         >
           <Translate text="speechLab.content" fallback="Speech Content" />
         </Label>
