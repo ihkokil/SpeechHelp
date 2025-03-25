@@ -1,14 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { TextareaWithPinkScrollbar } from '@/components/ui/textarea-with-pink-scrollbar';
-import { Input } from '@/components/ui/input';
-import { ArrowLeft, Download, RefreshCw, Save } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import Translate from '@/components/Translate';
 import { useToast } from "@/hooks/use-toast";
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
-import { useSpeechService } from '@/services/speechService';
+import SpeechTitleInput from '../components/SpeechTitleInput';
+import SpeechContentEditor from '../components/SpeechContentEditor';
+import SpeechActionButtons from '../components/SpeechActionButtons';
+import { useSpeechSave } from '../hooks/useSpeechSave';
+import { createPlaceholderSpeech } from '../utils/speechContentUtils';
 
 interface Step4Props {
   prevStep: () => void;
@@ -27,10 +28,15 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 }) => {
   const [title, setTitle] = useState(speechTitle);
   const [content, setContent] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
-  const speechService = useSpeechService();
+
+  // Setup save functionality hook
+  const { isSaving, handleSave } = useSpeechSave({
+    title,
+    content,
+    speechType,
+    speechDetails
+  });
 
   useEffect(() => {
     setTitle(speechTitle);
@@ -41,30 +47,10 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
     if (savedSpeech) {
       setContent(savedSpeech);
     } else {
-      const placeholderSpeech = createPlaceholderSpeech();
+      const placeholderSpeech = createPlaceholderSpeech(title, speechDetails);
       setContent(placeholderSpeech);
     }
   }, []);
-
-  const createPlaceholderSpeech = () => {
-    const detailsArray = Object.entries(speechDetails || {});
-    
-    if (detailsArray.length === 0) {
-      return "This is your generated speech. You can edit it here to customize it to your needs.";
-    }
-    
-    let speech = `# ${title}\n\n`;
-    speech += "## Your Speech Details\n\n";
-    
-    detailsArray.forEach(([question, answer]) => {
-      if (answer && answer.trim()) {
-        speech += `**${question}**\n${answer}\n\n`;
-      }
-    });
-    
-    speech += "\n---\n\nEdit this speech to your liking before saving.";
-    return speech;
-  };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -73,60 +59,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
-  };
-
-  const handleSave = async () => {
-    if (!title.trim()) {
-      toast({
-        title: "Title Required",
-        description: "Please enter a title for your speech",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!content.trim()) {
-      toast({
-        title: "Content Required",
-        description: "Please enter content for your speech",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSaving(true);
-
-    try {
-      const speechWithMetadata = {
-        content: content,
-        details: speechDetails || {}
-      };
-      
-      const contentToSave = JSON.stringify(speechWithMetadata);
-
-      if (user) {
-        await speechService.saveSpeech(user.id, title, contentToSave, speechType);
-        toast({
-          title: "Speech Saved",
-          description: "Your speech has been saved successfully.",
-        });
-      } else {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to save your speech.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save speech. Please try again.",
-        variant: "destructive",
-      });
-      console.error("Error saving speech:", error);
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   const handleDownload = () => {
@@ -152,7 +84,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
       if (savedSpeech) {
         setContent(savedSpeech);
       } else {
-        setContent(createPlaceholderSpeech());
+        setContent(createPlaceholderSpeech(title, speechDetails));
       }
       
       toast({
@@ -169,37 +101,20 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         <CardDescription><Translate text="speechLab.editDesc" /></CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div>
-          <Label htmlFor="speechTitle" className="text-purple-700 font-medium mb-2 block"><Translate text="speechLab.speechTitleLabel" /></Label>
-          <Input 
-            id="speechTitle"
-            value={title}
-            onChange={handleTitleChange}
-            className="mb-4"
-            placeholder="Enter speech title"
-          />
-        </div>
+        <SpeechTitleInput 
+          title={title} 
+          onTitleChange={handleTitleChange} 
+        />
         
-        <div>
-          <Label htmlFor="speechContent" className="text-pink-600 font-medium mb-2 block">Speech Content</Label>
-          <TextareaWithPinkScrollbar 
-            id="speechContent"
-            className="min-h-[300px]" 
-            value={content}
-            onChange={handleContentChange}
-          />
-        </div>
+        <SpeechContentEditor 
+          content={content} 
+          onContentChange={handleContentChange} 
+        />
         
-        <div className="flex flex-wrap gap-2">
-          <ButtonCustom variant="outline" size="sm" onClick={handleDownload}>
-            <Translate text="speechLab.downloadButton" />
-            <Download className="ml-2 h-4 w-4" />
-          </ButtonCustom>
-          <ButtonCustom variant="outline" size="sm" onClick={handleReset}>
-            <Translate text="speechLab.resetButton" />
-            <RefreshCw className="ml-2 h-4 w-4" />
-          </ButtonCustom>
-        </div>
+        <SpeechActionButtons 
+          onDownload={handleDownload} 
+          onReset={handleReset} 
+        />
       </CardContent>
       <CardFooter className="flex justify-between">
         <ButtonCustom onClick={prevStep} variant="outline">
