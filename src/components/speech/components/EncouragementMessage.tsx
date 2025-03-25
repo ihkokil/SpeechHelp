@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star } from 'lucide-react';
 
 interface EncouragementMessageProps {
   currentQuestionIndex: number;
@@ -121,29 +120,10 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
             transition={{ duration: 0.5 }}
             className="relative w-full max-w-md"
           >
-            {/* Star shape wrapper */}
+            {/* Simple circle bubble */}
             <div className="relative flex items-center justify-center">
-              {/* Star shape background with points */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-[280px] h-[280px]">
-                  {/* Star points - 8 points surrounding the message */}
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-t from-yellow-200 to-yellow-100 rotate-45 rounded-[40%]"></div>
-                  <div className="absolute top-1/4 right-0 transform translate-x-1/3 -translate-y-1/4 w-20 h-20 bg-gradient-to-tr from-yellow-200 to-yellow-100 rotate-[25deg] rounded-[40%]"></div>
-                  <div className="absolute top-3/4 right-0 transform translate-x-1/3 -translate-y-3/4 w-16 h-16 bg-gradient-to-r from-yellow-200 to-yellow-100 rotate-[65deg] rounded-[40%]"></div>
-                  <div className="absolute bottom-0 right-1/4 transform translate-x-1/4 translate-y-1/3 w-20 h-20 bg-gradient-to-br from-yellow-200 to-yellow-100 rotate-[25deg] rounded-[40%]"></div>
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/3 w-16 h-16 bg-gradient-to-b from-yellow-200 to-yellow-100 rotate-45 rounded-[40%]"></div>
-                  <div className="absolute bottom-0 left-1/4 transform -translate-x-1/4 translate-y-1/3 w-20 h-20 bg-gradient-to-bl from-yellow-200 to-yellow-100 rotate-[25deg] rounded-[40%]"></div>
-                  <div className="absolute top-3/4 left-0 transform -translate-x-1/3 -translate-y-3/4 w-16 h-16 bg-gradient-to-l from-yellow-200 to-yellow-100 rotate-[65deg] rounded-[40%]"></div>
-                  <div className="absolute top-1/4 left-0 transform -translate-x-1/3 -translate-y-1/4 w-20 h-20 bg-gradient-to-tl from-yellow-200 to-yellow-100 rotate-[25deg] rounded-[40%]"></div>
-                </div>
-              </div>
-
-              {/* Center circle with message */}
-              <div className="relative z-10 w-56 h-56 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-full shadow-lg flex items-center justify-center p-8 border border-yellow-100">
+              <div className="w-64 h-64 bg-gradient-to-br from-purple-100 to-indigo-50 rounded-full shadow-lg flex items-center justify-center p-8 border border-purple-200">
                 <div className="text-center">
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <Star className="text-yellow-400 w-8 h-8 fill-yellow-400" />
-                  </div>
                   <p className="text-purple-800 font-medium">{message}</p>
                 </div>
               </div>
