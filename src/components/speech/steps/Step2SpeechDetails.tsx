@@ -131,11 +131,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         options: ["Valedictorian", "Guest Speaker", "Faculty Member", "Administrator", "Other"] 
       },
       { 
-        question: "Your name and title/position?", 
-        type: "text", 
-        placeholder: "E.g., Dr. Jane Smith, Department Chair" 
-      },
-      { 
         question: "Desired length of the speech?", 
         type: "text", 
         placeholder: "E.g., 5-7 minutes" 
@@ -194,11 +189,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         question: "Who is the celebration for?", 
         type: "text", 
         placeholder: "E.g., Friend, Parent, Child" 
-      },
-      { 
-        question: "Your name and relationship to the celebrant?", 
-        type: "text", 
-        placeholder: "E.g., Sarah, Sister of the birthday person" 
       },
       { 
         question: "Which birthday or anniversary is being celebrated?", 
@@ -261,11 +251,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         options: ["Product Launch", "Team Meeting", "Corporate Training", "Sales Pitch", "Company Announcement"] 
       },
       { 
-        question: "Your name, title, and company?", 
-        type: "text", 
-        placeholder: "E.g., John Davis, Marketing Director at XYZ Corp" 
-      },
-      { 
         question: "Audience type and size?", 
         type: "text", 
         placeholder: "E.g., 50 clients, Executive team of 8" 
@@ -319,11 +304,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         type: "text", 
         placeholder: "E.g., Marine Biologist, Tech Entrepreneur",
         condition: { question: "Will you be introduced before you speak?", value: "No" }
-      },
-      { 
-        question: "Your name and relevant background?", 
-        type: "text", 
-        placeholder: "E.g., Dr. Sarah Jones, Marine Biologist" 
       },
       { 
         question: "What is the main idea or topic?", 
@@ -386,11 +366,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         condition: { question: "Will you be introduced before you speak?", value: "No" }
       },
       { 
-        question: "Your name and why you're speaking?", 
-        type: "text", 
-        placeholder: "E.g., Michael Chen, Entrepreneur and Coach" 
-      },
-      { 
         question: "Who is the audience?", 
         type: "text", 
         placeholder: "E.g., Students, Athletes, Sales Team" 
@@ -451,11 +426,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         condition: { question: "Will you be introduced before you speak?", value: "No" }
       },
       { 
-        question: "Your name and relationship to the deceased?", 
-        type: "text", 
-        placeholder: "E.g., James Wilson, Nephew" 
-      },
-      { 
         question: "Who is the speech for?", 
         type: "text", 
         placeholder: "Name and relation of the deceased" 
@@ -509,11 +479,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         type: "text", 
         placeholder: "E.g., Future Tech, Industry Association",
         condition: { question: "Will you be introduced before you speak?", value: "No" }
-      },
-      { 
-        question: "Your name, title, and organization?", 
-        type: "text", 
-        placeholder: "E.g., Dr. Robert Lee, CEO of Future Tech" 
       },
       { 
         question: "What is the event or conference?", 
@@ -576,11 +541,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         condition: { question: "Will you be introduced before you speak?", value: "No" }
       },
       { 
-        question: "Your name and relation to the event?", 
-        type: "text", 
-        placeholder: "E.g., Lisa Johnson, Host of the Dinner" 
-      },
-      { 
         question: "Who is the audience?", 
         type: "text", 
         placeholder: "E.g., Dinner Guests, Friends at a Gathering" 
@@ -636,19 +596,9 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         condition: { question: "Will you be introduced before you speak?", value: "No" }
       },
       { 
-        question: "Your name and position?", 
-        type: "text", 
-        placeholder: "E.g., Emma Davis, Team Leader" 
-      },
-      { 
         question: "Who is the audience?", 
         type: "text", 
         placeholder: "E.g., Colleagues, Classmates, Friends" 
-      },
-      { 
-        question: "Your role or relationship to the audience?", 
-        type: "text", 
-        placeholder: "E.g., Departing Manager, Graduating Student" 
       },
       { 
         question: "Desired length of the speech?", 
@@ -699,11 +649,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         type: "text", 
         placeholder: "E.g., PhD in Economics, Certified Expert",
         condition: { question: "Will you be introduced before you speak?", value: "No" }
-      },
-      { 
-        question: "Your name and credentials?", 
-        type: "text", 
-        placeholder: "E.g., Professor Alex Wang, PhD in Economics" 
       },
       { 
         question: "What is the topic or subject?", 
@@ -759,11 +704,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         type: "text", 
         placeholder: "E.g., Environmental Activist, Industry Expert",
         condition: { question: "Will you be introduced before you speak?", value: "No" }
-      },
-      { 
-        question: "Your name and relevant background?", 
-        type: "text", 
-        placeholder: "E.g., Maria Garcia, Environmental Activist" 
       },
       { 
         question: "What is the topic or issue?", 
@@ -826,11 +766,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         condition: { question: "Will you be introduced before you speak?", value: "No" }
       },
       { 
-        question: "Your name and role at the event?", 
-        type: "text", 
-        placeholder: "E.g., Sam Brown, Guest Speaker" 
-      },
-      { 
         question: "Who is the audience?", 
         type: "text", 
         placeholder: "E.g., Party Guests, Event Attendees" 
@@ -881,19 +816,9 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         condition: { question: "Will you be introduced before you speak?", value: "No" }
       },
       { 
-        question: "Your name and relationship to the event?", 
-        type: "text", 
-        placeholder: "E.g., David Miller, Colleague of 15 years" 
-      },
-      { 
         question: "Who is retiring?", 
         type: "text", 
         placeholder: "Name and position of retiree" 
-      },
-      { 
-        question: "Your relationship to the retiree?", 
-        type: "text", 
-        placeholder: "E.g., Supervisor, Colleague, Friend" 
       },
       { 
         question: "Desired length of the speech?", 
@@ -944,11 +869,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         type: "text", 
         placeholder: "E.g., Award Committee Chair, Host",
         condition: { question: "Will you be introduced before you speak?", value: "No" }
-      },
-      { 
-        question: "Your name and role in the ceremony?", 
-        type: "text", 
-        placeholder: "E.g., Jennifer Kim, Award Committee Chair" 
       },
       { 
         question: "What is the award?", 
@@ -1004,11 +924,6 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         type: "text", 
         placeholder: "E.g., Host, Guest Speaker, Organizer",
         condition: { question: "Will you be introduced before you speak?", value: "No" }
-      },
-      { 
-        question: "Your name and role at the event?", 
-        type: "text", 
-        placeholder: "E.g., Taylor Wilson, Host" 
       },
       { 
         question: "What is the event or occasion?", 
