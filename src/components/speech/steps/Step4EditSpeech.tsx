@@ -1,16 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { TextareaWithPinkScrollbar } from '@/components/ui/textarea-with-pink-scrollbar';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Download, RefreshCw, Save } from 'lucide-react';
 import Translate from '@/components/Translate';
 import { useToast } from "@/hooks/use-toast";
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSpeechService } from '@/services/speechService';
-import SpeechTitleInput from '../components/SpeechTitleInput';
-import SpeechContentEditor from '../components/SpeechContentEditor';
-import SpeechEditActions from '../components/SpeechEditActions';
-import { createPlaceholderSpeech, downloadSpeech } from '../utils/speechUtils';
 
 interface Step4Props {
   prevStep: () => void;
@@ -43,10 +41,30 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
     if (savedSpeech) {
       setContent(savedSpeech);
     } else {
-      const placeholderSpeech = createPlaceholderSpeech(title, speechDetails);
+      const placeholderSpeech = createPlaceholderSpeech();
       setContent(placeholderSpeech);
     }
   }, []);
+
+  const createPlaceholderSpeech = () => {
+    const detailsArray = Object.entries(speechDetails || {});
+    
+    if (detailsArray.length === 0) {
+      return "This is your generated speech. You can edit it here to customize it to your needs.";
+    }
+    
+    let speech = `# ${title}\n\n`;
+    speech += "## Your Speech Details\n\n";
+    
+    detailsArray.forEach(([question, answer]) => {
+      if (answer && answer.trim()) {
+        speech += `**${question}**\n${answer}\n\n`;
+      }
+    });
+    
+    speech += "\n---\n\nEdit this speech to your liking before saving.";
+    return speech;
+  };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
@@ -112,7 +130,20 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
   };
 
   const handleDownload = () => {
-    downloadSpeech(content, title, toast);
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title.trim() || 'speech'}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Download Started",
+      description: "Your speech is being downloaded as a text file.",
+    });
   };
 
   const handleReset = () => {
@@ -121,7 +152,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
       if (savedSpeech) {
         setContent(savedSpeech);
       } else {
-        setContent(createPlaceholderSpeech(title, speechDetails));
+        setContent(createPlaceholderSpeech());
       }
       
       toast({
@@ -138,9 +169,37 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
         <CardDescription><Translate text="speechLab.editDesc" /></CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <SpeechTitleInput title={title} onChange={handleTitleChange} />
-        <SpeechContentEditor content={content} onChange={handleContentChange} />
-        <SpeechEditActions onDownload={handleDownload} onReset={handleReset} />
+        <div>
+          <Label htmlFor="speechTitle" className="text-purple-700 font-medium mb-2 block"><Translate text="speechLab.speechTitleLabel" /></Label>
+          <Input 
+            id="speechTitle"
+            value={title}
+            onChange={handleTitleChange}
+            className="mb-4"
+            placeholder="Enter speech title"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="speechContent" className="text-pink-600 font-medium mb-2 block">Speech Content</Label>
+          <TextareaWithPinkScrollbar 
+            id="speechContent"
+            className="min-h-[300px]" 
+            value={content}
+            onChange={handleContentChange}
+          />
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
+          <ButtonCustom variant="outline" size="sm" onClick={handleDownload}>
+            <Translate text="speechLab.downloadButton" />
+            <Download className="ml-2 h-4 w-4" />
+          </ButtonCustom>
+          <ButtonCustom variant="outline" size="sm" onClick={handleReset}>
+            <Translate text="speechLab.resetButton" />
+            <RefreshCw className="ml-2 h-4 w-4" />
+          </ButtonCustom>
+        </div>
       </CardContent>
       <CardFooter className="flex justify-between">
         <ButtonCustom onClick={prevStep} variant="outline">
