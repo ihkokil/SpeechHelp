@@ -28,6 +28,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [showEncouragement, setShowEncouragement] = useState(false);
+  const [encouragementKey, setEncouragementKey] = useState(0);
 
   // Safeguard against invalid question index
   useEffect(() => {
@@ -49,7 +50,12 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
       
       // Show encouragement message every 3 questions
       if ((currentQuestionIndex + 1) % 3 === 0 && currentQuestionIndex > 0) {
-        setShowEncouragement(true);
+        // Reset encouragement to trigger fresh animation
+        setShowEncouragement(false);
+        setTimeout(() => {
+          setEncouragementKey(prev => prev + 1);
+          setShowEncouragement(true);
+        }, 100);
       } else {
         setShowEncouragement(false);
       }
@@ -141,10 +147,11 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
         </ButtonCustom>
       </div>
 
-      {/* Encouraging message component */}
+      {/* Encouraging message component with key to force remount and animation */}
       {showEncouragement && (
         <div className="mt-8 pt-6 flex justify-center">
           <EncouragementMessage 
+            key={encouragementKey}
             currentQuestionIndex={currentQuestionIndex} 
             totalQuestions={questions.length} 
           />
