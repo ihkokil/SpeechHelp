@@ -49,9 +49,14 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
         <div className="overflow-auto max-h-[60vh] my-4">
           <SpeechPreview content={speech.content} />
         </div>
-        <div className="text-sm text-gray-500 mt-2">
-          <Translate text="dashboard.created" />: {formatDate(speech.created_at)} | 
-          <Translate text="dashboard.lastUpdated" />: {formatDate(speech.updated_at)}
+        <div className="text-sm mt-2 flex">
+          <span className="text-purple-600">
+            <Translate text="dashboard.created" />: {formatDate(speech.created_at)}
+          </span> 
+          <span className="mx-2 text-gray-500">|</span> 
+          <span className="text-pink-600">
+            <Translate text="dashboard.lastUpdated" />: {formatDate(speech.updated_at)}
+          </span>
         </div>
         
         <SpeechExportButtons 
