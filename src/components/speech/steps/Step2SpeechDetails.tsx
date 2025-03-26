@@ -25,6 +25,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
   const { t } = useTranslation();
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [filteredQuestions, setFilteredQuestions] = useState<QuestionItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Get questionnaire based on speech type
   const getQuestionnaire = useCallback(() => {
@@ -33,31 +34,52 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
 
   // Filter questions based on conditions
   const updateFilteredQuestions = useCallback(() => {
-    const allQuestions = getQuestionnaire();
-    
-    console.log('Filtering questions with formData:', formData);
-    
-    const newFilteredQuestions = allQuestions.filter(question => {
-      // If the question has no condition, always show it
-      if (!question.condition) return true;
+    try {
+      const allQuestions = getQuestionnaire();
       
-      // If the question has a condition, check if it should be shown
-      const { condition } = question;
-      const shouldShow = formData[condition.question] === condition.value;
+      console.log('Filtering questions with formData:', formData);
       
-      console.log(`Question "${question.question}" condition check:`, {
-        conditionQuestion: condition.question,
-        expectedValue: condition.value,
-        actualValue: formData[condition.question],
-        shouldShow
+      // First add all questions without conditions
+      let newFilteredQuestions = allQuestions.filter(question => {
+        return !question.condition;
       });
       
-      return shouldShow;
-    });
-    
-    console.log('Filtered questions:', newFilteredQuestions);
-    setFilteredQuestions(newFilteredQuestions);
+      // Then add questions that match their conditions
+      allQuestions.forEach(question => {
+        if (question.condition) {
+          const { condition } = question;
+          const conditionValue = formData[condition.question];
+          
+          if (conditionValue === condition.value) {
+            // Only add if not already in the filtered list
+            if (!newFilteredQuestions.some(q => q.question === question.question)) {
+              newFilteredQuestions.push(question);
+            }
+          }
+        }
+      });
+      
+      // Sort the questions to maintain the same order as in the original array
+      newFilteredQuestions.sort((a, b) => {
+        return allQuestions.findIndex(q => q.question === a.question) - 
+               allQuestions.findIndex(q => q.question === b.question);
+      });
+      
+      console.log('Filtered questions:', newFilteredQuestions);
+      setFilteredQuestions(newFilteredQuestions);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error updating filtered questions:', error);
+      setIsLoading(false);
+    }
   }, [formData, getQuestionnaire]);
+
+  // Initialize questions on first load
+  useEffect(() => {
+    const initialQuestions = getQuestionnaire().filter(q => !q.condition);
+    setFilteredQuestions(initialQuestions);
+    setIsLoading(false);
+  }, [getQuestionnaire]);
 
   // Update filtered questions when form data changes
   useEffect(() => {
@@ -78,7 +100,11 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         <CardDescription><Translate text="speechLab.detailsDesc" /></CardDescription>
       </CardHeader>
       <CardContent>
-        {filteredQuestions.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center p-8">
+            <p>Loading questions...</p>
+          </div>
+        ) : filteredQuestions.length > 0 ? (
           <SpeechQuestionnaire
             questions={filteredQuestions}
             formData={formData}
@@ -88,7 +114,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
           />
         ) : (
           <div className="flex justify-center items-center p-8">
-            <p>Loading questions...</p>
+            <p>No questions available for this speech type.</p>
           </div>
         )}
       </CardContent>
