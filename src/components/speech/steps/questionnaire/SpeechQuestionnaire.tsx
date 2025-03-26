@@ -29,40 +29,49 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
   const [progress, setProgress] = useState(0);
   const [showEncouragement, setShowEncouragement] = useState(false);
 
+  // Safeguard against invalid question index
+  useEffect(() => {
+    if (currentQuestionIndex >= questions.length) {
+      setCurrentQuestionIndex(questions.length - 1);
+    }
+  }, [currentQuestionIndex, questions.length]);
+
   // Update progress when moving through questions
   useEffect(() => {
-    setProgress(((currentQuestionIndex + 1) / questions.length) * 100);
-    
-    // Show encouragement message every 2nd or 3rd question (randomly)
-    const shouldShowEncouragement = Math.random() > 0.5 ? 
-      currentQuestionIndex % 2 === 0 : 
-      currentQuestionIndex % 3 === 0;
-    
-    setShowEncouragement(shouldShowEncouragement);
-    
-    // Log for debugging
-    console.log(`Current question index: ${currentQuestionIndex}, Total questions: ${questions.length}`);
+    if (questions.length > 0) {
+      setProgress(((currentQuestionIndex + 1) / questions.length) * 100);
+      
+      // Show encouragement message every 2nd or 3rd question (randomly)
+      const shouldShowEncouragement = Math.random() > 0.5 ? 
+        currentQuestionIndex % 2 === 0 : 
+        currentQuestionIndex % 3 === 0;
+      
+      setShowEncouragement(shouldShowEncouragement);
+    }
   }, [currentQuestionIndex, questions.length]);
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      // All questions answered, proceed to next step
       onNext();
     }
   };
 
   const handlePrevQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setCurrentQuestionIndex(prev => prev - 1);
     } else {
-      // Go back to previous step
       onPrev();
     }
   };
 
   const handleInputChange = (value: string) => {
+    if (!questions[currentQuestionIndex]) {
+      console.error('Current question is undefined');
+      return;
+    }
+
     const updatedFormData = {
       ...formData,
       [questions[currentQuestionIndex].question]: value
@@ -71,16 +80,11 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
     onFormDataChange(updatedFormData);
   };
 
-  // Current question data
+  // Current question data with safeguard
   const currentQuestion = questions[currentQuestionIndex];
   
-  // Safeguard against undefined currentQuestion
-  if (!currentQuestion) {
-    console.error('Current question is undefined!', { 
-      currentQuestionIndex, 
-      questionsLength: questions.length,
-      questions 
-    });
+  if (!currentQuestion || questions.length === 0) {
+    console.error('No questions available or current question is undefined');
     return <div>Loading questions...</div>;
   }
 
@@ -125,7 +129,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
         </ButtonCustom>
       </div>
 
-      {/* Encouraging message component - positioned below the questionnaire */}
+      {/* Encouraging message component */}
       {showEncouragement && (
         <div className="mt-8 pt-6">
           <EncouragementMessage 

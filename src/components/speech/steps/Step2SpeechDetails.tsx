@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import Translate from '@/components/Translate';
@@ -26,47 +26,50 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [filteredQuestions, setFilteredQuestions] = useState<QuestionItem[]>([]);
   
-  // Default to a common questionnaire if the selected type doesn't match
-  const getQuestionnaire = () => {
+  // Get questionnaire based on speech type
+  const getQuestionnaire = useCallback(() => {
     return questionnaires[selectedSpeechType] || questionnaires.other;
-  };
+  }, [selectedSpeechType]);
 
   // Filter questions based on conditions
-  useEffect(() => {
-    const updateFilteredQuestions = () => {
-      const allQuestions = getQuestionnaire();
+  const updateFilteredQuestions = useCallback(() => {
+    const allQuestions = getQuestionnaire();
+    
+    console.log('Filtering questions with formData:', formData);
+    
+    const newFilteredQuestions = allQuestions.filter(question => {
+      // If the question has no condition, always show it
+      if (!question.condition) return true;
       
-      // Log for debugging
-      console.log('Starting question filtering process');
-      console.log('All questions:', allQuestions);
-      console.log('Current form data:', formData);
+      // If the question has a condition, check if it should be shown
+      const { condition } = question;
+      const shouldShow = formData[condition.question] === condition.value;
       
-      const newFilteredQuestions = allQuestions.filter(question => {
-        // If the question has no condition, always show it
-        if (!question.condition) return true;
-        
-        // If the question has a condition, check if it should be shown
-        const { condition } = question;
-        const shouldShow = formData[condition.question] === condition.value;
-        
-        console.log(`Question "${question.question}" has condition "${condition.question}"="${condition.value}", shouldShow=${shouldShow}`);
-        
-        return shouldShow;
+      console.log(`Question "${question.question}" condition check:`, {
+        conditionQuestion: condition.question,
+        expectedValue: condition.value,
+        actualValue: formData[condition.question],
+        shouldShow
       });
       
-      console.log('Filtered questions:', newFilteredQuestions);
-      setFilteredQuestions(newFilteredQuestions);
-    };
+      return shouldShow;
+    });
     
+    console.log('Filtered questions:', newFilteredQuestions);
+    setFilteredQuestions(newFilteredQuestions);
+  }, [formData, getQuestionnaire]);
+
+  // Update filtered questions when form data changes
+  useEffect(() => {
     updateFilteredQuestions();
-  }, [formData, selectedSpeechType]);
+  }, [formData, updateFilteredQuestions]);
 
   // Handle form data changes
-  const handleFormDataChange = (newFormData: Record<string, string>) => {
+  const handleFormDataChange = useCallback((newFormData: Record<string, string>) => {
     console.log('Form data changed:', newFormData);
     setFormData(newFormData);
     onDetailsChange(newFormData);
-  };
+  }, [onDetailsChange]);
 
   return (
     <Card>
