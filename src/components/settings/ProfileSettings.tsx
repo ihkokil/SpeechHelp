@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -271,6 +272,35 @@ const ProfileSettings = () => {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country of Residence</FormLabel>
+                    <Select 
+                      onValueChange={handleCountryChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger tabIndex={6}>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white">
+                        {countryData.map((country) => (
+                          <SelectItem key={country.code} value={country.name}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <div className="border-t pt-6 mt-6">
                 <h3 className="font-medium text-gray-900 mb-4 flex items-center">
@@ -286,7 +316,7 @@ const ProfileSettings = () => {
                       <FormItem>
                         <FormLabel>Street Address</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="123 Main St, Apt 4B" {...field} tabIndex={6} />
+                          <Textarea placeholder="123 Main St, Apt 4B" {...field} tabIndex={7} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -301,7 +331,7 @@ const ProfileSettings = () => {
                         <FormItem>
                           <FormLabel>City</FormLabel>
                           <FormControl>
-                            <Input placeholder="San Francisco" {...field} tabIndex={7} />
+                            <Input placeholder="San Francisco" {...field} tabIndex={8} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -320,7 +350,7 @@ const ProfileSettings = () => {
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger tabIndex={8}>
+                              <SelectTrigger tabIndex={9}>
                                 <SelectValue placeholder="Select state/province" />
                               </SelectTrigger>
                             </FormControl>
@@ -342,50 +372,19 @@ const ProfileSettings = () => {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="country"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Country</FormLabel>
-                          <Select 
-                            onValueChange={handleCountryChange}
-                            defaultValue={field.value}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger tabIndex={9}>
-                                <SelectValue placeholder="Select country" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-white">
-                              {countryData.map((country) => (
-                                <SelectItem key={country.code} value={country.name}>
-                                  {country.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="zipCode"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>ZIP / Postal Code</FormLabel>
-                          <FormControl>
-                            <Input placeholder="94103" {...field} tabIndex={10} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="zipCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>ZIP / Postal Code</FormLabel>
+                        <FormControl>
+                          <Input placeholder="94103" {...field} tabIndex={10} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
               
