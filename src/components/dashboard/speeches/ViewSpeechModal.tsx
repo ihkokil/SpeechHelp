@@ -15,6 +15,7 @@ import { getSpeechTypeLabel, getTypeColor } from './speech-utils';
 import { useTranslation } from '@/translations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Translate from '@/components/Translate';
+import SpeechPreview from '@/components/speech/components/SpeechPreview';
 
 interface ViewSpeechModalProps {
   isOpen: boolean;
@@ -44,8 +45,8 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
             </Badge>
           </DialogDescription>
         </DialogHeader>
-        <div className="whitespace-pre-line border rounded-md p-4 bg-gray-50 overflow-auto max-h-[50vh]">
-          {speech.content}
+        <div className="overflow-auto max-h-[50vh]">
+          <SpeechPreview content={speech.content} />
         </div>
         <div className="text-sm text-gray-500 mt-2">
           <Translate text="dashboard.created" />: {formatDate(speech.created_at)} | 
