@@ -10,22 +10,18 @@ interface WelcomeCardProps {
 }
 
 const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
-  const [greeting, setGreeting] = useState('');
   const [timeOfDay, setTimeOfDay] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
   useEffect(() => {
-    // Set greeting based on time of day
+    // Set time of day for the secondary message only
     const hour = new Date().getHours();
     if (hour < 12) {
-      setGreeting('dashboard.goodMorning');
       setTimeOfDay('morning');
     } else if (hour < 18) {
-      setGreeting('dashboard.goodAfternoon');
       setTimeOfDay('afternoon');
     } else {
-      setGreeting('dashboard.goodEvening');
       setTimeOfDay('evening');
     }
   }, []);
@@ -42,7 +38,7 @@ const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
     <div className="bg-white rounded-lg shadow-sm p-8">
       <div>
         <h1 className="text-3xl font-bold text-purple-600">
-          {t(greeting, currentLanguage.code)}, <span className="text-pink-600">{displayName}!</span>
+          {t('dashboard.hello', currentLanguage.code)}, <span className="text-pink-600">{displayName}!</span>
         </h1>
         <p className="text-gray-500 mt-2">It's a beautiful {dayOfWeek} {timeOfDay}, so let's get creative and help you craft a memorable speech!</p>
       </div>
