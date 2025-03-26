@@ -12,13 +12,15 @@ interface SpeechContentEditorProps {
   onContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   preserveHtml?: boolean;
   forceEditMode?: boolean;
+  showFormattedContent?: boolean;
 }
 
 const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({ 
   content, 
   onContentChange,
   preserveHtml = false,
-  forceEditMode = false
+  forceEditMode = false,
+  showFormattedContent = false
 }) => {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>(forceEditMode ? 'edit' : 'edit');
   const [processedContent, setProcessedContent] = useState(content);
@@ -108,13 +110,26 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
     return formattedText;
   };
 
+  // Extract content from JSON if needed
+  const getEditableContent = (): string => {
+    if (showFormattedContent && content.includes('{"content"')) {
+      try {
+        const jsonContent = JSON.parse(content);
+        return jsonContent.content || content;
+      } catch (e) {
+        return content;
+      }
+    }
+    return preserveHtml ? content : processedContent;
+  };
+
   // Custom handler for content changes to maintain JSON structure if it exists
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setProcessedContent(newValue);
     
-    // If original content was JSON, maintain that structure
-    if (content.includes('{"content"')) {
+    // If original content was JSON and we need to preserve structure
+    if (content.includes('{"content"') && preserveHtml) {
       try {
         const jsonContent = JSON.parse(content);
         // Create new event with updated content structure
@@ -176,8 +191,8 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
           <TextareaWithPinkScrollbar 
             id="speechContent"
             className="min-h-[300px]" 
-            value={preserveHtml ? content : processedContent}
-            onChange={preserveHtml ? onContentChange : handleContentChange}
+            value={getEditableContent()}
+            onChange={handleContentChange}
             ref={textareaRef}
           />
         </>
