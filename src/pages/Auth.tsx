@@ -126,20 +126,16 @@ const Auth = () => {
     checkFlowType();
   }, [location.search, toast]);
 
-  // Redirect logic - only after auth is initialized
+  // Redirect logic - only after auth is initialized and NOT in recovery flow
   useEffect(() => {
-    if (!authInitialized || isLoading) return;
+    if (!authInitialized || isLoading || isRecoveryFlow) return;
     
-    // Don't redirect if we're in recovery mode and showing reset form
-    const params = new URLSearchParams(location.search);
-    if (params.get('type') === 'recovery' && currentStep === 'reset-password') return;
-    
-    // Redirect if user is logged in and not in recovery flow
-    if (user && !isRecoveryFlow) {
+    // Only redirect if user is logged in and NOT in recovery flow
+    if (user && currentStep !== 'reset-password') {
       console.log('Auth: User is logged in, redirecting to dashboard');
       navigate('/dashboard');
     }
-  }, [user, navigate, isLoading, authInitialized, location.search, currentStep, isRecoveryFlow]);
+  }, [user, navigate, isLoading, authInitialized, isRecoveryFlow, currentStep]);
 
   // Show loading state until auth is initialized
   if (isLoading || !authInitialized) {
