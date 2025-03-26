@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
-import { parsePhoneNumberFromString, AsYouType, CountryCode } from 'libphonenumber-js';
+import { AsYouType, CountryCode } from 'libphonenumber-js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import countryData from '../../data/countries';
 import statesProvinces from '../../data/statesProvinces';
@@ -77,13 +76,6 @@ const ProfileSettings = () => {
   useEffect(() => {
     const countryEntry = countryData.find(c => c.code === countryCode);
     if (countryEntry) {
-      form.setValue('country', countryEntry.name);
-    }
-  }, [countryCode, form]);
-
-  useEffect(() => {
-    const countryEntry = countryData.find(c => c.code === countryCode);
-    if (countryEntry) {
       setSelectedDialCode(countryEntry.dialCode);
     }
   }, [countryCode]);
@@ -118,10 +110,6 @@ const ProfileSettings = () => {
 
   const handleCountryChange = (countryName: string) => {
     form.setValue('country', countryName);
-    const country = countryData.find(c => c.name === countryName);
-    if (country) {
-      form.setValue('countryCode', country.code);
-    }
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -230,7 +218,7 @@ const ProfileSettings = () => {
                   name="countryCode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Country Code</FormLabel>
+                      <FormLabel>Phone Country Code</FormLabel>
                       <Select 
                         onValueChange={handleCountryCodeChange}
                         defaultValue={field.value}
