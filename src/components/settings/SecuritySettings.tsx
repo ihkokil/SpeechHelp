@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -180,7 +179,7 @@ const SecuritySettings = () => {
                 )}
               />
               
-              <div className="pt-2 flex justify-end">
+              <div className="flex justify-end">
                 <Button 
                   type="submit" 
                   className="bg-gradient-to-r from-purple-600 to-pink-600 text-white w-40 h-10"
@@ -281,9 +280,11 @@ const SecuritySettings = () => {
                   Permanently delete your account and all of your content. This action cannot be undone.
                 </p>
               </div>
-              <Button variant="destructive" className="w-40 h-10 bg-red-600 hover:bg-red-700">
-                Delete Account
-              </Button>
+              <div className="flex justify-end">
+                <Button variant="destructive" className="w-40 h-10 bg-red-600 hover:bg-red-700">
+                  Delete Account
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
