@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -180,10 +179,10 @@ const SecuritySettings = () => {
                 )}
               />
               
-              <div className="pt-2">
+              <div className="pt-2 flex justify-end">
                 <Button 
                   type="submit" 
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white w-full"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white w-40"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Updating..." : "Update Password"}
@@ -245,17 +244,17 @@ const SecuritySettings = () => {
             </div>
           )}
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex justify-end">
           {twoFactorEnabled ? (
-            <Button variant="outline" className="w-full" onClick={() => setTwoFactorEnabled(false)}>
-              Disable Two-Factor Authentication
+            <Button variant="outline" className="w-40" onClick={() => setTwoFactorEnabled(false)}>
+              Disable Two-Factor
             </Button>
           ) : (
             <Button 
               onClick={setupTwoFactor} 
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white w-full"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white w-40"
             >
-              Set Up Two-Factor Authentication
+              Set Up Two-Factor
             </Button>
           )}
         </CardFooter>
@@ -270,12 +269,14 @@ const SecuritySettings = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="p-4 border border-red-200 rounded-md">
-              <h4 className="font-medium text-red-600">Delete Account</h4>
-              <p className="text-sm text-gray-600 mt-1">
-                Permanently delete your account and all of your content. This action cannot be undone.
-              </p>
-              <Button variant="destructive" className="mt-4">
+            <div className="p-4 border border-red-200 rounded-md flex justify-between items-center">
+              <div>
+                <h4 className="font-medium text-red-600">Delete Account</h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  Permanently delete your account and all of your content. This action cannot be undone.
+                </p>
+              </div>
+              <Button variant="destructive" className="w-40">
                 Delete Account
               </Button>
             </div>
