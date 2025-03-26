@@ -22,9 +22,9 @@ export const generateSpeechFromDetails = (speechTitle: string, speechDetails: Sp
   const formattedSpeech = createFormattedSpeech(speechTitle, speechDetails);
   
   // Combine the questions/answers section with the formatted speech
-  const completeSpeech = questionsAnswersSection + formattedSpeech;
+  let completeSpeech = questionsAnswersSection + formattedSpeech;
   
-  // Process duration if specified
+  // Process duration if specified - always ensure we enhance the speech for better quality
   const durationInfo = detailsArray.find(([question]) => 
     question.toLowerCase().includes('length') || 
     question.toLowerCase().includes('duration') ||
@@ -33,7 +33,10 @@ export const generateSpeechFromDetails = (speechTitle: string, speechDetails: Sp
   
   if (durationInfo && durationInfo[1]) {
     const targetDuration = parseDurationToMinutes(durationInfo[1]);
-    return enhanceSpeechForDuration(completeSpeech, targetDuration);
+    completeSpeech = enhanceSpeechForDuration(completeSpeech, targetDuration);
+  } else {
+    // Even if no specific duration is mentioned, apply some enhancement for consistency
+    completeSpeech = enhanceSpeechForDuration(completeSpeech, 5); // Default to a 5-minute speech enhancement
   }
   
   return completeSpeech;

@@ -53,16 +53,18 @@ export const useSpeechGeneration = ({
     setGenerating(true);
     
     try {
+      // Generate the fully enhanced speech with all embellishments
       const speech = generateSpeechFromDetails(speechTitle, speechDetails);
       setGeneratedSpeech(speech);
       
       setShowConfetti(true);
       
+      // Save the fully enhanced speech to localStorage
       localStorage.setItem('generatedSpeech', speech);
       
       toast({
         title: "Speech Generated",
-        description: "Your speech has been created based on your questionnaire answers",
+        description: "Your comprehensive speech has been created based on your questionnaire answers",
       });
       
     } catch (error) {
