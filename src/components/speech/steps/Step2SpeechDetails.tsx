@@ -29,7 +29,9 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
   
   // Get questionnaire based on speech type
   const getQuestionnaire = useCallback(() => {
-    return questionnaires[selectedSpeechType] || questionnaires.other;
+    const questionnaire = questionnaires[selectedSpeechType] || questionnaires.other;
+    console.log(`Got ${questionnaire.length} questions for speech type: ${selectedSpeechType}`);
+    return questionnaire;
   }, [selectedSpeechType]);
 
   // Filter questions based on conditions
@@ -67,7 +69,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
                  allQuestions.findIndex(q => q.question === b.question);
         });
       
-      console.log('Filtered questions:', sortedQuestions);
+      console.log('Filtered questions count:', sortedQuestions.length);
       setFilteredQuestions(sortedQuestions);
       setIsLoading(false);
     } catch (error) {
@@ -80,7 +82,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
   useEffect(() => {
     try {
       const initialQuestions = getQuestionnaire().filter(q => !q.condition);
-      console.log('Initial questions on load:', initialQuestions);
+      console.log('Initial questions on load:', initialQuestions.length);
       setFilteredQuestions(initialQuestions);
       setIsLoading(false);
     } catch (error) {
