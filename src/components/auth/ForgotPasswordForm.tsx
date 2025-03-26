@@ -10,9 +10,10 @@ interface ForgotPasswordFormProps {
   onCodeSent: (email: string) => void;
 }
 
-const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormProps) => {
+const ForgotPasswordForm = ({ onBackToSignIn }: ForgotPasswordFormProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,25 +21,25 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('send-password-reset', {
-        body: { email }
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?type=recovery`,
       });
 
       if (error) {
         throw error;
       }
 
+      setEmailSent(true);
       toast({
-        title: "Reset code sent",
-        description: "If an account with this email exists, a reset code has been sent.",
+        title: "Reset link sent",
+        description: "If an account with this email exists, a password reset link has been sent.",
       });
 
-      onCodeSent(email);
     } catch (error: any) {
       console.error('Password reset request error:', error);
       toast({
         title: "Error",
-        description: "Failed to send reset code. Please try again.",
+        description: "Failed to send reset link. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -46,11 +47,66 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
     }
   };
 
+  if (emailSent) {
+    return (
+      <>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Check Your Email</h1>
+          <p className="text-gray-600">
+            We've sent a password reset link to <span className="font-semibold">{email}</span>
+          </p>
+        </div>
+        
+        <div className="space-y-6">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <Mail className="h-5 w-5 text-green-400" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-green-800">
+                  Email sent successfully
+                </h3>
+                <div className="mt-2 text-sm text-green-700">
+                  <p>
+                    Click the link in your email to reset your password. The link will expire in 24 hours.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center space-y-4">
+            <button
+              type="button"
+              onClick={() => {
+                setEmailSent(false);
+                setEmail('');
+              }}
+              className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
+            >
+              Try a different email
+            </button>
+            
+            <button
+              type="button"
+              onClick={onBackToSignIn}
+              className="text-pink-600 hover:text-pink-800 font-semibold transition-colors inline-flex items-center"
+            >
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              Back to Sign In
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Forgot Password</h1>
-        <p className="text-gray-600">Enter your email to receive a reset code</p>
+        <p className="text-gray-600">Enter your email to receive a password reset link</p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -87,10 +143,10 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Sending Reset Code...
+              Sending Reset Link...
             </span>
           ) : (
-            "Send Reset Code"
+            "Send Reset Link"
           )}
         </ButtonCustom>
 

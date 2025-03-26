@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 // Import the auth components
 import AuthContainer from '@/components/auth/AuthContainer';
@@ -20,6 +22,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
+  const { toast } = useToast();
 
   // Handle form transitions
   const handleSwitchToSignUp = () => {
@@ -52,14 +55,47 @@ const Auth = () => {
     setResetEmail('');
   };
 
-  // Check for signup/signin flow on component mount
+  // Check for signup/signin flow and password recovery on component mount
   useEffect(() => {
-    const checkFlowType = () => {
+    const checkFlowType = async () => {
       console.log('Auth: Checking flow type...');
       
       const params = new URLSearchParams(location.search);
+      const type = params.get('type');
       
-      if (params.get('signup') === 'true') {
+      // Handle password recovery flow
+      if (type === 'recovery') {
+        console.log('Auth: Password recovery flow detected');
+        
+        try {
+          const { data, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error('Auth: Error getting session:', error);
+            toast({
+              title: "Error",
+              description: "There was an issue with the password reset link.",
+              variant: "destructive"
+            });
+            setCurrentStep('signin');
+          } else if (data.session) {
+            // User is authenticated via recovery link, redirect to password reset
+            console.log('Auth: Recovery session found, showing reset form');
+            setCurrentStep('reset-password');
+          } else {
+            console.log('Auth: No recovery session found');
+            toast({
+              title: "Invalid or expired link",
+              description: "The password reset link is invalid or has expired.",
+              variant: "destructive"
+            });
+            setCurrentStep('signin');
+          }
+        } catch (error) {
+          console.error('Auth: Recovery flow error:', error);
+          setCurrentStep('signin');
+        }
+      } else if (params.get('signup') === 'true') {
         console.log('Auth: Signup flow detected');
         setCurrentStep('signup');
         setAutoFocusFirstName(true);
@@ -72,18 +108,22 @@ const Auth = () => {
     };
 
     checkFlowType();
-  }, [location.search]);
+  }, [location.search, toast]);
 
   // Redirect logic - only after auth is initialized
   useEffect(() => {
     if (!authInitialized || isLoading) return;
+    
+    // Don't redirect if we're in recovery mode
+    const params = new URLSearchParams(location.search);
+    if (params.get('type') === 'recovery') return;
     
     // Redirect if user is logged in
     if (user) {
       console.log('Auth: User is logged in, redirecting to dashboard');
       navigate('/dashboard');
     }
-  }, [user, navigate, isLoading, authInitialized]);
+  }, [user, navigate, isLoading, authInitialized, location.search]);
 
   // Show loading state until auth is initialized
   if (isLoading || !authInitialized) {
