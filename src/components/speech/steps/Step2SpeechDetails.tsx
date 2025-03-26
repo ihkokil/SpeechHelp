@@ -41,23 +41,31 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
       
       console.log('Filtering questions with formData:', formData);
       
-      // Create a map to track questions by ID to prevent duplicates
+      // Use a Map to track questions by ID and prevent duplicates
       const questionMap = new Map<string, QuestionItem>();
       
-      // First add all questions without conditions
+      // First add all questions without conditions (basic questions)
       allQuestions.filter(question => !question.condition)
         .forEach(question => {
           questionMap.set(question.question, question);
         });
       
-      // Then add questions that match their conditions
+      // Then add conditional questions if they match their conditions
       allQuestions.forEach(question => {
         if (question.condition) {
           const { condition } = question;
           const conditionValue = formData[condition.question];
           
           if (conditionValue === condition.value) {
-            questionMap.set(question.question, question);
+            // Only add if not already present
+            if (!questionMap.has(question.question)) {
+              questionMap.set(question.question, question);
+            }
+          } else {
+            // If the condition is not met, and this question is in the map, remove it
+            if (questionMap.has(question.question)) {
+              questionMap.delete(question.question);
+            }
           }
         }
       });
@@ -70,6 +78,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
         });
       
       console.log('Filtered questions count:', sortedQuestions.length);
+      console.log('Filtered questions:', sortedQuestions.map(q => q.question));
       setFilteredQuestions(sortedQuestions);
       setIsLoading(false);
     } catch (error) {
