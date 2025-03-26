@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { User, Mail, Phone } from 'lucide-react';
+import { Mail, Phone } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { AsYouType, CountryCode } from 'libphonenumber-js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
