@@ -1,6 +1,6 @@
 
 import { useToast } from "@/hooks/use-toast";
-import { createPdfFromContent } from '../utils/speechExportUtils';
+import { createPdfFromContent } from '../utils/pdfGenerator';
 
 interface UseSpeechDownloadProps {
   title: string;
