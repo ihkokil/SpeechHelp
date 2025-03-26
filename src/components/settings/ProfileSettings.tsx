@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,9 +10,10 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
-import { parsePhoneNumberFromString, AsYouType, getCountryCallingCode } from 'libphonenumber-js';
+import { parsePhoneNumberFromString, AsYouType } from 'libphonenumber-js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import countryData from '../../data/countries';
+import statesProvinces from '../../data/statesProvinces';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(2, { message: 'First name must be at least 2 characters.' }),
@@ -35,6 +35,7 @@ const ProfileSettings = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formattedPhone, setFormattedPhone] = useState('');
+  const [availableStates, setAvailableStates] = useState<typeof statesProvinces['US']>([]);
 
   // Form with default values
   const form = useForm<ProfileFormValues>({
@@ -57,6 +58,34 @@ const ProfileSettings = () => {
   const { watch, setValue } = form;
   const currentPhone = watch('phone');
   const countryCode = watch('countryCode');
+  const selectedCountry = watch('country');
+  
+  // Update states/provinces when country changes
+  useEffect(() => {
+    // Find the country code based on country name
+    const countryEntry = countryData.find(c => c.name === selectedCountry);
+    if (countryEntry) {
+      // Get states for this country code
+      const states = statesProvinces[countryEntry.code] || [];
+      setAvailableStates(states);
+      
+      // If the current state is not in the new country's state list, reset it
+      const currentState = form.getValues('state');
+      if (currentState && states.length > 0 && !states.some(s => s.name === currentState)) {
+        form.setValue('state', '');
+      }
+    } else {
+      setAvailableStates([]);
+    }
+  }, [selectedCountry, form]);
+
+  // Initialize states when component loads
+  useEffect(() => {
+    const countryEntry = countryData.find(c => c.code === countryCode);
+    if (countryEntry) {
+      form.setValue('country', countryEntry.name);
+    }
+  }, [countryCode, form]);
   
   // Format phone number when country or phone changes
   useEffect(() => {
@@ -79,6 +108,16 @@ const ProfileSettings = () => {
     // Remove non-numeric characters for storage
     const numericValue = e.target.value.replace(/\D/g, '');
     setValue('phone', numericValue);
+  };
+
+  // Handle country selection change
+  const handleCountryChange = (countryName: string) => {
+    form.setValue('country', countryName);
+    // Update country code when country changes
+    const country = countryData.find(c => c.name === countryName);
+    if (country) {
+      form.setValue('countryCode', country.code);
+    }
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -193,8 +232,9 @@ const ProfileSettings = () => {
                     <FormItem>
                       <FormLabel>Country for Phone Number</FormLabel>
                       <Select 
-                        onValueChange={field.onChange}
+                        onValueChange={handleCountryChange}
                         defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -203,8 +243,8 @@ const ProfileSettings = () => {
                         </FormControl>
                         <SelectContent className="bg-white">
                           {countryData.map((country) => (
-                            <SelectItem key={country.code} value={country.code}>
-                              {country.name} (+{country.dialCode})
+                            <SelectItem key={country.code} value={country.name}>
+                              {country.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -275,13 +315,28 @@ const ProfileSettings = () => {
                     
                     <FormField
                       control={form.control}
-                      name="state"
+                      name="country"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>State / Province</FormLabel>
-                          <FormControl>
-                            <Input placeholder="California" {...field} />
-                          </FormControl>
+                          <FormLabel>Country</FormLabel>
+                          <Select 
+                            onValueChange={handleCountryChange}
+                            defaultValue={field.value}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select country" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white">
+                              {countryData.map((country) => (
+                                <SelectItem key={country.code} value={country.name}>
+                                  {country.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -291,13 +346,32 @@ const ProfileSettings = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="zipCode"
+                      name="state"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>ZIP / Postal Code</FormLabel>
-                          <FormControl>
-                            <Input placeholder="94103" {...field} />
-                          </FormControl>
+                          <FormLabel>State / Province</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select state/province" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white max-h-60">
+                              {availableStates.length > 0 ? (
+                                availableStates.map((state) => (
+                                  <SelectItem key={state.code} value={state.name}>
+                                    {state.name}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="N/A">No states/provinces available</SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -305,12 +379,12 @@ const ProfileSettings = () => {
                     
                     <FormField
                       control={form.control}
-                      name="country"
+                      name="zipCode"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Country</FormLabel>
+                          <FormLabel>ZIP / Postal Code</FormLabel>
                           <FormControl>
-                            <Input placeholder="United States" {...field} />
+                            <Input placeholder="94103" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
