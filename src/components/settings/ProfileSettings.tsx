@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -226,10 +225,7 @@ const ProfileSettings = () => {
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger 
-                            className="focus:ring-2 focus:ring-ring focus:ring-offset-2" 
-                            tabIndex={4}
-                          >
+                          <SelectTrigger tabIndex={4}>
                             <SelectValue placeholder="Select country code" />
                           </SelectTrigger>
                         </FormControl>
@@ -295,10 +291,7 @@ const ProfileSettings = () => {
                           value={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger 
-                              className="focus:ring-2 focus:ring-ring focus:ring-offset-2" 
-                              tabIndex={6}
-                            >
+                            <SelectTrigger tabIndex={6}>
                               <SelectValue placeholder="Select country" />
                             </SelectTrigger>
                           </FormControl>
@@ -356,10 +349,7 @@ const ProfileSettings = () => {
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger 
-                                className="focus:ring-2 focus:ring-ring focus:ring-offset-2" 
-                                tabIndex={9}
-                              >
+                              <SelectTrigger tabIndex={9}>
                                 <SelectValue placeholder="Select state/province" />
                               </SelectTrigger>
                             </FormControl>
