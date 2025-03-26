@@ -18,30 +18,30 @@ export const createFormattedSpeech = (speechTitle: string, speechDetails: Speech
   let formattedSpeech = `# ${speechTitle}\n\n`;
   
   // Extract key information from the questionnaire
-  const { roleInfo, nameInfo, audienceInfo, toneInfo } = extractKeyInformation(speechDetails);
+  const keyInfo = extractKeyInformation(speechDetails);
   
   // Introduction section
   formattedSpeech += "## Introduction\n\n";
   
-  if (nameInfo) {
-    formattedSpeech += `Good evening everyone, my name is ${nameInfo[1]}. `;
+  if (keyInfo.name) {
+    formattedSpeech += `Good evening everyone, my name is ${keyInfo.name}. `;
   } else {
     formattedSpeech += "Good evening everyone. ";
   }
   
-  if (roleInfo) {
-    formattedSpeech += `As the ${roleInfo[1]}, it's my honor to speak today. `;
+  if (keyInfo.role) {
+    formattedSpeech += `As the ${keyInfo.role}, it's my honor to speak today. `;
   } else {
     formattedSpeech += "It's my honor to speak today. ";
   }
   
-  if (audienceInfo) {
-    formattedSpeech += `I'm delighted to address ${audienceInfo[1]} on this special occasion. `;
+  if (keyInfo.audience) {
+    formattedSpeech += `I'm delighted to address ${keyInfo.audience} on this special occasion. `;
   }
   
-  if (toneInfo) {
+  if (keyInfo.tone) {
     // Add a tone-appropriate opening line
-    const tone = toneInfo[1].toLowerCase();
+    const tone = keyInfo.tone.toLowerCase();
     if (tone.includes('humor')) {
       formattedSpeech += "I promise to keep this light and hopefully entertaining enough that you won't be checking your watches every few minutes. ";
     } else if (tone.includes('formal') || tone.includes('respect')) {
@@ -61,10 +61,10 @@ export const createFormattedSpeech = (speechTitle: string, speechDetails: Speech
     // Skip intro question and already processed items
     if (
       question.includes("Will you be introduced") ||
-      question === (nameInfo?.[0] || '') ||
-      question === (roleInfo?.[0] || '') ||
-      question === (audienceInfo?.[0] || '') ||
-      question === (toneInfo?.[0] || '')
+      (question === "What is your name?" && keyInfo.name === answer) ||
+      (question.includes("What is your role") && keyInfo.role === answer) ||
+      (question === "Who are you addressing?" && keyInfo.audience === answer) ||
+      (question === "Tone of the speech?" && keyInfo.tone === answer)
     ) {
       return;
     }
