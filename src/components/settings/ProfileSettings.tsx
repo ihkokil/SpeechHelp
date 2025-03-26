@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,11 +10,10 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
-import { parsePhoneNumberFromString, AsYouType } from 'libphonenumber-js';
+import { parsePhoneNumberFromString, AsYouType, CountryCode } from 'libphonenumber-js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import countryData from '../../data/countries';
 import statesProvinces from '../../data/statesProvinces';
-import type { CountryCode } from 'libphonenumber-js/types';
 
 const profileFormSchema = z.object({
   firstName: z.string().min(2, { message: 'First name must be at least 2 characters.' }),
@@ -38,9 +36,8 @@ const ProfileSettings = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formattedPhone, setFormattedPhone] = useState('');
   const [availableStates, setAvailableStates] = useState<typeof statesProvinces['US']>([]);
-  const [selectedDialCode, setSelectedDialCode] = useState('1'); // Default to US dial code
+  const [selectedDialCode, setSelectedDialCode] = useState('1');
 
-  // Form with default values
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -57,24 +54,18 @@ const ProfileSettings = () => {
     },
   });
 
-  // Get values and methods from form
   const { watch, setValue } = form;
   const currentPhone = watch('phone');
   const countryCode = watch('countryCode');
   const selectedCountry = watch('country');
-  
-  // Update states/provinces when country changes
+
   useEffect(() => {
-    // Find the country code based on country name
     const countryEntry = countryData.find(c => c.name === selectedCountry);
     if (countryEntry) {
-      // Get states for this country code
       const states = statesProvinces[countryEntry.code] || [];
       setAvailableStates(states);
       
-      // If the current state is not in the new country's state list, reset it
-      const currentState = form.getValues('state');
-      if (currentState && states.length > 0 && !states.some(s => s.name === currentState)) {
+      if (form.getValues('state') && states.length > 0 && !states.some(s => s.name === form.getValues('state'))) {
         form.setValue('state', '');
       }
     } else {
@@ -82,15 +73,13 @@ const ProfileSettings = () => {
     }
   }, [selectedCountry, form]);
 
-  // Initialize states when component loads
   useEffect(() => {
     const countryEntry = countryData.find(c => c.code === countryCode);
     if (countryEntry) {
       form.setValue('country', countryEntry.name);
     }
   }, [countryCode, form]);
-  
-  // Update dial code when country code changes
+
   useEffect(() => {
     const countryEntry = countryData.find(c => c.code === countryCode);
     if (countryEntry) {
@@ -98,11 +87,9 @@ const ProfileSettings = () => {
     }
   }, [countryCode]);
 
-  // Format phone number when country or phone changes
   useEffect(() => {
     if (currentPhone) {
       try {
-        // Use the countryCode (e.g., 'US') as a CountryCode type
         const formatter = new AsYouType(countryCode as CountryCode);
         const formatted = formatter.input(currentPhone);
         setFormattedPhone(formatted);
@@ -115,29 +102,21 @@ const ProfileSettings = () => {
     }
   }, [currentPhone, countryCode]);
 
-  // Handle phone input changes
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Remove non-numeric characters for storage
     const numericValue = e.target.value.replace(/\D/g, '');
     setValue('phone', numericValue);
   };
 
-  // Handle country code selection change
   const handleCountryCodeChange = (code: string) => {
-    // Update country code
     setValue('countryCode', code);
-    
-    // Find the country with this code
     const countryEntry = countryData.find(c => c.code === code);
     if (countryEntry) {
       setSelectedDialCode(countryEntry.dialCode);
     }
   };
 
-  // Handle country selection change
   const handleCountryChange = (countryName: string) => {
     form.setValue('country', countryName);
-    // Update country code when country changes
     const country = countryData.find(c => c.name === countryName);
     if (country) {
       form.setValue('countryCode', country.code);
@@ -147,12 +126,8 @@ const ProfileSettings = () => {
   const onSubmit = async (data: ProfileFormValues) => {
     setIsSubmitting(true);
     try {
-      // In a real app, you would update the user profile in Supabase here
       console.log('Updated profile data:', data);
-      
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
       toast({
         title: "Profile updated",
         description: "Your profile information has been updated successfully.",
