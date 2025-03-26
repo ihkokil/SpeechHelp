@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import SpeechContentEditor from '@/components/speech/components/SpeechContentEditor';
 import SpeechExportButtons from './SpeechExportButtons';
@@ -21,8 +21,16 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
   setEditTitle,
   setEditContent
 }) => {
+  const [processedContent, setProcessedContent] = useState(editContent);
+  
+  // Process content initially and when editContent changes
+  useEffect(() => {
+    setProcessedContent(editContent);
+  }, [editContent]);
+
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setEditContent(e.target.value);
+    const newContent = e.target.value;
+    setEditContent(newContent);
   };
 
   if (!speech) return null;
