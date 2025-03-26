@@ -95,7 +95,10 @@ const UserMenu = () => {
           <Settings className="h-4 w-4 mr-2" />
           Account Settings
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer">
+        <DropdownMenuItem 
+          className="cursor-pointer"
+          onClick={() => navigate('/help')}
+        >
           <HelpCircle className="h-4 w-4 mr-2" />
           Help & Support
         </DropdownMenuItem>
