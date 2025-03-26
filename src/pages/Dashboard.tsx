@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -57,6 +58,38 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  // Calculate relevant metrics from speeches
+  const dashboardMetrics = useMemo(() => {
+    // Total number of speeches
+    const totalSpeeches = speeches.length;
+    
+    // Current month speeches (in progress)
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    const thisMonthSpeeches = speeches.filter(speech => {
+      const speechDate = new Date(speech.created_at);
+      return speechDate.getMonth() === currentMonth && 
+             speechDate.getFullYear() === currentYear;
+    });
+    
+    // Speeches in last 30 days (to measure improvement)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const last30DaysSpeeches = speeches.filter(speech => {
+      const speechDate = new Date(speech.created_at);
+      return speechDate >= thirtyDaysAgo;
+    });
+    
+    return {
+      totalSpeeches,
+      inProgressCount: thisMonthSpeeches.length,
+      recentImprovementCount: last30DaysSpeeches.length
+    };
+  }, [speeches]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
@@ -98,7 +131,7 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <SpeechSummaryCard 
                     icon={<FileTextIcon className="h-6 w-6 text-gray-600" />}
-                    count={speeches.length}
+                    count={dashboardMetrics.totalSpeeches}
                     label="dashboard.totalSpeeches"
                     period="dashboard.allTime"
                     bgColor="bg-gray-100"
@@ -106,7 +139,7 @@ const Dashboard = () => {
                   
                   <SpeechSummaryCard 
                     icon={<ShieldIcon className="h-6 w-6 text-gray-600" />}
-                    count={2}
+                    count={dashboardMetrics.inProgressCount}
                     label="dashboard.inProgress"
                     period="dashboard.thisMonth"
                     bgColor="bg-red-50"
@@ -114,7 +147,7 @@ const Dashboard = () => {
                   
                   <SpeechSummaryCard 
                     icon={<TrendingUpIcon className="h-6 w-6 text-gray-600" />}
-                    count={15}
+                    count={dashboardMetrics.recentImprovementCount}
                     label="dashboard.improvement"
                     period="dashboard.last30Days"
                     bgColor="bg-green-50"
