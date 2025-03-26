@@ -38,7 +38,7 @@ const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
     <div className="bg-white rounded-lg shadow-sm p-8">
       <div>
         <h1 className="text-3xl font-bold text-purple-600">
-          {t('dashboard.hello', currentLanguage.code)}, <span className="text-pink-600">{displayName}!</span>
+          Hello, <span className="text-pink-600">{displayName}!</span>
         </h1>
         <p className="text-gray-500 mt-2">It's a beautiful {dayOfWeek} {timeOfDay}, so let's get creative and help you craft a memorable speech!</p>
       </div>
