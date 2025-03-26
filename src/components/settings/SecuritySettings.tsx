@@ -251,7 +251,10 @@ const SecuritySettings = () => {
               Disable Two-Factor Authentication
             </Button>
           ) : (
-            <Button onClick={setupTwoFactor} className="w-full">
+            <Button 
+              onClick={setupTwoFactor} 
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white w-full"
+            >
               Set Up Two-Factor Authentication
             </Button>
           )}
