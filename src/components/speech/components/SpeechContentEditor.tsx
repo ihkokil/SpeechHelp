@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { TextareaWithPinkScrollbar } from '@/components/ui/textarea-with-pink-scrollbar';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -10,15 +10,18 @@ import Translate from '@/components/Translate';
 interface SpeechContentEditorProps {
   content: string;
   onContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  preserveHtml?: boolean;
 }
 
 const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({ 
   content, 
-  onContentChange 
+  onContentChange,
+  preserveHtml = false
 }) => {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   const [processedContent, setProcessedContent] = useState(content);
   const [htmlContent, setHtmlContent] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Process content on initial load and when content changes
   useEffect(() => {
@@ -154,8 +157,9 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
         <TextareaWithPinkScrollbar 
           id="speechContent"
           className="min-h-[300px]" 
-          value={processedContent}
+          value={preserveHtml ? content : processedContent}
           onChange={handleContentChange}
+          ref={textareaRef}
         />
       ) : (
         <SpeechPreview content={content} />

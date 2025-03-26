@@ -13,6 +13,12 @@ const SpeechPreview: React.FC<SpeechPreviewProps> = ({ content }) => {
     
     let formattedText = text;
     
+    // If the content already contains HTML tags, just return it
+    if (formattedText.includes('<h1') || formattedText.includes('<p') || 
+        formattedText.includes('<strong') || formattedText.includes('<div')) {
+      return formattedText;
+    }
+    
     // Remove the raw JSON if it appears in the content
     if (formattedText.includes('{"content"')) {
       try {
