@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -276,7 +277,7 @@ const SecuritySettings = () => {
                   Permanently delete your account and all of your content. This action cannot be undone.
                 </p>
               </div>
-              <Button variant="destructive" className="w-40">
+              <Button variant="destructive" className="w-40 bg-red-600 hover:bg-red-700">
                 Delete Account
               </Button>
             </div>
