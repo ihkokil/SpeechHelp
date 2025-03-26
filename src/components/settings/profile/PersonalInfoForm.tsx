@@ -1,10 +1,8 @@
 
-import { useState, useEffect } from 'react';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Mail, Phone } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
-import { AsYouType, CountryCode } from 'libphonenumber-js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import countryData from '../../../data/countries';
 import { ProfileFormValues } from './types';
@@ -24,10 +22,6 @@ const PersonalInfoForm = ({
   handlePhoneChange,
   handleCountryCodeChange
 }: PersonalInfoFormProps) => {
-  const { watch, setValue } = form;
-  const currentPhone = watch('phone');
-  const countryCode = watch('countryCode');
-
   return (
     <>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
