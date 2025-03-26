@@ -47,12 +47,12 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
     if (questions.length > 0) {
       setProgress(((currentQuestionIndex + 1) / questions.length) * 100);
       
-      // Show encouragement message every 2nd or 3rd question (randomly)
-      const shouldShowEncouragement = Math.random() > 0.5 ? 
-        currentQuestionIndex % 2 === 0 : 
-        currentQuestionIndex % 3 === 0;
-      
-      setShowEncouragement(shouldShowEncouragement);
+      // Show encouragement message every 2 questions
+      if (currentQuestionIndex % 2 === 0 && currentQuestionIndex > 0) {
+        setShowEncouragement(true);
+      } else {
+        setShowEncouragement(false);
+      }
     }
   }, [currentQuestionIndex, questions.length]);
 
@@ -139,15 +139,13 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
         </ButtonCustom>
       </div>
 
-      {/* Encouraging message component */}
-      {showEncouragement && (
-        <div className="mt-8 pt-6">
-          <EncouragementMessage 
-            currentQuestionIndex={currentQuestionIndex} 
-            totalQuestions={questions.length} 
-          />
-        </div>
-      )}
+      {/* Encouraging message component - always render the container */}
+      <div className="mt-8 pt-6">
+        {showEncouragement && <EncouragementMessage 
+          currentQuestionIndex={currentQuestionIndex} 
+          totalQuestions={questions.length} 
+        />}
+      </div>
     </div>
   );
 };
