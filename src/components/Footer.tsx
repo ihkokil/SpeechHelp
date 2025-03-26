@@ -8,8 +8,8 @@ const Footer = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
-  // Get the correct logo path that works in both development and production
-  const logoPath = new URL('/Speech Help - Logo.svg', import.meta.url).href;
+  // Using a relative path that works in both development and production
+  const logoPath = "/Speech Help - Logo.svg";
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">

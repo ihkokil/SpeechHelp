@@ -7,8 +7,8 @@ import MobileNav from "./navigation/MobileNav";
 const Navbar = () => {
   const isScrolled = useScrollDetection();
   
-  // Get the correct logo path that works in both development and production
-  const logoPath = new URL('/Speech Help - Logo.svg', import.meta.url).href;
+  // Using a relative path that works in both development and production
+  const logoPath = "/Speech Help - Logo.svg";
 
   return (
     <nav
