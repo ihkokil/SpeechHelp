@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { TextareaWithPinkScrollbar } from '@/components/ui/textarea-with-pink-scrollbar';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -17,6 +17,53 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
   onContentChange 
 }) => {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
+  const [processedContent, setProcessedContent] = useState(content);
+
+  // Process JSON content if needed
+  useEffect(() => {
+    // Try to parse JSON if the content appears to be JSON
+    if (content.includes('{"content"')) {
+      try {
+        const jsonContent = JSON.parse(content);
+        setProcessedContent(jsonContent.content || content);
+      } catch (e) {
+        // If parsing fails, use the original content
+        setProcessedContent(content);
+      }
+    } else {
+      setProcessedContent(content);
+    }
+  }, [content]);
+
+  // Custom handler for content changes to maintain JSON structure if it exists
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    
+    // If original content was JSON, maintain that structure
+    if (content.includes('{"content"')) {
+      try {
+        const jsonContent = JSON.parse(content);
+        // Create new event with updated content structure
+        const newEvent = {
+          ...e,
+          target: {
+            ...e.target,
+            value: JSON.stringify({
+              ...jsonContent,
+              content: newValue
+            })
+          }
+        };
+        onContentChange(newEvent as React.ChangeEvent<HTMLTextAreaElement>);
+      } catch (e) {
+        // If JSON parsing fails, just update with the raw value
+        onContentChange(e);
+      }
+    } else {
+      // If not JSON, just update normally
+      onContentChange(e);
+    }
+  };
 
   return (
     <div>
@@ -44,8 +91,8 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
         <TextareaWithPinkScrollbar 
           id="speechContent"
           className="min-h-[300px]" 
-          value={content}
-          onChange={onContentChange}
+          value={processedContent}
+          onChange={handleContentChange}
         />
       ) : (
         <SpeechPreview content={content} />

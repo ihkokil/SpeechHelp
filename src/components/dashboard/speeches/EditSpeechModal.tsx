@@ -9,9 +9,9 @@ import {
 } from '@/components/ui/dialog';
 import { Speech } from '@/types/auth';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import Translate from '@/components/Translate';
+import SpeechContentEditor from '@/components/speech/components/SpeechContentEditor';
 
 interface EditSpeechModalProps {
   isOpen: boolean;
@@ -36,9 +36,13 @@ const EditSpeechModal = ({
 }: EditSpeechModalProps) => {
   if (!speech) return null;
 
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEditContent(e.target.value);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
         <DialogHeader>
           <DialogTitle><Translate text="dashboard.editSpeech" /></DialogTitle>
           <DialogDescription>
@@ -58,18 +62,13 @@ const EditSpeechModal = ({
             />
           </div>
           <div>
-            <label htmlFor="editContent" className="text-sm font-medium">
-              <Translate text="common.content" />
-            </label>
-            <Textarea
-              id="editContent"
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              className="w-full min-h-[300px]"
+            <SpeechContentEditor 
+              content={editContent}
+              onContentChange={handleContentChange}
             />
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="mt-4">
           <ButtonCustom 
             variant="outline" 
             onClick={() => onOpenChange(false)}
