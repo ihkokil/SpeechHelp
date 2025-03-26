@@ -68,7 +68,7 @@ const SpeechPreview: React.FC<SpeechPreviewProps> = ({ content }) => {
   return (
     <Card className="min-h-[300px] p-6 overflow-y-auto text-left bg-white shadow-sm border border-gray-200">
       <div 
-        className="prose prose-pink max-w-none"
+        className="prose prose-pink max-w-none speech-preview-content"
         dangerouslySetInnerHTML={{ __html: formatSpeechContent(content) }} 
       />
     </Card>
