@@ -48,8 +48,15 @@ export const weddingQuestionnaire: QuestionItem[] = [
   },
   { 
     question: "Include cultural or religious references?", 
+    type: "radio", 
+    options: ["Yes", "No"],
+    placeholder: "Specify if applicable" 
+  },
+  { 
+    question: "Cultural or religious details to include", 
     type: "textarea", 
-    placeholder: "Specify if applicable, or leave blank" 
+    placeholder: "Please provide details about specific cultural or religious elements to include",
+    condition: { question: "Include cultural or religious references?", value: "Yes" }
   },
   { 
     question: "Any inside jokes or personal anecdotes?", 
@@ -58,8 +65,15 @@ export const weddingQuestionnaire: QuestionItem[] = [
   },
   { 
     question: "End with a toast?", 
+    type: "radio",
+    options: ["Yes", "No"],
+    placeholder: "Would you like to end with a toast?" 
+  },
+  { 
+    question: "Toast details", 
     type: "textarea", 
-    placeholder: "Provide details or we'll suggest one" 
+    placeholder: "Provide details for your toast or we'll suggest one",
+    condition: { question: "End with a toast?", value: "Yes" }
   },
   { 
     question: "Anything else to include or avoid?", 
