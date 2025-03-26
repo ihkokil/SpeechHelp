@@ -33,6 +33,9 @@ export const formatSpeechContentForPdf = (text: string): string => {
   // Handle horizontal rule with a more prominent styling
   formattedText = formattedText.replace(/^---$/gm, '<hr style="border: 1px solid #e5e7eb; margin: 16px 0;" />');
   
+  // Fix the $2 separator issue
+  formattedText = formattedText.replace(/\$2/g, '<hr style="border: 1px solid #e5e7eb; margin: 16px 0;" />');
+  
   // Add spacing between paragraphs
   formattedText = formattedText.replace(/\n\n/g, '</p><p style="margin-bottom: 16px;">');
   
