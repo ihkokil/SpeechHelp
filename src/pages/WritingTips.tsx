@@ -12,8 +12,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useToast } from '@/hooks/use-toast';
 
-const tipsSections = [
+// First batch of tips
+const initialTipsSections = [
   {
     id: "how-to-write",
     title: "How to Write a Great Speech",
@@ -83,6 +85,10 @@ const tipsSections = [
       </>
     ),
   },
+];
+
+// Additional tips to load when clicking "Load more"
+const additionalTipsSections = [
   {
     id: "engaging-audience",
     title: "Engaging Your Audience",
@@ -134,7 +140,11 @@ const tipsSections = [
 const WritingTips = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [tipsSections, setTipsSections] = useState(initialTipsSections);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [allTipsLoaded, setAllTipsLoaded] = useState(false);
   
   // Redirect if not logged in
   useEffect(() => {
@@ -145,6 +155,22 @@ const WritingTips = () => {
 
   const handleClose = () => {
     navigate('/dashboard');
+  };
+
+  const handleLoadMore = () => {
+    setIsLoadingMore(true);
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+      setTipsSections([...tipsSections, ...additionalTipsSections]);
+      setIsLoadingMore(false);
+      setAllTipsLoaded(true);
+      
+      toast({
+        title: "Tips Loaded",
+        description: "All writing tips have been loaded successfully",
+      });
+    }, 1500);
   };
 
   if (isLoading) {
@@ -212,14 +238,25 @@ const WritingTips = () => {
                 ))}
               </Accordion>
               
-              <div className="p-6 text-center">
-                <button className="text-purple-600 font-medium flex items-center mx-auto hover:text-purple-700 transition-colors">
-                  <span className="mr-2">Load more</span>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="animate-spin">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeDasharray="32" strokeDashoffset="10" />
-                  </svg>
-                </button>
-              </div>
+              {!allTipsLoaded && (
+                <div className="p-6 text-center">
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleLoadMore} 
+                    disabled={isLoadingMore}
+                    className="text-purple-600 font-medium flex items-center mx-auto hover:text-purple-700 transition-colors"
+                  >
+                    <span className="mr-2">
+                      {isLoadingMore ? 'Loading more tips...' : 'Load more'}
+                    </span>
+                    {isLoadingMore && (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="animate-spin">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeDasharray="32" strokeDashoffset="10" />
+                      </svg>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
