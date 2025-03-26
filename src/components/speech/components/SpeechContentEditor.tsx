@@ -11,14 +11,16 @@ interface SpeechContentEditorProps {
   content: string;
   onContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   preserveHtml?: boolean;
+  forceEditMode?: boolean;
 }
 
 const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({ 
   content, 
   onContentChange,
-  preserveHtml = false
+  preserveHtml = false,
+  forceEditMode = false
 }) => {
-  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
+  const [viewMode, setViewMode] = useState<'edit' | 'preview'>(forceEditMode ? 'edit' : 'edit');
   const [processedContent, setProcessedContent] = useState(content);
   const [htmlContent, setHtmlContent] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -48,6 +50,12 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
     if (!text) return '';
     
     let formattedText = text;
+    
+    // If the content already contains HTML tags, just return it
+    if (formattedText.includes('<h1') || formattedText.includes('<p') || 
+        formattedText.includes('<strong') || formattedText.includes('<div')) {
+      return formattedText;
+    }
     
     // Remove the raw JSON if it appears in the content
     if (formattedText.includes('{"content"')) {
@@ -133,34 +141,46 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <Label 
-          htmlFor="speechContent" 
-          className="text-pink-600 font-medium uppercase"
-        >
-          <Translate text="speechLab.content" fallback="Speech Content" />
-        </Label>
-        
-        <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'edit' | 'preview')}>
-          <ToggleGroupItem value="edit" aria-label="Edit mode" className="px-3 py-1">
-            <Edit className="h-5 w-5 mr-1" />
-            <Translate text="speechLab.edit" fallback="Edit" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="preview" aria-label="Preview mode" className="px-3 py-1">
-            <Eye className="h-5 w-5 mr-1" />
-            <Translate text="speechLab.preview" fallback="Preview" />
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
+      {!forceEditMode && (
+        <div className="flex items-center justify-between mb-2">
+          <Label 
+            htmlFor="speechContent" 
+            className="text-pink-600 font-medium uppercase"
+          >
+            <Translate text="speechLab.content" fallback="Speech Content" />
+          </Label>
+          
+          <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'edit' | 'preview')}>
+            <ToggleGroupItem value="edit" aria-label="Edit mode" className="px-3 py-1">
+              <Edit className="h-5 w-5 mr-1" />
+              <Translate text="speechLab.edit" fallback="Edit" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="preview" aria-label="Preview mode" className="px-3 py-1">
+              <Eye className="h-5 w-5 mr-1" />
+              <Translate text="speechLab.preview" fallback="Preview" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+      )}
 
       {viewMode === 'edit' ? (
-        <TextareaWithPinkScrollbar 
-          id="speechContent"
-          className="min-h-[300px]" 
-          value={preserveHtml ? content : processedContent}
-          onChange={handleContentChange}
-          ref={textareaRef}
-        />
+        <>
+          {forceEditMode && (
+            <Label 
+              htmlFor="speechContent" 
+              className="text-pink-600 font-medium uppercase block mb-2"
+            >
+              <Translate text="speechLab.content" fallback="Speech Content" />
+            </Label>
+          )}
+          <TextareaWithPinkScrollbar 
+            id="speechContent"
+            className="min-h-[300px]" 
+            value={preserveHtml ? content : processedContent}
+            onChange={preserveHtml ? onContentChange : handleContentChange}
+            ref={textareaRef}
+          />
+        </>
       ) : (
         <SpeechPreview content={content} />
       )}
