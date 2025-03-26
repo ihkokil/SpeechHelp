@@ -24,11 +24,11 @@ const SpeechPreview: React.FC<SpeechPreviewProps> = ({ content }) => {
     // Handle italic text
     formattedText = formattedText.replace(/\*(.+?)\*/g, '<em class="italic">$1</em>');
     
+    // Handle horizontal rule with a more prominent styling
+    formattedText = formattedText.replace(/^---$/gm, '<hr class="my-6 border-t-2 border-purple-300" />');
+    
     // Handle paragraphs (add spacing between them)
     formattedText = formattedText.replace(/\n\n/g, '</p><p class="mb-4">');
-    
-    // Handle horizontal rule
-    formattedText = formattedText.replace(/^---$/gm, '<hr class="my-6 border-t border-gray-300" />');
     
     // Wrap the content in a paragraph tag
     formattedText = `<p class="mb-4">${formattedText}</p>`;
