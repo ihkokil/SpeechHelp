@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -181,7 +182,7 @@ const ProfileSettings = () => {
                     <FormItem>
                       <FormLabel>First Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="John" {...field} />
+                        <Input placeholder="John" {...field} tabIndex={1} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -195,7 +196,7 @@ const ProfileSettings = () => {
                     <FormItem>
                       <FormLabel>Last Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Doe" {...field} />
+                        <Input placeholder="Doe" {...field} tabIndex={2} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -212,7 +213,7 @@ const ProfileSettings = () => {
                     <FormControl>
                       <div className="flex items-center">
                         <Mail className="h-4 w-4 text-gray-500 mr-2" />
-                        <Input placeholder="name@example.com" {...field} />
+                        <Input placeholder="name@example.com" {...field} tabIndex={3} />
                       </div>
                     </FormControl>
                     <FormDescription>
@@ -236,7 +237,7 @@ const ProfileSettings = () => {
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger tabIndex={4}>
                             <SelectValue placeholder="Select country code" />
                           </SelectTrigger>
                         </FormControl>
@@ -271,6 +272,7 @@ const ProfileSettings = () => {
                               value={formattedPhone}
                               onChange={handlePhoneChange}
                               className="flex-grow"
+                              tabIndex={5}
                               {...field}
                             />
                           </div>
@@ -296,7 +298,7 @@ const ProfileSettings = () => {
                       <FormItem>
                         <FormLabel>Street Address</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="123 Main St, Apt 4B" {...field} />
+                          <Textarea placeholder="123 Main St, Apt 4B" {...field} tabIndex={6} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -311,7 +313,7 @@ const ProfileSettings = () => {
                         <FormItem>
                           <FormLabel>City</FormLabel>
                           <FormControl>
-                            <Input placeholder="San Francisco" {...field} />
+                            <Input placeholder="San Francisco" {...field} tabIndex={7} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -330,7 +332,7 @@ const ProfileSettings = () => {
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger tabIndex={8}>
                                 <SelectValue placeholder="Select country" />
                               </SelectTrigger>
                             </FormControl>
@@ -361,7 +363,7 @@ const ProfileSettings = () => {
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger tabIndex={9}>
                                 <SelectValue placeholder="Select state/province" />
                               </SelectTrigger>
                             </FormControl>
@@ -389,7 +391,7 @@ const ProfileSettings = () => {
                         <FormItem>
                           <FormLabel>ZIP / Postal Code</FormLabel>
                           <FormControl>
-                            <Input placeholder="94103" {...field} />
+                            <Input placeholder="94103" {...field} tabIndex={10} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -404,6 +406,7 @@ const ProfileSettings = () => {
                   type="submit" 
                   className="bg-gradient-to-r from-purple-600 to-pink-600 text-white" 
                   disabled={isSubmitting}
+                  tabIndex={11}
                 >
                   {isSubmitting ? "Saving..." : "Save Changes"}
                 </Button>
