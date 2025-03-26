@@ -1,13 +1,15 @@
 
 import { QuestionItem } from './types';
-import { introductionQuestion } from './introductionQuestion';
+
+// Note: We're no longer importing the introductionQuestion
+// import { introductionQuestion } from './introductionQuestion';
 
 export const weddingQuestionnaire: QuestionItem[] = [
-  introductionQuestion,
+  // We're replacing the introductionQuestion with a direct definition
   { 
     question: "Will you be introduced before you speak?",
     type: "radio",
-    options: ["Yes", "No"]
+    options: ["Yes", "No", "Unsure"]
   },
   { 
     question: "What is your name?", 
