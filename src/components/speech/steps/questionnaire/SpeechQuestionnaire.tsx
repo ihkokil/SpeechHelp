@@ -47,8 +47,8 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
     if (questions.length > 0) {
       setProgress(((currentQuestionIndex + 1) / questions.length) * 100);
       
-      // Show encouragement message every 2 questions (not 3)
-      if ((currentQuestionIndex + 1) % 2 === 0 && currentQuestionIndex > 0) {
+      // Show encouragement message every 3 questions
+      if ((currentQuestionIndex + 1) % 3 === 0 && currentQuestionIndex > 0) {
         setShowEncouragement(true);
       } else {
         setShowEncouragement(false);
