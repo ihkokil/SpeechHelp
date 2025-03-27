@@ -18,33 +18,31 @@ const Hero = () => {
     setIsLoaded(true);
   }, []);
 
-  // Get the navbar height to properly position the hero section
-  const navbarHeight = 76; // Approximate height of the navbar in pixels
+  // Get the navbar height for positioning
+  const navbarHeight = 76; // Height of the navbar in pixels
 
   return (
     <section 
       className="text-white pb-24 md:pb-32 overflow-hidden relative" 
-      style={{ paddingTop: `calc(${navbarHeight}px + 2rem)` }}
+      style={{ paddingTop: navbarHeight }}
     >
-      {/* Video Background - Positioned to be fully visible below navbar */}
-      <div className="absolute top-0 left-0 right-0 bottom-0 z-0 overflow-hidden">
-        <div className="absolute inset-0" style={{ top: navbarHeight }}>
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="absolute w-full h-full object-cover object-center"
-            poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
-          >
-            <source src={videoUrl} type="video/quicktime" />
-            <source src={videoUrl} type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-black/60"></div>
-        </div>
+      {/* Video Background - Full height with proper positioning */}
+      <div className="absolute inset-0 z-0 overflow-hidden" style={{ top: navbarHeight }}>
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover"
+          poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
+        >
+          <source src={videoUrl} type="video/quicktime" />
+          <source src={videoUrl} type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-black/60"></div>
       </div>
       
-      <div className="container relative z-10 mx-auto px-6 md:px-12">
+      <div className="container relative z-10 mx-auto px-6 md:px-12 pt-16">
         <div className="max-w-5xl mx-auto text-center">
           {/* Main Headline */}
           <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
