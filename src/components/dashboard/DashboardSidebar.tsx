@@ -26,8 +26,8 @@ const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   
-  // Updated to use the correct logo path
-  const logoPath = "/speech-help-new-logo.svg";
+  // Using the correct SVG file path
+  const logoPath = "/Speech Help - Logo.svg";
   
   // Get current path for highlighting active item
   const currentPath = window.location.pathname;
