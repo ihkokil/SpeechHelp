@@ -23,32 +23,38 @@ const Hero = () => {
 
   return (
     <section 
-      className="text-white pb-24 md:pb-32 overflow-hidden relative"
-      style={{ paddingTop: navbarHeight + 20 }} // Added extra padding to ensure video starts below navbar
+      className="text-white overflow-hidden relative"
+      style={{ 
+        paddingTop: navbarHeight + 20, // Extra padding for video to start below navbar
+        paddingBottom: '56.25vw' // Using aspect ratio padding to maintain video height
+      }}
     >
-      {/* Video Background with adjusted positioning */}
+      {/* Video Background with proper aspect ratio */}
       <div 
         className="absolute inset-0 z-0 overflow-hidden" 
         style={{ 
           top: navbarHeight,
-          height: `calc(100% - ${navbarHeight}px)` // Ensure video container starts below navbar
+          bottom: 0, // Ensure it extends to the bottom
+          height: 'auto' // Let height auto-adjust based on aspect ratio
         }}
       >
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="w-full h-full object-cover object-top" // Changed to object-top to show the top of the video
-          poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
-        >
-          <source src={videoUrl} type="video/quicktime" />
-          <source src={videoUrl} type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-black/60"></div>
+        <div className="relative w-full h-full">
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute w-full h-full object-cover object-center" // Changed to object-center for better centering
+            poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
+          >
+            <source src={videoUrl} type="video/quicktime" />
+            <source src={videoUrl} type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-black/60"></div>
+        </div>
       </div>
       
-      <div className="container relative z-10 mx-auto px-6 md:px-12 pt-16">
+      <div className="container relative z-10 mx-auto px-6 md:px-12 pt-16 pb-32 md:pb-48"> 
         <div className="max-w-5xl mx-auto text-center">
           {/* Main Headline */}
           <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
