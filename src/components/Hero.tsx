@@ -18,22 +18,30 @@ const Hero = () => {
     setIsLoaded(true);
   }, []);
 
+  // Get the navbar height to properly position the hero section
+  const navbarHeight = 76; // Approximate height of the navbar in pixels
+
   return (
-    <section className="text-white pt-24 pb-24 md:pt-28 md:pb-32 overflow-hidden relative">
-      {/* Video Background - Positioned to align with navbar */}
+    <section 
+      className="text-white pb-24 md:pb-32 overflow-hidden relative" 
+      style={{ paddingTop: `calc(${navbarHeight}px + 2rem)` }}
+    >
+      {/* Video Background - Positioned to be fully visible below navbar */}
       <div className="absolute top-0 left-0 right-0 bottom-0 z-0 overflow-hidden">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute w-full h-full object-cover object-center"
-          poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
-        >
-          <source src={videoUrl} type="video/quicktime" />
-          <source src={videoUrl} type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-black/60"></div>
+        <div className="absolute inset-0" style={{ top: navbarHeight }}>
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute w-full h-full object-cover object-center"
+            poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
+          >
+            <source src={videoUrl} type="video/quicktime" />
+            <source src={videoUrl} type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-black/60"></div>
+        </div>
       </div>
       
       <div className="container relative z-10 mx-auto px-6 md:px-12">
