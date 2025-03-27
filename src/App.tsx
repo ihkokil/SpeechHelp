@@ -15,6 +15,7 @@ import MySpeeches from "./pages/MySpeeches";
 import Settings from "./pages/Settings";
 import HelpSupport from "./pages/HelpSupport";
 import SvgUploaderDemo from "./pages/SvgUploaderDemo";
+import LogoManager from "./pages/LogoManager";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Navbar from "./components/Navbar";
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/pricing" element={<NavbarLayout><Pricing /></NavbarLayout>} />
               <Route path="/auth" element={<NavbarLayout><Auth /></NavbarLayout>} />
               <Route path="/svg-uploader" element={<NavbarLayout><SvgUploaderDemo /></NavbarLayout>} />
+              <Route path="/logo-manager" element={<LogoManager />} />
               <Route 
                 path="/dashboard" 
                 element={
