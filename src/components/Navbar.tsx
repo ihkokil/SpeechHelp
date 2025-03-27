@@ -7,8 +7,8 @@ import MobileNav from "./navigation/MobileNav";
 const Navbar = () => {
   const isScrolled = useScrollDetection();
   
-  // Using absolute path for logo to ensure it works in production
-  const logoPath = "/Speech Help - Logo.svg";
+  // Using Supabase hosted SVG file
+  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
 
   return (
     <nav

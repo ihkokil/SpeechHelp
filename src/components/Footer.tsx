@@ -1,3 +1,4 @@
+
 import { Facebook, Instagram, Linkedin, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -8,8 +9,8 @@ const Footer = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
-  // Using absolute path for logo to ensure it works in production
-  const logoPath = "/Speech Help - Logo.svg";
+  // Using Supabase hosted SVG file
+  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">

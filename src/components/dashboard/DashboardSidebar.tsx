@@ -1,3 +1,4 @@
+
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -25,8 +26,8 @@ const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   
-  // Using absolute path for logo to ensure it works in production
-  const logoPath = "/Speech Help - Logo.svg";
+  // Using Supabase hosted SVG file
+  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
   
   // Get current path for highlighting active item
   const currentPath = window.location.pathname;
