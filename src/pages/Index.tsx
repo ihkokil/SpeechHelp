@@ -17,22 +17,27 @@ const Index = () => {
       setIsLoading(false);
     }, 500);
 
+    // Reset scroll position on page load
+    window.scrollTo(0, 0);
+
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle direct navigation with hash
+  // Handle direct navigation with hash - modified to prevent auto-scrolling issues
   useEffect(() => {
     // Check if there's a hash in the URL
     if (window.location.hash) {
       // Remove the # character
       const id = window.location.hash.substring(1);
-      // Find element and scroll to it
-      setTimeout(() => {
+      // Find element and scroll to it with a delay
+      const scrollTimer = setTimeout(() => {
         const element = document.getElementById(id);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 600); // Small delay to ensure the page is fully loaded
+      }, 1000); // Increased delay to ensure page is fully loaded
+      
+      return () => clearTimeout(scrollTimer);
     }
   }, []);
 
