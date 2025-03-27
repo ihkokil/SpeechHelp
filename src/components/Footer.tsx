@@ -1,7 +1,9 @@
+
 import { Facebook, Instagram, Linkedin, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
+import logoSvg from "/Speech Help - Logo.svg";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -13,13 +15,13 @@ const Footer = () => {
       <div className="container mx-auto px-6 md:px-12 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-1 md:col-span-2">
-            <a href="#" className="inline-block mb-4">
+            <Link to="/" className="inline-block mb-4" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <img 
-                src="/Speech Help - Logo.svg"
+                src={logoSvg}
                 alt="SpeechHelp Logo" 
                 className="h-14" 
               />
-            </a>
+            </Link>
             <p className="text-gray-600 mb-6 max-w-md">
               {t('footer.description', currentLanguage.code)}
             </p>
