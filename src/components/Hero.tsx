@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
@@ -12,6 +12,7 @@ const Hero = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
+  const heroRef = useRef<HTMLElement>(null);
   
   // Video hosted on Supabase
   const videoUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/sign/videofiles/Video%20Montage%20-%20Speech%20Help%20App.mov?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJ2aWRlb2ZpbGVzL1ZpZGVvIE1vbnRhZ2UgLSBTcGVlY2ggSGVscCBBcHAubW92IiwiaWF0IjoxNzQzMDk4MTg0LCJleHAiOjE3NzQ2MzQxODR9.wLJRfrryzMvSYVz8ZeCt6YPHJvBheaX4JZ2MAeEt1R4";
@@ -19,10 +20,30 @@ const Hero = () => {
   useEffect(() => {
     setIsLoaded(true);
     
-    // Prevent auto-scrolling on page load
-    if (typeof window !== 'undefined') {
-      window.scrollTo(0, 0);
-    }
+    // Strong anti-scroll implementation
+    const preventScroll = () => {
+      if (heroRef.current) {
+        window.scrollTo(0, 0);
+      }
+    };
+    
+    // Apply multiple scroll preventions
+    window.scrollTo(0, 0);
+    setTimeout(() => window.scrollTo(0, 0), 100);
+    setTimeout(() => window.scrollTo(0, 0), 300);
+    
+    // Add scroll event listener for the first second to prevent scrolling
+    window.addEventListener('scroll', preventScroll);
+    
+    // Remove the event listener after a delay to allow scrolling later
+    const scrollTimer = setTimeout(() => {
+      window.removeEventListener('scroll', preventScroll);
+    }, 1000);
+    
+    return () => {
+      window.removeEventListener('scroll', preventScroll);
+      clearTimeout(scrollTimer);
+    };
   }, []);
 
   // Get the navbar height for positioning
@@ -30,6 +51,7 @@ const Hero = () => {
 
   return (
     <section 
+      ref={heroRef}
       className="text-white pb-16 md:pb-24 overflow-hidden relative"
       style={{ paddingTop: navbarHeight + 20 }}
     >

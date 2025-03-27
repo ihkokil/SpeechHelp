@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
@@ -17,14 +16,19 @@ const Index = () => {
       setIsLoading(false);
     }, 500);
 
-    // Reset scroll position on page load
-    window.scrollTo(0, 0);
+    // Reset scroll position on page load - more aggressive approach
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
 
     return () => clearTimeout(timer);
   }, []);
 
   // Handle direct navigation with hash - modified to prevent auto-scrolling issues
   useEffect(() => {
+    // First ensure we're at the top
+    window.scrollTo(0, 0);
+    
     // Check if there's a hash in the URL
     if (window.location.hash) {
       // Remove the # character
@@ -35,7 +39,7 @@ const Index = () => {
         if (element) {
           element.scrollIntoView({ behavior: 'smooth' });
         }
-      }, 1000); // Increased delay to ensure page is fully loaded
+      }, 1500); // Further increased delay to ensure page is fully loaded
       
       return () => clearTimeout(scrollTimer);
     }
