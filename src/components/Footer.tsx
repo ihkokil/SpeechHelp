@@ -1,3 +1,4 @@
+
 import { Facebook, Instagram, Linkedin, X } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -8,8 +9,8 @@ const Footer = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
-  // Updated to use the correct logo path
-  const logoPath = "/speech-help-new-logo.svg";
+  // Using the correct SVG file path
+  const logoPath = "/Speech Help - Logo.svg";
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">

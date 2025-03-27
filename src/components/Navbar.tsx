@@ -8,7 +8,7 @@ const Navbar = () => {
   const isScrolled = useScrollDetection();
   
   // Using the correct SVG file path
-  const logoPath = "/speech-help-new-logo.svg";
+  const logoPath = "/Speech Help - Logo.svg";
 
   return (
     <nav
