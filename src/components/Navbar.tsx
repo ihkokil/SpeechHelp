@@ -7,9 +7,6 @@ import MobileNav from "./navigation/MobileNav";
 const Navbar = () => {
   const isScrolled = useScrollDetection();
   
-  // Using the correct SVG file path
-  const logoPath = "/Speech Help - Logo.svg";
-
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
@@ -26,7 +23,7 @@ const Navbar = () => {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <img 
-              src={logoPath}
+              src="/Speech Help - Logo.svg"
               alt="SpeechHelp Logo" 
               className="h-10" 
             />
