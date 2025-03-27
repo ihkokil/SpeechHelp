@@ -4,12 +4,12 @@ import { useScrollDetection } from "@/hooks/useScrollDetection";
 import DesktopNav from "./navigation/DesktopNav";
 import MobileNav from "./navigation/MobileNav";
 
-// Import the logo directly to ensure it's properly bundled with the application
-import logoSvg from "../assets/logo.svg";
-
 const Navbar = () => {
   const isScrolled = useScrollDetection();
   
+  // Using the correct SVG file path
+  const logoPath = "/speech-help-new-logo.svg";
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
@@ -26,7 +26,7 @@ const Navbar = () => {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <img 
-              src={logoSvg}
+              src={logoPath}
               alt="SpeechHelp Logo" 
               className="h-10" 
             />
