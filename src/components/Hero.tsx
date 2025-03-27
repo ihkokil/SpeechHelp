@@ -23,17 +23,23 @@ const Hero = () => {
 
   return (
     <section 
-      className="text-white pb-24 md:pb-32 overflow-hidden relative" 
-      style={{ paddingTop: navbarHeight }}
+      className="text-white pb-24 md:pb-32 overflow-hidden relative"
+      style={{ paddingTop: navbarHeight + 20 }} // Added extra padding to ensure video starts below navbar
     >
-      {/* Video Background - Full height with proper positioning */}
-      <div className="absolute inset-0 z-0 overflow-hidden" style={{ top: navbarHeight }}>
+      {/* Video Background with adjusted positioning */}
+      <div 
+        className="absolute inset-0 z-0 overflow-hidden" 
+        style={{ 
+          top: navbarHeight,
+          height: `calc(100% - ${navbarHeight}px)` // Ensure video container starts below navbar
+        }}
+      >
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-top" // Changed to object-top to show the top of the video
           poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
         >
           <source src={videoUrl} type="video/quicktime" />
