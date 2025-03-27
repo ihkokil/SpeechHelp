@@ -39,7 +39,7 @@ const UserMenu = () => {
         <Link to="/auth?signin=true">
           <ButtonCustom 
             variant="ghost" 
-            className="font-semibold text-pink-600 hover:bg-transparent px-4"
+            className="font-semibold text-pink-600 hover:text-pink-800 hover:bg-pink-50 px-4 transition-colors"
           >
             Log In
           </ButtonCustom>
