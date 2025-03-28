@@ -23,16 +23,13 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
             <div className="flex items-center">
               <MapPin className="h-4 w-4 text-gray-500 mr-2" />
               <Select 
-                onValueChange={(value) => {
-                  console.log('State changed to:', value);
-                  field.onChange(value);
-                }}
+                onValueChange={field.onChange}
                 value={field.value || ''}
               >
                 <SelectTrigger className="w-full" tabIndex={9}>
                   <SelectValue placeholder="Select state/province" />
                 </SelectTrigger>
-                <SelectContent className="bg-white max-h-60">
+                <SelectContent className="bg-white max-h-60 z-[150]">
                   {availableStates.length > 0 ? (
                     availableStates.map((state) => (
                       <SelectItem key={state.code} value={state.name}>
