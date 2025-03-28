@@ -41,7 +41,7 @@ const PhoneFields = ({
             >
               <FormControl>
                 <div className="relative">
-                  <SelectTrigger className="w-full pl-10" tabIndex={4}>
+                  <SelectTrigger className="w-full pl-10" tabIndex={3}>
                     <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
                       <Phone className="h-4 w-4 text-gray-500" />
                     </div>
@@ -82,7 +82,7 @@ const PhoneFields = ({
                     value={formattedPhone}
                     onChange={handlePhoneChange}
                     className="flex-grow rounded-l-none"
-                    tabIndex={5}
+                    tabIndex={4}
                     {...field}
                   />
                 </div>

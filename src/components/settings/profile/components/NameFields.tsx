@@ -1,8 +1,9 @@
 
+import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { UseFormReturn } from 'react-hook-form';
 import { ProfileFormValues } from '../types';
+import { User } from 'lucide-react';
 
 interface NameFieldsProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -10,7 +11,7 @@ interface NameFieldsProps {
 
 const NameFields = ({ form }: NameFieldsProps) => {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <FormField
         control={form.control}
         name="firstName"
@@ -18,13 +19,22 @@ const NameFields = ({ form }: NameFieldsProps) => {
           <FormItem>
             <FormLabel>First Name</FormLabel>
             <FormControl>
-              <Input placeholder="John" {...field} tabIndex={1} />
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                  <User className="h-4 w-4 text-gray-500" />
+                </div>
+                <Input 
+                  {...field} 
+                  placeholder="First Name" 
+                  className="pl-10"
+                  tabIndex={0}
+                />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-      
       <FormField
         control={form.control}
         name="lastName"
@@ -32,7 +42,17 @@ const NameFields = ({ form }: NameFieldsProps) => {
           <FormItem>
             <FormLabel>Last Name</FormLabel>
             <FormControl>
-              <Input placeholder="Doe" {...field} tabIndex={2} />
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                  <User className="h-4 w-4 text-gray-500" />
+                </div>
+                <Input 
+                  {...field} 
+                  placeholder="Last Name" 
+                  className="pl-10"
+                  tabIndex={1}
+                />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
