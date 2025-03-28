@@ -89,6 +89,14 @@ export const useProfileForm = () => {
   const currentPhone = watch('phone');
   const countryCode = watch('countryCode');
   const selectedCountry = watch('country');
+  const selectedState = watch('state');
+
+  // For debugging
+  useEffect(() => {
+    if (selectedState) {
+      console.log('Selected state changed in form:', selectedState);
+    }
+  }, [selectedState]);
 
   // Update available states when country changes
   useEffect(() => {
