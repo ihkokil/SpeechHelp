@@ -33,7 +33,7 @@ const CountrySelector = ({ form, handleCountryChange }: CountrySelectorProps) =>
                 value={field.value || ''}
                 defaultValue={field.value || ''}
               >
-                <SelectTrigger className="w-full pl-10">
+                <SelectTrigger className="w-full pl-10" data-focus-visible="true">
                   <SelectValue placeholder="Select Country of Residence" />
                 </SelectTrigger>
                 <SelectContent className="bg-white max-h-60">
