@@ -1,6 +1,14 @@
 
 import { QuestionItem } from './types';
-import { introductionQuestion } from './introductionQuestion';
+import { 
+  introductionQuestion,
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
+  culturalElementsQuestion,
+  culturalDetailsQuestion
+} from './introductionQuestion';
 
 export const tedtalkQuestionnaire: QuestionItem[] = [
   introductionQuestion,
@@ -22,6 +30,16 @@ export const tedtalkQuestionnaire: QuestionItem[] = [
     placeholder: "Summarize your talk's focus..." 
   },
   { 
+    question: "Why are you passionate about this topic?", 
+    type: "textarea", 
+    placeholder: "Share your personal connection to this subject..." 
+  },
+  { 
+    question: "What is the big question your talk addresses?", 
+    type: "textarea", 
+    placeholder: "E.g., How can we solve climate change at a local level?" 
+  },
+  { 
     question: "Audience type and size?", 
     type: "text", 
     placeholder: "E.g., General public, 300 attendees" 
@@ -36,6 +54,10 @@ export const tedtalkQuestionnaire: QuestionItem[] = [
     type: "radio", 
     options: ["Engaging", "Thought-Provoking", "Storytelling", "Educational", "Conversational"] 
   },
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
   { 
     question: "Share a personal story or experience.", 
     type: "textarea", 
@@ -47,6 +69,13 @@ export const tedtalkQuestionnaire: QuestionItem[] = [
     placeholder: "Any statistics or findings to share?" 
   },
   { 
+    question: "What counterintuitive or surprising point do you want to make?", 
+    type: "textarea", 
+    placeholder: "Share something unexpected that challenges assumptions..." 
+  },
+  culturalElementsQuestion,
+  culturalDetailsQuestion,
+  { 
     question: "Key message or takeaway?", 
     type: "textarea", 
     placeholder: "What should the audience remember?" 
@@ -55,6 +84,11 @@ export const tedtalkQuestionnaire: QuestionItem[] = [
     question: "Any visual aids to reference?", 
     type: "textarea", 
     placeholder: "Describe slides or props if applicable" 
+  },
+  { 
+    question: "How do you want your audience to be transformed?", 
+    type: "textarea", 
+    placeholder: "What change in thinking or action do you hope for?" 
   },
   { 
     question: "Ending or closing statement?", 

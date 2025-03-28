@@ -1,6 +1,14 @@
 
 import { QuestionItem } from './types';
-import { introductionQuestion } from './introductionQuestion';
+import { 
+  introductionQuestion,
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
+  culturalElementsQuestion,
+  culturalDetailsQuestion
+} from './introductionQuestion';
 
 export const keynoteQuestionnaire: QuestionItem[] = [
   introductionQuestion,
@@ -22,9 +30,19 @@ export const keynoteQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., Annual Industry Summit, Tech Conference" 
   },
   { 
+    question: "What is the theme of the event?", 
+    type: "text", 
+    placeholder: "E.g., 'Innovation for the Future', 'Building Resilience'" 
+  },
+  { 
     question: "Audience type and size?", 
     type: "text", 
     placeholder: "E.g., 500 industry professionals" 
+  },
+  { 
+    question: "What is the current industry landscape?", 
+    type: "textarea", 
+    placeholder: "Describe relevant trends, challenges, or opportunities..." 
   },
   { 
     question: "Desired length of the address?", 
@@ -36,6 +54,10 @@ export const keynoteQuestionnaire: QuestionItem[] = [
     type: "radio", 
     options: ["Inspirational", "Educational", "Visionary", "Strategic", "Authoritative"] 
   },
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
   { 
     question: "Main topic or theme?", 
     type: "textarea", 
@@ -47,6 +69,13 @@ export const keynoteQuestionnaire: QuestionItem[] = [
     placeholder: "Any specific developments to highlight?" 
   },
   { 
+    question: "What predictions or future outlook would you like to share?", 
+    type: "textarea", 
+    placeholder: "Your vision for the future of your industry or field..." 
+  },
+  culturalElementsQuestion,
+  culturalDetailsQuestion,
+  { 
     question: "Key message or takeaway?", 
     type: "textarea", 
     placeholder: "What should the audience remember?" 
@@ -55,6 +84,11 @@ export const keynoteQuestionnaire: QuestionItem[] = [
     question: "Any specific challenges or opportunities to address?", 
     type: "textarea", 
     placeholder: "What issues are important to discuss?" 
+  },
+  { 
+    question: "How does your message relate to the audience's interests?", 
+    type: "textarea", 
+    placeholder: "How will this impact or benefit the audience..." 
   },
   { 
     question: "Closing statement or call to action?", 

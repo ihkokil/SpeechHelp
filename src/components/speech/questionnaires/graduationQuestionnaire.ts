@@ -1,6 +1,14 @@
 
 import { QuestionItem } from './types';
-import { introductionQuestion } from './introductionQuestion';
+import { 
+  introductionQuestion,
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
+  culturalElementsQuestion,
+  culturalDetailsQuestion
+} from './introductionQuestion';
 
 export const graduationQuestionnaire: QuestionItem[] = [
   introductionQuestion,
@@ -28,6 +36,16 @@ export const graduationQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., Graduates, Faculty, Parents" 
   },
   { 
+    question: "What type of institution is this graduation for?", 
+    type: "radio", 
+    options: ["High School", "College/University", "Graduate School", "Trade School", "Other"]
+  },
+  { 
+    question: "What major challenges did the graduates overcome?", 
+    type: "textarea", 
+    placeholder: "E.g., pandemic disruptions, specific academic challenges..." 
+  },
+  { 
     question: "Desired length of the speech?", 
     type: "text", 
     placeholder: "E.g., 5-7 minutes" 
@@ -37,6 +55,10 @@ export const graduationQuestionnaire: QuestionItem[] = [
     type: "radio", 
     options: ["Inspirational", "Reflective", "Challenging", "Celebratory", "Formal"] 
   },
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
   { 
     question: "Key message or theme?", 
     type: "textarea", 
@@ -57,10 +79,17 @@ export const graduationQuestionnaire: QuestionItem[] = [
     type: "textarea", 
     placeholder: "E.g., class achievements, special awards..." 
   },
+  culturalElementsQuestion,
+  culturalDetailsQuestion,
   { 
     question: "Is there a call to action or advice?", 
     type: "textarea", 
     placeholder: "What do you want graduates to do or remember?" 
+  },
+  { 
+    question: "What wisdom about the 'real world' would you like to share?", 
+    type: "textarea", 
+    placeholder: "E.g., career advice, life lessons..." 
   },
   { 
     question: "Closing remarks or statement?", 

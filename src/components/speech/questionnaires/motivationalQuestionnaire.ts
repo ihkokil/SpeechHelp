@@ -1,6 +1,14 @@
 
 import { QuestionItem } from './types';
-import { introductionQuestion } from './introductionQuestion';
+import { 
+  introductionQuestion,
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
+  culturalElementsQuestion,
+  culturalDetailsQuestion
+} from './introductionQuestion';
 
 export const motivationalQuestionnaire: QuestionItem[] = [
   introductionQuestion,
@@ -22,6 +30,16 @@ export const motivationalQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., Students, Athletes, Sales Team" 
   },
   { 
+    question: "What specific challenges is your audience facing?", 
+    type: "textarea", 
+    placeholder: "Describe obstacles or difficulties they're experiencing..." 
+  },
+  { 
+    question: "Have you overcome similar challenges?", 
+    type: "textarea", 
+    placeholder: "Share your personal experience with similar situations..." 
+  },
+  { 
     question: "Speech duration preference?", 
     type: "text", 
     placeholder: "E.g., 20 minutes" 
@@ -31,6 +49,10 @@ export const motivationalQuestionnaire: QuestionItem[] = [
     type: "radio", 
     options: ["Energizing", "Encouraging", "Powerful", "Inspirational", "Empowering"] 
   },
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
   { 
     question: "Share an inspiring story or example.", 
     type: "textarea", 
@@ -47,6 +69,13 @@ export const motivationalQuestionnaire: QuestionItem[] = [
     placeholder: "Any specific quotes or stories to include?" 
   },
   { 
+    question: "What is your personal philosophy about overcoming challenges?", 
+    type: "textarea", 
+    placeholder: "Share your beliefs about resilience, growth, etc..." 
+  },
+  culturalElementsQuestion,
+  culturalDetailsQuestion,
+  { 
     question: "Any challenges or obstacles to address?", 
     type: "textarea", 
     placeholder: "What difficulties might the audience face?" 
@@ -55,6 +84,11 @@ export const motivationalQuestionnaire: QuestionItem[] = [
     question: "Call to action or advice?", 
     type: "textarea", 
     placeholder: "What do you want the audience to do?" 
+  },
+  { 
+    question: "What specific steps or practices would you recommend?", 
+    type: "textarea", 
+    placeholder: "Share actionable advice the audience can implement..." 
   },
   { 
     question: "Closing remarks?", 

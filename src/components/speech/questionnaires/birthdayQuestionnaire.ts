@@ -1,6 +1,14 @@
 
 import { QuestionItem } from './types';
-import { introductionQuestion } from './introductionQuestion';
+import { 
+  introductionQuestion,
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
+  culturalElementsQuestion,
+  culturalDetailsQuestion
+} from './introductionQuestion';
 
 export const birthdayQuestionnaire: QuestionItem[] = [
   introductionQuestion,
@@ -27,6 +35,11 @@ export const birthdayQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., 40th Birthday, 25th Anniversary" 
   },
   { 
+    question: "How long have you known the celebrant?", 
+    type: "text", 
+    placeholder: "E.g., 15 years, Entire life"
+  },
+  { 
     question: "Speech length preference?", 
     type: "text", 
     placeholder: "E.g., 2-3 minutes" 
@@ -36,16 +49,27 @@ export const birthdayQuestionnaire: QuestionItem[] = [
     type: "radio", 
     options: ["Lighthearted", "Heartfelt", "Humorous", "Nostalgic", "Celebratory"] 
   },
+  emotionalImpactQuestion,
+  humorLevelQuestion,
+  speechStructureQuestion,
+  languageStyleQuestion,
   { 
     question: "Share a memorable moment with the celebrant.", 
     type: "textarea", 
     placeholder: "Describe a meaningful experience..." 
   },
   { 
+    question: "What milestone or achievement would you like to highlight?", 
+    type: "textarea", 
+    placeholder: "Any significant life events to celebrate..." 
+  },
+  { 
     question: "Qualities or achievements to highlight?", 
     type: "textarea", 
     placeholder: "What makes this person special?" 
   },
+  culturalElementsQuestion,
+  culturalDetailsQuestion,
   { 
     question: "Include a humorous or sentimental story?", 
     type: "textarea", 
@@ -60,5 +84,10 @@ export const birthdayQuestionnaire: QuestionItem[] = [
     question: "Anything to avoid mentioning?", 
     type: "textarea", 
     placeholder: "Any sensitive topics or issues?" 
+  },
+  {
+    question: "What hopes do you have for their future?",
+    type: "textarea",
+    placeholder: "Share your wishes for their coming year or future..."
   }
 ];
