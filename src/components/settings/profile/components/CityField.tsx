@@ -26,7 +26,6 @@ const CityField = ({ form }: CityFieldProps) => {
                 {...field} 
                 placeholder="City"
                 className="pl-10"
-                tabIndex={5}
               />
             </div>
           </FormControl>

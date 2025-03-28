@@ -26,7 +26,6 @@ const ZipCodeField = ({ form }: ZipCodeFieldProps) => {
                 {...field} 
                 placeholder="Zip / Postal Code" 
                 className="pl-10"
-                tabIndex={8}
               />
             </div>
           </FormControl>

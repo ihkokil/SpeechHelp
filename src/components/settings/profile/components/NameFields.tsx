@@ -27,7 +27,6 @@ const NameFields = ({ form }: NameFieldsProps) => {
                   {...field} 
                   placeholder="First Name" 
                   className="pl-10"
-                  tabIndex={0}
                 />
               </div>
             </FormControl>
@@ -50,7 +49,6 @@ const NameFields = ({ form }: NameFieldsProps) => {
                   {...field} 
                   placeholder="Last Name" 
                   className="pl-10"
-                  tabIndex={1}
                 />
               </div>
             </FormControl>

@@ -28,7 +28,6 @@ const EmailField = ({ form }: EmailFieldProps) => {
                 placeholder="Email"
                 className="pl-10"
                 disabled
-                tabIndex={2}
               />
             </div>
           </FormControl>
