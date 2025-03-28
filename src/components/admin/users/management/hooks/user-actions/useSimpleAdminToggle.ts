@@ -29,25 +29,69 @@ export const useSimpleAdminToggle = () => {
     const newAdminStatus = !user.is_admin;
     
     try {
-      // Update the user's admin status in the profiles table
-      const { error } = await supabase
+      console.log('Updating admin status in database for user:', user.id, 'New status:', newAdminStatus);
+      
+      // First, ensure the profile exists
+      const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
-        .update({ 
-          is_admin: newAdminStatus,
-          admin_role: newAdminStatus ? 'admin' : null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
+        .select('id')
+        .eq('id', user.id)
+        .single();
 
-      if (error) {
-        console.error('Error updating admin status:', error);
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error checking existing profile:', fetchError);
         toast({
           title: 'Error',
-          description: 'Failed to update admin status. Please try again.',
+          description: 'Failed to check user profile. Please try again.',
           variant: 'destructive',
         });
         return;
       }
+
+      // If profile doesn't exist, create it first
+      if (!existingProfile) {
+        console.log('Creating profile for user:', user.id);
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            is_admin: newAdminStatus,
+            admin_role: newAdminStatus ? 'admin' : null,
+            updated_at: new Date().toISOString()
+          });
+
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+          toast({
+            title: 'Error',
+            description: 'Failed to create user profile. Please try again.',
+            variant: 'destructive',
+          });
+          return;
+        }
+      } else {
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ 
+            is_admin: newAdminStatus,
+            admin_role: newAdminStatus ? 'admin' : null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+
+        if (updateError) {
+          console.error('Error updating admin status:', updateError);
+          toast({
+            title: 'Error',
+            description: 'Failed to update admin status. Please try again.',
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+
+      console.log('Successfully updated admin status in database');
 
       // Update the user in the local state
       const updatedUser = {

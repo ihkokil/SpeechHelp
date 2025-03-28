@@ -46,7 +46,7 @@ export const useFetchUsers = () => {
       
       console.log('Fetched auth users with profiles:', authUsersData);
       
-      // Map users with their profiles
+      // Map users with their profiles, ensuring admin status is properly retrieved
       const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
         // Get the profile data from our enhanced structure
         const profile = authUser.profile || {};
@@ -76,6 +76,10 @@ export const useFetchUsers = () => {
             country: authUser.raw_user_meta_data?.country || '',
           },
           is_active: profile.is_active !== false, // Default to true if not specified
+          // Ensure admin status comes from the profile
+          is_admin: profile.is_admin === true,
+          admin_role: profile.admin_role || null,
+          permissions: profile.permissions || [],
           subscription_status: profile.subscription_plan ? 'active' : undefined,
           subscription_end_date: profile.subscription_end_date || undefined,
           subscription_plan: profile.subscription_plan || undefined,
@@ -107,7 +111,7 @@ export const useFetchUsers = () => {
         });
       }
       
-      console.log('Mapped users with profiles:', mappedUsers);
+      console.log('Mapped users with admin status:', mappedUsers);
       setUsers(mappedUsers);
       return mappedUsers;
     } catch (err) {
