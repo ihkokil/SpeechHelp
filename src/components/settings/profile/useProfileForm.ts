@@ -15,7 +15,7 @@ export const useProfileForm = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formattedPhone, setFormattedPhone] = useState('');
-  const [availableStates, setAvailableStates] = useState<typeof statesProvinces['US']>([]);
+  const [availableStates, setAvailableStates] = useState<StateProvince[]>([]);
   const [selectedDialCode, setSelectedDialCode] = useState('1');
 
   // Initialize form with user metadata if available
@@ -97,6 +97,7 @@ export const useProfileForm = () => {
       const states = statesProvinces[countryEntry.code] || [];
       setAvailableStates(states);
       
+      // Only clear the state if it's not valid for the new country and there are states available
       if (form.getValues('state') && states.length > 0 && !states.some(s => s.name === form.getValues('state'))) {
         form.setValue('state', '');
       }
@@ -143,6 +144,7 @@ export const useProfileForm = () => {
   };
 
   const handleCountryChange = (countryName: string) => {
+    console.log('Setting country to:', countryName);
     form.setValue('country', countryName);
     
     // When changing country, update the available states
