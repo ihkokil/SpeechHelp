@@ -17,6 +17,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const authService = useAuthService();
   const speechService = useSpeechService();
 
+  // Refresh user data from Supabase
+  const refreshUserData = async () => {
+    if (!session) return;
+    
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error('Error refreshing user data:', error);
+      return;
+    }
+    
+    if (data.user) {
+      setUser(data.user);
+    }
+  };
+
   // Fetch speeches when needed
   const fetchSpeeches = async () => {
     if (!user) return;
@@ -118,7 +133,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       session, 
       isLoading, 
       speeches, 
-      fetchSpeeches, 
+      fetchSpeeches,
+      refreshUserData,
       saveSpeech, 
       updateSpeech, 
       deleteSpeech, 
