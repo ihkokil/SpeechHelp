@@ -679,6 +679,14 @@ export type Database = {
         }
         Returns: string
       }
+      toggle_user_admin_status: {
+        Args: {
+          user_id_param: string
+          new_admin_status: boolean
+          new_admin_role?: string
+        }
+        Returns: Json
+      }
       update_user_admin_status: {
         Args: {
           user_id: string
