@@ -42,6 +42,8 @@ export const useProfileForm = () => {
     if (user) {
       const metadata = user.user_metadata || {};
       console.log('Loading user data into form:', metadata);
+      
+      // Make sure to set all fields, even if they're empty strings
       form.reset({
         firstName: metadata.first_name || '',
         lastName: metadata.last_name || '',
@@ -54,6 +56,33 @@ export const useProfileForm = () => {
         zipCode: metadata.zip_code || '',
         country: metadata.country || 'United States',
       });
+      
+      // Initialize formatted phone based on loaded data
+      if (metadata.phone) {
+        try {
+          const countryCode = metadata.country_code || 'US';
+          const formatter = new AsYouType(countryCode as CountryCode);
+          setFormattedPhone(formatter.input(metadata.phone));
+        } catch (error) {
+          console.error('Error formatting loaded phone number:', error);
+          setFormattedPhone(metadata.phone);
+        }
+      }
+      
+      // Make sure to update the selected dial code based on the loaded country code
+      const countryEntry = countryData.find(c => c.code === (metadata.country_code || 'US'));
+      if (countryEntry) {
+        setSelectedDialCode(countryEntry.dialCode);
+      }
+      
+      // Ensure available states are set based on the loaded country
+      if (metadata.country) {
+        const countryEntry = countryData.find(c => c.name === metadata.country);
+        if (countryEntry) {
+          const states = statesProvinces[countryEntry.code] || [];
+          setAvailableStates(states);
+        }
+      }
     }
   }, [user, form]);
 
@@ -115,6 +144,21 @@ export const useProfileForm = () => {
 
   const handleCountryChange = (countryName: string) => {
     form.setValue('country', countryName);
+    
+    // When changing country, update the available states
+    const countryEntry = countryData.find(c => c.name === countryName);
+    if (countryEntry) {
+      // Also update the country code to match the selected country for consistency
+      form.setValue('countryCode', countryEntry.code);
+      
+      const states = statesProvinces[countryEntry.code] || [];
+      setAvailableStates(states);
+      
+      // Clear the state field if the current state doesn't exist in the new country
+      if (form.getValues('state') && states.length > 0 && !states.some(s => s.name === form.getValues('state'))) {
+        form.setValue('state', '');
+      }
+    }
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -129,7 +173,7 @@ export const useProfileForm = () => {
 
     setIsSubmitting(true);
     try {
-      console.log('Updating profile data:', data);
+      console.log('Submitting profile data:', data);
       
       // Prepare metadata update object
       const metadata = {
@@ -144,6 +188,8 @@ export const useProfileForm = () => {
         country: data.country,
       };
       
+      console.log('Updating user metadata:', metadata);
+      
       // Update the user's metadata in Supabase
       const { data: userData, error } = await supabase.auth.updateUser({
         data: metadata
@@ -153,6 +199,8 @@ export const useProfileForm = () => {
         console.error('Error updating profile:', error);
         throw error;
       }
+      
+      console.log('Profile update response:', userData);
       
       // Refresh the user data in AuthContext
       if (refreshUserData) {
