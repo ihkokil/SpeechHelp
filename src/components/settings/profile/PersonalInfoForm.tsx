@@ -4,6 +4,7 @@ import { ProfileFormValues } from './types';
 import NameFields from './components/NameFields';
 import EmailField from './components/EmailField';
 import PhoneFields from './components/PhoneFields';
+import PasswordConfirmField from './components/PasswordConfirmField';
 
 interface PersonalInfoFormProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -11,6 +12,7 @@ interface PersonalInfoFormProps {
   selectedDialCode: string;
   handlePhoneChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleCountryCodeChange: (code: string) => void;
+  originalEmail: string;
 }
 
 const PersonalInfoForm = ({
@@ -18,12 +20,17 @@ const PersonalInfoForm = ({
   formattedPhone,
   selectedDialCode,
   handlePhoneChange,
-  handleCountryCodeChange
+  handleCountryCodeChange,
+  originalEmail
 }: PersonalInfoFormProps) => {
+  const currentEmail = form.watch('email');
+  const isEmailChanged = currentEmail !== originalEmail;
+
   return (
     <>
       <NameFields form={form} />
       <EmailField form={form} />
+      <PasswordConfirmField form={form} isEmailChanged={isEmailChanged} />
       <PhoneFields 
         form={form}
         formattedPhone={formattedPhone}

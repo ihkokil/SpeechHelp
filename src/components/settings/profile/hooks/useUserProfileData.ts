@@ -10,7 +10,8 @@ export const useUserProfileData = (
   form: UseFormReturn<ProfileFormValues>,
   setFormattedPhone: (value: string) => void,
   setSelectedDialCode: (value: string) => void,
-  setAvailableStates: (value: any[]) => void
+  setAvailableStates: (value: any[]) => void,
+  setOriginalEmail: (value: string) => void
 ) => {
   const { user, isLoading } = useAuth();
   
@@ -20,11 +21,17 @@ export const useUserProfileData = (
       const metadata = user.user_metadata || {};
       console.log('Loading user data into form:', metadata);
       
+      // Store original email
+      if (user.email) {
+        setOriginalEmail(user.email);
+      }
+      
       // Reset form with user data
       form.reset({
         firstName: metadata.first_name || '',
         lastName: metadata.last_name || '',
         email: user.email || '',
+        password: '',
         phone: metadata.phone || '',
         countryCode: metadata.country_code || 'US',
         streetAddress: metadata.street_address || '',
@@ -64,7 +71,7 @@ export const useUserProfileData = (
         }
       }
     }
-  }, [user, form, setFormattedPhone, setSelectedDialCode, setAvailableStates]);
+  }, [user, form, setFormattedPhone, setSelectedDialCode, setAvailableStates, setOriginalEmail]);
   
   return { isLoading };
 };

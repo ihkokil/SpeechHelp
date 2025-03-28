@@ -13,6 +13,7 @@ const ProfileSettings = () => {
     form,
     isLoading,
     isSubmitting,
+    originalEmail,
     formattedPhone,
     selectedDialCode,
     availableStates,
@@ -47,6 +48,7 @@ const ProfileSettings = () => {
                 selectedDialCode={selectedDialCode}
                 handlePhoneChange={handlePhoneChange}
                 handleCountryCodeChange={handleCountryCodeChange}
+                originalEmail={originalEmail}
               />
               
               <AddressForm 

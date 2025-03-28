@@ -14,6 +14,7 @@ export const useProfileForm = () => {
   const [formattedPhone, setFormattedPhone] = useState('');
   const [selectedDialCode, setSelectedDialCode] = useState('1');
   const [availableStates, setAvailableStates] = useState<any[]>([]);
+  const [originalEmail, setOriginalEmail] = useState('');
 
   // Initialize form with default values
   const form = useForm<ProfileFormValues>({
@@ -22,6 +23,7 @@ export const useProfileForm = () => {
       firstName: '',
       lastName: '',
       email: '',
+      password: '',
       phone: '',
       countryCode: 'US',
       streetAddress: '',
@@ -37,7 +39,8 @@ export const useProfileForm = () => {
     form, 
     setFormattedPhone, 
     setSelectedDialCode, 
-    setAvailableStates
+    setAvailableStates,
+    setOriginalEmail
   );
 
   // Handle phone input
@@ -61,6 +64,7 @@ export const useProfileForm = () => {
     form,
     isLoading,
     isSubmitting,
+    originalEmail,
     formattedPhone: phoneDisplay || formattedPhone,
     selectedDialCode: dialCode || selectedDialCode,
     availableStates: states.length ? states : availableStates,
