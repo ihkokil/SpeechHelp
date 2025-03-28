@@ -29,7 +29,7 @@ const ProfileSettings = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle className="flex items-center">
             <User className="h-5 w-5 mr-2 text-pink-600" />
             Personal Information
