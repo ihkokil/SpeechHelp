@@ -27,6 +27,7 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
               <Select 
                 onValueChange={field.onChange}
                 value={field.value || ''}
+                defaultValue={field.value || ''}
               >
                 <SelectTrigger className="w-full pl-10" tabIndex={9}>
                   <SelectValue placeholder="Select State / Province" />
