@@ -53,10 +53,14 @@ export const useUserProfileData = (
       
       // Set available states based on the loaded country
       if (metadata.country) {
-        const countryEntry = getCountryByCode(metadata.country_code || 'US');
-        if (countryEntry) {
-          const states = getStatesForCountry(countryEntry.code);
-          setAvailableStates(states);
+        const countryCode = metadata.country_code || 'US';
+        const states = getStatesForCountry(countryCode);
+        setAvailableStates(states);
+        
+        // Ensure state value is properly set after states are loaded
+        if (metadata.state) {
+          console.log('Setting state value from metadata:', metadata.state);
+          form.setValue('state', metadata.state);
         }
       }
     }
