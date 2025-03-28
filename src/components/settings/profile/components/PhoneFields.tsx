@@ -40,7 +40,7 @@ const PhoneFields = ({
               defaultValue={field.value || 'US'}
             >
               <FormControl>
-                <SelectTrigger tabIndex={4}>
+                <SelectTrigger className="w-full" tabIndex={4}>
                   <SelectValue placeholder="Select Country / Associated Phone Code" />
                 </SelectTrigger>
               </FormControl>
