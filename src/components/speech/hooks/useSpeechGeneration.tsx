@@ -7,12 +7,14 @@ import { SpeechDetails } from './useSpeechLabState';
 interface UseSpeechGenerationProps {
   speechTitle: string;
   speechDetails?: SpeechDetails;
+  speechType: string;
   onSuccess: () => void;
 }
 
 export const useSpeechGeneration = ({ 
   speechTitle, 
   speechDetails = {}, 
+  speechType,
   onSuccess 
 }: UseSpeechGenerationProps) => {
   const { toast } = useToast();
@@ -54,7 +56,7 @@ export const useSpeechGeneration = ({
     
     try {
       // Generate the fully enhanced speech with all embellishments
-      const speech = generateSpeechFromDetails(speechTitle, speechDetails);
+      const speech = generateSpeechFromDetails(speechTitle, speechDetails, speechType);
       setGeneratedSpeech(speech);
       
       setShowConfetti(true);
