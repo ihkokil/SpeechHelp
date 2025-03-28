@@ -41,7 +41,7 @@ const PhoneFields = ({
             >
               <FormControl>
                 <SelectTrigger tabIndex={4}>
-                  <SelectValue placeholder="Select country code" />
+                  <SelectValue placeholder="Select Country / Associated Phone Code" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent className="bg-white">
