@@ -31,7 +31,10 @@ const AddressForm = ({ form, availableStates, handleCountryChange }: AddressForm
             <FormItem>
               <FormLabel>Country of Residence</FormLabel>
               <Select 
-                onValueChange={handleCountryChange}
+                onValueChange={(value) => {
+                  handleCountryChange(value);
+                  field.onChange(value);
+                }}
                 defaultValue={field.value}
                 value={field.value}
               >
@@ -89,7 +92,10 @@ const AddressForm = ({ form, availableStates, handleCountryChange }: AddressForm
               <FormItem>
                 <FormLabel>State / Province</FormLabel>
                 <Select 
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    console.log('State selected:', value);
+                    field.onChange(value);
+                  }}
                   defaultValue={field.value}
                   value={field.value}
                 >
