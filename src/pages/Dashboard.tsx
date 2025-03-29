@@ -14,6 +14,8 @@ import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-r
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileNav from '@/components/navigation/MobileNav';
 
 const Dashboard = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -23,9 +25,11 @@ const Dashboard = () => {
   const [lastName, setLastName] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     if (user) {
+      console.log("Fetching speeches for user:", user.id);
       fetchSpeeches();
     }
   }, [user, fetchSpeeches]);
@@ -102,33 +106,35 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen flex">
-      <DashboardSidebar />
-      
-      <div className="flex-1 bg-gray-50 overflow-auto">
-        <header className="flex justify-between items-center p-6 sticky top-0 bg-gray-50 z-10">
-          <div className="flex items-center">
-            <div className="bg-purple-600 text-white px-4 py-2 rounded-md flex items-center">
-              <CalendarIcon className="mr-2 h-5 w-5" />
-              <span>{format(new Date(), 'MMM dd, yyyy')}</span>
-            </div>
-          </div>
-          <LanguageSelector />
-        </header>
-
-        <main className="px-6 pb-12">
-          <WelcomeCard 
-            userName={userName} 
-            firstName={firstName} 
-            lastName={lastName}
-          />
+    <div className="min-h-screen flex flex-col">
+      {isMobile ? (
+        <MobileNav />
+      ) : (
+        <div className="flex flex-1 min-h-0">
+          <DashboardSidebar />
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-            <div className="lg:col-span-2 space-y-6">
-              <div>
+          <div className="flex-1 bg-gray-50 overflow-auto">
+            <header className="flex justify-between items-center p-4 md:p-6 sticky top-0 bg-gray-50 z-10">
+              <div className="flex items-center">
+                <div className="bg-purple-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md flex items-center text-sm md:text-base">
+                  <CalendarIcon className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                  <span>{format(new Date(), 'MMM dd, yyyy')}</span>
+                </div>
+              </div>
+              <LanguageSelector />
+            </header>
+
+            <main className="px-4 md:px-6 pb-6 md:pb-12">
+              <WelcomeCard 
+                userName={userName} 
+                firstName={firstName} 
+                lastName={lastName}
+              />
+              
+              <div className="mt-6 md:mt-8">
                 <h2 className="text-xl font-bold text-gray-800 mb-4">{t('dashboard.summary', currentLanguage.code)}</h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <SpeechSummaryCard 
                     icon={<FileTextIcon className="h-6 w-6 text-gray-600" />}
                     count={dashboardMetrics.totalSpeeches}
@@ -155,19 +161,70 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              <PreviousSpeeches />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+                <div className="lg:col-span-2 space-y-6">
+                  <PreviousSpeeches />
+                  <PerformanceMetrics />
+                </div>
+                
+                <div className="space-y-6">
+                  <UpcomingSpeeches />
+                  <RecentActivities />
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      )}
+      
+      {isMobile && (
+        <div className="flex-1 bg-gray-50 overflow-auto">
+          <main className="px-4 pb-6">
+            <WelcomeCard 
+              userName={userName} 
+              firstName={firstName} 
+              lastName={lastName}
+            />
+            
+            <div className="mt-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">{t('dashboard.summary', currentLanguage.code)}</h2>
               
-              <PerformanceMetrics />
+              <div className="grid grid-cols-1 gap-4">
+                <SpeechSummaryCard 
+                  icon={<FileTextIcon className="h-6 w-6 text-gray-600" />}
+                  count={dashboardMetrics.totalSpeeches}
+                  label="dashboard.totalSpeeches"
+                  period="dashboard.allTime"
+                  bgColor="bg-gray-100"
+                />
+                
+                <SpeechSummaryCard 
+                  icon={<ShieldIcon className="h-6 w-6 text-gray-600" />}
+                  count={dashboardMetrics.inProgressCount}
+                  label="dashboard.inProgress"
+                  period="dashboard.thisMonth"
+                  bgColor="bg-red-50"
+                />
+                
+                <SpeechSummaryCard 
+                  icon={<TrendingUpIcon className="h-6 w-6 text-gray-600" />}
+                  count={dashboardMetrics.recentImprovementCount}
+                  label="dashboard.improvement"
+                  period="dashboard.last30Days"
+                  bgColor="bg-green-50"
+                />
+              </div>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-6 mt-6">
+              <PreviousSpeeches />
+              <PerformanceMetrics />
               <UpcomingSpeeches />
-              
               <RecentActivities />
             </div>
-          </div>
-        </main>
-      </div>
+          </main>
+        </div>
+      )}
     </div>
   );
 };
