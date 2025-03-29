@@ -3,12 +3,9 @@ import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
 import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 
 const MySpeeches = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
-  const isMobile = useIsMobile();
   
   // Fetch speeches when component mounts
   useEffect(() => {
