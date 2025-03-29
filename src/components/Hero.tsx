@@ -85,9 +85,15 @@ const Hero = () => {
         
         <div className="container relative z-10 mx-auto px-6 md:px-12 pt-16 pb-12">
           <div className="max-w-5xl mx-auto text-center">
-            {/* Main Headline */}
+            {/* Main Headline - Updated for sharper text with improved shadow */}
             <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
-              <span className="text-pink-500 drop-shadow-[0_0_2px_rgba(255,255,255,1)]">
+              <span 
+                className="text-pink-500" 
+                style={{ 
+                  textShadow: '0 0 1px #fff, 0 0 2px #fff, 0 0 3px #fff',
+                  WebkitTextStroke: '0.5px white'
+                }}
+              >
                 {needA}
                 {creativeSpeech}
               </span>
