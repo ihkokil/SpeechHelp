@@ -13,12 +13,12 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Dashboard Sidebar - hidden on mobile */}
-      <div className={`${isMobile ? 'hidden' : 'block'}`}>
+      <div className={`${isMobile ? 'hidden' : 'block'} md:w-64 lg:w-72 flex-shrink-0`}>
         <DashboardSidebar />
       </div>
       
       {/* Main Content - full width on mobile */}
-      <div className="flex-1 bg-gray-50 overflow-auto">
+      <div className="flex-1 bg-gray-50 overflow-x-hidden">
         {children}
       </div>
     </div>

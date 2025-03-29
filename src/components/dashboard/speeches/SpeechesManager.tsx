@@ -109,12 +109,14 @@ const SpeechesManager = ({ speeches }: SpeechesManagerProps) => {
           </div>
           
           {filteredSpeeches.length > 0 ? (
-            <SpeechesTable 
-              speeches={filteredSpeeches}
-              onView={handleViewSpeech}
-              onEdit={handleEditSpeech}
-              onDelete={handleDeleteSpeech}
-            />
+            <div className="w-full overflow-hidden">
+              <SpeechesTable 
+                speeches={filteredSpeeches}
+                onView={handleViewSpeech}
+                onEdit={handleEditSpeech}
+                onDelete={handleDeleteSpeech}
+              />
+            </div>
           ) : (
             <EmptyState 
               onClearFilters={clearFilters}
