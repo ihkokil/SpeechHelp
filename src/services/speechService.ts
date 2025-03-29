@@ -9,36 +9,22 @@ export const useSpeechService = () => {
   const fetchSpeeches = async (userId: string | undefined) => {
     if (!userId) return [];
     
-    try {
-      console.log('Fetching speeches for user:', userId);
-      
-      const { data, error } = await supabase
-        .from('speeches')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching speeches:', error);
-        toast({
-          title: "Error fetching speeches",
-          description: error.message,
-          variant: "destructive"
-        });
-        return [];
-      }
-      
-      console.log('Fetched speeches:', data);
-      return data as Speech[] || [];
-    } catch (error: any) {
-      console.error('Exception fetching speeches:', error);
+    const { data, error } = await supabase
+      .from('speeches')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching speeches:', error);
       toast({
         title: "Error fetching speeches",
-        description: error.message || "Failed to fetch speeches",
+        description: error.message,
         variant: "destructive"
       });
       return [];
     }
+    
+    return data as Speech[] || [];
   };
 
   const saveSpeech = async (userId: string, title: string, content: string, speechType: string) => {

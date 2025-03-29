@@ -4,7 +4,6 @@ import { Menu, X } from "lucide-react";
 import NavLinks from "./NavLinks";
 import UserMenu from "../UserMenu";
 import LanguageSelector from "../common/LanguageSelector";
-import { SidebarTrigger } from '@/components/ui/sidebar';
 
 const MobileNav = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
