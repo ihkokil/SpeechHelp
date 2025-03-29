@@ -85,13 +85,14 @@ const Hero = () => {
         
         <div className="container relative z-10 mx-auto px-6 md:px-12 pt-16 pb-12">
           <div className="max-w-5xl mx-auto text-center">
-            {/* Main Headline - Fixing the white lines in the text */}
+            {/* Main Headline - Creating sharp, crisp text with no white lines */}
             <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
               <span 
                 className="text-pink-500" 
                 style={{ 
-                  textShadow: '0 0 5px rgba(255,255,255,0.7)',
-                  WebkitTextStroke: '0.5px rgba(255,255,255,0.4)'
+                  filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))',
+                  textShadow: 'none',
+                  WebkitTextStroke: 'transparent'
                 }}
               >
                 {needA}
