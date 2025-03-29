@@ -37,12 +37,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 // Layout component for pages that need navbar
 const NavbarLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <SidebarProvider defaultOpen={false}>
-      <div className="min-h-screen w-full">
-        <Navbar />
-        {children}
-      </div>
-    </SidebarProvider>
+    <>
+      <Navbar />
+      {children}
+    </>
   );
 };
 
