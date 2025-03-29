@@ -51,7 +51,7 @@ const Hero = () => {
 
   // Split the headline to apply different styling
   const headline = t('hero.headline', currentLanguage.code);
-  const needA = "Need a ";
+  const needA = "need a ";
   const creativeSpeech = "creative speech?";
   
   return (
@@ -87,8 +87,8 @@ const Hero = () => {
           <div className="max-w-5xl mx-auto text-center">
             {/* Main Headline */}
             <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
-              {needA}
               <span className="text-pink-500 drop-shadow-[0_0_2px_rgba(255,255,255,1)]">
+                {needA}
                 {creativeSpeech}
               </span>
             </h1>
