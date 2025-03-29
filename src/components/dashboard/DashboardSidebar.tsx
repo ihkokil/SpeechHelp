@@ -19,7 +19,8 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton
+  SidebarMenuButton,
+  useSidebar
 } from '@/components/ui/sidebar';
 
 // Navigation item type
@@ -33,6 +34,7 @@ type NavItem = {
 const DashboardSidebar = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
+  const { state } = useSidebar();
   
   // Using Supabase hosted SVG file or local SVG backup
   const logoPath = "/Speech Help - Logo.svg";

@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
 import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 
