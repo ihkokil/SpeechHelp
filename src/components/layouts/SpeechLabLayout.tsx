@@ -1,7 +1,7 @@
 
 import React from 'react';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarTrigger } from '@/components/ui/sidebar/index';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SpeechLabLayoutProps {

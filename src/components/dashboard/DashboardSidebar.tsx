@@ -24,7 +24,7 @@ import {
   SidebarMenuButton,
   SidebarProvider,
   SidebarTrigger
-} from '@/components/ui/sidebar';
+} from '@/components/ui/sidebar/index';
 
 // Navigation item type
 type NavItem = {
