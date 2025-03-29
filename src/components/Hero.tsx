@@ -88,7 +88,7 @@ const Hero = () => {
             {/* Main Headline */}
             <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
               {needA}
-              <span className="text-[#9b87f5] drop-shadow-[0_0_5px_rgba(255,255,255,0.7)]">
+              <span className="text-pink-500 drop-shadow-[0_0_2px_rgba(255,255,255,1)]">
                 {creativeSpeech}
               </span>
             </h1>
