@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -85,38 +84,14 @@ const Hero = () => {
         
         <div className="container relative z-10 mx-auto px-6 md:px-12 pt-16 pb-12">
           <div className="max-w-5xl mx-auto text-center">
-            {/* Main Headline - Split into white and pink parts */}
+            {/* Main Headline */}
             <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
-              <span 
-                className="text-white" 
-                style={{ 
-                  filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))'
-                }}
-              >
-                {needA}
-              </span>
-              <span 
-                className="text-pink-500" 
-                style={{ 
-                  filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))',
-                  textShadow: 'none',
-                  WebkitTextStroke: 'transparent'
-                }}
-              >
-                {creativeSpeech}
-              </span>
+              {headline}
             </h1>
             
-            {/* Subheadline - updated to match main heading font weight and style */}
-            <h2 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
-              <span 
-                className="text-white" 
-                style={{ 
-                  filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.5))'
-                }}
-              >
-                {t('hero.subheadline', currentLanguage.code)}
-              </span>
+            {/* Subheadline */}
+            <h2 className={`text-xl md:text-2xl lg:text-3xl font-medium leading-tight md:leading-tight lg:leading-tight mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
+              {t('hero.subheadline', currentLanguage.code)}
             </h2>
             
             {/* CTA Button - Updated to link to pricing page */}
