@@ -1,7 +1,6 @@
 
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { cn } from '@/lib/utils';
 import { 
   LayoutDashboardIcon, 
   MicIcon, 
@@ -21,9 +20,7 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarProvider,
-  SidebarTrigger
+  SidebarMenuButton
 } from '@/components/ui/sidebar';
 
 // Navigation item type
@@ -179,20 +176,10 @@ const DashboardSidebar = () => {
     </>
   );
 
-  if (isMobile) {
-    return (
-      <SidebarProvider defaultOpen={false}>
-        <Sidebar>
-          {sidebarContent}
-        </Sidebar>
-      </SidebarProvider>
-    );
-  }
-
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+    <Sidebar>
       {sidebarContent}
-    </aside>
+    </Sidebar>
   );
 };
 
