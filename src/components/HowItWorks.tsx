@@ -77,7 +77,7 @@ const HowItWorks = () => {
       <div className="container mx-auto px-6 md:px-12">
         <div className="text-center max-w-3xl mx-auto mb-16" ref={sectionRef}>
           <h2 className={`text-3xl md:text-4xl font-bold mb-6 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
-            {t('howItWorks.title', currentLanguage.code)} <span className="text-pink-600">Works</span>
+            How It <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Works</span>
           </h2>
           <p className={`text-lg text-gray-600 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>
             {t('howItWorks.subtitle', currentLanguage.code)}
