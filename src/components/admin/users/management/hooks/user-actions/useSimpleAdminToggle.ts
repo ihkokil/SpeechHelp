@@ -4,6 +4,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
 
+// Define the expected response type from the toggle_user_admin_status function
+interface ToggleAdminStatusResponse {
+  success: boolean;
+  error?: string;
+  id?: string;
+  is_admin?: boolean;
+  admin_role?: string | null;
+  updated_at?: string;
+}
+
 export const useSimpleAdminToggle = () => {
   const { toast } = useToast();
 
@@ -48,17 +58,20 @@ export const useSimpleAdminToggle = () => {
         return;
       }
 
-      if (!data?.success) {
-        console.error('Function returned error:', data?.error);
+      // Cast the data to our expected type
+      const response = data as ToggleAdminStatusResponse;
+
+      if (!response?.success) {
+        console.error('Function returned error:', response?.error);
         toast({
           title: 'Error',
-          description: data?.error || 'Failed to update admin status. Please try again.',
+          description: response?.error || 'Failed to update admin status. Please try again.',
           variant: 'destructive',
         });
         return;
       }
 
-      console.log('Successfully updated admin status via database function:', data);
+      console.log('Successfully updated admin status via database function:', response);
 
       // Update the user in the local state
       const updatedUser = {
