@@ -58,12 +58,12 @@ export const useSpeechService = () => {
   const updateSpeech = async (userId: string, id: string, title: string, content: string) => {
     if (!userId) throw new Error('User not authenticated');
     
+    // Let the database handle the updated_at timestamp automatically
     const { error } = await supabase
       .from('speeches')
       .update({
         title,
-        content,
-        updated_at: new Date().toISOString()
+        content
       })
       .eq('id', id)
       .eq('user_id', userId);

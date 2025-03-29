@@ -11,7 +11,7 @@ import { Speech } from '@/types/auth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EditIcon, Trash2Icon, EyeIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { getSpeechTypeLabel, getTypeColor } from './speech-utils';
 import Translate from '@/components/Translate';
 
@@ -24,7 +24,9 @@ interface SpeechesTableProps {
 
 const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProps) => {
   const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'MMM d, yyyy h:mm a');
+    // Ensure we're parsing the ISO string correctly before formatting
+    const date = parseISO(dateString);
+    return format(date, 'MMM d, yyyy h:mm a');
   };
 
   return (
