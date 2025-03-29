@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { User } from '../../types';
 import UserActionMenu from './UserActionMenu';
-import { formatUserDisplayName } from '../utils/userDisplayUtils';
+import { formatUserDisplayName, getUserPhone } from '../utils/userDisplayUtils';
 import { format } from 'date-fns';
 
 interface UserTableRowProps {
@@ -58,12 +58,22 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     }
   };
 
+  // Format joined date
+  const formatJoinedDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'Unknown';
+    try {
+      return format(new Date(dateString), 'MMM d, yyyy');
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
   return (
     <TableRow 
       className="cursor-pointer hover:bg-gray-50 transition-colors"
       onClick={handleRowClick}
     >
-      <TableCell className="w-12">
+      <TableCell className="w-12 px-2">
         <Checkbox
           checked={isSelected}
           onClick={handleCheckboxClick}
@@ -71,40 +81,56 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
         />
       </TableCell>
       
-      <TableCell className="font-medium">
+      <TableCell className="px-2">
         <div className="flex flex-col">
-          <span className="text-sm font-semibold">{formatUserDisplayName(user)}</span>
-          <span className="text-xs text-gray-500">{user.email}</span>
+          <span className="text-sm font-medium">{formatUserDisplayName(user)}</span>
         </div>
       </TableCell>
       
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <Badge 
-            variant={user.is_active !== false ? "default" : "secondary"}
-            className={user.is_active !== false ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
-          >
-            {user.is_active !== false ? 'Active' : 'Inactive'}
+      <TableCell className="px-2">
+        <span className="text-sm">{user.email}</span>
+      </TableCell>
+      
+      <TableCell className="px-2 hidden lg:table-cell">
+        <span className="text-sm">{getUserPhone(user)}</span>
+      </TableCell>
+      
+      <TableCell className="px-2 text-center">
+        <Badge 
+          variant={user.is_active !== false ? "default" : "secondary"}
+          className={user.is_active !== false ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
+        >
+          {user.is_active !== false ? 'Active' : 'Inactive'}
+        </Badge>
+      </TableCell>
+      
+      <TableCell className="px-2 text-center">
+        {user.is_admin ? (
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            Admin
           </Badge>
-          {user.is_admin && (
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              Admin
-            </Badge>
-          )}
-        </div>
+        ) : (
+          <Badge variant="outline" className="bg-gray-50 text-gray-700">
+            User
+          </Badge>
+        )}
       </TableCell>
       
-      <TableCell>
+      <TableCell className="px-2 text-center hidden md:table-cell">
         <Badge variant="outline" className="bg-gray-50">
           {formatSubscriptionPlan(user.subscription_plan)}
         </Badge>
       </TableCell>
       
-      <TableCell className="text-sm text-gray-600">
+      <TableCell className="px-2 text-sm text-gray-600 hidden xl:table-cell">
+        {formatJoinedDate(user.created_at)}
+      </TableCell>
+      
+      <TableCell className="px-2 text-sm text-gray-600 hidden xl:table-cell">
         {formatLastSignIn(user.last_sign_in_at)}
       </TableCell>
       
-      <TableCell className="text-right">
+      <TableCell className="px-2 text-right">
         <UserActionMenu
           user={user}
           onViewDetails={onViewDetails}
