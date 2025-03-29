@@ -50,78 +50,92 @@ const Hero = () => {
   const navbarHeight = 76; // Height of the navbar in pixels
 
   return (
-    <section 
-      ref={heroRef}
-      className="text-white pb-16 md:pb-24 overflow-hidden relative"
-      style={{ paddingTop: navbarHeight + 20 }}
-    >
-      {/* Video Background */}
-      <div 
-        className="absolute inset-0 z-0 overflow-hidden" 
-        style={{ 
-          top: navbarHeight,
-          height: `calc(100% - ${navbarHeight}px + ${isMobile ? '10vh' : '20vh'})` // Adjusted for mobile
-        }}
+    <>
+      <section 
+        ref={heroRef}
+        className="text-white pb-16 md:pb-24 overflow-hidden relative"
+        style={{ paddingTop: navbarHeight + 20 }}
       >
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="w-full h-full object-cover object-center"
-          poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
+        {/* Video Background */}
+        <div 
+          className="absolute inset-0 z-0 overflow-hidden" 
+          style={{ 
+            top: navbarHeight,
+            height: `calc(100% - ${navbarHeight}px + ${isMobile ? '10vh' : '20vh'})` // Adjusted for mobile
+          }}
         >
-          <source src={videoUrl} type="video/quicktime" />
-          <source src={videoUrl} type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-black/60"></div>
-      </div>
-      
-      <div className="container relative z-10 mx-auto px-6 md:px-12 pt-16 pb-12">
-        <div className="max-w-5xl mx-auto text-center">
-          {/* Main Headline */}
-          <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
-            {t('hero.headline', currentLanguage.code).replace('creative speech?', '')} <span className="text-pink-400">creative speech?</span>
-          </h1>
-          
-          {/* Subheadline - updated to match main heading font size */}
-          <p className={`text-4xl md:text-5xl lg:text-6xl text-white/80 max-w-3xl mx-auto mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
-            {t('hero.subheadline', currentLanguage.code)}
-          </p>
-          
-          {/* CTA Button - Updated to link to pricing page */}
-          <div className={`flex justify-center mb-12 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
-            <Link to="/pricing">
-              <ButtonCustom variant="magenta" size="lg" className="group">
-                <span>{t('hero.cta', currentLanguage.code)}</span>
-              </ButtonCustom>
-            </Link>
-          </div>
-          
-          {/* Features/Benefits Icons */}
-          <div className={`grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto mt-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
-            <div className="text-center">
-              <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
-                <span className="text-base font-bold">AI</span>
-              </div>
-              <p className="text-gray-300 text-sm">{t('hero.feature1', currentLanguage.code)}</p>
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover object-center"
+            poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
+          >
+            <source src={videoUrl} type="video/quicktime" />
+            <source src={videoUrl} type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-black/60"></div>
+        </div>
+        
+        <div className="container relative z-10 mx-auto px-6 md:px-12 pt-16 pb-12">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Main Headline */}
+            <h1 className={`text-4xl md:text-5xl lg:text-6xl font-bold leading-tight md:leading-tight lg:leading-tight mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
+              {t('hero.headline', currentLanguage.code).replace('creative speech?', '')} <span className="text-pink-400">creative speech?</span>
+            </h1>
+            
+            {/* Subheadline - updated to match main heading font size */}
+            <p className={`text-4xl md:text-5xl lg:text-6xl text-white/80 max-w-3xl mx-auto mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
+              {t('hero.subheadline', currentLanguage.code)}
+            </p>
+            
+            {/* CTA Button - Updated to link to pricing page */}
+            <div className={`flex justify-center mb-12 opacity-0 ${isLoaded ? 'animate-fade-in stagger-3' : ''}`}>
+              <Link to="/pricing">
+                <ButtonCustom variant="magenta" size="lg" className="group">
+                  <span>{t('hero.cta', currentLanguage.code)}</span>
+                </ButtonCustom>
+              </Link>
             </div>
-            <div className="text-center">
-              <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
-                <span className="text-base font-bold">⌛</span>
+            
+            {/* Features/Benefits Icons */}
+            <div className={`grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto mt-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-4' : ''}`}>
+              <div className="text-center">
+                <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
+                  <span className="text-base font-bold">AI</span>
+                </div>
+                <p className="text-gray-300 text-sm">{t('hero.feature1', currentLanguage.code)}</p>
               </div>
-              <p className="text-gray-300 text-sm">{t('hero.feature2', currentLanguage.code)}</p>
-            </div>
-            <div className="text-center">
-              <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
-                <span className="text-base font-bold">★</span>
+              <div className="text-center">
+                <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
+                  <span className="text-base font-bold">⌛</span>
+                </div>
+                <p className="text-gray-300 text-sm">{t('hero.feature2', currentLanguage.code)}</p>
               </div>
-              <p className="text-gray-300 text-sm">{t('hero.feature3', currentLanguage.code)}</p>
+              <div className="text-center">
+                <div className="rounded-full bg-pink-600 h-10 w-10 flex items-center justify-center mx-auto mb-2">
+                  <span className="text-base font-bold">★</span>
+                </div>
+                <p className="text-gray-300 text-sm">{t('hero.feature3', currentLanguage.code)}</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+      
+      {/* New Welcome Section */}
+      <section className="bg-gradient-to-r from-purple-50 to-pink-50 py-16">
+        <div className="container mx-auto px-6 md:px-12">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Welcome to Speech Help!</h2>
+            <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+              Ever stared at a blank page and felt it judging you? Whether you're giving a wedding toast, rallying a team, or delivering a conference keynote, Speech Help is here to rescue you from idea paralysis and blank-page syndrome. Our step-by-step conversation guides you through simple, thoughtful questions that unlock your unique perspective and voice. No writing expertise needed—just answer naturally as if chatting with a friend, and we'll help shape those responses into a polished speech that sounds exactly like you, only better.
+            </p>
+          </div>
+        </div>
+      </section>
+    </>
   );
 };
 
