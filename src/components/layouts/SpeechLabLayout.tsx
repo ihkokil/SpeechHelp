@@ -9,7 +9,7 @@ interface SpeechLabLayoutProps {
 }
 
 const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
-  const isMobile = useIsMobile();
+  const { isMobile } = useIsMobile();
 
   return (
     <div className="min-h-screen flex flex-col">
