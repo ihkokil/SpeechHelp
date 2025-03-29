@@ -58,8 +58,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden">
-      <Navbar />
+    <div className="min-h-screen flex flex-col overflow-x-hidden w-full">
       <main className="flex-1">
         <Hero />
         <div id="features">
