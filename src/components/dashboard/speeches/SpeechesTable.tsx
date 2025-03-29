@@ -32,7 +32,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
       <TableHeader>
         <TableRow>
           <TableHead><Translate text="common.title" /></TableHead>
-          <TableHead><Translate text="common.type" /></TableHead>
+          <TableHead className="text-center"><Translate text="common.type" /></TableHead>
           <TableHead><Translate text="dashboard.created" /></TableHead>
           <TableHead><Translate text="dashboard.lastUpdated" /></TableHead>
           <TableHead className="text-right"><Translate text="common.actions" /></TableHead>
@@ -42,8 +42,8 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
         {speeches.map((speech) => (
           <TableRow key={speech.id}>
             <TableCell className="font-medium">{speech.title}</TableCell>
-            <TableCell>
-              <Badge className={getTypeColor(speech.speech_type)}>
+            <TableCell className="text-center">
+              <Badge className={`${getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center`}>
                 {getSpeechTypeLabel(speech.speech_type)}
               </Badge>
             </TableCell>
