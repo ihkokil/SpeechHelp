@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -89,8 +90,8 @@ const Hero = () => {
               {headline}
             </h1>
             
-            {/* Subheadline */}
-            <h2 className={`text-xl md:text-2xl lg:text-3xl font-medium leading-tight md:leading-tight lg:leading-tight mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
+            {/* Subheadline - Increased size */}
+            <h2 className={`text-2xl md:text-3xl lg:text-4xl font-medium leading-tight md:leading-tight lg:leading-tight mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
               {t('hero.subheadline', currentLanguage.code)}
             </h2>
             
