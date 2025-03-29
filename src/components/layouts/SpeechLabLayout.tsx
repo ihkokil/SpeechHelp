@@ -12,8 +12,8 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
   
   return (
-    <SidebarProvider defaultOpen={false}>
-      <div className="min-h-screen flex flex-col md:flex-row">
+    <SidebarProvider defaultOpen={!isMobile}>
+      <div className="min-h-screen flex flex-col md:flex-row w-full">
         {/* Dashboard Sidebar */}
         <DashboardSidebar />
         

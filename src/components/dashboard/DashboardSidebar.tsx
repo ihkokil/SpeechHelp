@@ -99,8 +99,8 @@ const DashboardSidebar = () => {
   const displayName = firstName || emailUsername;
   const fullName = firstName && lastName ? `${firstName} ${lastName}` : displayName;
 
-  const sidebarContent = (
-    <>
+  return (
+    <Sidebar>
       {/* Logo - Updated to match homepage logo with link to home */}
       <SidebarHeader className="p-4">
         <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
@@ -173,12 +173,6 @@ const DashboardSidebar = () => {
           <span>Logout</span>
         </SidebarMenuButton>
       </SidebarFooter>
-    </>
-  );
-
-  return (
-    <Sidebar>
-      {sidebarContent}
     </Sidebar>
   );
 };
