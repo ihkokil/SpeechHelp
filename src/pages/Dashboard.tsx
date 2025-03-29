@@ -105,7 +105,7 @@ const Dashboard = () => {
 
   return (
     <SpeechLabLayout>
-      <header className="flex justify-between items-center p-4 md:p-6 sticky top-0 bg-gray-50 z-10">
+      <header className="flex justify-between items-center p-4 md:p-6 bg-gray-50 z-10">
         <div className="flex items-center">
           <div className="bg-purple-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md flex items-center text-sm md:text-base">
             <CalendarIcon className="mr-1 md:mr-2 h-4 w-4 md:h-5 md:w-5" />
@@ -115,7 +115,7 @@ const Dashboard = () => {
         <LanguageSelector />
       </header>
 
-      <main className="px-4 md:px-6 pb-12">
+      <main className="px-4 md:px-6 pb-12 overflow-x-hidden">
         <WelcomeCard 
           userName={userName} 
           firstName={firstName} 
@@ -153,14 +153,14 @@ const Dashboard = () => {
         </div>
         
         <div className="grid grid-cols-1 gap-6 mt-8">
-          <div className="space-y-6">
-            <PreviousSpeeches />
-            <PerformanceMetrics />
-          </div>
+          <PreviousSpeeches />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <UpcomingSpeeches />
-            <RecentActivities />
+            <PerformanceMetrics />
+            <div className="space-y-6">
+              <UpcomingSpeeches />
+              <RecentActivities />
+            </div>
           </div>
         </div>
       </main>

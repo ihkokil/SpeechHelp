@@ -1,6 +1,7 @@
 
 import * as React from "react"
 
+// Higher breakpoint to ensure better table display on smaller screens
 const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {
