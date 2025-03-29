@@ -58,8 +58,8 @@ export const useSimpleAdminToggle = () => {
         return;
       }
 
-      // Cast the data to our expected type
-      const response = data as ToggleAdminStatusResponse;
+      // Cast the data to our expected type using unknown first
+      const response = data as unknown as ToggleAdminStatusResponse;
 
       if (!response?.success) {
         console.error('Function returned error:', response?.error);
