@@ -12,7 +12,7 @@ const MobileNav = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
-  // Using Supabase hosted SVG file or local file
+  // Using local file path for logo
   const logoPath = "/Speech Help - Logo-New.png";
 
   return (
@@ -23,7 +23,7 @@ const MobileNav = () => {
           <img src={logoPath} alt="Speech Help" className="h-8" />
         </Link>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           <UserMenu />
           <LanguageSelector />
           <button
@@ -42,7 +42,7 @@ const MobileNav = () => {
 
       {/* Mobile Navigation Menu */}
       {isMenuOpen && (
-        <div className="absolute top-full left-0 right-0 z-20 bg-white shadow-lg">
+        <div className="absolute top-[48px] left-0 right-0 z-20 bg-white shadow-lg">
           <div className="flex flex-col space-y-2 p-4">
             <NavLinks isMobile onItemClick={closeMenu} />
           </div>
