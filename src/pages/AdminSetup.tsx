@@ -29,6 +29,9 @@ const AdminSetup = () => {
           setAdminExists(true);
           setError('An admin account already exists. Please use the login page or reset admin users below.');
         }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        setError('Error checking for existing admin accounts. You can try resetting admin users below.');
       } finally {
         setIsLoading(false);
       }
@@ -117,72 +120,8 @@ const AdminSetup = () => {
                 <div className="flex justify-center py-8">
                   <div className="animate-spin h-6 w-6 border-2 border-purple-500 rounded-full border-t-transparent"></div>
                 </div>
-              ) : adminExists && !resetSuccess ? (
-                <div className="space-y-4">
-                  {error && (
-                    <div className="bg-red-50 text-red-800 p-3 rounded-md flex items-center text-sm mb-4">
-                      <CircleAlertIcon className="h-5 w-5 mr-2 flex-shrink-0 text-red-500" />
-                      <span>{error}</span>
-                    </div>
-                  )}
-                  
-                  <div className="text-center py-2">
-                    <p className="text-sm text-gray-600 mb-4">An admin account already exists. You can log in or reset all admin accounts below.</p>
-                    <Link 
-                      to="/admin/login" 
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white rounded-md mb-4"
-                    >
-                      Go to Login
-                    </Link>
-                    
-                    <div className="mt-6 pt-4 border-t border-gray-100">
-                      <p className="text-sm text-gray-700 font-medium mb-2">Reset Admin Users</p>
-                      <p className="text-xs text-gray-500 mb-3">This will delete all existing admin accounts, allowing you to create a new one.</p>
-                      
-                      <Button 
-                        onClick={handleResetAdminUsers}
-                        variant="destructive"
-                        className="w-full flex items-center justify-center"
-                        disabled={isResetting}
-                      >
-                        {isResetting ? (
-                          <span className="flex items-center">
-                            <LoaderIcon className="animate-spin mr-2 h-4 w-4" />
-                            Resetting Admin Users...
-                          </span>
-                        ) : (
-                          <>
-                            <TrashIcon className="w-4 h-4 mr-2" />
-                            Reset Admin Users
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : success ? (
-                <div className="space-y-4">
-                  <div className="bg-green-50 text-green-800 p-4 rounded-md flex items-center text-sm">
-                    <CheckCircleIcon className="h-5 w-5 mr-2 flex-shrink-0 text-green-500" />
-                    <div>
-                      <p className="font-medium">Admin account created successfully!</p>
-                      <p className="mt-1">Username: admin</p>
-                      <p>Password: Admin123!</p>
-                      <p className="mt-2 text-xs">You will be redirected to the login page in a few seconds...</p>
-                    </div>
-                  </div>
-                  
-                  <div className="text-center pt-2">
-                    <Link 
-                      to="/admin/login" 
-                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white rounded-md"
-                    >
-                      Go to Login
-                    </Link>
-                  </div>
-                </div>
               ) : (
-                <div className="space-y-4">
+                <div>
                   {error && (
                     <div className="bg-red-50 text-red-800 p-3 rounded-md flex items-center text-sm mb-4">
                       <CircleAlertIcon className="h-5 w-5 mr-2 flex-shrink-0 text-red-500" />
@@ -197,54 +136,115 @@ const AdminSetup = () => {
                     </div>
                   )}
                   
-                  <div className="text-center space-y-2 py-2">
-                    <p className="text-sm text-gray-600">Click the button below to create a default admin account with these credentials:</p>
-                    <div className="bg-gray-50 p-3 rounded-md text-sm text-left">
-                      <p><span className="font-medium">Username:</span> admin</p>
-                      <p><span className="font-medium">Password:</span> Admin123!</p>
-                      <p><span className="font-medium">Email:</span> admin@speechhelp.ai</p>
+                  {success ? (
+                    <div className="space-y-4">
+                      <div className="bg-green-50 text-green-800 p-4 rounded-md flex items-center text-sm">
+                        <CheckCircleIcon className="h-5 w-5 mr-2 flex-shrink-0 text-green-500" />
+                        <div>
+                          <p className="font-medium">Admin account created successfully!</p>
+                          <p className="mt-1">Username: admin</p>
+                          <p>Password: Admin123!</p>
+                          <p className="mt-2 text-xs">You will be redirected to the login page in a few seconds...</p>
+                        </div>
+                      </div>
+                      
+                      <div className="text-center pt-2">
+                        <Link 
+                          to="/admin/login" 
+                          className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white rounded-md"
+                        >
+                          Go to Login
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <Button 
-                    onClick={handleCreateAdmin}
-                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white"
-                    disabled={isCreating}
-                  >
-                    {isCreating ? (
-                      <span className="flex items-center">
-                        <LoaderIcon className="animate-spin mr-2 h-4 w-4" />
-                        Creating Admin Account...
-                      </span>
-                    ) : (
-                      "Create Default Admin Account"
-                    )}
-                  </Button>
-                  
-                  {/* Add a reset button here too, in case admin exists but the check failed */}
-                  <div className="mt-6 pt-4 border-t border-gray-100">
-                    <p className="text-sm text-gray-700 font-medium mb-2">Reset Admin Users</p>
-                    <p className="text-xs text-gray-500 mb-3">If you're getting errors about admin users already existing, use this button to reset all admin accounts.</p>
-                    
-                    <Button 
-                      onClick={handleResetAdminUsers}
-                      variant="destructive"
-                      className="w-full flex items-center justify-center"
-                      disabled={isResetting}
-                    >
-                      {isResetting ? (
-                        <span className="flex items-center">
-                          <LoaderIcon className="animate-spin mr-2 h-4 w-4" />
-                          Resetting Admin Users...
-                        </span>
-                      ) : (
-                        <>
-                          <TrashIcon className="w-4 h-4 mr-2" />
-                          Reset Admin Users
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                  ) : adminExists && !resetSuccess ? (
+                    <div className="space-y-4">
+                      <div className="text-center py-2">
+                        <p className="text-sm text-gray-600 mb-4">An admin account already exists. You can log in or reset all admin accounts below.</p>
+                        <Link 
+                          to="/admin/login" 
+                          className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white rounded-md mb-4"
+                        >
+                          Go to Login
+                        </Link>
+                        
+                        <div className="mt-6 pt-4 border-t border-gray-100">
+                          <p className="text-sm text-gray-700 font-medium mb-2">Reset Admin Users</p>
+                          <p className="text-xs text-gray-500 mb-3">This will delete all existing admin accounts, allowing you to create a new one.</p>
+                          
+                          <Button 
+                            onClick={handleResetAdminUsers}
+                            variant="destructive"
+                            className="w-full flex items-center justify-center"
+                            disabled={isResetting}
+                          >
+                            {isResetting ? (
+                              <span className="flex items-center">
+                                <LoaderIcon className="animate-spin mr-2 h-4 w-4" />
+                                Resetting Admin Users...
+                              </span>
+                            ) : (
+                              <>
+                                <TrashIcon className="w-4 h-4 mr-2" />
+                                Reset Admin Users
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="text-center space-y-2 py-2">
+                        <p className="text-sm text-gray-600">Click the button below to create a default admin account with these credentials:</p>
+                        <div className="bg-gray-50 p-3 rounded-md text-sm text-left">
+                          <p><span className="font-medium">Username:</span> admin</p>
+                          <p><span className="font-medium">Password:</span> Admin123!</p>
+                          <p><span className="font-medium">Email:</span> admin@speechhelp.ai</p>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        onClick={handleCreateAdmin}
+                        className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white"
+                        disabled={isCreating}
+                      >
+                        {isCreating ? (
+                          <span className="flex items-center">
+                            <LoaderIcon className="animate-spin mr-2 h-4 w-4" />
+                            Creating Admin Account...
+                          </span>
+                        ) : (
+                          "Create Default Admin Account"
+                        )}
+                      </Button>
+                      
+                      {/* Always show the reset button for easier access */}
+                      <div className="mt-6 pt-4 border-t border-gray-100">
+                        <p className="text-sm text-gray-700 font-medium mb-2">Reset Admin Users</p>
+                        <p className="text-xs text-gray-500 mb-3">If you're getting errors about admin users already existing, use this button to reset all admin accounts.</p>
+                        
+                        <Button 
+                          onClick={handleResetAdminUsers}
+                          variant="destructive"
+                          className="w-full flex items-center justify-center"
+                          disabled={isResetting}
+                        >
+                          {isResetting ? (
+                            <span className="flex items-center">
+                              <LoaderIcon className="animate-spin mr-2 h-4 w-4" />
+                              Resetting Admin Users...
+                            </span>
+                          ) : (
+                            <>
+                              <TrashIcon className="w-4 h-4 mr-2" />
+                              Reset Admin Users
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               
