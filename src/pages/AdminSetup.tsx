@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { CircleAlertIcon, ShieldIcon, CheckCircleIcon, LoaderIcon } from 'lucide-react';
@@ -16,7 +15,6 @@ const AdminSetup = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Check if admin exists on component mount
   useEffect(() => {
     const initAdminStatus = async () => {
       setIsLoading(true);
@@ -144,7 +142,7 @@ const AdminSetup = () => {
                     <div className="bg-gray-50 p-3 rounded-md text-sm text-left">
                       <p><span className="font-medium">Username:</span> admin</p>
                       <p><span className="font-medium">Password:</span> Admin123!</p>
-                      <p><span className="font-medium">Email:</span> admin@speechhelp.com</p>
+                      <p><span className="font-medium">Email:</span> admin@speechhelp.ai</p>
                     </div>
                   </div>
                   
