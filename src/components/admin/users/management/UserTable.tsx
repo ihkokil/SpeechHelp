@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { User } from '../types';
+import { Link } from 'react-router-dom';
 
 interface UserTableProps {
   users: User[];

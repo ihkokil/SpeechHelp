@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
 import { SearchToolbar } from '@/components/admin/users/management/SearchToolbar';
@@ -8,6 +8,7 @@ import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUser
 import UserDetailsDrawer from '@/components/admin/users/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/AddUserDialog';
 import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const UserManagement = () => {
   const {
@@ -38,6 +39,13 @@ const UserManagement = () => {
     handleManagePermissions,
     handlePermissionsUpdated
   } = useUserManagement();
+  
+  const { toast } = useToast();
+  
+  // Fetch users on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   return (
     <div className="space-y-6">
@@ -101,6 +109,10 @@ const UserManagement = () => {
         onOpenChange={setIsAddUserDialogOpen} 
         onUserAdded={(newUser) => {
           setUsers(prev => [...prev, newUser]);
+          toast({
+            title: "User added",
+            description: `${newUser.email} has been added successfully.`
+          });
           setIsAddUserDialogOpen(false);
         }}
       />
