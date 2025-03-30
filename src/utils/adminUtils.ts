@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -74,12 +73,13 @@ export const checkAdminExists = async () => {
   }
 };
 
-// Fix the admin login function in the AdminContext.tsx file
+// Fixed admin login function to address ambiguous column issue
 export const authenticateAdmin = async (username: string, password: string) => {
   try {
-    // Use username_input instead of email_input to match the authenticate_admin function
+    // The issue is that 'email' is ambiguous in the database query
+    // Let's use username instead as the login identifier since that's what the UI is passing
     const { data, error } = await supabase.rpc('authenticate_admin', {
-      email_input: username,
+      username_input: username, // Change from email_input to username_input
       password_input: password
     });
     
