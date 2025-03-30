@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { User } from '../types';
+import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
 
 interface UserTableProps {
   users: User[];
@@ -67,6 +68,13 @@ export const UserTable: React.FC<UserTableProps> = ({
            'Unknown';
   }, []);
 
+  const getUserPhone = useCallback((user: User) => {
+    const phone = user.user_metadata?.phone;
+    if (!phone) return '—';
+    const countryCode = user.user_metadata?.country_code || 'US';
+    return formatPhoneNumber(phone, countryCode);
+  }, []);
+
   const handleViewDetailsClick = useCallback((e: React.MouseEvent, user: User) => {
     e.preventDefault();
     e.stopPropagation();
@@ -92,18 +100,19 @@ export const UserTable: React.FC<UserTableProps> = ({
               />
             </TableHead>
             <TableHead>Name</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Subscription</TableHead>
-            <TableHead>Last Login</TableHead>
+            <TableHead>Email Address</TableHead>
+            <TableHead>Phone</TableHead>
+            <TableHead>Subscription Plan</TableHead>
             <TableHead>Created</TableHead>
+            <TableHead>Last Login</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead className="w-12 text-right pr-2">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={8} className="h-24 text-center">
+              <TableCell colSpan={9} className="h-24 text-center">
                 <div className="flex justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
@@ -114,7 +123,7 @@ export const UserTable: React.FC<UserTableProps> = ({
             </TableRow>
           ) : filteredUsers.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="h-24 text-center">
+              <TableCell colSpan={9} className="h-24 text-center">
                 No users found.
               </TableCell>
             </TableRow>
@@ -136,14 +145,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                   )}
                 </TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <Badge 
-                    variant={user.is_active !== false ? 'default' : 'secondary'}
-                    className={user.is_active !== false ? 'bg-green-500' : ''}
-                  >
-                    {user.is_active !== false ? 'active' : 'inactive'}
-                  </Badge>
-                </TableCell>
+                <TableCell>{getUserPhone(user)}</TableCell>
                 <TableCell>
                   <Badge 
                     variant="outline" 
@@ -156,8 +158,16 @@ export const UserTable: React.FC<UserTableProps> = ({
                     {user.subscription_tier || 'free'}
                   </Badge>
                 </TableCell>
-                <TableCell>{formatDate(user.last_sign_in_at)}</TableCell>
                 <TableCell>{formatDate(user.created_at)}</TableCell>
+                <TableCell>{formatDate(user.last_sign_in_at)}</TableCell>
+                <TableCell>
+                  <Badge 
+                    variant={user.is_active !== false ? 'default' : 'secondary'}
+                    className={user.is_active !== false ? 'bg-green-500' : ''}
+                  >
+                    {user.is_active !== false ? 'active' : 'inactive'}
+                  </Badge>
+                </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
