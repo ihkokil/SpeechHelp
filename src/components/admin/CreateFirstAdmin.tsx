@@ -1,13 +1,11 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { CircleAlertIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CircleAlertIcon, KeyIcon } from 'lucide-react';
 
 const CreateFirstAdmin = () => {
   const [email, setEmail] = useState('');
@@ -16,33 +14,20 @@ const CreateFirstAdmin = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
   const { toast } = useToast();
-
-  const validateForm = () => {
-    if (!email || !username || !password || !confirmPassword) {
-      setError('All fields are required');
-      return false;
-    }
-    
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return false;
-    }
-    
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return false;
-    }
-    
-    return true;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    if (!validateForm()) {
+    if (!email || !username || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
     
@@ -59,140 +44,99 @@ const CreateFirstAdmin = () => {
         throw error;
       }
       
-      setSuccess(true);
       toast({
-        title: "Admin created successfully",
-        description: "You can now log in to the admin portal",
+        title: "Admin account created",
+        description: "Your admin account has been set up successfully.",
       });
+      
+      navigate('/admin/login');
     } catch (err: any) {
-      console.error("Error creating admin:", err);
       setError(err.message || 'Failed to create admin account');
-      toast({
-        title: "Failed to create admin",
-        description: err.message || 'An unexpected error occurred',
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (success) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Admin Created Successfully</CardTitle>
-          <CardDescription>
-            Your admin account has been created. You can now log in to the admin portal.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <AlertDescription>
-              For security reasons, please make note of your admin credentials and keep them safe.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-        <CardFooter>
-          <Button 
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600"
-            onClick={() => window.location.href = '/admin/login'}
-          >
-            Go to Admin Login
-          </Button>
-        </CardFooter>
-      </Card>
-    );
-  }
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create Admin Account</CardTitle>
-        <CardDescription>
-          Set up the first admin account for SpeechHelp
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {error && (
-          <div className="bg-red-50 text-red-800 p-3 rounded-md mb-4 flex items-center text-sm">
-            <CircleAlertIcon className="h-4 w-4 mr-2 flex-shrink-0" />
-            {error}
-          </div>
-        )}
+    <div className="bg-white rounded-lg shadow-lg p-8">
+      <div className="text-center space-y-1 mb-6">
+        <h2 className="text-2xl font-semibold text-gray-800">Create Admin Account</h2>
+        <p className="text-gray-500 text-sm">Set up your first administrator account</p>
+      </div>
+      
+      {error && (
+        <div className="bg-red-50 text-red-800 p-3 rounded-md mb-6 flex items-center text-sm">
+          <CircleAlertIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+          {error}
+        </div>
+      )}
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="admin@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="bg-gray-50"
+            required
+          />
+        </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@example.com"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="admin"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
-            <p className="text-xs text-gray-500">Must be at least 8 characters long</p>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          
-          <Button 
-            type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <span className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Creating Admin...
-              </span>
-            ) : (
-              <span className="flex items-center">
-                <KeyIcon className="h-4 w-4 mr-2" />
-                Create Admin Account
-              </span>
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        <div className="space-y-2">
+          <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+          <Input
+            id="username"
+            type="text"
+            placeholder="Choose a username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="bg-gray-50"
+            required
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Create a strong password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="bg-gray-50"
+            required
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            placeholder="Confirm your password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="bg-gray-50"
+            required
+          />
+        </div>
+        
+        <Button 
+          type="submit" 
+          className="w-full bg-[#8E31A3] hover:bg-[#7d2a91]"
+          disabled={isLoading}
+        >
+          {isLoading ? "Creating Account..." : "Create Admin Account"}
+        </Button>
+      </form>
+      
+      <p className="text-xs text-center text-gray-500 mt-6">
+        Use this option only for the initial setup of your admin portal
+      </p>
+    </div>
   );
 };
 

@@ -1,15 +1,14 @@
 
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAdmin } from '@/contexts/AdminContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { CircleAlertIcon, KeyIcon, LogInIcon } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { CircleAlertIcon, SettingsIcon } from 'lucide-react';
 
 const AdminAuth = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { adminUser, isLoading, adminLogin } = useAdmin();
@@ -18,13 +17,13 @@ const AdminAuth = () => {
     e.preventDefault();
     setError('');
     
-    if (!email || !password) {
-      setError('Please enter both email and password');
+    if (!username || !password) {
+      setError('Please enter both username and password');
       return;
     }
     
     try {
-      await adminLogin(email, password);
+      await adminLogin(username, password);
     } catch (err) {
       setError('Authentication failed. Please try again.');
     }
@@ -36,82 +35,90 @@ const AdminAuth = () => {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-r from-purple-900 to-pink-800 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f0edfb] p-4">
+      <div className="w-full max-w-md">
+        <div className="flex justify-center mb-4">
+          <div className="flex flex-col items-center gap-1">
             <img 
-              src="/Speech Help - Logo-New.png" 
+              src="/speech-help-new-logo.svg" 
               alt="SpeechHelp Logo" 
-              className="h-16"
+              className="h-12"
             />
+            <h1 className="text-xl font-medium text-[#b44ca1]">Admin Portal</h1>
           </div>
-          <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
-          <CardDescription>
-            Enter your credentials to access the admin portal
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <div className="bg-red-50 text-red-800 p-3 rounded-md mb-4 flex items-center text-sm">
-              <CircleAlertIcon className="h-4 w-4 mr-2 flex-shrink-0" />
-              {error}
-            </div>
-          )}
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+        </div>
+        
+        <Card className="shadow-lg border-0">
+          <CardContent className="p-8">
+            <div className="space-y-6">
+              <div className="text-center space-y-1">
+                <h2 className="text-2xl font-semibold text-gray-800">Admin Access</h2>
+                <p className="text-gray-500 text-sm">Sign in to access the admin dashboard</p>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-600"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Signing in...
-                </span>
-              ) : (
-                <span className="flex items-center">
-                  <LogInIcon className="h-4 w-4 mr-2" />
-                  Sign in to Admin Portal
-                </span>
+              
+              {error && (
+                <div className="bg-red-50 text-red-800 p-3 rounded-md flex items-center text-sm">
+                  <CircleAlertIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+                  {error}
+                </div>
               )}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex justify-center text-xs text-gray-500">
-          <div className="flex items-center">
-            <KeyIcon className="h-3 w-3 mr-1" />
-            Secure admin portal for SpeechHelp
-          </div>
-        </CardFooter>
-      </Card>
+              
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Enter your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="bg-gray-50"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-gray-50"
+                    required
+                  />
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-[#8E31A3] hover:bg-[#7d2a91]"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Signing in..." : "Sign In"}
+                </Button>
+              </form>
+              
+              <div className="pt-4 border-t border-gray-100 text-center">
+                <div className="flex items-center justify-center gap-1 text-sm text-gray-500">
+                  <SettingsIcon className="h-4 w-4" />
+                  <span>First-time Setup</span>
+                </div>
+                <Link to="/admin/setup" className="mt-2 block px-4 py-2 text-center text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 text-sm">
+                  Create Default Admin Account
+                </Link>
+                <p className="text-xs text-gray-400 mt-3">
+                  Use this option only for the initial setup of your admin portal.
+                </p>
+              </div>
+              
+              <p className="text-xs text-center text-gray-400">
+                Secure access for authorized personnel only
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

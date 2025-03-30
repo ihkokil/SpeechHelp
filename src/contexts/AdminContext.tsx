@@ -13,7 +13,7 @@ type AdminUser = {
 type AdminContextType = {
   adminUser: AdminUser | null;
   isLoading: boolean;
-  adminLogin: (email: string, password: string) => Promise<void>;
+  adminLogin: (username: string, password: string) => Promise<void>;
   adminLogout: () => Promise<void>;
   refreshDashboardStats: () => Promise<any>;
   dashboardStats: any;
@@ -76,19 +76,19 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const adminLogin = async (email: string, password: string) => {
+  const adminLogin = async (username: string, password: string) => {
     setIsLoading(true);
     
     try {
       const { data, error } = await supabase.rpc('authenticate_admin', {
-        email_input: email,
+        email_input: username, // The function accepts email but we'll use username
         password_input: password
       });
       
       if (error || !data || data.length === 0) {
         toast({
           title: "Authentication failed",
-          description: "Invalid email or password",
+          description: "Invalid username or password",
           variant: "destructive"
         });
         setIsLoading(false);
