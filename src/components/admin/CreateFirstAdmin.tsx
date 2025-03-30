@@ -1,122 +1,42 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate, Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { CircleAlertIcon, ShieldIcon, ArrowLeftIcon, TrashIcon } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { CircleAlertIcon, ShieldIcon } from 'lucide-react';
+import AdminSignupForm from './AdminSignupForm';
+import AdminLoginRedirect from './AdminLoginRedirect';
+import { checkAdminExists } from '@/utils/adminUtils';
 
 const CreateFirstAdmin = () => {
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [adminExists, setAdminExists] = useState(false);
-  const [isDeletingAdmin, setIsDeletingAdmin] = useState(false);
-  const navigate = useNavigate();
-  const { toast } = useToast();
 
   // Check if admin exists on component mount
   useEffect(() => {
-    const checkAdminExists = async () => {
+    const initAdminStatus = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase.from('admin_users').select('id').limit(1);
+        const exists = await checkAdminExists();
         
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
+        if (exists) {
           setAdminExists(true);
           setError('An admin account already exists. Please use the login page or reset admin users below.');
         }
-      } catch (err: any) {
-        console.error('Error checking admin existence:', err);
       } finally {
         setIsLoading(false);
       }
     };
     
-    checkAdminExists();
+    initAdminStatus();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    
-    if (!email || !username || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      const { data, error } = await supabase.rpc('create_first_admin', {
-        email_input: email,
-        username_input: username,
-        password_input: password
-      });
-      
-      if (error) {
-        if (error.message.includes('Admin users already exist')) {
-          setAdminExists(true);
-          setError('An admin account already exists. Please use the login page or reset admin users below.');
-          return;
-        }
-        throw error;
-      }
-      
-      toast({
-        title: "Admin account created",
-        description: "Your admin account has been set up successfully.",
-      });
-      
-      navigate('/admin/login');
-    } catch (err: any) {
-      setError(err.message || 'Failed to create admin account');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleAdminExistsError = () => {
+    setAdminExists(true);
+    setError('An admin account already exists. Please use the login page or reset admin users below.');
   };
 
-  const handleDeleteAllAdmins = async () => {
-    setIsDeletingAdmin(true);
+  const handleResetSuccess = () => {
+    setAdminExists(false);
     setError('');
-    
-    try {
-      // Call the edge function to reset admin users
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-admin-users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to reset admin users');
-      }
-      
-      toast({
-        title: "Admin users reset",
-        description: "All admin users have been deleted. You can now create a new admin account.",
-      });
-      
-      setAdminExists(false);
-    } catch (err: any) {
-      setError(err.message || 'Failed to reset admin users');
-    } finally {
-      setIsDeletingAdmin(false);
-    }
   };
 
   return (
@@ -126,103 +46,19 @@ const CreateFirstAdmin = () => {
         <p className="text-gray-500 text-sm">Set up your first administrator account</p>
       </div>
       
-      {error && (
-        <div className="bg-red-50 text-red-800 p-3 rounded-md mb-6 flex items-center text-sm">
-          <CircleAlertIcon className="h-4 w-4 mr-2 flex-shrink-0" />
-          {error}
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin h-6 w-6 border-2 border-purple-500 rounded-full border-t-transparent"></div>
         </div>
-      )}
-      
-      {adminExists ? (
-        <div className="space-y-4">
-          <div className="text-center">
-            <Link 
-              to="/admin/login" 
-              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white rounded-md"
-            >
-              <ArrowLeftIcon className="w-4 h-4 mr-2" />
-              Go to Login
-            </Link>
-          </div>
-          
-          <div className="border-t border-gray-100 pt-4 mt-4">
-            <div className="text-center mb-3">
-              <p className="text-sm text-gray-600 font-medium">Reset Admin Users</p>
-              <p className="text-xs text-gray-500 mt-1">This will delete all existing admin users, allowing you to create a new one.</p>
-            </div>
-            <Button 
-              onClick={handleDeleteAllAdmins}
-              variant="destructive"
-              className="w-full flex items-center justify-center"
-              disabled={isDeletingAdmin}
-            >
-              <TrashIcon className="w-4 h-4 mr-2" />
-              {isDeletingAdmin ? "Resetting..." : "Reset Admin Users"}
-            </Button>
-          </div>
-        </div>
+      ) : adminExists ? (
+        <AdminLoginRedirect 
+          onResetSuccess={handleResetSuccess} 
+          error={error}
+        />
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="admin@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="bg-gray-50"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
-            <Input
-              id="username"
-              type="text"
-              placeholder="Choose a username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="bg-gray-50"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Create a strong password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="bg-gray-50"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="bg-gray-50"
-              required
-            />
-          </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90"
-            disabled={isLoading}
-          >
-            {isLoading ? "Creating Account..." : "Create Admin Account"}
-          </Button>
-        </form>
+        <AdminSignupForm 
+          onAdminExistsError={handleAdminExistsError} 
+        />
       )}
       
       <div className="flex items-center justify-center text-xs text-gray-500 mt-6 gap-1">
