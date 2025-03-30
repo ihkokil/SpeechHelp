@@ -287,7 +287,6 @@ async function handleVerifyPassword(_req: Request, reqBody: any, supabase: any) 
 
 // Handle login
 async function handleLogin(_req: Request, reqBody: any, supabase: any) {
-  // ... keep existing code (login handler function)
   const { username, password, ipAddress } = reqBody;
   
   // Validate input
@@ -471,7 +470,6 @@ async function handleLogin(_req: Request, reqBody: any, supabase: any) {
 
 // Handle 2FA verification
 async function handle2FACheck(_req: Request, reqBody: any, supabase: any) {
-  // ... keep existing code (2FA check function)
   const { adminId, token } = reqBody;
   
   // Get user's 2FA settings
@@ -494,7 +492,6 @@ async function handle2FACheck(_req: Request, reqBody: any, supabase: any) {
 
 // Handle logout
 async function handleLogout(_req: Request, reqBody: any, supabase: any) {
-  // ... keep existing code (logout function)
   const { adminId } = reqBody;
   
   // Log logout action
