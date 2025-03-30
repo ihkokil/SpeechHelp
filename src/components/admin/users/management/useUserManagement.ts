@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
@@ -225,9 +226,8 @@ export const useUserManagement = () => {
   const handleCloseUserDetails = useCallback(() => {
     console.log('UserManagement: Closing user details drawer');
     setIsDetailsOpen(false);
-    setTimeout(() => {
-      setSelectedUser(null);
-    }, 300);
+    // Don't clear the selected user immediately to avoid UI flickering
+    // The drawer needs the user data during the closing animation
   }, []);
 
   const handleToggleUserSubscription = async (userId: string, extensionDays: number = 30) => {
@@ -287,6 +287,19 @@ export const useUserManagement = () => {
       description: `${updatedUser.email}'s admin permissions have been updated.`,
     });
   };
+
+  // Clean up selectedUser when drawer is closed
+  useEffect(() => {
+    if (!isDetailsOpen && !isPermissionsDialogOpen) {
+      // Only clear selected user when both drawers are closed
+      // and after a short delay to allow animations to complete
+      const timer = setTimeout(() => {
+        setSelectedUser(null);
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isDetailsOpen, isPermissionsDialogOpen]);
 
   return {
     searchTerm,
