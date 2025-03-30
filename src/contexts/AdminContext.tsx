@@ -1,7 +1,7 @@
-
 import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { authenticateAdmin } from "@/utils/adminUtils";
 
 type AdminUser = {
   id: string;
@@ -80,22 +80,20 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.rpc('authenticate_admin', {
-        email_input: username, // The function accepts email but we'll use username
-        password_input: password
-      });
+      // Use our fixed authenticate function
+      const result = await authenticateAdmin(username, password);
       
-      if (error || !data || data.length === 0) {
+      if (!result.success) {
         toast({
           title: "Authentication failed",
-          description: "Invalid username or password",
+          description: result.error || "Invalid username or password",
           variant: "destructive"
         });
         setIsLoading(false);
         return;
       }
       
-      const adminUser = data[0];
+      const adminUser = result.user;
       
       // Create session with 24 hour expiry
       const expiresAt = new Date();
