@@ -110,11 +110,18 @@ serve(async (req) => {
 // Check if any admin users exist in the system
 async function checkAdminsExist(_req: Request, supabase: any) {
   try {
+    console.log("Checking if admin users exist");
+    
     const { count, error } = await supabase
       .from('admin_users')
       .select('*', { count: 'exact', head: true });
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error checking admin existence:", error);
+      throw error;
+    }
+    
+    console.log(`Found ${count} admin users`);
     
     return new Response(
       JSON.stringify({ 
@@ -315,152 +322,168 @@ async function handleLogin(_req: Request, reqBody: any, supabase: any) {
     );
   }
 
-  // Get user from database
-  const { data: adminUser, error: userError } = await supabase
-    .from('admin_users')
-    .select('id, username, email, hashed_password, is_active, is_super_admin, allowed_ip_addresses, failed_login_attempts')
-    .eq('username', username)
-    .single();
+  try {
+    // Get user from database
+    const { data: adminUser, error: userError } = await supabase
+      .from('admin_users')
+      .select('id, username, email, hashed_password, is_active, is_super_admin, allowed_ip_addresses, failed_login_attempts')
+      .eq('username', username)
+      .maybeSingle();
 
-  if (userError || !adminUser) {
-    console.log('User not found or error:', userError);
-    return new Response(
-      JSON.stringify({ success: false, message: 'Invalid credentials' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-    );
-  }
+    if (userError) {
+      console.error('Error fetching user:', userError);
+      return new Response(
+        JSON.stringify({ success: false, message: 'Error fetching user data' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
 
-  // Check if user is active
-  if (!adminUser.is_active) {
-    return new Response(
-      JSON.stringify({ success: false, message: 'Account is deactivated' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
-    );
-  }
+    if (!adminUser) {
+      console.log('User not found:', username);
+      return new Response(
+        JSON.stringify({ success: false, message: 'Invalid credentials' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
 
-  // Check IP whitelist if available
-  if (adminUser.allowed_ip_addresses && adminUser.allowed_ip_addresses.length > 0) {
-    if (!adminUser.allowed_ip_addresses.includes(ipAddress)) {
+    // Check if user is active
+    if (!adminUser.is_active) {
+      return new Response(
+        JSON.stringify({ success: false, message: 'Account is deactivated' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+      );
+    }
+
+    // Check IP whitelist if available
+    if (adminUser.allowed_ip_addresses && adminUser.allowed_ip_addresses.length > 0) {
+      if (!adminUser.allowed_ip_addresses.includes(ipAddress)) {
+        // Log failed attempt
+        await supabase.from('admin_activity_logs').insert({
+          admin_user_id: adminUser.id,
+          action: 'failed_login',
+          entity_type: 'admin_user',
+          entity_id: adminUser.id,
+          details: { reason: 'IP not whitelisted', ip_address: ipAddress },
+          ip_address: ipAddress
+        });
+
+        return new Response(
+          JSON.stringify({ success: false, message: 'Access denied from this IP address' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+        );
+      }
+    }
+
+    // Verify password using our improved function
+    const passwordMatch = await verifyPassword(password, adminUser.hashed_password);
+
+    if (!passwordMatch) {
+      // Increment failed login attempts
+      await supabase
+        .from('admin_users')
+        .update({ 
+          failed_login_attempts: adminUser.failed_login_attempts + 1 
+        })
+        .eq('id', adminUser.id);
+
       // Log failed attempt
       await supabase.from('admin_activity_logs').insert({
         admin_user_id: adminUser.id,
         action: 'failed_login',
         entity_type: 'admin_user',
         entity_id: adminUser.id,
-        details: { reason: 'IP not whitelisted', ip_address: ipAddress },
+        details: { reason: 'Invalid password' },
         ip_address: ipAddress
       });
 
       return new Response(
-        JSON.stringify({ success: false, message: 'Access denied from this IP address' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+        JSON.stringify({ success: false, message: 'Invalid credentials' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       );
     }
-  }
 
-  // Verify password using our improved function
-  const passwordMatch = await verifyPassword(password, adminUser.hashed_password);
-
-  if (!passwordMatch) {
-    // Increment failed login attempts
+    // Reset failed login attempts and update last login
     await supabase
       .from('admin_users')
       .update({ 
-        failed_login_attempts: adminUser.failed_login_attempts + 1 
+        failed_login_attempts: 0,
+        last_login: new Date().toISOString()
       })
       .eq('id', adminUser.id);
 
-    // Log failed attempt
+    // Get admin roles and permissions
+    const { data: roles } = await supabase
+      .from('admin_user_roles')
+      .select('role_id, admin_roles(name)')
+      .eq('admin_user_id', adminUser.id);
+
+    const roleIds = roles?.map(r => r.role_id) || [];
+    
+    const { data: permissions } = await supabase
+      .from('admin_role_permissions')
+      .select('admin_permissions(name)')
+      .in('role_id', roleIds);
+
+    const permissionNames = [...new Set(
+      permissions?.map(p => p.admin_permissions?.name).filter(Boolean) || []
+    )];
+
+    // Create a custom JWT token for the admin
+    const { data: tokenData, error: tokenError } = await supabase.auth.admin.createUser({
+      email: adminUser.email,
+      email_confirm: true,
+      user_metadata: {
+        is_admin: true,
+        admin_id: adminUser.id,
+        username: adminUser.username,
+        is_super_admin: adminUser.is_super_admin,
+        roles: roles?.map(r => r.admin_roles?.name).filter(Boolean) || [],
+        permissions: permissionNames
+      },
+    });
+
+    if (tokenError) {
+      console.error('Token creation error:', tokenError);
+      return new Response(
+        JSON.stringify({ success: false, message: 'Authentication error' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+
+    // Log successful login
     await supabase.from('admin_activity_logs').insert({
       admin_user_id: adminUser.id,
-      action: 'failed_login',
+      action: 'login',
       entity_type: 'admin_user',
       entity_id: adminUser.id,
-      details: { reason: 'Invalid password' },
+      details: { success: true },
       ip_address: ipAddress
     });
 
     return new Response(
-      JSON.stringify({ success: false, message: 'Invalid credentials' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      JSON.stringify({ 
+        success: true, 
+        message: 'Login successful', 
+        token: tokenData.user.id,
+        session: tokenData.session,
+        admin: {
+          id: adminUser.id,
+          username: adminUser.username,
+          email: adminUser.email,
+          is_super_admin: adminUser.is_super_admin,
+          roles: roles?.map(r => r.admin_roles?.name).filter(Boolean) || [],
+          permissions: permissionNames
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
-  }
-
-  // Reset failed login attempts and update last login
-  await supabase
-    .from('admin_users')
-    .update({ 
-      failed_login_attempts: 0,
-      last_login: new Date().toISOString()
-    })
-    .eq('id', adminUser.id);
-
-  // Get admin roles and permissions
-  const { data: roles } = await supabase
-    .from('admin_user_roles')
-    .select('role_id, admin_roles(name)')
-    .eq('admin_user_id', adminUser.id);
-
-  const roleIds = roles?.map(r => r.role_id) || [];
-  
-  const { data: permissions } = await supabase
-    .from('admin_role_permissions')
-    .select('admin_permissions(name)')
-    .in('role_id', roleIds);
-
-  const permissionNames = [...new Set(
-    permissions?.map(p => p.admin_permissions?.name).filter(Boolean) || []
-  )];
-
-  // Create a custom JWT token for the admin
-  const { data: tokenData, error: tokenError } = await supabase.auth.admin.createUser({
-    email: adminUser.email,
-    email_confirm: true,
-    user_metadata: {
-      is_admin: true,
-      admin_id: adminUser.id,
-      username: adminUser.username,
-      is_super_admin: adminUser.is_super_admin,
-      roles: roles?.map(r => r.admin_roles?.name).filter(Boolean) || [],
-      permissions: permissionNames
-    },
-  });
-
-  if (tokenError) {
-    console.error('Token creation error:', tokenError);
+  } catch (error) {
+    console.error("Login error:", error);
     return new Response(
-      JSON.stringify({ success: false, message: 'Authentication error' }),
+      JSON.stringify({ success: false, message: error.message || 'Login failed' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
-
-  // Log successful login
-  await supabase.from('admin_activity_logs').insert({
-    admin_user_id: adminUser.id,
-    action: 'login',
-    entity_type: 'admin_user',
-    entity_id: adminUser.id,
-    details: { success: true },
-    ip_address: ipAddress
-  });
-
-  return new Response(
-    JSON.stringify({ 
-      success: true, 
-      message: 'Login successful', 
-      token: tokenData.user.id,
-      session: tokenData.session,
-      admin: {
-        id: adminUser.id,
-        username: adminUser.username,
-        email: adminUser.email,
-        is_super_admin: adminUser.is_super_admin,
-        roles: roles?.map(r => r.admin_roles?.name).filter(Boolean) || [],
-        permissions: permissionNames
-      }
-    }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-  );
 }
 
 // Handle 2FA verification

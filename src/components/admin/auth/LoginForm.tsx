@@ -35,17 +35,17 @@ const LoginForm = ({ onTwoFactorRequired, onError }: LoginFormProps) => {
     try {
       const result = await login(username, password);
       
-      // Check if result exists and has requires2FA property
-      if (result && 'requires2FA' in result && result.requires2FA) {
+      if (result && result.requires2FA) {
         onTwoFactorRequired();
-      } else if (result) {
-        // If there's a result but no 2FA required, navigate to dashboard
+      } else if (result && result.success) {
+        // If login was successful and no 2FA required, navigate to dashboard
         navigate('/admin/dashboard');
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      setErrorMessage(error.message || 'Login failed. Please try again.');
-      onError(error.message || 'Login failed. Please try again.');
+      const message = error.message || 'Login failed. Please try again.';
+      setErrorMessage(message);
+      onError(message);
     }
   };
 
