@@ -15,6 +15,7 @@ const AdminAuth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submission started with username:', username);
     setError('');
     
     if (!username || !password) {
@@ -23,14 +24,18 @@ const AdminAuth = () => {
     }
     
     try {
+      console.log('Attempting admin login...');
       await adminLogin(username, password);
-    } catch (err) {
-      setError('Authentication failed. Please try again.');
+      console.log('Admin login complete');
+    } catch (err: any) {
+      console.error('Error in AdminAuth handleSubmit:', err);
+      setError(`Authentication failed: ${err.message || 'Unknown error'}`);
     }
   };
 
   // Redirect to admin dashboard if already logged in
   if (adminUser) {
+    console.log('User already logged in, redirecting to dashboard');
     return <Navigate to="/admin/dashboard" replace />;
   }
 
