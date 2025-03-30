@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CircleAlertIcon, ShieldIcon, ArrowLeftIcon } from 'lucide-react';
+import { CircleAlertIcon, ShieldIcon, ArrowLeftIcon, TrashIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const CreateFirstAdmin = () => {
@@ -15,6 +15,7 @@ const CreateFirstAdmin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [adminExists, setAdminExists] = useState(false);
+  const [isDeletingAdmin, setIsDeletingAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -29,7 +30,7 @@ const CreateFirstAdmin = () => {
         
         if (data && data.length > 0) {
           setAdminExists(true);
-          setError('An admin account already exists. Please use the login page.');
+          setError('An admin account already exists. Please use the login page or reset admin users below.');
         }
       } catch (err: any) {
         console.error('Error checking admin existence:', err);
@@ -67,7 +68,7 @@ const CreateFirstAdmin = () => {
       if (error) {
         if (error.message.includes('Admin users already exist')) {
           setAdminExists(true);
-          setError('An admin account already exists. Please use the login page.');
+          setError('An admin account already exists. Please use the login page or reset admin users below.');
           return;
         }
         throw error;
@@ -86,6 +87,38 @@ const CreateFirstAdmin = () => {
     }
   };
 
+  const handleDeleteAllAdmins = async () => {
+    setIsDeletingAdmin(true);
+    setError('');
+    
+    try {
+      // Call the edge function to reset admin users
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-admin-users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to reset admin users');
+      }
+      
+      toast({
+        title: "Admin users reset",
+        description: "All admin users have been deleted. You can now create a new admin account.",
+      });
+      
+      setAdminExists(false);
+    } catch (err: any) {
+      setError(err.message || 'Failed to reset admin users');
+    } finally {
+      setIsDeletingAdmin(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-8">
       <div className="text-center space-y-1 mb-6">
@@ -101,14 +134,32 @@ const CreateFirstAdmin = () => {
       )}
       
       {adminExists ? (
-        <div className="text-center mt-6">
-          <Link 
-            to="/admin/login" 
-            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white rounded-md"
-          >
-            <ArrowLeftIcon className="w-4 h-4 mr-2" />
-            Go to Login
-          </Link>
+        <div className="space-y-4">
+          <div className="text-center">
+            <Link 
+              to="/admin/login" 
+              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white rounded-md"
+            >
+              <ArrowLeftIcon className="w-4 h-4 mr-2" />
+              Go to Login
+            </Link>
+          </div>
+          
+          <div className="border-t border-gray-100 pt-4 mt-4">
+            <div className="text-center mb-3">
+              <p className="text-sm text-gray-600 font-medium">Reset Admin Users</p>
+              <p className="text-xs text-gray-500 mt-1">This will delete all existing admin users, allowing you to create a new one.</p>
+            </div>
+            <Button 
+              onClick={handleDeleteAllAdmins}
+              variant="destructive"
+              className="w-full flex items-center justify-center"
+              disabled={isDeletingAdmin}
+            >
+              <TrashIcon className="w-4 h-4 mr-2" />
+              {isDeletingAdmin ? "Resetting..." : "Reset Admin Users"}
+            </Button>
+          </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
