@@ -179,6 +179,7 @@ const DashboardSidebar = () => {
     </>
   );
 
+  // For mobile, we already use SidebarProvider
   if (isMobile) {
     return (
       <SidebarProvider defaultOpen={false}>
@@ -189,10 +190,13 @@ const DashboardSidebar = () => {
     );
   }
 
+  // For desktop view, we need to wrap in a SidebarProvider when used standalone
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
-      {sidebarContent}
-    </aside>
+    <SidebarProvider>
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+        {sidebarContent}
+      </aside>
+    </SidebarProvider>
   );
 };
 

@@ -53,7 +53,7 @@ const AdminDashboard = () => {
         totalUsers: userCount || 0,
         totalSpeeches: speechCount || 0,
         activeUsers: Math.floor(Math.random() * (userCount || 0)), // Mock data
-        lastLogin: session?.created_at || new Date().toISOString()
+        lastLogin: session?.user?.last_sign_in_at || new Date().toISOString()
       });
       
       setRecentActivity(activityData || []);

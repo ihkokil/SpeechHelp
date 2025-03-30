@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,12 @@ interface UserData {
   last_sign_in_at?: string;
 }
 
+interface Profile {
+  id: string;
+  username?: string;
+  [key: string]: any;
+}
+
 const AdminUserManagement = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
@@ -90,7 +97,7 @@ const AdminUserManagement = () => {
       
       // Combine data
       const combinedUsers = authUsers.users.map(authUser => {
-        const profile = profiles?.find(p => p.id === authUser.id) || {};
+        const profile = profiles?.find((p: Profile) => p.id === authUser.id) || {};
         return {
           ...authUser,
           ...profile,
