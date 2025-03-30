@@ -40,6 +40,27 @@ export const useAdminReset = () => {
   return { resetAdminUsers };
 };
 
+export const createDefaultAdmin = async () => {
+  try {
+    // This will create a default admin user
+    const { data, error } = await supabase.rpc('create_first_admin', {
+      email_input: 'admin@speechhelp.com',
+      username_input: 'admin',
+      password_input: 'Admin123!'
+    });
+    
+    if (error) {
+      console.error('Error creating default admin:', error);
+      return { success: false, error: error.message };
+    }
+    
+    return { success: true, message: 'Default admin created successfully' };
+  } catch (err: any) {
+    console.error('Error in createDefaultAdmin:', err);
+    return { success: false, error: err.message };
+  }
+};
+
 export const checkAdminExists = async () => {
   try {
     const { data, error } = await supabase.from('admin_users').select('id').limit(1);
