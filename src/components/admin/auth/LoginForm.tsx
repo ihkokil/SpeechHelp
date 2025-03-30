@@ -34,9 +34,12 @@ const LoginForm = ({ onTwoFactorRequired, onError }: LoginFormProps) => {
     
     try {
       const result = await login(username, password);
-      if (result?.requires2FA) {
+      
+      // Check if result exists and has requires2FA property
+      if (result && 'requires2FA' in result && result.requires2FA) {
         onTwoFactorRequired();
-      } else {
+      } else if (result) {
+        // If there's a result but no 2FA required, navigate to dashboard
         navigate('/admin/dashboard');
       }
     } catch (error: any) {
