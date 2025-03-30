@@ -29,6 +29,10 @@ export const useUserProfileData = (
         setOriginalEmail(user.email);
       }
       
+      // Get state value before form reset
+      const stateValue = metadata.state || '';
+      console.log('State value from metadata:', stateValue);
+      
       // This will trigger the first form reset with user data
       form.reset({
         firstName: metadata.first_name || '',
@@ -39,7 +43,7 @@ export const useUserProfileData = (
         countryCode: metadata.country_code || 'US',
         streetAddress: metadata.street_address || '',
         city: metadata.city || '',
-        state: metadata.state || '',
+        state: stateValue,
         zipCode: metadata.zip_code || '',
         country: metadata.country || 'United States',
       });
@@ -52,7 +56,7 @@ export const useUserProfileData = (
         countryCode: metadata.country_code || 'US',
         streetAddress: metadata.street_address || '',
         city: metadata.city || '',
-        state: metadata.state || '',
+        state: stateValue,
         zipCode: metadata.zip_code || '',
         country: metadata.country || 'United States',
       });
@@ -71,13 +75,17 @@ export const useUserProfileData = (
         setAvailableStates(states);
         console.log('Setting initial states for country:', countryCode, states);
         
-        // Important: Ensure state value is properly set after states are loaded
-        if (metadata.state) {
-          console.log('Setting state value from metadata:', metadata.state);
-          // Use a slightly longer timeout to ensure the states are loaded first
+        // Make sure the state is still set correctly after states are loaded
+        if (stateValue) {
+          console.log('Explicitly setting state value again:', stateValue);
+          // Use a timeout to ensure the states are loaded first
           setTimeout(() => {
-            form.setValue('state', metadata.state, { shouldValidate: true });
-          }, 150);
+            form.setValue('state', stateValue, { 
+              shouldValidate: true,
+              shouldDirty: false,
+              shouldTouch: false 
+            });
+          }, 200);
         }
       }
       
