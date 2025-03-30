@@ -75,30 +75,42 @@ export const UserTable: React.FC<UserTableProps> = ({
     return formatPhoneNumber(phone, countryCode);
   }, []);
 
-  const handleViewDetailsClick = useCallback((e: React.MouseEvent, user: User) => {
+  // Create a stable function reference that doesn't change on re-renders
+  const viewUserDetails = useCallback((e: React.MouseEvent, user: User) => {
     e.preventDefault();
     e.stopPropagation();
     console.log('UserTable: View details clicked for user:', user.id);
     handleViewUserDetails(user);
   }, [handleViewUserDetails]);
 
-  const handleManagePermissionsClick = useCallback((e: React.MouseEvent, user: User) => {
+  const managePermissions = useCallback((e: React.MouseEvent, user: User) => {
     e.preventDefault();
     e.stopPropagation();
     console.log('UserTable: Manage permissions clicked for user:', user.id);
     handleManagePermissions(user);
   }, [handleManagePermissions]);
 
-  // Custom handler for dropdown menu actions to ensure proper event handling
-  const handleDropdownItemClick = useCallback((
-    e: React.MouseEvent, 
-    action: (user: User) => void, 
-    user: User
-  ) => {
+  const toggleUserActive = useCallback((e: React.MouseEvent, userId: string, isActive: boolean) => {
     e.preventDefault();
     e.stopPropagation();
-    action(user);
-  }, []);
+    console.log('UserTable: Toggling user status:', userId, isActive);
+    handleToggleUserStatus(userId, isActive);
+  }, [handleToggleUserStatus]);
+
+  const extendSubscription = useCallback((e: React.MouseEvent, userId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('UserTable: Extending subscription for user:', userId);
+    handleToggleUserSubscription(userId, 30);
+  }, [handleToggleUserSubscription]);
+
+  const deleteUser = useCallback((e: React.MouseEvent, userId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('UserTable: Preparing to delete user:', userId);
+    setSelectedUsers([userId]);
+    setIsDeleteDialogOpen(true);
+  }, [setSelectedUsers, setIsDeleteDialogOpen]);
 
   return (
     <div className="rounded-md border">
@@ -190,7 +202,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
-                      <DropdownMenuItem onClick={(e) => handleViewDetailsClick(e, user)}>
+                      <DropdownMenuItem onClick={(e) => viewUserDetails(e, user)}>
                         <Eye className="mr-2 h-4 w-4" />
                         <span>View Details</span>
                       </DropdownMenuItem>
@@ -198,16 +210,12 @@ export const UserTable: React.FC<UserTableProps> = ({
                         <UserCog className="mr-2 h-4 w-4" />
                         <span>Edit User</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => handleManagePermissionsClick(e, user)}>
+                      <DropdownMenuItem onClick={(e) => managePermissions(e, user)}>
                         <Shield className="mr-2 h-4 w-4" />
                         <span>Manage Permissions</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleToggleUserSubscription(user.id, 30);
-                        }}
+                        onClick={(e) => extendSubscription(e, user.id)}
                       >
                         <Clock className="mr-2 h-4 w-4" />
                         <span>Extend Subscription</span>
@@ -219,22 +227,14 @@ export const UserTable: React.FC<UserTableProps> = ({
                       <DropdownMenuSeparator />
                       {user.is_active !== false ? (
                         <DropdownMenuItem 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleToggleUserStatus(user.id, false);
-                          }}
+                          onClick={(e) => toggleUserActive(e, user.id, false)}
                         >
                           <UserMinus className="mr-2 h-4 w-4" />
                           <span>Deactivate User</span>
                         </DropdownMenuItem>
                       ) : (
                         <DropdownMenuItem 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleToggleUserStatus(user.id, true);
-                          }}
+                          onClick={(e) => toggleUserActive(e, user.id, true)}
                         >
                           <UserCheck className="mr-2 h-4 w-4" />
                           <span>Activate User</span>
@@ -243,12 +243,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         className="text-red-600 focus:text-red-700 focus:bg-red-50"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setSelectedUsers([user.id]);
-                          setIsDeleteDialogOpen(true);
-                        }}
+                        onClick={(e) => deleteUser(e, user.id)}
                       >
                         <UserMinus className="mr-2 h-4 w-4" />
                         <span>Delete User</span>

@@ -142,31 +142,33 @@ export const useUserManagement = () => {
     }
   }, [adminUser, toast, lastFetchTime]);
 
-  const toggleUserSelection = (userId: string) => {
+  const toggleUserSelection = useCallback((userId: string) => {
     setSelectedUsers(prev => 
       prev.includes(userId) 
         ? prev.filter(id => id !== userId) 
         : [...prev, userId]
     );
-  };
+  }, []);
 
-  const toggleAllUsers = () => {
-    if (selectedUsers.length === users.filter(user => 
-      (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
-      (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
-    ).length) {
-      setSelectedUsers([]);
-    } else {
-      setSelectedUsers(users.filter(user => 
+  const toggleAllUsers = useCallback(() => {
+    setSelectedUsers(prev => {
+      if (prev.length === users.filter(user => 
         (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
         (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
-      ).map(user => user.id));
-    }
-  };
+      ).length) {
+        return [];
+      } else {
+        return users.filter(user => 
+          (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
+          (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
+        ).map(user => user.id);
+      }
+    });
+  }, [users, searchTerm]);
 
-  const handleDeleteUsers = async () => {
+  const handleDeleteUsers = useCallback(async () => {
     setIsActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -189,9 +191,9 @@ export const useUserManagement = () => {
       setIsActionLoading(false);
       setIsDeleteDialogOpen(false);
     }
-  };
+  }, [selectedUsers, toast]);
 
-  const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
+  const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean) => {
     setIsActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -216,22 +218,24 @@ export const useUserManagement = () => {
     } finally {
       setIsActionLoading(false);
     }
-  };
+  }, [toast]);
 
   const handleViewUserDetails = useCallback((user: User) => {
     console.log('UserManagement: Opening details for user:', user.id);
-    setSelectedUser(user);
-    setIsDetailsOpen(true);
+    // First close any existing drawer, then set the selected user and open state
+    setIsDetailsOpen(false);
+    setTimeout(() => {
+      setSelectedUser(user);
+      setIsDetailsOpen(true);
+    }, 50);
   }, []);
 
   const handleCloseUserDetails = useCallback(() => {
     console.log('UserManagement: Closing user details drawer');
     setIsDetailsOpen(false);
-    // Don't immediately clear selectedUser to avoid UI flicker
-    // The selectedUser will be cleared by the useEffect below after a short delay
   }, []);
 
-  const handleToggleUserSubscription = async (userId: string, extensionDays: number = 30) => {
+  const handleToggleUserSubscription = useCallback(async (userId: string, extensionDays: number = 30) => {
     setIsActionLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -269,15 +273,19 @@ export const useUserManagement = () => {
     } finally {
       setIsActionLoading(false);
     }
-  };
+  }, [toast]);
 
   const handleManagePermissions = useCallback((user: User) => {
     console.log('UserManagement: Opening permissions dialog for user:', user.id);
-    setSelectedUser(user);
-    setIsPermissionsDialogOpen(true);
+    // First close any existing dialog, then set the selected user and open state
+    setIsPermissionsDialogOpen(false);
+    setTimeout(() => {
+      setSelectedUser(user);
+      setIsPermissionsDialogOpen(true);
+    }, 50);
   }, []);
 
-  const handlePermissionsUpdated = (updatedUser: User) => {
+  const handlePermissionsUpdated = useCallback((updatedUser: User) => {
     setUsers(prevUsers => 
       prevUsers.map(user => 
         user.id === updatedUser.id ? updatedUser : user
@@ -288,23 +296,18 @@ export const useUserManagement = () => {
       title: 'Permissions Updated',
       description: `${updatedUser.email}'s admin permissions have been updated.`,
     });
-  };
+  }, [toast]);
 
-  // Clean up selectedUser state after drawers/dialogs close
+  // Reset component state when unmounting
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
-    if (!isDetailsOpen && !isPermissionsDialogOpen) {
-      timer = setTimeout(() => {
-        console.log('Clearing selected user after drawer closed');
-        setSelectedUser(null);
-      }, 300);
-    }
-    
     return () => {
-      if (timer) clearTimeout(timer);
+      // Cleanup function that runs when component unmounts
+      setSelectedUsers([]);
+      setSelectedUser(null);
+      setIsDetailsOpen(false);
+      setIsPermissionsDialogOpen(false);
     };
-  }, [isDetailsOpen, isPermissionsDialogOpen]);
+  }, []);
 
   return {
     searchTerm,
