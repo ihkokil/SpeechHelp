@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import PaymentMethodItem from './PaymentMethodItem';
 import AddPaymentDialog, { PaymentFormValues } from './AddPaymentDialog';
 import UpdatePaymentDialog from './UpdatePaymentDialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface PaymentMethod {
   type: string;
@@ -22,6 +22,7 @@ const PaymentMethodsCard = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
   const [showUpdatePaymentDialog, setShowUpdatePaymentDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number | null>(null);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
     {
@@ -124,6 +125,31 @@ const PaymentMethodsCard = () => {
     setShowUpdatePaymentDialog(true);
   };
 
+  const openDeleteDialog = (index: number) => {
+    setSelectedPaymentMethod(index);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeletePaymentMethod = () => {
+    if (selectedPaymentMethod === null) return;
+    
+    setIsProcessing(true);
+    setTimeout(() => {
+      const deletedMethod = paymentMethods[selectedPaymentMethod];
+      
+      setPaymentMethods(prev => prev.filter((_, index) => index !== selectedPaymentMethod));
+      
+      toast({
+        title: "Payment method deleted",
+        description: `Your ${deletedMethod.brand} card ending in ${deletedMethod.last4} has been removed.`,
+      });
+      
+      setShowDeleteDialog(false);
+      setSelectedPaymentMethod(null);
+      setIsProcessing(false);
+    }, 1000);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -142,6 +168,8 @@ const PaymentMethodsCard = () => {
               key={index}
               method={method}
               onUpdateClick={() => openUpdatePaymentDialog(index)}
+              onDeleteClick={() => openDeleteDialog(index)}
+              showDeleteButton={paymentMethods.length > 1}
             />
           ))}
         </div>
@@ -176,6 +204,34 @@ const PaymentMethodsCard = () => {
           }}
         />
       )}
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Payment Method</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedPaymentMethod !== null && paymentMethods[selectedPaymentMethod] ? (
+                <>
+                  Are you sure you want to delete your {paymentMethods[selectedPaymentMethod].brand} card 
+                  ending in {paymentMethods[selectedPaymentMethod].last4}? This action cannot be undone.
+                </>
+              ) : (
+                "Are you sure you want to delete this payment method? This action cannot be undone."
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-500 hover:bg-red-600 text-white" 
+              onClick={handleDeletePaymentMethod}
+              disabled={isProcessing}
+            >
+              {isProcessing ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
