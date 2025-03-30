@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +21,6 @@ export const useUserManagement = () => {
   const { adminUser } = useAdminAuth();
   
   const fetchUsers = useCallback(async () => {
-    // Prevent rapid re-fetching
     const now = Date.now();
     if (now - lastFetchTime < 1000) {
       return; // Debounce fetch requests
@@ -79,6 +77,7 @@ export const useUserManagement = () => {
           user.user_metadata.state = 'England';
           user.user_metadata.zip_code = 'W66699';
           user.user_metadata.country = 'United Kingdom';
+          user.user_metadata.country_code = 'GB'; // Set the proper country code for UK/England
           user.last_sign_in_at = new Date().toISOString();
           user.subscription_status = 'active';
           user.subscription_tier = 'premium';
@@ -97,6 +96,7 @@ export const useUserManagement = () => {
           user.user_metadata.state = 'England';
           user.user_metadata.zip_code = 'W66699';
           user.user_metadata.country = 'United Kingdom';
+          user.user_metadata.country_code = 'GB'; // Set the proper country code for UK/England
           user.last_sign_in_at = new Date().toISOString();
           user.subscription_status = 'active';
           user.subscription_tier = 'premium';
@@ -222,7 +222,6 @@ export const useUserManagement = () => {
 
   const handleViewUserDetails = useCallback((user: User) => {
     console.log('UserManagement: Opening details for user:', user.id);
-    // First close any existing drawer, then set the selected user and open state
     setIsDetailsOpen(false);
     setTimeout(() => {
       setSelectedUser(user);
@@ -277,7 +276,6 @@ export const useUserManagement = () => {
 
   const handleManagePermissions = useCallback((user: User) => {
     console.log('UserManagement: Opening permissions dialog for user:', user.id);
-    // First close any existing dialog, then set the selected user and open state
     setIsPermissionsDialogOpen(false);
     setTimeout(() => {
       setSelectedUser(user);
@@ -298,10 +296,8 @@ export const useUserManagement = () => {
     });
   }, [toast]);
 
-  // Reset component state when unmounting
   useEffect(() => {
     return () => {
-      // Cleanup function that runs when component unmounts
       setSelectedUsers([]);
       setSelectedUser(null);
       setIsDetailsOpen(false);

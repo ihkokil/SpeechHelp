@@ -1,4 +1,3 @@
-
 import React, { useMemo, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -88,10 +87,24 @@ export const UserTable: React.FC<UserTableProps> = ({
     return `+${dialCode} ${formattedNumber}`;
   }, []);
 
-  const getCountryFlagUrl = useCallback((countryCode: string) => {
+  const getCountryFlagUrl = useCallback((countryCode: string | undefined) => {
     if (!countryCode) return '';
-    // Use lowercase for the URL as required by flagcdn.com
+    
+    if (countryCode === 'England') return 'https://flagcdn.com/w20/gb.png';
+    
     return `https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`;
+  }, []);
+
+  const getCountryCode = useCallback((user: User) => {
+    const countryCode = user.user_metadata?.country_code;
+    
+    if (user.user_metadata?.country === 'United Kingdom' || 
+        user.user_metadata?.country === 'England' || 
+        user.user_metadata?.state === 'England') {
+      return 'GB';
+    }
+    
+    return countryCode;
   }, []);
 
   const viewUserDetails = useCallback((e: React.MouseEvent, user: User) => {
@@ -181,12 +194,12 @@ export const UserTable: React.FC<UserTableProps> = ({
                 </TableCell>
                 <TableCell className="font-medium">
                   <div className="flex items-center">
-                    {user.user_metadata?.country_code && (
+                    {getCountryCode(user) && (
                       <img 
-                        src={getCountryFlagUrl(user.user_metadata.country_code)}
-                        alt={user.user_metadata.country || user.user_metadata.country_code}
+                        src={getCountryFlagUrl(getCountryCode(user))}
+                        alt={user.user_metadata?.country || getCountryCode(user)}
                         className="h-4 w-auto mr-2"
-                        title={user.user_metadata.country || user.user_metadata.country_code}
+                        title={user.user_metadata?.country || getCountryCode(user)}
                       />
                     )}
                     <span>{getUserName(user)}</span>
