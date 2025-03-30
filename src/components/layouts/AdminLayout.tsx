@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
 import { 
@@ -104,11 +104,13 @@ const AdminLayout = () => {
         <Sidebar>
           <SidebarHeader className="pb-0">
             <div className="flex items-center space-x-2 px-3 py-2">
-              <img
-                src="/Speech Help - Logo.svg"
-                alt="Speech Help Logo"
-                className="h-8"
-              />
+              <Link to="/admin/dashboard">
+                <img
+                  src="/Speech Help - Logo.svg"
+                  alt="Speech Help Logo"
+                  className="h-8"
+                />
+              </Link>
               <span className="text-lg font-bold text-pink-600">Admin</span>
             </div>
             <Separator className="mb-2 mt-1" />
@@ -160,11 +162,13 @@ const AdminLayout = () => {
                 <SheetContent side="left" className="p-0">
                   <div className="flex h-16 items-center justify-between border-b px-4">
                     <div className="flex items-center space-x-2">
-                      <img
-                        src="/Speech Help - Logo.svg"
-                        alt="Speech Help Logo"
-                        className="h-8"
-                      />
+                      <Link to="/admin/dashboard">
+                        <img
+                          src="/Speech Help - Logo.svg"
+                          alt="Speech Help Logo"
+                          className="h-8"
+                        />
+                      </Link>
                       <span className="text-lg font-bold text-pink-600">Admin</span>
                     </div>
                     <Button
@@ -210,11 +214,13 @@ const AdminLayout = () => {
               </Sheet>
               
               <div className="md:hidden">
-                <img
-                  src="/Speech Help - Logo.svg"
-                  alt="Speech Help Logo"
-                  className="h-8"
-                />
+                <Link to="/admin/dashboard">
+                  <img
+                    src="/Speech Help - Logo.svg"
+                    alt="Speech Help Logo"
+                    className="h-8"
+                  />
+                </Link>
               </div>
               
               <div className="hidden md:flex">
