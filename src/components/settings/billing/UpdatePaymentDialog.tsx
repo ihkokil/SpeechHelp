@@ -9,6 +9,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { paymentMethodSchema, PaymentFormValues } from './AddPaymentDialog';
 import { useState, useEffect } from 'react';
+import countryData from '@/data/countries';
+import { getStatesForCountry, StateProvince } from '@/data/statesProvinces';
 
 interface UpdatePaymentDialogProps {
   open: boolean;
@@ -25,17 +27,36 @@ const UpdatePaymentDialog = ({
   isProcessing, 
   defaultValues 
 }: UpdatePaymentDialogProps) => {
+  const [states, setStates] = useState<StateProvince[]>([]);
+  const [cardNumber, setCardNumber] = useState(defaultValues.cardNumber || '');
+
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentMethodSchema),
     defaultValues,
   });
 
-  const [cardNumber, setCardNumber] = useState(defaultValues.cardNumber || '');
+  const selectedCountry = form.watch('billingCountry');
+
+  useEffect(() => {
+    if (selectedCountry) {
+      const countryObj = countryData.find(c => c.name === selectedCountry);
+      if (countryObj) {
+        const statesForCountry = getStatesForCountry(countryObj.code);
+        setStates(statesForCountry);
+      }
+    }
+  }, [selectedCountry]);
 
   useEffect(() => {
     if (open) {
       form.reset(defaultValues);
       setCardNumber(defaultValues.cardNumber || '');
+      
+      // Set states based on the country
+      const countryObj = countryData.find(c => c.name === defaultValues.billingCountry);
+      if (countryObj) {
+        setStates(getStatesForCountry(countryObj.code));
+      }
     }
   }, [open, defaultValues, form]);
 
@@ -241,13 +262,29 @@ const UpdatePaymentDialog = ({
               
               <FormField
                 control={form.control}
-                name="billingState"
+                name="billingCountry"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>State/Province</FormLabel>
-                    <FormControl>
-                      <Input placeholder="CA" {...field} />
-                    </FormControl>
+                    <FormLabel>Country</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {countryData.map((country) => (
+                          <SelectItem key={country.code} value={country.name}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -257,13 +294,32 @@ const UpdatePaymentDialog = ({
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="billingZip"
+                name="billingState"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ZIP/Postal Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="94105" {...field} />
-                    </FormControl>
+                    <FormLabel>State/Province</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value}
+                      disabled={states.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={states.length === 0 ? "Select country first" : "Select state/province"} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {states.length > 0 ? (
+                          states.map((state) => (
+                            <SelectItem key={state.code} value={state.name}>
+                              {state.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="N/A">No states/provinces available</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -271,12 +327,12 @@ const UpdatePaymentDialog = ({
               
               <FormField
                 control={form.control}
-                name="billingCountry"
+                name="billingZip"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Country</FormLabel>
+                    <FormLabel>ZIP/Postal Code</FormLabel>
                     <FormControl>
-                      <Input placeholder="United States" {...field} />
+                      <Input placeholder="94105" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

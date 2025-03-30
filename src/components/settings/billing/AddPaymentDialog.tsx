@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useState, useEffect } from 'react';
+import countryData from '@/data/countries';
+import { getStatesForCountry, StateProvince } from '@/data/statesProvinces';
 
 export const paymentMethodSchema = z.object({
   cardType: z.string().min(1, "Please select a card type"),
@@ -40,6 +43,8 @@ interface AddPaymentDialogProps {
 }
 
 const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPaymentDialogProps) => {
+  const [states, setStates] = useState<StateProvince[]>([]);
+  
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentMethodSchema),
     defaultValues: {
@@ -57,6 +62,24 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
       billingCountry: '',
     },
   });
+
+  const selectedCountry = form.watch('billingCountry');
+  
+  useEffect(() => {
+    if (selectedCountry) {
+      const countryObj = countryData.find(c => c.name === selectedCountry);
+      if (countryObj) {
+        const statesForCountry = getStatesForCountry(countryObj.code);
+        setStates(statesForCountry);
+        
+        // Reset state if changing to a country without the current state
+        const currentState = form.getValues('billingState');
+        if (currentState && statesForCountry.length > 0 && !statesForCountry.some(s => s.name === currentState)) {
+          form.setValue('billingState', '');
+        }
+      }
+    }
+  }, [selectedCountry, form]);
 
   const formatCardNumber = (value: string) => {
     return value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
@@ -82,6 +105,27 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
   const cardNumber = form.watch('cardNumber') || '';
   const detectedCardType = detectCardType(cardNumber);
   const cvvLength = getCvvLength(detectedCardType);
+
+  // Reset the form when dialog opens
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        cardType: '',
+        cardNumber: '',
+        cardHolder: '',
+        expiryMonth: '',
+        expiryYear: '',
+        cvv: '',
+        isDefault: false,
+        billingStreet: '',
+        billingCity: '',
+        billingState: '',
+        billingZip: '',
+        billingCountry: '',
+      });
+      setStates([]);
+    }
+  }, [open, form]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -261,13 +305,29 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
               
               <FormField
                 control={form.control}
-                name="billingState"
+                name="billingCountry"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>State/Province</FormLabel>
-                    <FormControl>
-                      <Input placeholder="CA" {...field} />
-                    </FormControl>
+                    <FormLabel>Country</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {countryData.map((country) => (
+                          <SelectItem key={country.code} value={country.name}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -277,13 +337,32 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="billingZip"
+                name="billingState"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ZIP/Postal Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="94105" {...field} />
-                    </FormControl>
+                    <FormLabel>State/Province</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value}
+                      disabled={states.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={states.length === 0 ? "Select country first" : "Select state/province"} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {states.length > 0 ? (
+                          states.map((state) => (
+                            <SelectItem key={state.code} value={state.name}>
+                              {state.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="N/A">No states/provinces available</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -291,12 +370,12 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
               
               <FormField
                 control={form.control}
-                name="billingCountry"
+                name="billingZip"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Country</FormLabel>
+                    <FormLabel>ZIP/Postal Code</FormLabel>
                     <FormControl>
-                      <Input placeholder="United States" {...field} />
+                      <Input placeholder="94105" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

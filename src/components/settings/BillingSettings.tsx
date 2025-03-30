@@ -4,12 +4,32 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format, addMonths, addYears } from 'date-fns';
 import SubscriptionCard from './billing/SubscriptionCard';
 import PaymentMethodsCard from './billing/PaymentMethodsCard';
+import { PaymentMethod } from './billing/types';
 
 const BillingSettings = () => {
   const { user } = useAuth();
   const [autoRenew, setAutoRenew] = useState(true);
   
   const accountCreatedAt = user ? new Date(user.created_at || Date.now()) : new Date();
+  
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
+    {
+      type: 'Credit Card',
+      last4: '4242',
+      expiryMonth: 12,
+      expiryYear: 2026,
+      brand: 'Visa',
+      isDefault: true,
+      cardHolder: 'John Doe',
+      billingAddress: {
+        street: '123 Main St',
+        city: 'San Francisco',
+        state: 'CA',
+        zipCode: '94105',
+        country: 'United States'
+      }
+    }
+  ]);
   
   const [subscriptionData, setSubscriptionData] = useState({
     plan: 'Pro Plan',
@@ -42,6 +62,19 @@ const BillingSettings = () => {
     }
   }, [subscriptionData.billingPeriod, subscriptionData.startDate]);
 
+  // Load payment methods from localStorage when component mounts
+  useEffect(() => {
+    const savedPaymentMethods = localStorage.getItem('paymentMethods');
+    if (savedPaymentMethods) {
+      setPaymentMethods(JSON.parse(savedPaymentMethods));
+    }
+  }, []);
+
+  // Save payment methods to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('paymentMethods', JSON.stringify(paymentMethods));
+  }, [paymentMethods]);
+
   const handleAutoRenewToggle = (checked: boolean) => {
     setAutoRenew(checked);
   };
@@ -54,6 +87,42 @@ const BillingSettings = () => {
     }));
   };
 
+  const handleAddPaymentMethod = (newPaymentMethod: PaymentMethod) => {
+    // If it's default, update all other cards to not be default
+    let updatedMethods = [...paymentMethods];
+    if (newPaymentMethod.isDefault) {
+      updatedMethods = updatedMethods.map(method => ({...method, isDefault: false}));
+    }
+    
+    // Add the new payment method to the collection
+    setPaymentMethods([...updatedMethods, newPaymentMethod]);
+  };
+
+  const handleUpdatePaymentMethod = (index: number, updatedMethod: PaymentMethod) => {
+    let updatedMethods = [...paymentMethods];
+    
+    // If setting this card as default, update all others to not be default
+    if (updatedMethod.isDefault) {
+      updatedMethods = updatedMethods.map(method => ({...method, isDefault: false}));
+    }
+    
+    // Update the selected payment method with new data
+    updatedMethods[index] = updatedMethod;
+    
+    setPaymentMethods(updatedMethods);
+  };
+
+  const handleDeletePaymentMethod = (index: number) => {
+    const newMethods = paymentMethods.filter((_, i) => i !== index);
+    
+    // If we deleted the default method and there are other methods, make the first one default
+    if (paymentMethods[index].isDefault && newMethods.length > 0) {
+      newMethods[0].isDefault = true;
+    }
+    
+    setPaymentMethods(newMethods);
+  };
+
   return (
     <div className="space-y-6">
       <SubscriptionCard 
@@ -63,7 +132,12 @@ const BillingSettings = () => {
         onToggleBillingPeriod={toggleBillingPeriod}
       />
       
-      <PaymentMethodsCard />
+      <PaymentMethodsCard 
+        paymentMethods={paymentMethods}
+        onAddPaymentMethod={handleAddPaymentMethod}
+        onUpdatePaymentMethod={handleUpdatePaymentMethod}
+        onDeletePaymentMethod={handleDeletePaymentMethod}
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { PaymentMethod, PaymentFormValues } from '../types';
+import { determineCardBrand } from '../utils/paymentMethodUtils';
 
 export const usePaymentMethods = () => {
   const { toast } = useToast();
