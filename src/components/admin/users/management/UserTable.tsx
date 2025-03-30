@@ -19,7 +19,6 @@ import {
 import { format } from 'date-fns';
 import { User } from '../types';
 import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
-// Import countries directly without using require (which isn't available in the browser environment)
 import countries from '@/data/countries';
 
 interface UserTableProps {
@@ -51,6 +50,8 @@ export const UserTable: React.FC<UserTableProps> = ({
   setIsDeleteDialogOpen,
   searchTerm
 }) => {
+  console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
+  
   const filteredUsers = useMemo(() => users.filter(user => 
     (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
     (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -144,6 +145,8 @@ export const UserTable: React.FC<UserTableProps> = ({
     setSelectedUsers([userId]);
     setIsDeleteDialogOpen(true);
   }, [setSelectedUsers, setIsDeleteDialogOpen]);
+
+  console.log('UserTable: Rendering with', filteredUsers.length, 'filtered users');
 
   return (
     <div className="rounded-md border">
