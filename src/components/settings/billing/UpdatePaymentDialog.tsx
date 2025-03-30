@@ -7,10 +7,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useState } from 'react';
 import { paymentMethodSchema, PaymentFormValues } from './AddPaymentDialog';
-import { useState, useEffect } from 'react';
 import countryData from '@/data/countries';
-import { getStatesForCountry, StateProvince } from '@/data/statesProvinces';
+import { StateProvince } from '@/data/statesProvinces';
+import { getStatesForCountry } from './utils/locationUtils';
+import { getCountryByName } from '@/components/settings/profile/utils/locationUtils';
 
 interface UpdatePaymentDialogProps {
   open: boolean;
@@ -24,22 +26,21 @@ const UpdatePaymentDialog = ({
   open, 
   onOpenChange, 
   onSubmit, 
-  isProcessing, 
+  isProcessing,
   defaultValues 
 }: UpdatePaymentDialogProps) => {
   const [states, setStates] = useState<StateProvince[]>([]);
-  const [cardNumber, setCardNumber] = useState(defaultValues.cardNumber || '');
-
+  
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentMethodSchema),
     defaultValues,
   });
 
   const selectedCountry = form.watch('billingCountry');
-
+  
   useEffect(() => {
     if (selectedCountry) {
-      const countryObj = countryData.find(c => c.name === selectedCountry);
+      const countryObj = getCountryByName(selectedCountry);
       if (countryObj) {
         const statesForCountry = getStatesForCountry(countryObj.code);
         setStates(statesForCountry);
@@ -47,38 +48,27 @@ const UpdatePaymentDialog = ({
     }
   }, [selectedCountry]);
 
+  // Reset form with new defaultValues when they change
   useEffect(() => {
-    if (open) {
+    if (open && defaultValues) {
       form.reset(defaultValues);
-      setCardNumber(defaultValues.cardNumber || '');
       
-      // Set states based on the country
-      const countryObj = countryData.find(c => c.name === defaultValues.billingCountry);
+      // Initialize states based on country
+      const countryObj = getCountryByName(defaultValues.billingCountry);
       if (countryObj) {
-        setStates(getStatesForCountry(countryObj.code));
+        const statesForCountry = getStatesForCountry(countryObj.code);
+        setStates(statesForCountry);
       }
     }
   }, [open, defaultValues, form]);
 
-  const detectCardType = (cardNumber: string): string => {
-    const amex = /^3[47]/;
-    const visa = /^4/;
-    const mastercard = /^5[1-5]/;
-    const discover = /^6(?:011|5)/;
-    
-    if (amex.test(cardNumber)) return 'amex';
-    if (visa.test(cardNumber)) return 'visa';
-    if (mastercard.test(cardNumber)) return 'mastercard';
-    if (discover.test(cardNumber)) return 'discover';
-    return 'unknown';
+  const formatCardNumber = (value: string) => {
+    return value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
   };
 
-  const getCvvLength = (cardType: string): number => {
-    return cardType === 'amex' ? 4 : 3;
-  };
-
-  const cardType = detectCardType(cardNumber);
-  const cvvLength = getCvvLength(cardType);
+  const handleSubmitForm = form.handleSubmit((data) => {
+    onSubmit(data);
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -86,11 +76,11 @@ const UpdatePaymentDialog = ({
         <DialogHeader>
           <DialogTitle>Update Payment Method</DialogTitle>
           <DialogDescription>
-            Update your card details below.
+            Edit your payment details below.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmitForm} className="space-y-6">
             <h3 className="text-lg font-medium">Card Information</h3>
             
             <FormField
@@ -99,7 +89,7 @@ const UpdatePaymentDialog = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Card Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select card type" />
@@ -140,12 +130,11 @@ const UpdatePaymentDialog = ({
                   <FormControl>
                     <Input 
                       placeholder="1234 5678 9012 3456" 
-                      value={field.value}
+                      value={field.value ? formatCardNumber(field.value) : ''}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\s/g, '');
-                        if (/^[\d•]*$/.test(value) && value.length <= 19) {
+                        if (/^\d*$/.test(value) && value.length <= 19) {
                           field.onChange(value);
-                          setCardNumber(value);
                         }
                       }}
                     />
@@ -212,12 +201,12 @@ const UpdatePaymentDialog = ({
                     <FormLabel>CVV</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder={cardType === 'amex' ? "4 digits" : "3 digits"}
-                        maxLength={cvvLength}
+                        placeholder="3 digits" 
+                        maxLength={4}
                         {...field}
                         onChange={(e) => {
                           const value = e.target.value;
-                          if (/^\d*$/.test(value) && value.length <= cvvLength) {
+                          if (/^\d*$/.test(value) && value.length <= 4) {
                             field.onChange(value);
                           }
                         }}
@@ -273,11 +262,11 @@ const UpdatePaymentDialog = ({
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full focus:border-pink-500">
                           <SelectValue placeholder="Select country" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-white max-h-60">
                         {countryData.map((country) => (
                           <SelectItem key={country.code} value={country.name}>
                             {country.name}
@@ -304,11 +293,11 @@ const UpdatePaymentDialog = ({
                       disabled={states.length === 0}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full focus:border-pink-500">
                           <SelectValue placeholder={states.length === 0 ? "Select country first" : "Select state/province"} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-white max-h-60 z-[150]">
                         {states.length > 0 ? (
                           states.map((state) => (
                             <SelectItem key={state.code} value={state.name}>
@@ -363,7 +352,7 @@ const UpdatePaymentDialog = ({
                 Cancel
               </Button>
               <Button type="submit" disabled={isProcessing}>
-                {isProcessing ? "Processing..." : "Update Payment Method"}
+                {isProcessing ? "Updating..." : "Update Payment Method"}
               </Button>
             </DialogFooter>
           </form>

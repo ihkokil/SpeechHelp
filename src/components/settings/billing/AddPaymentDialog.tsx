@@ -10,7 +10,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect } from 'react';
 import countryData from '@/data/countries';
-import { getStatesForCountry, StateProvince } from '@/data/statesProvinces';
+import { StateProvince } from '@/data/statesProvinces';
+import { getStatesForCountry } from './utils/locationUtils';
+import { getCountryByName } from '@/components/settings/profile/utils/locationUtils';
 
 export const paymentMethodSchema = z.object({
   cardType: z.string().min(1, "Please select a card type"),
@@ -67,7 +69,7 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
   
   useEffect(() => {
     if (selectedCountry) {
-      const countryObj = countryData.find(c => c.name === selectedCountry);
+      const countryObj = getCountryByName(selectedCountry);
       if (countryObj) {
         const statesForCountry = getStatesForCountry(countryObj.code);
         setStates(statesForCountry);
@@ -127,6 +129,10 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
     }
   }, [open, form]);
 
+  const handleSubmitForm = form.handleSubmit((data) => {
+    onSubmit(data);
+  });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -137,7 +143,7 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmitForm} className="space-y-6">
             <h3 className="text-lg font-medium">Card Information</h3>
             
             <FormField
@@ -316,11 +322,11 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full focus:border-pink-500">
                           <SelectValue placeholder="Select country" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-white max-h-60">
                         {countryData.map((country) => (
                           <SelectItem key={country.code} value={country.name}>
                             {country.name}
@@ -347,11 +353,11 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
                       disabled={states.length === 0}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full focus:border-pink-500">
                           <SelectValue placeholder={states.length === 0 ? "Select country first" : "Select state/province"} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-white max-h-60 z-[150]">
                         {states.length > 0 ? (
                           states.map((state) => (
                             <SelectItem key={state.code} value={state.name}>
