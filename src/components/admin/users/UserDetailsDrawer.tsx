@@ -68,10 +68,17 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
     setTotalActivityTime(5 * speeches.length);
   };
   
+  // Handle closing the drawer
+  const handleSheetOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      onClose();
+    }
+  };
+  
   if (!user) return null;
 
   return (
-    <Sheet open={open} onOpenChange={(open) => !open && onClose()}>
+    <Sheet open={open} onOpenChange={handleSheetOpenChange}>
       <SheetContent className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto">
         <SheetHeader className="pb-4">
           <div className="flex justify-between items-center">
