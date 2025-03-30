@@ -9,11 +9,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 export const paymentMethodSchema = z.object({
-  cardNumber: z.string().min(16, "Card number must be at least 16 digits").max(19, "Card number is too long"),
+  cardNumber: z.string()
+    .min(15, "Card number must be at least 15 digits")
+    .max(19, "Card number is too long")
+    .refine(val => /^\d+$/.test(val), { message: "Card number must contain only digits" }),
   cardHolder: z.string().min(2, "Card holder name is required"),
   expiryMonth: z.string().min(1, "Expiry month is required").max(2, "Invalid month"),
   expiryYear: z.string().min(2, "Expiry year is required").max(4, "Invalid year"),
-  cvv: z.string().min(3, "CVV must be at least 3 digits").max(4, "CVV is too long"),
+  cvv: z.string()
+    .min(3, "CVV must be at least 3 digits")
+    .max(4, "CVV can be up to 4 digits")
+    .refine(val => /^\d+$/.test(val), { message: "CVV must contain only digits" }),
   isDefault: z.boolean().default(false),
 });
 
@@ -42,6 +48,26 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
   const formatCardNumber = (value: string) => {
     return value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
   };
+
+  const detectCardType = (cardNumber: string): string => {
+    const amex = /^3[47]/;
+    const visa = /^4/;
+    const mastercard = /^5[1-5]/;
+    const discover = /^6(?:011|5)/;
+    
+    if (amex.test(cardNumber)) return 'amex';
+    if (visa.test(cardNumber)) return 'visa';
+    if (mastercard.test(cardNumber)) return 'mastercard';
+    if (discover.test(cardNumber)) return 'discover';
+    return 'unknown';
+  };
+
+  const getCvvLength = (cardType: string): number => {
+    return cardType === 'amex' ? 4 : 3;
+  };
+
+  const cardType = detectCardType(form.watch('cardNumber') || '');
+  const cvvLength = getCvvLength(cardType);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -79,7 +105,7 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
                       placeholder="1234 5678 9012 3456" 
                       onChange={(e) => {
                         const value = e.target.value.replace(/\s/g, '');
-                        if (/^\d*$/.test(value) && value.length <= 16) {
+                        if (/^\d*$/.test(value) && value.length <= 19) {
                           e.target.value = formatCardNumber(value);
                           field.onChange(value);
                         }
@@ -146,11 +172,11 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
                     <FormLabel>CVV</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="123" 
-                        maxLength={4}
+                        placeholder={cardType === 'amex' ? "4 digits" : "3 digits"} 
+                        maxLength={cvvLength}
                         onChange={(e) => {
                           const value = e.target.value;
-                          if (/^\d*$/.test(value)) {
+                          if (/^\d*$/.test(value) && value.length <= cvvLength) {
                             field.onChange(value);
                           }
                         }}
