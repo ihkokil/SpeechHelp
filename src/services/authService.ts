@@ -1,83 +1,76 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
-// Define the ToastProps type directly here to avoid the import error
-type ToastProps = {
-  title?: string;
-  description?: string;
-  variant?: 'default' | 'destructive';
-};
+export const useAuthService = () => {
+  const { toast } = useToast();
 
-// Create a type for the showToast function that will be passed in
-type ShowToastFunction = (props: ToastProps) => void;
-
-// Service functions now accept toast function as a parameter
-export const signIn = async (email: string, password: string, showToast: ShowToastFunction) => {
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  
-  if (error) {
-    showToast({
-      title: "Login failed",
-      description: error.message,
-      variant: "destructive"
-    });
-    throw error;
-  }
-  
-  showToast({
-    title: "Login successful",
-    description: "Welcome back!",
-  });
-};
-
-export const signUp = async (
-  email: string, 
-  password: string, 
-  showToast: ShowToastFunction,
-  firstName?: string, 
-  lastName?: string
-) => {
-  const { error } = await supabase.auth.signUp({ 
-    email, 
-    password,
-    options: {
-      data: {
-        first_name: firstName,
-        last_name: lastName
-      }
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (error) {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
     }
-  });
-  
-  if (error) {
-    showToast({
-      title: "Sign up failed",
-      description: error.message,
-      variant: "destructive"
+    
+    toast({
+      title: "Login successful",
+      description: "Welcome back!",
     });
-    throw error;
-  }
-  
-  showToast({
-    title: "Sign up successful",
-    description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
-  });
-};
+  };
 
-export const signOut = async (showToast: ShowToastFunction) => {
-  const { error } = await supabase.auth.signOut();
-  
-  if (error) {
-    showToast({
-      title: "Sign out failed",
-      description: error.message,
-      variant: "destructive"
+  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+    const { error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName
+        }
+      }
     });
-    throw error;
-  }
-  
-  showToast({
-    title: "Signed out",
-    description: "You have been signed out successfully.",
-  });
+    
+    if (error) {
+      toast({
+        title: "Sign up failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
+    
+    toast({
+      title: "Sign up successful",
+      description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
+    });
+  };
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      toast({
+        title: "Sign out failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error;
+    }
+    
+    toast({
+      title: "Signed out",
+      description: "You have been signed out successfully.",
+    });
+  };
+
+  return {
+    signIn,
+    signUp,
+    signOut
+  };
 };

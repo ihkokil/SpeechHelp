@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
@@ -16,82 +17,34 @@ const Index = () => {
       setIsLoading(false);
     }, 500);
 
+    // Reset scroll position on page load - more aggressive approach
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
+
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle navigation with hash - improved to handle direct links better
+  // Handle direct navigation with hash - modified to prevent auto-scrolling issues
   useEffect(() => {
-    const handleHashNavigation = () => {
-      // Check if there's a hash in the URL
-      if (window.location.hash) {
-        // Remove the # character
-        const id = window.location.hash.substring(1);
-        
-        // Find element and scroll to it with a delay to ensure page is loaded
-        const scrollTimer = setTimeout(() => {
-          const element = document.getElementById(id);
-          if (element) {
-            // Scroll to the element with an offset for the navbar
-            const navbarHeight = 80; // Approximate navbar height
-            const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-            const offsetPosition = elementPosition - navbarHeight;
-            
-            window.scrollTo({
-              top: offsetPosition,
-              behavior: 'smooth'
-            });
-          }
-        }, 600); // Increased delay to ensure everything is loaded
-        
-        return () => clearTimeout(scrollTimer);
-      }
-    };
-
-    // Initial check when component mounts
-    handleHashNavigation();
-
-    // Also listen for hashchange events (for when user clicks navigation within the same page)
-    window.addEventListener('hashchange', handleHashNavigation);
+    // First ensure we're at the top
+    window.scrollTo(0, 0);
     
-    return () => {
-      window.removeEventListener('hashchange', handleHashNavigation);
-    };
-  }, []);
-
-  // Handle navigation from other pages using sessionStorage
-  useEffect(() => {
-    const checkSessionStorageTarget = () => {
-      const scrollTarget = sessionStorage.getItem('scrollTarget');
-      if (scrollTarget) {
-        // Clear the target immediately to prevent repeated scrolling
-        sessionStorage.removeItem('scrollTarget');
-        
-        // Use a slightly longer timeout to ensure the page is fully rendered
-        const timer = setTimeout(() => {
-          const element = document.getElementById(scrollTarget);
-          if (element) {
-            const navbarHeight = 80;
-            const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-            const offsetPosition = elementPosition - navbarHeight;
-            
-            console.log(`Scrolling to ${scrollTarget} at position ${offsetPosition}`);
-            
-            window.scrollTo({
-              top: offsetPosition,
-              behavior: 'smooth'
-            });
-          }
-        }, 1000); // Longer delay for navigation from other pages
-        
-        return () => clearTimeout(timer);
-      }
-    };
-    
-    // Run this effect when component mounts and is no longer loading
-    if (!isLoading) {
-      checkSessionStorageTarget();
+    // Check if there's a hash in the URL
+    if (window.location.hash) {
+      // Remove the # character
+      const id = window.location.hash.substring(1);
+      // Find element and scroll to it with a delay
+      const scrollTimer = setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 1500); // Further increased delay to ensure page is fully loaded
+      
+      return () => clearTimeout(scrollTimer);
     }
-  }, [isLoading]);
+  }, []);
 
   if (isLoading) {
     return (

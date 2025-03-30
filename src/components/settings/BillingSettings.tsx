@@ -1,178 +1,197 @@
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { format, addMonths, addYears } from 'date-fns';
-import SubscriptionCard from './billing/SubscriptionCard';
-import PaymentMethodsCard from './billing/PaymentMethodsCard';
-import { PaymentMethod } from './billing/types';
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { CreditCard, Calendar, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle,
+  DialogTrigger 
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
 
 const BillingSettings = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
   const [autoRenew, setAutoRenew] = useState(true);
-  
-  const accountCreatedAt = user ? new Date(user.created_at || Date.now()) : new Date();
-  
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    {
-      type: 'Credit Card',
-      last4: '4242',
-      expiryMonth: 12,
-      expiryYear: 2026,
-      brand: 'Visa',
-      isDefault: true,
-      cardHolder: 'John Doe',
-      billingAddress: {
-        street: '123 Main St',
-        city: 'San Francisco',
-        state: 'CA',
-        zipCode: '94105',
-        country: 'United States'
-      }
-    }
-  ]);
-  
-  const [subscriptionData, setSubscriptionData] = useState({
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Mocked subscription data - would come from your backend in a real app
+  const subscriptionData = {
     plan: 'Pro Plan',
     status: 'active',
     price: '$29.99',
     billingPeriod: 'monthly',
-    startDate: accountCreatedAt,
-    endDate: addMonths(accountCreatedAt, 1),
+    startDate: new Date('2023-08-15'),
+    endDate: new Date('2024-08-15'),
     paymentMethod: {
       type: 'Credit Card',
       last4: '4242',
       expiryMonth: 12,
       expiryYear: 2026,
-      brand: 'Visa',
-      isDefault: true
+      brand: 'Visa'
     }
-  });
-
-  useEffect(() => {
-    if (subscriptionData.billingPeriod === 'monthly') {
-      setSubscriptionData(prev => ({
-        ...prev,
-        endDate: addMonths(prev.startDate, 1)
-      }));
-    } else {
-      setSubscriptionData(prev => ({
-        ...prev,
-        endDate: addYears(prev.startDate, 1)
-      }));
-    }
-  }, [subscriptionData.billingPeriod, subscriptionData.startDate]);
-
-  // Load payment methods from localStorage when component mounts
-  useEffect(() => {
-    const savedPaymentMethods = localStorage.getItem('paymentMethods');
-    if (savedPaymentMethods) {
-      try {
-        const parsed = JSON.parse(savedPaymentMethods);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setPaymentMethods(parsed);
-        }
-      } catch (error) {
-        console.error('Error parsing payment methods from localStorage:', error);
-      }
-    }
-  }, []);
-
-  // Save payment methods to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('paymentMethods', JSON.stringify(paymentMethods));
-  }, [paymentMethods]);
+  };
 
   const handleAutoRenewToggle = (checked: boolean) => {
     setAutoRenew(checked);
-  };
-
-  const toggleBillingPeriod = () => {
-    setSubscriptionData(prev => ({
-      ...prev,
-      billingPeriod: prev.billingPeriod === 'monthly' ? 'yearly' : 'monthly',
-      price: prev.billingPeriod === 'monthly' ? '$299.99' : '$29.99',
-    }));
-  };
-
-  const handleAddPaymentMethod = (newPaymentMethod: PaymentMethod) => {
-    // If it's default, update all other cards to not be default
-    let updatedMethods = [...paymentMethods];
-    if (newPaymentMethod.isDefault) {
-      updatedMethods = updatedMethods.map(method => ({...method, isDefault: false}));
-    }
-    
-    // Add the new payment method to the collection
-    const updatedPaymentMethods = [...updatedMethods, newPaymentMethod];
-    setPaymentMethods(updatedPaymentMethods);
-    
-    // Save to localStorage immediately
-    localStorage.setItem('paymentMethods', JSON.stringify(updatedPaymentMethods));
-    
     toast({
-      title: "Payment method added",
-      description: `Your ${newPaymentMethod.brand} card ending in ${newPaymentMethod.last4} has been saved.`,
+      title: checked ? "Auto-renewal enabled" : "Auto-renewal disabled",
+      description: checked 
+        ? "Your subscription will automatically renew when it expires." 
+        : "Your subscription will not renew automatically.",
     });
   };
 
-  const handleUpdatePaymentMethod = (index: number, updatedMethod: PaymentMethod) => {
-    let updatedMethods = [...paymentMethods];
-    
-    // If setting this card as default, update all others to not be default
-    if (updatedMethod.isDefault) {
-      updatedMethods = updatedMethods.map(method => ({...method, isDefault: false}));
+  const handleCancelSubscription = async () => {
+    setIsProcessing(true);
+    try {
+      // In a real app, you would call your backend API to cancel the subscription
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      toast({
+        title: "Subscription cancelled",
+        description: "Your subscription has been cancelled successfully.",
+      });
+      setShowCancelDialog(false);
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+      toast({
+        title: "Cancellation failed",
+        description: "There was a problem cancelling your subscription. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
     }
-    
-    // Update the selected payment method with new data
-    updatedMethods[index] = updatedMethod;
-    
-    setPaymentMethods(updatedMethods);
-    
-    // Save to localStorage immediately
-    localStorage.setItem('paymentMethods', JSON.stringify(updatedMethods));
-    
-    toast({
-      title: "Payment method updated",
-      description: `Your ${updatedMethod.brand} card ending in ${updatedMethod.last4} has been updated.`,
-    });
-  };
-
-  const handleDeletePaymentMethod = (index: number) => {
-    const deletedMethod = paymentMethods[index];
-    const newMethods = paymentMethods.filter((_, i) => i !== index);
-    
-    // If we deleted the default method and there are other methods, make the first one default
-    if (deletedMethod.isDefault && newMethods.length > 0) {
-      newMethods[0].isDefault = true;
-    }
-    
-    setPaymentMethods(newMethods);
-    
-    // Save to localStorage immediately
-    localStorage.setItem('paymentMethods', JSON.stringify(newMethods));
-    
-    toast({
-      title: "Payment method removed",
-      description: `Your ${deletedMethod.brand} card ending in ${deletedMethod.last4} has been removed.`,
-    });
   };
 
   return (
     <div className="space-y-6">
-      <SubscriptionCard 
-        subscriptionData={subscriptionData}
-        autoRenew={autoRenew}
-        onAutoRenewToggle={handleAutoRenewToggle}
-        onToggleBillingPeriod={toggleBillingPeriod}
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Calendar className="h-5 w-5 mr-2 text-pink-600" />
+            Current Subscription
+          </CardTitle>
+          <CardDescription>
+            Manage your subscription plan and billing cycle
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-semibold text-lg">{subscriptionData.plan}</h3>
+                <p className="text-gray-500">{subscriptionData.price} per {subscriptionData.billingPeriod}</p>
+              </div>
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                {subscriptionData.status === 'active' ? 'Active' : 'Inactive'}
+              </Badge>
+            </div>
+            
+            <div className="border-t border-b py-4 space-y-3">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Start Date</span>
+                <span className="font-medium">{format(subscriptionData.startDate, 'MMMM d, yyyy')}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Renewal Date</span>
+                <span className="font-medium">{format(subscriptionData.endDate, 'MMMM d, yyyy')}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Auto-Renewal</span>
+                <Switch 
+                  checked={autoRenew} 
+                  onCheckedChange={handleAutoRenewToggle}
+                  className="data-[state=checked]:bg-pink-600"
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button variant="outline">Change Plan</Button>
+          <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                Cancel Subscription
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="flex items-center">
+                  <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
+                  Cancel Subscription
+                </DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to cancel your subscription? You'll lose access to all premium features at the end of your current billing cycle.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="my-4 p-4 bg-red-50 rounded-md text-red-800 text-sm">
+                <p><strong>Your subscription will remain active until:</strong></p>
+                <p className="font-medium">{format(subscriptionData.endDate, 'MMMM d, yyyy')}</p>
+              </div>
+              <DialogFooter>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowCancelDialog(false)}
+                  disabled={isProcessing}
+                >
+                  Keep Subscription
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleCancelSubscription}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? "Processing..." : "Cancel Subscription"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardFooter>
+      </Card>
       
-      <PaymentMethodsCard 
-        paymentMethods={paymentMethods}
-        onAddPaymentMethod={handleAddPaymentMethod}
-        onUpdatePaymentMethod={handleUpdatePaymentMethod}
-        onDeletePaymentMethod={handleDeletePaymentMethod}
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <CreditCard className="h-5 w-5 mr-2 text-pink-600" />
+            Payment Method
+          </CardTitle>
+          <CardDescription>
+            Manage your payment methods and billing information
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border rounded-md">
+            <div className="flex items-center">
+              <div className="h-10 w-14 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md flex items-center justify-center text-white font-bold mr-3">
+                {subscriptionData.paymentMethod.brand === 'Visa' ? 'VISA' : subscriptionData.paymentMethod.brand}
+              </div>
+              <div>
+                <p className="font-medium">•••• •••• •••• {subscriptionData.paymentMethod.last4}</p>
+                <p className="text-sm text-gray-500">
+                  Expires {subscriptionData.paymentMethod.expiryMonth}/{subscriptionData.paymentMethod.expiryYear}
+                </p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm">Update</Button>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button variant="outline" className="w-full">
+            <CreditCard className="h-4 w-4 mr-2" />
+            Add Payment Method
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

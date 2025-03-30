@@ -3,9 +3,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import { AuthContextType, Speech } from '@/types/auth';
-import { signIn, signUp, signOut } from '@/services/authService';
+import { useAuthService } from '@/services/authService';
 import { useSpeechService } from '@/services/speechService';
-import { useToast } from '@/hooks/use-toast';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -15,7 +14,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [speeches, setSpeeches] = useState<Speech[]>([]);
   
-  const { toast } = useToast();
+  const authService = useAuthService();
   const speechService = useSpeechService();
 
   // Refresh user data from Supabase
@@ -62,28 +61,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Auth functions wrapped to control loading state
-  const handleSignIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      await signIn(email, password, toast);
+      await authService.signIn(email, password);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSignUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+  const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
     setIsLoading(true);
     try {
-      await signUp(email, password, toast, firstName, lastName);
+      await authService.signUp(email, password, firstName, lastName);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSignOut = async () => {
+  const signOut = async () => {
     setIsLoading(true);
     try {
-      await signOut(toast);
+      await authService.signOut();
     } finally {
       setIsLoading(false);
     }
@@ -139,9 +138,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       saveSpeech, 
       updateSpeech, 
       deleteSpeech, 
-      signIn: handleSignIn, 
-      signUp: handleSignUp, 
-      signOut: handleSignOut 
+      signIn, 
+      signUp, 
+      signOut 
     }}>
       {children}
     </AuthContext.Provider>
