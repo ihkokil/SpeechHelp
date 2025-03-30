@@ -132,16 +132,16 @@ export const UserTable: React.FC<UserTableProps> = ({
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  {user.subscription_status ? (
-                    <Badge 
-                      variant="outline" 
-                      className={user.subscription_status === 'active' ? 'bg-blue-100 text-blue-800 border-blue-300' : ''}
-                    >
-                      {user.subscription_tier || 'free'}
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline">free</Badge>
-                  )}
+                  <Badge 
+                    variant="outline" 
+                    className={`min-w-[70px] justify-center inline-flex ${
+                      user.subscription_status === 'active' 
+                        ? 'bg-blue-100 text-blue-800 border-blue-300' 
+                        : ''
+                    }`}
+                  >
+                    {user.subscription_tier || 'free'}
+                  </Badge>
                 </TableCell>
                 <TableCell>{formatDate(user.last_sign_in_at)}</TableCell>
                 <TableCell>{formatDate(user.created_at)}</TableCell>
