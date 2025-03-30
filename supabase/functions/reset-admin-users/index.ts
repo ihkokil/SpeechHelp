@@ -38,6 +38,7 @@ serve(async (req) => {
       .neq('id', 'placeholder'); // Delete all rows
     
     if (error) {
+      console.error("Error deleting admin users:", error);
       throw error;
     }
     

@@ -8,7 +8,12 @@ export const useAdminReset = () => {
   const resetAdminUsers = async () => {
     try {
       console.log('Attempting to reset admin users');
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-admin-users`, {
+      
+      // Get the project reference from the Supabase URL
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      
+      // Make the request to the edge function
+      const response = await fetch(`${supabaseUrl}/functions/v1/reset-admin-users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -25,6 +30,8 @@ export const useAdminReset = () => {
           if (errorText.trim().startsWith('{')) {
             const errorData = JSON.parse(errorText);
             errorMessage = errorData.error || errorMessage;
+          } else {
+            errorMessage = errorText || errorMessage;
           }
         } catch (parseError) {
           console.error('Error parsing error response:', parseError);
