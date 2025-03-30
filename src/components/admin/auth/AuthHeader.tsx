@@ -1,17 +1,33 @@
 
 import { Shield } from 'lucide-react';
-import speechHelpLogo from '/public/lovable-uploads/1bd4b0c7-938e-4528-a6b1-ebdfd0ced505.png';
+import { useEffect, useState } from 'react';
 
 interface AuthHeaderProps {
   showLogo?: boolean;
 }
 
 const AuthHeader = ({ showLogo = false }: AuthHeaderProps) => {
+  const [logoSrc, setLogoSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    // In production, we'd likely use a more reliable way to reference these assets
+    // This is a workaround to get the image properly loaded in development
+    import('/src/assets/speech-help-logo.svg')
+      .then(module => {
+        setLogoSrc(module.default);
+      })
+      .catch(error => {
+        console.error('Error loading logo:', error);
+        // Fallback to the Supabase hosted logo if available
+        setLogoSrc("https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg");
+      });
+  }, []);
+
   return (
     <div className="mb-8 text-center">
-      {showLogo ? (
+      {showLogo && logoSrc ? (
         <div className="flex justify-center mb-4">
-          <img src={speechHelpLogo} alt="SpeechHelp Logo" className="h-12" />
+          <img src={logoSrc} alt="SpeechHelp Logo" className="h-12" />
         </div>
       ) : (
         <div className="flex justify-center mb-4">
