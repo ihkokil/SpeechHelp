@@ -14,6 +14,7 @@ export type User = {
     full_name?: string;
     first_name?: string;
     last_name?: string;
+    email?: string; // Add email to user_metadata
   };
   is_active?: boolean;
   // Admin role related fields

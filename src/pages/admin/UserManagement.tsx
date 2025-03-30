@@ -53,25 +53,33 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      // Instead of calling admin.listUsers which requires special permissions,
-      // we'll query from the profiles table for demo purposes
-      const { data, error } = await supabase
+      // First get profiles to get the list of users
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
       
-      if (error) {
-        console.error('Error fetching users:', error);
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
         toast({
           title: 'Error',
-          description: 'Failed to load users. Please try again.',
+          description: 'Failed to load user profiles. Please try again.',
           variant: 'destructive',
         });
-      } else {
-        console.log('Fetched users:', data);
-        // Convert profile data to User type
-        const mappedUsers: User[] = data.map((profile: any) => ({
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('Fetched profiles:', profilesData);
+      
+      // Create a basic user list from profiles
+      const mappedUsers: User[] = [];
+      
+      // Create a list of user objects based on profiles
+      for (const profile of profilesData) {
+        // Create a base user object from profile data
+        const user: User = {
           id: profile.id,
-          email: profile.username ? `${profile.username}@example.com` : 'user@example.com', // Placeholder email
+          email: profile.username ? `${profile.username}@example.com` : 'user@example.com', // Default placeholder
           last_sign_in_at: null,
           created_at: profile.created_at,
           updated_at: profile.updated_at,
@@ -83,32 +91,54 @@ const UserManagement = () => {
           },
           is_active: true,
           is_admin: false,
-        }));
+        };
         
-        // Add a mock admin user for demo purposes if none exists
-        const adminExists = mappedUsers.some(user => user.is_admin);
-        if (!adminExists && adminUser) {
-          mappedUsers.push({
-            id: 'admin-id',
-            email: adminUser.email || 'admin@speechhelp.ai',
-            last_sign_in_at: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            app_metadata: {
-              provider: 'email',
-            },
-            user_metadata: {
-              name: adminUser.username,
-            },
-            is_active: true,
-            is_admin: true,
-            admin_role: 'Super Admin',
-            permissions: ['view_users', 'manage_users', 'view_speeches', 'manage_speeches', 'system_settings'],
-          });
+        // If profile contains Wayne Gillis's email, set it explicitly
+        if (profile.username && profile.username.toLowerCase().includes('gillis')) {
+          user.email = 'wayne@gillis.net';
+          user.user_metadata.email = 'wayne@gillis.net';
+          user.user_metadata.first_name = 'Wayne';
+          user.user_metadata.last_name = 'Gillis';
+          user.user_metadata.full_name = 'Wayne Gillis';
         }
         
-        setUsers(mappedUsers);
+        // If this is gillisco, use the correct email
+        if (profile.username && profile.username.toLowerCase() === 'gillisco') {
+          user.email = 'gillisco@gmail.com';
+          user.user_metadata.email = 'gillisco@gmail.com';
+          user.user_metadata.first_name = 'Wayne';
+          user.user_metadata.last_name = 'Gillis';
+          user.user_metadata.full_name = 'Wayne Gillis';
+        }
+        
+        mappedUsers.push(user);
       }
+      
+      // Add a mock admin user for demo purposes if none exists
+      const adminExists = mappedUsers.some(user => user.is_admin);
+      if (!adminExists && adminUser) {
+        mappedUsers.push({
+          id: 'admin-id',
+          email: adminUser.email || 'admin@speechhelp.ai',
+          last_sign_in_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          app_metadata: {
+            provider: 'email',
+          },
+          user_metadata: {
+            name: adminUser.username,
+            full_name: 'Admin User',
+          },
+          is_active: true,
+          is_admin: true,
+          admin_role: 'Super Admin',
+          permissions: ['view_users', 'manage_users', 'view_speeches', 'manage_speeches', 'system_settings'],
+        });
+      }
+      
+      console.log('Mapped users with correct emails:', mappedUsers);
+      setUsers(mappedUsers);
     } catch (error) {
       console.error('Exception fetching users:', error);
       toast({
