@@ -4,11 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 export const paymentMethodSchema = z.object({
+  cardType: z.string().min(1, "Please select a card type"),
   cardNumber: z.string()
     .min(15, "Card number must be at least 15 digits")
     .max(19, "Card number is too long")
@@ -21,6 +23,11 @@ export const paymentMethodSchema = z.object({
     .max(4, "CVV can be up to 4 digits")
     .refine(val => /^\d+$/.test(val), { message: "CVV must contain only digits" }),
   isDefault: z.boolean().default(false),
+  billingStreet: z.string().min(1, "Street address is required"),
+  billingCity: z.string().min(1, "City is required"),
+  billingState: z.string().min(1, "State/Province is required"),
+  billingZip: z.string().min(1, "ZIP/Postal code is required"),
+  billingCountry: z.string().min(1, "Country is required"),
 });
 
 export type PaymentFormValues = z.infer<typeof paymentMethodSchema>;
@@ -36,12 +43,18 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentMethodSchema),
     defaultValues: {
+      cardType: '',
       cardNumber: '',
       cardHolder: '',
       expiryMonth: '',
       expiryYear: '',
       cvv: '',
       isDefault: false,
+      billingStreet: '',
+      billingCity: '',
+      billingState: '',
+      billingZip: '',
+      billingCountry: '',
     },
   });
 
@@ -66,12 +79,13 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
     return cardType === 'amex' ? 4 : 3;
   };
 
-  const cardType = detectCardType(form.watch('cardNumber') || '');
-  const cvvLength = getCvvLength(cardType);
+  const cardNumber = form.watch('cardNumber') || '';
+  const detectedCardType = detectCardType(cardNumber);
+  const cvvLength = getCvvLength(detectedCardType);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add Payment Method</DialogTitle>
           <DialogDescription>
@@ -80,6 +94,32 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <h3 className="text-lg font-medium">Card Information</h3>
+            
+            <FormField
+              control={form.control}
+              name="cardType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Card Type</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select card type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Visa">Visa</SelectItem>
+                      <SelectItem value="Mastercard">Mastercard</SelectItem>
+                      <SelectItem value="Amex">American Express</SelectItem>
+                      <SelectItem value="Discover">Discover</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <FormField
               control={form.control}
               name="cardHolder"
@@ -172,7 +212,7 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
                     <FormLabel>CVV</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder={cardType === 'amex' ? "4 digits" : "3 digits"} 
+                        placeholder={detectedCardType === 'amex' ? "4 digits" : "3 digits"} 
                         maxLength={cvvLength}
                         onChange={(e) => {
                           const value = e.target.value;
@@ -181,6 +221,82 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
                           }
                         }}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <h3 className="text-lg font-medium border-t pt-6">Billing Address</h3>
+            
+            <FormField
+              control={form.control}
+              name="billingStreet"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Street Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="123 Main St" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="billingCity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>City</FormLabel>
+                    <FormControl>
+                      <Input placeholder="San Francisco" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="billingState"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>State/Province</FormLabel>
+                    <FormControl>
+                      <Input placeholder="CA" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="billingZip"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ZIP/Postal Code</FormLabel>
+                    <FormControl>
+                      <Input placeholder="94105" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="billingCountry"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Country</FormLabel>
+                    <FormControl>
+                      <Input placeholder="United States" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

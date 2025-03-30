@@ -10,6 +10,14 @@ interface PaymentMethod {
   expiryYear: number;
   brand: string;
   isDefault?: boolean;
+  cardHolder: string;
+  billingAddress?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
 }
 
 interface PaymentMethodItemProps {
@@ -26,19 +34,20 @@ const PaymentMethodItem = ({
   showDeleteButton = true 
 }: PaymentMethodItemProps) => {
   return (
-    <div className="flex items-center justify-between p-4 border rounded-md">
-      <div className="flex items-center">
+    <div className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-md">
+      <div className="flex items-center mb-3 md:mb-0">
         <div className="h-10 w-14 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md flex items-center justify-center text-white font-bold mr-3">
           {method.brand}
         </div>
         <div>
           <p className="font-medium">•••• •••• •••• {method.last4}</p>
+          <p className="text-sm text-gray-700">{method.cardHolder}</p>
           <p className="text-sm text-gray-500">
             Expires {method.expiryMonth}/{method.expiryYear}
           </p>
         </div>
       </div>
-      <div className="flex space-x-2">
+      <div className="flex space-x-2 mt-2 md:mt-0">
         {method.isDefault && (
           <Badge className="bg-pink-100 text-pink-800 border-pink-200 mr-2">Default</Badge>
         )}
