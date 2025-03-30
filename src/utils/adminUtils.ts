@@ -73,13 +73,12 @@ export const checkAdminExists = async () => {
   }
 };
 
-// Fixed admin login function to address ambiguous column issue
+// Fixed admin login function to match the database function signature
 export const authenticateAdmin = async (username: string, password: string) => {
   try {
-    // The issue is that 'email' is ambiguous in the database query
-    // Let's use username instead as the login identifier since that's what the UI is passing
+    // The database function expects email_input, not username_input
     const { data, error } = await supabase.rpc('authenticate_admin', {
-      username_input: username, // Change from email_input to username_input
+      email_input: username, // Use username as the email input parameter
       password_input: password
     });
     
