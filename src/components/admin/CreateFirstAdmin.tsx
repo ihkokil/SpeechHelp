@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CircleAlertIcon } from 'lucide-react';
+import { CircleAlertIcon, ShieldIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const CreateFirstAdmin = () => {
@@ -126,16 +126,17 @@ const CreateFirstAdmin = () => {
         
         <Button 
           type="submit" 
-          className="w-full bg-[#8E31A3] hover:bg-[#7d2a91]"
+          className="w-full bg-[#9c29b2] hover:bg-[#8923a0]"
           disabled={isLoading}
         >
           {isLoading ? "Creating Account..." : "Create Admin Account"}
         </Button>
       </form>
       
-      <p className="text-xs text-center text-gray-500 mt-6">
-        Use this option only for the initial setup of your admin portal
-      </p>
+      <div className="flex items-center justify-center text-xs text-gray-500 mt-6 gap-1">
+        <ShieldIcon className="h-3 w-3" />
+        <span>Use this option only for the initial setup of your admin portal</span>
+      </div>
     </div>
   );
 };
