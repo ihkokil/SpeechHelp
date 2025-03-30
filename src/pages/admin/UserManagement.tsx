@@ -20,6 +20,7 @@ const UserManagement = () => {
     isAddUserDialogOpen,
     setIsAddUserDialogOpen,
     users,
+    setUsers, // Added the missing setUsers function
     isLoading,
     isActionLoading,
     selectedUser,
