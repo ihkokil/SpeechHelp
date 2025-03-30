@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Speech } from '@/types/auth';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface SpeechEvent {
@@ -25,59 +25,68 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  // Use ref to store stable mock data
+  const mockDataRef = useRef<SpeechEvent[]>([
+    {
+      id: '1',
+      title: 'Company Quarterly Review',
+      date: new Date(Date.now() + 86400000 * 2), // 2 days from now
+      duration: 15,
+      category: 'presentation',
+      status: 'upcoming' as const
+    },
+    {
+      id: '2',
+      title: 'Job Interview with Tech Co.',
+      date: new Date(Date.now() + 86400000 * 5), // 5 days from now
+      duration: 30,
+      category: 'interview',
+      status: 'upcoming' as const
+    },
+    {
+      id: '3',
+      title: 'Industry Conference Talk',
+      date: new Date(Date.now() + 86400000 * 12), // 12 days from now
+      duration: 45,
+      category: 'speech',
+      status: 'upcoming' as const
+    }
+  ]);
 
   // Transform speeches to upcoming speech events
   const upcomingEvents = useMemo(() => {
     if (speeches.length) {
-      // In a real app, you'd have an "event_date" field
-      // Since we don't, we'll fake upcoming events based on creation date
-      // Get most recent speeches and pretend they're upcoming
+      // Create a stable seed for random values based on speech IDs
       return speeches
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 3)
-        .map(speech => {
-          // Add random days to the current date to simulate upcoming events
+        .map((speech, index) => {
+          // Use deterministic date calculations based on speech ID
+          // This ensures the same speech always gets the same upcoming date
           const upcomingDate = new Date();
-          upcomingDate.setDate(upcomingDate.getDate() + Math.floor(Math.random() * 14) + 1);
+          // Use the hash of the speech ID to generate a consistent day offset
+          const hashCode = speech.id.split('').reduce((acc, char) => {
+            return char.charCodeAt(0) + ((acc << 5) - acc);
+          }, 0);
+          const daysToAdd = Math.abs(hashCode % 14) + 1; // 1-14 days
+          upcomingDate.setDate(upcomingDate.getDate() + daysToAdd);
+          
+          // Similarly use a deterministic approach for duration
+          const duration = Math.abs((hashCode >> 4) % 30) + 15; // 15-45 minutes
           
           return {
             id: speech.id,
             title: speech.title,
             date: upcomingDate,
-            duration: Math.floor(Math.random() * 30) + 15, // Random duration between 15-45 mins
+            duration: duration,
             category: speech.speech_type,
             status: 'upcoming' as const
           };
         });
     }
     
-    // Fallback to mock data
-    return [
-      {
-        id: '1',
-        title: 'Company Quarterly Review',
-        date: new Date(Date.now() + 86400000 * 2), // 2 days from now
-        duration: 15,
-        category: 'presentation',
-        status: 'upcoming' as const
-      },
-      {
-        id: '2',
-        title: 'Job Interview with Tech Co.',
-        date: new Date(Date.now() + 86400000 * 5), // 5 days from now
-        duration: 30,
-        category: 'interview',
-        status: 'upcoming' as const
-      },
-      {
-        id: '3',
-        title: 'Industry Conference Talk',
-        date: new Date(Date.now() + 86400000 * 12), // 12 days from now
-        duration: 45,
-        category: 'speech',
-        status: 'upcoming' as const
-      }
-    ];
+    // Return the stable mock data if no speeches
+    return mockDataRef.current;
   }, [speeches]);
 
   const formatDate = (date: Date) => {
