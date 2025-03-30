@@ -24,20 +24,28 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const path = url.pathname.split("/").pop();
+    const body = await req.json();
+    
+    // Log incoming request for debugging
+    console.log(`Admin auth request to: ${url.pathname}`);
+    console.log(`Request body keys: ${Object.keys(body).join(', ')}`);
 
-    // Handle different authentication endpoints
-    if (url.pathname.includes("verify-password")) {
-      return handleVerifyPassword(req);
-    } else if (url.pathname.includes("setup-2fa")) {
-      return handleSetup2FA(req);
-    } else if (url.pathname.includes("verify-2fa")) {
-      return handleVerify2FA(req);
-    } else if (url.pathname.includes("reset-password")) {
-      return handleResetPassword(req);
+    // Handle different authentication endpoints based on request body
+    if (body.username && body.password) {
+      // This is a verify password request
+      return handleVerifyPassword(body);
+    } else if (body.adminId && body.code) {
+      // This is a verify 2FA request
+      return handleVerify2FA(body);
+    } else if (body.adminId && !body.code) {
+      // This is a setup 2FA request
+      return handleSetup2FA(body);
+    } else if (body.token && body.newPassword) {
+      // This is a reset password request
+      return handleResetPassword(body);
     } else {
-      return new Response(JSON.stringify({ error: "Invalid endpoint" }), {
-        status: 404,
+      return new Response(JSON.stringify({ error: "Invalid request parameters" }), {
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -51,10 +59,12 @@ serve(async (req) => {
 });
 
 // Verify admin password
-async function handleVerifyPassword(req: Request) {
-  const { username, password } = await req.json();
+async function handleVerifyPassword(data: { username: string; password: string }) {
+  const { username, password } = data;
 
   try {
+    console.log(`Verifying password for username: ${username}`);
+    
     // Get hashed password from database
     const { data: admin, error } = await supabaseClient
       .from("admin_users")
@@ -63,6 +73,7 @@ async function handleVerifyPassword(req: Request) {
       .single();
 
     if (error || !admin) {
+      console.log(`Admin user not found for username: ${username}`);
       return new Response(JSON.stringify({ success: false }), {
         status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -71,6 +82,7 @@ async function handleVerifyPassword(req: Request) {
 
     // Verify password
     const passwordMatch = await bcrypt.compare(password, admin.hashed_password);
+    console.log(`Password verification result: ${passwordMatch}`);
 
     return new Response(JSON.stringify({ success: passwordMatch }), {
       status: 200,
@@ -86,10 +98,12 @@ async function handleVerifyPassword(req: Request) {
 }
 
 // Set up two-factor authentication
-async function handleSetup2FA(req: Request) {
-  const { adminId } = await req.json();
+async function handleSetup2FA(data: { adminId: string }) {
+  const { adminId } = data;
 
   try {
+    console.log(`Setting up 2FA for admin ID: ${adminId}`);
+    
     // Generate secret
     const secret = speakeasy.generateSecret({
       name: "SpeechHelp Admin",
@@ -110,6 +124,7 @@ async function handleSetup2FA(req: Request) {
       .single();
 
     if (error) {
+      console.error("Error storing 2FA secret:", error);
       throw error;
     }
 
@@ -134,10 +149,12 @@ async function handleSetup2FA(req: Request) {
 }
 
 // Verify two-factor authentication code
-async function handleVerify2FA(req: Request) {
-  const { adminId, code } = await req.json();
+async function handleVerify2FA(data: { adminId: string; code: string }) {
+  const { adminId, code } = data;
 
   try {
+    console.log(`Verifying 2FA code for admin ID: ${adminId}`);
+    
     // Get secret from database
     const { data: twoFactorData, error } = await supabaseClient
       .from("admin_2fa")
@@ -146,6 +163,7 @@ async function handleVerify2FA(req: Request) {
       .single();
 
     if (error || !twoFactorData) {
+      console.error("2FA data not found:", error);
       return new Response(JSON.stringify({ success: false, error: "2FA not set up" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -159,6 +177,8 @@ async function handleVerify2FA(req: Request) {
       token: code,
       window: 1, // Allow 1 step before and after for time skew
     });
+
+    console.log(`2FA verification result: ${verified}`);
 
     if (verified) {
       // Enable 2FA if this is the first verification
@@ -182,10 +202,12 @@ async function handleVerify2FA(req: Request) {
 }
 
 // Handle password reset
-async function handleResetPassword(req: Request) {
-  const { token, newPassword } = await req.json();
+async function handleResetPassword(data: { token: string; newPassword: string }) {
+  const { token, newPassword } = data;
 
   try {
+    console.log(`Processing password reset with token`);
+    
     // Verify token
     const { data: resetData, error: resetError } = await supabaseClient
       .from("admin_reset_tokens")
@@ -218,6 +240,7 @@ async function handleResetPassword(req: Request) {
       .eq("id", resetData.admin_user_id);
 
     if (updateError) {
+      console.error("Error updating password:", updateError);
       throw updateError;
     }
 
