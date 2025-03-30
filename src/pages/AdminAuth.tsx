@@ -8,11 +8,14 @@ import AuthCard from '@/components/admin/auth/AuthCard';
 import LoginForm from '@/components/admin/auth/LoginForm';
 import TwoFactorForm from '@/components/admin/auth/TwoFactorForm';
 import LoadingScreen from '@/components/admin/auth/LoadingScreen';
+import { Button } from '@/components/ui/button';
+import { Settings } from 'lucide-react';
 
 const AdminAuth = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [showTwoFA, setShowTwoFA] = useState(false);
   const [needsFirstTimeSetup, setNeedsFirstTimeSetup] = useState(false);
+  const [showSetupForm, setShowSetupForm] = useState(false);
   const [checkingAdminStatus, setCheckingAdminStatus] = useState(true);
   
   const { toast } = useToast();
@@ -67,6 +70,7 @@ const AdminAuth = () => {
 
   const handleSetupComplete = () => {
     setNeedsFirstTimeSetup(false);
+    setShowSetupForm(false);
     toast({
       title: "Setup Complete",
       description: "You can now log in with your new admin credentials.",
@@ -81,27 +85,52 @@ const AdminAuth = () => {
     setShowTwoFA(false);
   };
 
+  const handleShowSetup = () => {
+    setShowSetupForm(true);
+  };
+
   if (checkingAdminStatus) {
     return <LoadingScreen />;
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-600 to-pink-500 p-4">
-      {needsFirstTimeSetup ? (
+      {(needsFirstTimeSetup || showSetupForm) ? (
         <FirstAdminSetup onSetupComplete={handleSetupComplete} />
       ) : (
         <div className="w-full max-w-md">
-          <AuthHeader />
+          <AuthHeader showLogo={true} />
           
           {!showTwoFA ? (
             <AuthCard
-              title="Admin Login"
-              description="Enter your admin credentials to access the dashboard"
+              title="Admin Access"
+              description="Sign in to access the admin dashboard"
             >
               <LoginForm 
                 onTwoFactorRequired={handleTwoFactorRequired}
                 onError={handleError}
               />
+              
+              <div className="mt-6 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Settings className="h-4 w-4 mr-1 text-gray-400" />
+                  <span className="text-sm text-gray-500">First-time Setup</span>
+                </div>
+                <Button 
+                  variant="outline" 
+                  className="w-full text-gray-700" 
+                  onClick={handleShowSetup}
+                >
+                  Create Default Admin Account
+                </Button>
+                <p className="text-xs text-gray-500 mt-2">
+                  Use this option only for the initial setup of your admin portal.
+                </p>
+              </div>
+              
+              <div className="mt-6 text-center text-xs text-gray-500">
+                Secure access for authorized personnel only
+              </div>
             </AuthCard>
           ) : (
             <AuthCard

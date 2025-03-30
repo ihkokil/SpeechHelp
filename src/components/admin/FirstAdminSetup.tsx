@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import speechHelpLogo from '/public/lovable-uploads/1bd4b0c7-938e-4528-a6b1-ebdfd0ced505.png';
 
 interface FirstAdminSetupProps {
   onSetupComplete: () => void;
@@ -63,10 +64,12 @@ const FirstAdminSetup = ({ onSetupComplete }: FirstAdminSetupProps) => {
       });
 
       if (response.error) {
+        console.error("Error creating admin:", response.error);
         throw new Error(response.error.message);
       }
 
       if (!response.data.success) {
+        console.error("Failed to create admin:", response.data);
         throw new Error(response.data.message || 'Failed to create admin user');
       }
 
@@ -93,9 +96,9 @@ const FirstAdminSetup = ({ onSetupComplete }: FirstAdminSetupProps) => {
     <div className="w-full max-w-md">
       <div className="mb-8 text-center">
         <div className="flex justify-center mb-4">
-          <Shield className="h-12 w-12 text-white" />
+          <img src={speechHelpLogo} alt="SpeechHelp Logo" className="h-12" />
         </div>
-        <h1 className="text-3xl font-bold text-white">SpeechHelp Admin</h1>
+        <h1 className="text-3xl font-bold text-white">Admin Portal</h1>
         <p className="text-white/80">First-time Setup</p>
       </div>
       
@@ -175,7 +178,7 @@ const FirstAdminSetup = ({ onSetupComplete }: FirstAdminSetupProps) => {
         </CardContent>
         
         <CardFooter className="flex justify-center text-xs text-gray-500">
-          This account will have full administrative privileges
+          Use this option only for the initial setup of your admin portal
         </CardFooter>
       </Card>
     </div>
