@@ -16,7 +16,17 @@ import Settings from "./pages/Settings";
 import HelpSupport from "./pages/HelpSupport";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { AdminProvider } from "./contexts/AdminContext";
 import Navbar from "./components/Navbar";
+
+// Admin pages
+import AdminAuth from "./pages/AdminAuth";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminReports from "./pages/AdminReports";
+import AdminSettings from "./pages/AdminSettings";
+import AdminSetup from "./pages/AdminSetup";
 
 const queryClient = new QueryClient();
 
@@ -47,67 +57,82 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <LanguageProvider>
-        <TooltipProvider>
-          <BrowserRouter>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/" element={<NavbarLayout><Index /></NavbarLayout>} />
-              <Route path="/pricing" element={<NavbarLayout><Pricing /></NavbarLayout>} />
-              <Route path="/auth" element={<NavbarLayout><Auth /></NavbarLayout>} />
-              <Route 
-                path="/dashboard" 
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/speech-lab" 
-                element={
-                  <ProtectedRoute>
-                    <SpeechLab />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/writing-tips" 
-                element={
-                  <ProtectedRoute>
-                    <WritingTips />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/my-speeches" 
-                element={
-                  <ProtectedRoute>
-                    <MySpeeches />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/settings" 
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/help" 
-                element={
-                  <ProtectedRoute>
-                    <HelpSupport />
-                  </ProtectedRoute>
-                } 
-              />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NavbarLayout><NotFound /></NavbarLayout>} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <AdminProvider>
+          <TooltipProvider>
+            <BrowserRouter>
+              <Toaster />
+              <Sonner />
+              <Routes>
+                {/* Main App Routes */}
+                <Route path="/" element={<NavbarLayout><Index /></NavbarLayout>} />
+                <Route path="/pricing" element={<NavbarLayout><Pricing /></NavbarLayout>} />
+                <Route path="/auth" element={<NavbarLayout><Auth /></NavbarLayout>} />
+                <Route 
+                  path="/dashboard" 
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/speech-lab" 
+                  element={
+                    <ProtectedRoute>
+                      <SpeechLab />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/writing-tips" 
+                  element={
+                    <ProtectedRoute>
+                      <WritingTips />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/my-speeches" 
+                  element={
+                    <ProtectedRoute>
+                      <MySpeeches />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/settings" 
+                  element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/help" 
+                  element={
+                    <ProtectedRoute>
+                      <HelpSupport />
+                    </ProtectedRoute>
+                  } 
+                />
+                
+                {/* Admin Routes */}
+                <Route path="/admin/login" element={<AdminAuth />} />
+                <Route path="/admin/setup" element={<AdminSetup />} />
+                <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route path="dashboard" element={<AdminDashboard />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="reports" element={<AdminReports />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                </Route>
+                
+                {/* Catch-all for 404 */}
+                <Route path="*" element={<NavbarLayout><NotFound /></NavbarLayout>} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AdminProvider>
       </LanguageProvider>
     </AuthProvider>
   </QueryClientProvider>
