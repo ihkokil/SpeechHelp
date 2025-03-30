@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,30 +18,85 @@ import {
   UserCog,
   UserMinus,
   Mail,
-  Eye
+  Eye,
+  UserCheck,
+  Loader2
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { format } from 'date-fns';
+import UserDetailsDrawer from '@/components/admin/users/UserDetailsDrawer';
+import AddUserDialog from '@/components/admin/users/AddUserDialog';
 
-// Mock user data for demonstration
-const mockUsers = Array.from({ length: 10 }).map((_, index) => ({
-  id: `user-${index + 1}`,
-  name: `User ${index + 1}`,
-  email: `user${index + 1}@example.com`,
-  status: index % 5 === 0 ? 'inactive' : 'active',
-  role: index % 3 === 0 ? 'admin' : 'user',
-  lastLogin: index % 2 === 0 ? '2023-11-05 12:34:56' : '2023-11-02 09:28:15',
-  createdAt: `2023-10-${10 + index} 14:30:00`
-}));
+// User type definition
+type User = {
+  id: string;
+  email: string;
+  last_sign_in_at: string | null;
+  created_at: string;
+  updated_at: string;
+  app_metadata: {
+    provider?: string;
+    providers?: string[];
+  };
+  user_metadata: {
+    name?: string;
+    full_name?: string;
+  };
+  is_active?: boolean;
+};
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const { toast } = useToast();
+  const { adminUser } = useAdminAuth();
   
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const { data: users, error } = await supabase.auth.admin.listUsers();
+      
+      if (error) {
+        console.error('Error fetching users:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load users. Please try again.',
+          variant: 'destructive',
+        });
+      } else {
+        console.log('Fetched users:', users);
+        setUsers(users.users as User[]);
+      }
+    } catch (error) {
+      console.error('Exception fetching users:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load users. Please check console for details.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Filter users based on search term
-  const filteredUsers = mockUsers.filter(user => 
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(user => 
+    (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
+    (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
   // Toggle user selection
@@ -61,7 +116,81 @@ const UserManagement = () => {
       setSelectedUsers(filteredUsers.map(user => user.id));
     }
   };
-  
+
+  const handleDeleteUsers = async () => {
+    setIsActionLoading(true);
+    try {
+      // In a real implementation, we would make API calls to delete the selected users
+      // For now, we'll simulate this with a timeout
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Remove the deleted users from the state
+      setUsers(prevUsers => prevUsers.filter(user => !selectedUsers.includes(user.id)));
+      setSelectedUsers([]);
+      
+      toast({
+        title: 'Success',
+        description: `${selectedUsers.length} users have been deleted.`,
+      });
+    } catch (error) {
+      console.error('Error deleting users:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete users.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsActionLoading(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
+    setIsActionLoading(true);
+    try {
+      // Would make actual API call to update user status
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Update user status in the state
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId ? { ...user, is_active: isActive } : user
+        )
+      );
+      
+      toast({
+        title: 'Success',
+        description: `User status updated to ${isActive ? 'active' : 'inactive'}.`,
+      });
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update user status.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleViewUserDetails = (user: User) => {
+    setSelectedUser(user);
+    setIsDetailsOpen(true);
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Never';
+    return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+  };
+
+  const getUserName = (user: User) => {
+    return user.user_metadata?.full_name || 
+           user.user_metadata?.name || 
+           user.email?.split('@')[0] || 
+           'Unknown';
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
@@ -90,8 +219,17 @@ const UserManagement = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <Button variant="outline" size="icon">
-                <RefreshCw className="h-4 w-4" />
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={fetchUsers}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
                 <span className="sr-only">Refresh</span>
               </Button>
             </div>
@@ -99,11 +237,20 @@ const UserManagement = () => {
             <div className="flex items-center space-x-2">
               {selectedUsers.length > 0 && (
                 <>
-                  <Button variant="outline" size="sm" onClick={() => setIsDeleteDialogOpen(true)}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setIsDeleteDialogOpen(true)} 
+                    disabled={isActionLoading}
+                  >
                     <UserMinus className="mr-2 h-4 w-4" />
                     Delete
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    disabled={isActionLoading}
+                  >
                     <Mail className="mr-2 h-4 w-4" />
                     Email
                   </Button>
@@ -127,20 +274,32 @@ const UserManagement = () => {
                   <TableHead className="w-12">
                     <Checkbox 
                       checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0} 
-                      onCheckedChange={toggleAllUsers} 
+                      onCheckedChange={toggleAllUsers}
+                      disabled={isLoading}
                     />
                   </TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Role</TableHead>
+                  <TableHead>Provider</TableHead>
                   <TableHead>Last Login</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.length === 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center">
+                      <div className="flex justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      </div>
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        Loading users...
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredUsers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="h-24 text-center">
                       No users found.
@@ -153,18 +312,26 @@ const UserManagement = () => {
                         <Checkbox 
                           checked={selectedUsers.includes(user.id)} 
                           onCheckedChange={() => toggleUserSelection(user.id)} 
+                          disabled={isActionLoading}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell className="font-medium">{getUserName(user)}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
-                        <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
-                          {user.status}
+                        <Badge 
+                          variant={user.is_active !== false ? 'default' : 'secondary'}
+                          className={user.is_active !== false ? 'bg-green-500' : ''}
+                        >
+                          {user.is_active !== false ? 'active' : 'inactive'}
                         </Badge>
                       </TableCell>
-                      <TableCell>{user.role}</TableCell>
-                      <TableCell>{user.lastLogin}</TableCell>
-                      <TableCell>{user.createdAt}</TableCell>
+                      <TableCell>
+                        {user.app_metadata?.provider || 
+                         (user.app_metadata?.providers && user.app_metadata.providers[0]) || 
+                         'email'}
+                      </TableCell>
+                      <TableCell>{formatDate(user.last_sign_in_at)}</TableCell>
+                      <TableCell>{formatDate(user.created_at)}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -174,7 +341,7 @@ const UserManagement = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleViewUserDetails(user)}>
                               <Eye className="mr-2 h-4 w-4" />
                               <span>View Details</span>
                             </DropdownMenuItem>
@@ -187,7 +354,25 @@ const UserManagement = () => {
                               <span>Send Email</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
+                            {user.is_active !== false ? (
+                              <DropdownMenuItem onClick={() => handleToggleUserStatus(user.id, false)}>
+                                <UserMinus className="mr-2 h-4 w-4" />
+                                <span>Deactivate User</span>
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem onClick={() => handleToggleUserStatus(user.id, true)}>
+                                <UserCheck className="mr-2 h-4 w-4" />
+                                <span>Activate User</span>
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => {
+                                setSelectedUsers([user.id]);
+                                setIsDeleteDialogOpen(true);
+                              }}
+                            >
                               <UserMinus className="mr-2 h-4 w-4" />
                               <span>Delete User</span>
                             </DropdownMenuItem>
@@ -202,7 +387,7 @@ const UserManagement = () => {
           </div>
           
           <div className="mt-4 flex justify-between text-sm text-gray-500">
-            <div>Showing {filteredUsers.length} of {mockUsers.length} users</div>
+            <div>Showing {filteredUsers.length} of {users.length} users</div>
             <div>
               {selectedUsers.length > 0 && (
                 <span>{selectedUsers.length} users selected</span>
@@ -222,62 +407,47 @@ const UserManagement = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isActionLoading}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={() => {
-              // Handle delete action
-              setSelectedUsers([]);
-              setIsDeleteDialogOpen(false);
-            }}>
-              Delete
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteUsers}
+              disabled={isActionLoading}
+            >
+              {isActionLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       
-      {/* Add User Dialog would be implemented here */}
-      <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
-            <DialogDescription>
-              Enter the details for the new user account.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="name" className="text-right">
-                Name
-              </label>
-              <Input id="name" className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="email" className="text-right">
-                Email
-              </label>
-              <Input id="email" type="email" className="col-span-3" />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="role" className="text-right">
-                Role
-              </label>
-              <select className="col-span-3 h-10 rounded-md border px-3">
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddUserDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => setIsAddUserDialogOpen(false)}>
-              Add User
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* User Details Drawer */}
+      <UserDetailsDrawer 
+        user={selectedUser} 
+        open={isDetailsOpen} 
+        onClose={() => setIsDetailsOpen(false)} 
+      />
+      
+      {/* Add User Dialog */}
+      <AddUserDialog 
+        open={isAddUserDialogOpen} 
+        onOpenChange={setIsAddUserDialogOpen} 
+        onUserAdded={(newUser) => {
+          setUsers(prev => [...prev, newUser]);
+          setIsAddUserDialogOpen(false);
+        }}
+      />
     </div>
   );
 };
