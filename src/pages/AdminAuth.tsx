@@ -47,8 +47,13 @@ const AdminAuth = () => {
       }
       
       setNeedsFirstTimeSetup(!data.adminsExist);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error checking admin status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to check admin configuration: " + error.message,
+        variant: "destructive"
+      });
     } finally {
       setCheckingAdminStatus(false);
     }
@@ -64,9 +69,14 @@ const AdminAuth = () => {
     }
     
     try {
-      await login(username, password);
-      navigate('/admin/dashboard');
+      const result = await login(username, password);
+      if (result?.requires2FA) {
+        setShowTwoFA(true);
+      } else {
+        navigate('/admin/dashboard');
+      }
     } catch (error: any) {
+      console.error('Login error:', error);
       setErrorMessage(error.message || 'Login failed. Please try again.');
     }
   };
@@ -79,12 +89,17 @@ const AdminAuth = () => {
       return;
     }
     
-    const success = await verify2FA(twoFACode);
-    
-    if (success) {
-      navigate('/admin/dashboard');
-    } else {
-      setErrorMessage('Invalid 2FA code. Please try again.');
+    try {
+      const success = await verify2FA(twoFACode);
+      
+      if (success) {
+        navigate('/admin/dashboard');
+      } else {
+        setErrorMessage('Invalid 2FA code. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('2FA verification error:', error);
+      setErrorMessage(error.message || 'Failed to verify 2FA code. Please try again.');
     }
   };
 
