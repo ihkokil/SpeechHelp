@@ -14,8 +14,7 @@ import {
   UserCheck,
   Shield,
   Clock,
-  Loader2,
-  Flag
+  Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { User } from '../types';
@@ -87,6 +86,10 @@ export const UserTable: React.FC<UserTableProps> = ({
     }
     
     return `+${dialCode} ${formattedNumber}`;
+  }, []);
+
+  const getCountryFlagUrl = useCallback((countryCode: string) => {
+    return `https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`;
   }, []);
 
   const viewUserDetails = useCallback((e: React.MouseEvent, user: User) => {
@@ -178,9 +181,10 @@ export const UserTable: React.FC<UserTableProps> = ({
                   <div className="flex items-center">
                     <span>{getUserName(user)}</span>
                     {user.user_metadata?.country_code && (
-                      <Flag 
-                        className="h-4 w-4 ml-2 text-gray-500" 
-                        data-country-code={user.user_metadata.country_code}
+                      <img 
+                        src={getCountryFlagUrl(user.user_metadata.country_code)}
+                        alt={user.user_metadata.country || user.user_metadata.country_code}
+                        className="h-4 w-auto ml-2"
                         title={user.user_metadata.country || user.user_metadata.country_code}
                       />
                     )}
