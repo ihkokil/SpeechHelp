@@ -7,8 +7,9 @@ const ContactSalesSection: React.FC = () => {
   const navigate = useNavigate();
   
   const handleContactClick = () => {
-    // Navigate to the home page with the contact hash
-    navigate('/#contact');
+    // Store the target section in sessionStorage before navigation
+    sessionStorage.setItem('scrollTarget', 'contact');
+    navigate('/');
   };
 
   return (
