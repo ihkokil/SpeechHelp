@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const ContactSalesSection: React.FC = () => {
   return (
@@ -10,9 +11,14 @@ const ContactSalesSection: React.FC = () => {
         We offer custom enterprise plans for teams and organizations.
         Contact us to discuss your specific needs.
       </p>
-      <Button variant="outline" className="border-purple-600 text-purple-600 hover:bg-purple-50">
-        Contact Sales
-      </Button>
+      <Link to="/#contact">
+        <Button 
+          variant="outline" 
+          className="border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white transition-colors"
+        >
+          Contact Sales
+        </Button>
+      </Link>
     </div>
   );
 };
