@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -15,22 +15,27 @@ import {
   DialogTrigger 
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
+import { format, addMonths, addYears } from 'date-fns';
+import { useAuth } from '@/contexts/AuthContext';
 
 const BillingSettings = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [autoRenew, setAutoRenew] = useState(true);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Get account creation date from user metadata or use a default
+  const accountCreatedAt = user ? new Date(user.created_at || Date.now()) : new Date();
+  
   // Mocked subscription data - would come from your backend in a real app
-  const subscriptionData = {
+  const [subscriptionData, setSubscriptionData] = useState({
     plan: 'Pro Plan',
     status: 'active',
     price: '$29.99',
-    billingPeriod: 'monthly',
-    startDate: new Date('2023-08-15'),
-    endDate: new Date('2024-08-15'),
+    billingPeriod: 'monthly', // 'monthly' or 'yearly'
+    startDate: accountCreatedAt,
+    endDate: addMonths(accountCreatedAt, 1), // Default to monthly
     paymentMethod: {
       type: 'Credit Card',
       last4: '4242',
@@ -38,15 +43,30 @@ const BillingSettings = () => {
       expiryYear: 2026,
       brand: 'Visa'
     }
-  };
+  });
+
+  // Update end date when billing period changes
+  useEffect(() => {
+    if (subscriptionData.billingPeriod === 'monthly') {
+      setSubscriptionData(prev => ({
+        ...prev,
+        endDate: addMonths(prev.startDate, 1)
+      }));
+    } else {
+      setSubscriptionData(prev => ({
+        ...prev,
+        endDate: addYears(prev.startDate, 1)
+      }));
+    }
+  }, [subscriptionData.billingPeriod, subscriptionData.startDate]);
 
   const handleAutoRenewToggle = (checked: boolean) => {
     setAutoRenew(checked);
     toast({
       title: checked ? "Auto-renewal enabled" : "Auto-renewal disabled",
       description: checked 
-        ? "Your subscription will automatically renew when it expires." 
-        : "Your subscription will not renew automatically.",
+        ? `Your subscription will automatically renew on ${format(subscriptionData.endDate, 'MMMM d, yyyy')}.` 
+        : `Your subscription will be active until ${format(subscriptionData.endDate, 'MMMM d, yyyy')} and then expire.`,
     });
   };
 
@@ -55,9 +75,13 @@ const BillingSettings = () => {
     try {
       // In a real app, you would call your backend API to cancel the subscription
       await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Just disable auto-renewal rather than immediate cancellation
+      setAutoRenew(false);
+      
       toast({
-        title: "Subscription cancelled",
-        description: "Your subscription has been cancelled successfully.",
+        title: "Auto-renewal disabled",
+        description: `Your subscription will remain active until ${format(subscriptionData.endDate, 'MMMM d, yyyy')} and will not renew automatically.`,
       });
       setShowCancelDialog(false);
     } catch (error) {
@@ -70,6 +94,15 @@ const BillingSettings = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // For demo purposes - allows switching between monthly and yearly billing
+  const toggleBillingPeriod = () => {
+    setSubscriptionData(prev => ({
+      ...prev,
+      billingPeriod: prev.billingPeriod === 'monthly' ? 'yearly' : 'monthly',
+      price: prev.billingPeriod === 'monthly' ? '$299.99' : '$29.99',
+    }));
   };
 
   return (
@@ -117,7 +150,10 @@ const BillingSettings = () => {
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button variant="outline">Change Plan</Button>
+          {/* For demo purposes - toggle between monthly and yearly */}
+          <Button variant="outline" onClick={toggleBillingPeriod}>
+            Switch to {subscriptionData.billingPeriod === 'monthly' ? 'Yearly' : 'Monthly'} Billing
+          </Button>
           <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
             <DialogTrigger asChild>
               <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50">
@@ -131,7 +167,7 @@ const BillingSettings = () => {
                   Cancel Subscription
                 </DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to cancel your subscription? You'll lose access to all premium features at the end of your current billing cycle.
+                  Are you sure you want to cancel your subscription? Your subscription will remain active until the end of your current billing period, but will not renew automatically.
                 </DialogDescription>
               </DialogHeader>
               <div className="my-4 p-4 bg-red-50 rounded-md text-red-800 text-sm">
