@@ -1,24 +1,16 @@
-
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import { PaymentFormValues } from './PaymentFormSchema';
+import { formatCardNumber, detectCardType, getCvvLength } from '../utils/paymentMethodUtils';
 
 interface CardInformationFieldsProps {
   form: UseFormReturn<PaymentFormValues>;
-  formatCardNumber: (value: string) => string;
-  detectCardType: (cardNumber: string) => string;
-  getCvvLength: (cardType: string) => number;
 }
 
-const CardInformationFields: React.FC<CardInformationFieldsProps> = ({ 
-  form, 
-  formatCardNumber, 
-  detectCardType, 
-  getCvvLength 
-}) => {
+const CardInformationFields: React.FC<CardInformationFieldsProps> = ({ form }) => {
   const cardNumber = form.watch('cardNumber') || '';
   const detectedCardType = detectCardType(cardNumber);
   const cvvLength = getCvvLength(detectedCardType);
