@@ -81,8 +81,7 @@ export const adminAuthService = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        path: 'verify-password',
+        }
       });
 
       if (functionError || !passwordCheck?.success) {
@@ -182,8 +181,7 @@ export const adminAuthService = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        path: 'verify-2fa',
+        }
       });
 
       if (functionError || !verificationResult?.success) {
