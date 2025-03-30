@@ -20,39 +20,48 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
     <FormField
       control={form.control}
       name="state"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>State / Province</FormLabel>
-          <FormControl>
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
-                <MapPin className="h-4 w-4 text-gray-500" />
+      render={({ field }) => {
+        console.log("StateSelector field value:", field.value);
+        return (
+          <FormItem>
+            <FormLabel>State / Province</FormLabel>
+            <FormControl>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
+                  <MapPin className="h-4 w-4 text-gray-500" />
+                </div>
+                <Select 
+                  onValueChange={(value) => {
+                    console.log("State selected:", value);
+                    field.onChange(value);
+                  }}
+                  value={field.value || ''}
+                  defaultValue={field.value || ''}
+                >
+                  <SelectTrigger 
+                    className="w-full pl-10 focus:border-pink-500" 
+                    data-focus-visible="true"
+                  >
+                    <SelectValue placeholder="Select State / Province" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white max-h-60 z-[150]">
+                    {availableStates.length > 0 ? (
+                      availableStates.map((state) => (
+                        <SelectItem key={state.code} value={state.name}>
+                          {state.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="N/A">No states/provinces available</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
-              <Select 
-                onValueChange={field.onChange}
-                value={field.value || ''}
-                defaultValue={field.value || ''}
-              >
-                <SelectTrigger className="w-full pl-10" data-focus-visible="true">
-                  <SelectValue placeholder="Select State / Province" />
-                </SelectTrigger>
-                <SelectContent className="bg-white max-h-60 z-[150]">
-                  {availableStates.length > 0 ? (
-                    availableStates.map((state) => (
-                      <SelectItem key={state.code} value={state.name}>
-                        {state.name}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="N/A">No states/provinces available</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
+      }}
     />
   );
 };

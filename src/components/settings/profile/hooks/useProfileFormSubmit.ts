@@ -58,6 +58,9 @@ export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
         });
       }
       
+      // Ensure state value is included in metadata
+      console.log('State value being saved:', data.state);
+      
       // Update user metadata
       const metadata = {
         first_name: data.firstName,
@@ -66,7 +69,7 @@ export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
         country_code: data.countryCode,
         street_address: data.streetAddress,
         city: data.city,
-        state: data.state,
+        state: data.state, // Ensure state is properly included
         zip_code: data.zipCode,
         country: data.country,
       };
