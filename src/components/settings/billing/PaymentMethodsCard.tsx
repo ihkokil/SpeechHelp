@@ -3,195 +3,36 @@ import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CreditCard, PlusCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import PaymentMethodItem from './PaymentMethodItem';
-import AddPaymentDialog, { PaymentFormValues } from './AddPaymentDialog';
+import AddPaymentDialog from './AddPaymentDialog';
 import UpdatePaymentDialog from './UpdatePaymentDialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-
-interface PaymentMethod {
-  type: string;
-  last4: string;
-  expiryMonth: number;
-  expiryYear: number;
-  brand: string;
-  isDefault?: boolean;
-  cardHolder: string;
-  billingAddress: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
-}
+import DeletePaymentDialog from './DeletePaymentDialog';
+import { usePaymentMethods } from './hooks/usePaymentMethods';
+import { determineCardBrand } from './utils/paymentMethodUtils';
 
 const PaymentMethodsCard = () => {
-  const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState(false);
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
   const [showUpdatePaymentDialog, setShowUpdatePaymentDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number | null>(null);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    {
-      type: 'Credit Card',
-      last4: '4242',
-      expiryMonth: 12,
-      expiryYear: 2026,
-      brand: 'Visa',
-      isDefault: true,
-      cardHolder: 'John Doe',
-      billingAddress: {
-        street: '123 Main St',
-        city: 'San Francisco',
-        state: 'CA',
-        zipCode: '94105',
-        country: 'United States'
-      }
-    }
-  ]);
-
-  const determineCardBrand = (cardNumber: string) => {
-    const firstDigit = cardNumber.charAt(0);
-    if (firstDigit === '4') return 'Visa';
-    if (firstDigit === '5') return 'Mastercard';
-    if (firstDigit === '3') return 'Amex';
-    if (firstDigit === '6') return 'Discover';
-    return 'Card';
-  };
-
-  const handleAddPaymentMethod = (data: PaymentFormValues) => {
-    setIsProcessing(true);
-    setTimeout(() => {
-      const last4 = data.cardNumber.slice(-4);
-      const newPaymentMethod: PaymentMethod = {
-        type: data.cardType,
-        last4,
-        expiryMonth: parseInt(data.expiryMonth),
-        expiryYear: parseInt(data.expiryYear),
-        brand: data.cardType === 'Select card type' ? determineCardBrand(data.cardNumber) : data.cardType,
-        isDefault: data.isDefault,
-        cardHolder: data.cardHolder,
-        billingAddress: {
-          street: data.billingStreet,
-          city: data.billingCity,
-          state: data.billingState,
-          zipCode: data.billingZip,
-          country: data.billingCountry
-        }
-      };
-      
-      // If it's default, update all other cards to not be default
-      let updatedMethods = [...paymentMethods];
-      if (data.isDefault) {
-        updatedMethods = updatedMethods.map(method => ({...method, isDefault: false}));
-      }
-      
-      // Add the new payment method to the collection
-      setPaymentMethods([...updatedMethods, newPaymentMethod]);
-      
-      toast({
-        title: "Payment method added",
-        description: `Your ${newPaymentMethod.brand} card ending in ${last4} has been added.`,
-      });
-      
-      setShowAddPaymentDialog(false);
-      setIsProcessing(false);
-    }, 1500);
-  };
-
-  const handleUpdatePaymentMethod = (data: PaymentFormValues) => {
-    if (selectedPaymentMethod === null) return;
-    
-    setIsProcessing(true);
-    setTimeout(() => {
-      const last4 = data.cardNumber.slice(-4);
-      const updatedPaymentMethod: PaymentMethod = {
-        type: data.cardType,
-        last4,
-        expiryMonth: parseInt(data.expiryMonth),
-        expiryYear: parseInt(data.expiryYear),
-        brand: data.cardType === 'Select card type' ? determineCardBrand(data.cardNumber) : data.cardType,
-        isDefault: data.isDefault,
-        cardHolder: data.cardHolder,
-        billingAddress: {
-          street: data.billingStreet,
-          city: data.billingCity,
-          state: data.billingState,
-          zipCode: data.billingZip,
-          country: data.billingCountry
-        }
-      };
-      
-      let updatedMethods = [...paymentMethods];
-      
-      // If setting this card as default, update all others to not be default
-      if (data.isDefault) {
-        updatedMethods = updatedMethods.map(method => ({...method, isDefault: false}));
-      }
-      
-      // Update the selected payment method with new data
-      updatedMethods[selectedPaymentMethod] = updatedPaymentMethod;
-      
-      setPaymentMethods(updatedMethods);
-      
-      toast({
-        title: "Payment method updated",
-        description: `Your ${updatedPaymentMethod.brand} card ending in ${last4} has been updated.${data.isDefault ? ' It is now your default payment method.' : ''}`,
-      });
-      
-      setShowUpdatePaymentDialog(false);
-      setSelectedPaymentMethod(null);
-      setIsProcessing(false);
-    }, 1500);
-  };
+  
+  const {
+    paymentMethods,
+    isProcessing,
+    selectedPaymentMethod,
+    setSelectedPaymentMethod,
+    handleAddPaymentMethod,
+    handleUpdatePaymentMethod,
+    handleDeletePaymentMethod
+  } = usePaymentMethods();
 
   const openUpdatePaymentDialog = (index: number) => {
     setSelectedPaymentMethod(index);
-    const method = paymentMethods[index];
-    
-    const defaultValues: PaymentFormValues = {
-      cardNumber: `•••• •••• •••• ${method.last4}`,
-      cardHolder: method.cardHolder,
-      expiryMonth: method.expiryMonth.toString(),
-      expiryYear: method.expiryYear.toString(),
-      cvv: '',
-      isDefault: method.isDefault || false,
-      cardType: method.brand,
-      billingStreet: method.billingAddress.street,
-      billingCity: method.billingAddress.city,
-      billingState: method.billingAddress.state,
-      billingZip: method.billingAddress.zipCode,
-      billingCountry: method.billingAddress.country
-    };
-    
     setShowUpdatePaymentDialog(true);
   };
 
   const openDeleteDialog = (index: number) => {
     setSelectedPaymentMethod(index);
     setShowDeleteDialog(true);
-  };
-
-  const handleDeletePaymentMethod = () => {
-    if (selectedPaymentMethod === null) return;
-    
-    setIsProcessing(true);
-    setTimeout(() => {
-      const deletedMethod = paymentMethods[selectedPaymentMethod];
-      
-      setPaymentMethods(prev => prev.filter((_, index) => index !== selectedPaymentMethod));
-      
-      toast({
-        title: "Payment method deleted",
-        description: `Your ${deletedMethod.brand} card ending in ${deletedMethod.last4} has been removed.`,
-      });
-      
-      setShowDeleteDialog(false);
-      setSelectedPaymentMethod(null);
-      setIsProcessing(false);
-    }, 1000);
   };
 
   return (
@@ -233,55 +74,37 @@ const PaymentMethodsCard = () => {
       />
 
       {selectedPaymentMethod !== null && (
-        <UpdatePaymentDialog
-          open={showUpdatePaymentDialog}
-          onOpenChange={setShowUpdatePaymentDialog}
-          onSubmit={handleUpdatePaymentMethod}
-          isProcessing={isProcessing}
-          defaultValues={{
-            cardNumber: `•••• •••• •••• ${paymentMethods[selectedPaymentMethod].last4}`,
-            cardHolder: paymentMethods[selectedPaymentMethod].cardHolder,
-            expiryMonth: paymentMethods[selectedPaymentMethod].expiryMonth.toString(),
-            expiryYear: paymentMethods[selectedPaymentMethod].expiryYear.toString(),
-            cvv: '',
-            isDefault: paymentMethods[selectedPaymentMethod].isDefault || false,
-            cardType: paymentMethods[selectedPaymentMethod].brand,
-            billingStreet: paymentMethods[selectedPaymentMethod].billingAddress.street,
-            billingCity: paymentMethods[selectedPaymentMethod].billingAddress.city,
-            billingState: paymentMethods[selectedPaymentMethod].billingAddress.state,
-            billingZip: paymentMethods[selectedPaymentMethod].billingAddress.zipCode,
-            billingCountry: paymentMethods[selectedPaymentMethod].billingAddress.country
-          }}
-        />
-      )}
+        <>
+          <UpdatePaymentDialog
+            open={showUpdatePaymentDialog}
+            onOpenChange={setShowUpdatePaymentDialog}
+            onSubmit={handleUpdatePaymentMethod}
+            isProcessing={isProcessing}
+            defaultValues={{
+              cardNumber: `•••• •••• •••• ${paymentMethods[selectedPaymentMethod].last4}`,
+              cardHolder: paymentMethods[selectedPaymentMethod].cardHolder,
+              expiryMonth: paymentMethods[selectedPaymentMethod].expiryMonth.toString(),
+              expiryYear: paymentMethods[selectedPaymentMethod].expiryYear.toString(),
+              cvv: '',
+              isDefault: paymentMethods[selectedPaymentMethod].isDefault || false,
+              cardType: paymentMethods[selectedPaymentMethod].brand,
+              billingStreet: paymentMethods[selectedPaymentMethod].billingAddress.street,
+              billingCity: paymentMethods[selectedPaymentMethod].billingAddress.city,
+              billingState: paymentMethods[selectedPaymentMethod].billingAddress.state,
+              billingZip: paymentMethods[selectedPaymentMethod].billingAddress.zipCode,
+              billingCountry: paymentMethods[selectedPaymentMethod].billingAddress.country
+            }}
+          />
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Payment Method</AlertDialogTitle>
-            <AlertDialogDescription>
-              {selectedPaymentMethod !== null && paymentMethods[selectedPaymentMethod] ? (
-                <>
-                  Are you sure you want to delete your {paymentMethods[selectedPaymentMethod].brand} card 
-                  ending in {paymentMethods[selectedPaymentMethod].last4}? This action cannot be undone.
-                </>
-              ) : (
-                "Are you sure you want to delete this payment method? This action cannot be undone."
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              className="bg-red-500 hover:bg-red-600 text-white" 
-              onClick={handleDeletePaymentMethod}
-              disabled={isProcessing}
-            >
-              {isProcessing ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          <DeletePaymentDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+            onDelete={handleDeletePaymentMethod}
+            isProcessing={isProcessing}
+            paymentMethod={paymentMethods[selectedPaymentMethod]}
+          />
+        </>
+      )}
     </Card>
   );
 };
