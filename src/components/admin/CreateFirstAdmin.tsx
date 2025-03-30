@@ -126,7 +126,7 @@ const CreateFirstAdmin = () => {
         
         <Button 
           type="submit" 
-          className="w-full bg-[#9c29b2] hover:bg-[#8923a0]"
+          className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90"
           disabled={isLoading}
         >
           {isLoading ? "Creating Account..." : "Create Admin Account"}
