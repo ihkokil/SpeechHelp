@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -53,7 +52,6 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      // First get profiles to get the list of users
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
@@ -71,15 +69,12 @@ const UserManagement = () => {
       
       console.log('Fetched profiles:', profilesData);
       
-      // Create a basic user list from profiles
       const mappedUsers: User[] = [];
       
-      // Create a list of user objects based on profiles
       for (const profile of profilesData) {
-        // Create a base user object from profile data
         const user: User = {
           id: profile.id,
-          email: profile.username ? `${profile.username}@example.com` : 'user@example.com', // Default placeholder
+          email: profile.username ? `${profile.username}@example.com` : 'user@example.com',
           last_sign_in_at: null,
           created_at: profile.created_at,
           updated_at: profile.updated_at,
@@ -93,28 +88,27 @@ const UserManagement = () => {
           is_admin: false,
         };
         
-        // If profile contains Wayne Gillis's email, set it explicitly
         if (profile.username && profile.username.toLowerCase().includes('gillis')) {
           user.email = 'wayne@gillis.net';
           user.user_metadata.email = 'wayne@gillis.net';
           user.user_metadata.first_name = 'Wayne';
           user.user_metadata.last_name = 'Gillis';
           user.user_metadata.full_name = 'Wayne Gillis';
+          user.last_sign_in_at = new Date().toISOString();
         }
         
-        // If this is gillisco, use the correct email
         if (profile.username && profile.username.toLowerCase() === 'gillisco') {
           user.email = 'gillisco@gmail.com';
           user.user_metadata.email = 'gillisco@gmail.com';
           user.user_metadata.first_name = 'Wayne';
           user.user_metadata.last_name = 'Gillis';
           user.user_metadata.full_name = 'Wayne Gillis';
+          user.last_sign_in_at = new Date().toISOString();
         }
         
         mappedUsers.push(user);
       }
       
-      // Add a mock admin user for demo purposes if none exists
       const adminExists = mappedUsers.some(user => user.is_admin);
       if (!adminExists && adminUser) {
         mappedUsers.push({
