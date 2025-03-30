@@ -97,7 +97,7 @@ const UserManagement = () => {
         selectedCount={selectedUsers.length}
       />
       
-      {/* Simplified conditional rendering approach */}
+      {/* Render user details drawer */}
       {isDetailsOpen && selectedUser && (
         <UserDetailsDrawer 
           user={selectedUser} 
@@ -119,6 +119,7 @@ const UserManagement = () => {
         }}
       />
 
+      {/* Render permissions dialog */}
       {isPermissionsDialogOpen && selectedUser && (
         <AdminPermissionsDialog
           user={selectedUser}

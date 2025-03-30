@@ -223,15 +223,20 @@ export const useUserManagement = () => {
   const handleViewUserDetails = useCallback((user: User) => {
     console.log('UserManagement: Opening details for user:', user.id);
     setIsDetailsOpen(false);
-    setSelectedUser(user);
     requestAnimationFrame(() => {
-      setIsDetailsOpen(true);
+      setSelectedUser(user);
+      requestAnimationFrame(() => {
+        setIsDetailsOpen(true);
+      });
     });
   }, []);
 
   const handleCloseUserDetails = useCallback(() => {
     console.log('UserManagement: Closing user details drawer');
     setIsDetailsOpen(false);
+    requestAnimationFrame(() => {
+      setSelectedUser(null);
+    });
   }, []);
 
   const handleToggleUserSubscription = useCallback(async (userId: string, extensionDays: number = 30) => {
@@ -277,9 +282,11 @@ export const useUserManagement = () => {
   const handleManagePermissions = useCallback((user: User) => {
     console.log('UserManagement: Opening permissions dialog for user:', user.id);
     setIsPermissionsDialogOpen(false);
-    setSelectedUser(user);
     requestAnimationFrame(() => {
-      setIsPermissionsDialogOpen(true);
+      setSelectedUser(user);
+      requestAnimationFrame(() => {
+        setIsPermissionsDialogOpen(true);
+      });
     });
   }, []);
 
