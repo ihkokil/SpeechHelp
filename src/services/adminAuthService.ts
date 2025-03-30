@@ -30,6 +30,45 @@ interface Verify2FAResponse {
 }
 
 export const adminAuthService = {
+  // Create default admin user (for initial setup)
+  async createDefaultAdmin(): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log('Attempting to create default admin user');
+      
+      const { error, data } = await supabase.functions.invoke('admin-auth', {
+        body: { 
+          action: 'create_admin',
+          username: 'speechhelpmaster', 
+          password: 'Admin@123', // You should change this in production
+          email: 'admin@speechhelp.com',
+          is_super_admin: true
+        },
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (error) {
+        console.error('Error creating default admin:', error);
+        return { success: false, error: error.message };
+      }
+      
+      if (!data.success) {
+        return { success: false, error: data.error || 'Failed to create admin' };
+      }
+
+      console.log('Default admin user created successfully');
+      return { success: true };
+    } catch (err: any) {
+      console.error('Create default admin error:', err);
+      return { 
+        success: false, 
+        error: 'An unexpected error occurred. Please try again later.' 
+      };
+    }
+  },
+
   // Sign in admin user
   async signIn(credentials: AdminCredentials): Promise<AdminSignInResponse> {
     try {
@@ -37,43 +76,8 @@ export const adminAuthService = {
       const ipResponse = await fetch('https://api.ipify.org?format=json');
       const { ip } = await ipResponse.json();
 
-      // Verify admin credentials against the admin_users table
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('username', credentials.username)
-        .eq('is_active', true)
-        .single();
-
-      if (error || !data) {
-        return { 
-          success: false, 
-          error: 'Invalid credentials or account is inactive.' 
-        };
-      }
-
-      // Check if IP is allowed (if IP restriction is enabled)
-      if (data.allowed_ip_addresses && data.allowed_ip_addresses.length > 0) {
-        if (!data.allowed_ip_addresses.includes(ip)) {
-          // Log failed login attempt
-          await this.logActivity({
-            adminUserId: data.id,
-            action: 'FAILED_LOGIN',
-            entityType: 'ADMIN_USER',
-            entityId: data.id,
-            details: { reason: 'IP address not allowed', ip },
-            ipAddress: ip
-          });
-          
-          return { 
-            success: false, 
-            error: 'Access denied from current IP address.' 
-          };
-        }
-      }
-
-      // Call the admin-auth edge function to verify password
-      const { error: functionError, data: passwordCheck } = await supabase.functions.invoke('admin-auth', {
+      // Call the admin-auth edge function to verify credentials
+      const { error: functionError, data: authResult } = await supabase.functions.invoke('admin-auth', {
         body: { 
           username: credentials.username, 
           password: credentials.password 
@@ -84,77 +88,67 @@ export const adminAuthService = {
         }
       });
 
-      if (functionError || !passwordCheck?.success) {
-        // Update failed login attempts
-        await supabase
-          .from('admin_users')
-          .update({ 
-            failed_login_attempts: data.failed_login_attempts + 1 
-          })
-          .eq('id', data.id);
-
-        // Log failed login attempt
-        await this.logActivity({
-          adminUserId: data.id,
-          action: 'FAILED_LOGIN',
-          entityType: 'ADMIN_USER',
-          entityId: data.id,
-          details: { reason: 'Invalid password' },
-          ipAddress: ip
-        });
-
+      if (functionError) {
+        console.error('Admin auth function error:', functionError);
         return { 
           success: false, 
-          error: 'Invalid credentials.' 
+          error: 'Authentication service error. Please try again later.' 
         };
       }
 
-      // Check if 2FA is enabled for this admin
-      const { data: twoFactorData } = await supabase
-        .from('admin_2fa')
-        .select('is_enabled')
-        .eq('admin_user_id', data.id)
-        .single();
-
-      // Reset failed login attempts on successful password verification
-      await supabase
-        .from('admin_users')
-        .update({ 
-          failed_login_attempts: 0,
-          last_login: twoFactorData?.is_enabled ? null : new Date().toISOString()
-        })
-        .eq('id', data.id);
+      if (!authResult.success) {
+        // Log failed login attempt
+        await this.logActivity({
+          adminUserId: 'unknown',
+          action: 'FAILED_LOGIN',
+          entityType: 'ADMIN_USER',
+          entityId: 'unknown',
+          details: { reason: authResult.error || 'Unknown error', ip },
+          ipAddress: ip
+        });
+        
+        return { 
+          success: false, 
+          error: authResult.error || 'Invalid credentials.' 
+        };
+      }
 
       // If 2FA is enabled, require verification
-      if (twoFactorData?.is_enabled) {
+      if (authResult.requires2FA) {
         // Log 2FA prompt
         await this.logActivity({
-          adminUserId: data.id,
+          adminUserId: authResult.user.id,
           action: 'TWO_FACTOR_PROMPT',
           entityType: 'ADMIN_USER',
-          entityId: data.id,
+          entityId: authResult.user.id,
           ipAddress: ip
         });
         
         return { 
           success: true, 
           requires2FA: true,
-          user: data
+          user: authResult.user
         };
       }
 
       // Log successful login
       await this.logActivity({
-        adminUserId: data.id,
+        adminUserId: authResult.user.id,
         action: 'LOGIN',
         entityType: 'ADMIN_USER',
-        entityId: data.id,
+        entityId: authResult.user.id,
         ipAddress: ip
       });
 
+      // Update last_login time
+      await supabase
+        .from('admin_users')
+        .update({ last_login: new Date().toISOString() })
+        .eq('id', authResult.user.id);
+
       return { 
         success: true, 
-        user: data
+        user: authResult.user
       };
     } catch (err: any) {
       console.error('Admin sign in error:', err);
