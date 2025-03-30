@@ -1,4 +1,3 @@
-
 import { CircleCheckBig, MicIcon, FileTextIcon, Clock } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es, fr } from 'date-fns/locale';
@@ -7,9 +6,11 @@ import { useTranslation } from '@/translations';
 import { Speech } from '@/types/auth';
 import { useMemo } from 'react';
 
+type ActivityType = 'practice' | 'feedback' | 'completion';
+
 type Activity = {
   id: string;
-  type: 'practice' | 'feedback' | 'completion';
+  type: ActivityType;
   title: string;
   timestamp: Date;
   details?: string;
@@ -33,7 +34,7 @@ const RecentActivities = ({ speeches = [] }: RecentActivitiesProps) => {
         
       return recentSpeeches.map(speech => ({
         id: speech.id,
-        type: 'completion' as const,
+        type: 'completion' as ActivityType,
         title: `Completed "${speech.title}"`,
         timestamp: new Date(speech.updated_at),
         details: `${speech.speech_type} speech`
@@ -44,21 +45,21 @@ const RecentActivities = ({ speeches = [] }: RecentActivitiesProps) => {
     return [
       {
         id: '1',
-        type: 'practice',
+        type: 'practice' as ActivityType,
         title: 'Practiced "Marketing Pitch"',
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
         details: '15 minutes practice session'
       },
       {
         id: '2',
-        type: 'feedback',
+        type: 'feedback' as ActivityType,
         title: 'Received Feedback',
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
         details: 'On "Team Update" speech'
       },
       {
         id: '3',
-        type: 'completion',
+        type: 'completion' as ActivityType,
         title: 'Completed "Introduction to AI" preparation',
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48), // 2 days ago
       }

@@ -26,12 +26,12 @@ const PerformanceMetrics = ({ speechData = {} }: PerformanceMetricsProps) => {
     
     // Otherwise use mock data
     return [
-      { name: 'Jan', score: 65 },
-      { name: 'Feb', score: 59 },
-      { name: 'Mar', score: 80 },
-      { name: 'Apr', score: 81 },
-      { name: 'May', score: 76 },
-      { name: 'Jun', score: 85 },
+      { name: 'Jan', score: 65, fullName: 'January' },
+      { name: 'Feb', score: 59, fullName: 'February' },
+      { name: 'Mar', score: 80, fullName: 'March' },
+      { name: 'Apr', score: 81, fullName: 'April' },
+      { name: 'May', score: 76, fullName: 'May' },
+      { name: 'Jun', score: 85, fullName: 'June' },
     ];
   }, [speechData]);
 
