@@ -26,7 +26,7 @@ export const useUserProfileData = (
         setOriginalEmail(user.email);
       }
       
-      // Reset form with user data
+      // This will trigger the first form reset with user data
       form.reset({
         firstName: metadata.first_name || '',
         lastName: metadata.last_name || '',
@@ -63,11 +63,14 @@ export const useUserProfileData = (
         const countryCode = metadata.country_code || 'US';
         const states = getStatesForCountry(countryCode);
         setAvailableStates(states);
+        console.log('Setting initial states for country:', countryCode, states);
         
-        // Ensure state value is properly set after states are loaded
+        // Important: Ensure state value is properly set after states are loaded
         if (metadata.state) {
           console.log('Setting state value from metadata:', metadata.state);
-          form.setValue('state', metadata.state);
+          setTimeout(() => {
+            form.setValue('state', metadata.state, { shouldValidate: true });
+          }, 100);
         }
       }
     }

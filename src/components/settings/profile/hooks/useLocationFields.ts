@@ -16,13 +16,17 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
   useEffect(() => {
     const countryEntry = getCountryByName(selectedCountry);
     if (countryEntry) {
+      console.log('Getting states for country:', countryEntry.code);
       const states = getStatesForCountry(countryEntry.code);
       setAvailableStates(states);
       
-      // Preserve the current state if valid for new country, otherwise clear it
+      // Check if current state is valid for the selected country
       const currentState = getValues('state');
       if (currentState) {
+        console.log('Current state value:', currentState);
         const isValid = isStateValidForCountry(currentState, states);
+        
+        // Only clear state if it's invalid AND there are states available for this country
         if (!isValid && states.length > 0) {
           console.log('Clearing invalid state:', currentState);
           setValue('state', '', { shouldDirty: true, shouldTouch: true });
@@ -53,7 +57,7 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
       const states = getStatesForCountry(countryEntry.code);
       setAvailableStates(states);
       
-      // Clear state if it's invalid for the new country
+      // Only clear state if it's invalid AND there are states available
       const currentState = getValues('state');
       if (currentState && !isStateValidForCountry(currentState, states) && states.length > 0) {
         console.log('Clearing invalid state after country change:', currentState);

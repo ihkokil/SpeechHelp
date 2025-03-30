@@ -36,7 +36,6 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
                 <SelectTrigger 
                   className="w-full pl-10" 
                   data-focus-visible="true"
-                  tabIndex={0}
                 >
                   <SelectValue placeholder="Select State / Province" />
                 </SelectTrigger>

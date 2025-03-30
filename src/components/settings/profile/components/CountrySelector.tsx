@@ -35,8 +35,7 @@ const CountrySelector = ({ form, handleCountryChange }: CountrySelectorProps) =>
               >
                 <SelectTrigger 
                   className="w-full pl-10" 
-                  data-focus-visible="true" 
-                  tabIndex={0}
+                  data-focus-visible="true"
                 >
                   <SelectValue placeholder="Select Country of Residence" />
                 </SelectTrigger>
