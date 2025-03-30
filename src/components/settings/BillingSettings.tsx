@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,17 +39,15 @@ const BillingSettings = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
 
-  // Get account creation date from user metadata or use a default
   const accountCreatedAt = user ? new Date(user.created_at || Date.now()) : new Date();
   
-  // Mocked subscription data - would come from your backend in a real app
   const [subscriptionData, setSubscriptionData] = useState({
     plan: 'Pro Plan',
     status: 'active',
     price: '$29.99',
-    billingPeriod: 'monthly', // 'monthly' or 'yearly'
+    billingPeriod: 'monthly',
     startDate: accountCreatedAt,
-    endDate: addMonths(accountCreatedAt, 1), // Default to monthly
+    endDate: addMonths(accountCreatedAt, 1),
     paymentMethod: {
       type: 'Credit Card',
       last4: '4242',
@@ -60,12 +57,10 @@ const BillingSettings = () => {
     }
   });
 
-  // State for storing payment methods
   const [paymentMethods, setPaymentMethods] = useState([
     subscriptionData.paymentMethod
   ]);
 
-  // Form for adding new payment method
   const form = useForm<z.infer<typeof paymentMethodSchema>>({
     resolver: zodResolver(paymentMethodSchema),
     defaultValues: {
@@ -77,7 +72,6 @@ const BillingSettings = () => {
     },
   });
 
-  // Update end date when billing period changes
   useEffect(() => {
     if (subscriptionData.billingPeriod === 'monthly') {
       setSubscriptionData(prev => ({
@@ -105,10 +99,8 @@ const BillingSettings = () => {
   const handleCancelSubscription = async () => {
     setIsProcessing(true);
     try {
-      // In a real app, you would call your backend API to cancel the subscription
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Just disable auto-renewal rather than immediate cancellation
       setAutoRenew(false);
       
       toast({
@@ -128,7 +120,6 @@ const BillingSettings = () => {
     }
   };
 
-  // For demo purposes - allows switching between monthly and yearly billing
   const toggleBillingPeriod = () => {
     setSubscriptionData(prev => ({
       ...prev,
@@ -139,9 +130,7 @@ const BillingSettings = () => {
 
   const handleAddPaymentMethod = (data: z.infer<typeof paymentMethodSchema>) => {
     setIsProcessing(true);
-    // In a real app, this would send payment details to your payment processor
     setTimeout(() => {
-      // Process complete - add the new payment method
       const last4 = data.cardNumber.slice(-4);
       const newPaymentMethod = {
         type: 'Credit Card',
@@ -164,9 +153,7 @@ const BillingSettings = () => {
     }, 1500);
   };
 
-  // Helper function to determine card brand based on first digits
   const determineCardBrand = (cardNumber: string) => {
-    // Very simplified version - in production use a more robust solution
     const firstDigit = cardNumber.charAt(0);
     if (firstDigit === '4') return 'Visa';
     if (firstDigit === '5') return 'Mastercard';
@@ -175,7 +162,6 @@ const BillingSettings = () => {
     return 'Card';
   };
 
-  // Function to format card number with spaces for display
   const formatCardNumber = (value: string) => {
     return value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
   };
@@ -225,7 +211,6 @@ const BillingSettings = () => {
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
-          {/* For demo purposes - toggle between monthly and yearly */}
           <Button variant="outline" onClick={toggleBillingPeriod}>
             Switch to {subscriptionData.billingPeriod === 'monthly' ? 'Yearly' : 'Monthly'} Billing
           </Button>
@@ -321,7 +306,7 @@ const BillingSettings = () => {
                 </DialogDescription>
               </DialogHeader>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleAddPaymentMethod)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(handleAddPaymentMethod)} className="space-y-6">
                   <FormField
                     control={form.control}
                     name="cardHolder"
@@ -359,60 +344,58 @@ const BillingSettings = () => {
                     )}
                   />
                   
-                  <div className="flex space-x-4">
-                    <div className="flex space-x-2 flex-1">
-                      <FormField
-                        control={form.control}
-                        name="expiryMonth"
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>Expiry Month</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="MM" 
-                                maxLength={2}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  if (/^\d*$/.test(value) && parseInt(value || '0') <= 12) {
-                                    field.onChange(value);
-                                  }
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="expiryYear"
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel>Expiry Year</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="YY" 
-                                maxLength={4}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  if (/^\d*$/.test(value)) {
-                                    field.onChange(value);
-                                  }
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="expiryMonth"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Month</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="MM" 
+                              maxLength={2}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^\d*$/.test(value) && parseInt(value || '0') <= 12) {
+                                  field.onChange(value);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="expiryYear"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Year</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="YY" 
+                              maxLength={4}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^\d*$/.test(value)) {
+                                  field.onChange(value);
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     
                     <FormField
                       control={form.control}
                       name="cvv"
                       render={({ field }) => (
-                        <FormItem className="flex-1">
+                        <FormItem>
                           <FormLabel>CVV</FormLabel>
                           <FormControl>
                             <Input 
@@ -432,7 +415,7 @@ const BillingSettings = () => {
                     />
                   </div>
                   
-                  <DialogFooter className="mt-6">
+                  <DialogFooter className="pt-4">
                     <Button type="button" variant="outline" onClick={() => setShowAddPaymentDialog(false)} disabled={isProcessing}>
                       Cancel
                     </Button>
