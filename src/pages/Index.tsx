@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
@@ -42,7 +41,7 @@ const Index = () => {
               behavior: 'smooth'
             });
           }
-        }, 300); // A shorter delay should be sufficient
+        }, 600); // Increased delay to ensure everything is loaded
         
         return () => clearTimeout(scrollTimer);
       }
@@ -57,6 +56,30 @@ const Index = () => {
     return () => {
       window.removeEventListener('hashchange', handleHashNavigation);
     };
+  }, []);
+
+  // Additional effect to handle navigations from other pages (like Pricing)
+  useEffect(() => {
+    // This will run on component mount and ensure hash navigation works when coming from other pages
+    if (window.location.hash) {
+      // Use a slightly longer timeout to ensure the page is fully rendered
+      const timer = setTimeout(() => {
+        const id = window.location.hash.substring(1);
+        const element = document.getElementById(id);
+        if (element) {
+          const navbarHeight = 80;
+          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+          const offsetPosition = elementPosition - navbarHeight;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 800); // Longer delay for navigation from other pages
+      
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   if (isLoading) {
