@@ -72,14 +72,20 @@ export const adminAuthService = {
         }
       }
 
-      // Verify password using PostgreSQL's crypt function
-      const { data: passwordCheck, error: passwordError } = await supabase
-        .rpc('verify_admin_password', {
-          p_username: credentials.username,
-          p_password: credentials.password
-        });
+      // Call the admin-auth edge function to verify password
+      const { error: functionError, data: passwordCheck } = await supabase.functions.invoke('admin-auth', {
+        body: { 
+          username: credentials.username, 
+          password: credentials.password 
+        },
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        path: 'verify-password',
+      });
 
-      if (passwordError || !passwordCheck) {
+      if (functionError || !passwordCheck?.success) {
         // Update failed login attempts
         await supabase
           .from('admin_users')
@@ -167,14 +173,20 @@ export const adminAuthService = {
       const ipResponse = await fetch('https://api.ipify.org?format=json');
       const { ip } = await ipResponse.json();
 
-      // Call a separate function to verify 2FA code
-      const { data, error } = await supabase
-        .rpc('verify_admin_2fa', {
-          p_admin_user_id: userId,
-          p_code: code
-        });
+      // Call the admin-auth edge function to verify 2FA code
+      const { error: functionError, data: verificationResult } = await supabase.functions.invoke('admin-auth', {
+        body: { 
+          adminId: userId, 
+          code 
+        },
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        path: 'verify-2fa',
+      });
 
-      if (error || !data) {
+      if (functionError || !verificationResult?.success) {
         await this.logActivity({
           adminUserId: userId,
           action: 'FAILED_TWO_FACTOR',
@@ -232,20 +244,10 @@ export const adminAuthService = {
         };
       }
 
-      // Generate reset token and send email
-      // This would be implemented as a secure edge function
-      const { data: resetData, error: resetError } = await supabase
-        .rpc('generate_admin_reset_token', {
-          p_email: email
-        });
-
-      if (resetError) {
-        return { 
-          success: false, 
-          error: 'Unable to process password reset request.' 
-        };
-      }
-
+      // This would normally call an edge function to generate a reset token
+      // and send an email, but for now we'll just log it
+      console.log(`Password reset requested for admin: ${data.email}`);
+      
       // Log password reset request
       await this.logActivity({
         adminUserId: data.id,

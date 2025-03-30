@@ -19,9 +19,7 @@ serve(async (req) => {
   );
 
   try {
-    // Create SQL functions needed for admin authentication
-    
-    // 1. Function to verify admin password
+    // Create database functions for admin authentication
     await supabaseClient.rpc('create_admin_functions', {});
 
     return new Response(
