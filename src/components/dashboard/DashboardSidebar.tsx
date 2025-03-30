@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -22,8 +21,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarProvider,
-  SidebarTrigger
+  useSidebar
 } from '@/components/ui/sidebar';
 
 // Navigation item type
@@ -179,24 +177,20 @@ const DashboardSidebar = () => {
     </>
   );
 
-  // For mobile, we already use SidebarProvider
+  // For mobile, we already use SidebarProvider from the parent
   if (isMobile) {
     return (
-      <SidebarProvider defaultOpen={false}>
-        <Sidebar>
-          {sidebarContent}
-        </Sidebar>
-      </SidebarProvider>
+      <Sidebar>
+        {sidebarContent}
+      </Sidebar>
     );
   }
 
-  // For desktop view, we need to wrap in a SidebarProvider when used standalone
+  // For desktop view, we use the SidebarProvider from the parent
   return (
-    <SidebarProvider>
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
-        {sidebarContent}
-      </aside>
-    </SidebarProvider>
+    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+      {sidebarContent}
+    </aside>
   );
 };
 
