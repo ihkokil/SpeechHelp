@@ -239,18 +239,20 @@ const UserManagement = () => {
   };
 
   const handleViewUserDetails = (user: User) => {
-    console.log('Opening details for user:', user.id);
+    console.log('UserManagement: Opening details for user:', user.id);
     setSelectedUser(user);
-    setIsDetailsOpen(true);
+    setTimeout(() => {
+      setIsDetailsOpen(true);
+    }, 0);
   };
 
   const handleCloseUserDetails = () => {
-    console.log('Closing user details drawer');
+    console.log('UserManagement: Closing user details drawer');
     setIsDetailsOpen(false);
     setTimeout(() => {
-      console.log('Resetting selected user to null');
+      console.log('UserManagement: Resetting selected user to null');
       setSelectedUser(null);
-    }, 300);
+    }, 100);
   };
 
   const handleToggleUserSubscription = async (userId: string, extensionDays: number = 30) => {
