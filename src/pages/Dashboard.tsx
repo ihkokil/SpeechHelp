@@ -14,6 +14,7 @@ import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-r
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -26,9 +27,12 @@ const Dashboard = () => {
   
   useEffect(() => {
     if (user) {
-      fetchSpeeches();
+      fetchSpeeches().catch(error => {
+        console.error('Error fetching speeches:', error);
+        toast.error(t('errors.fetchSpeeches', currentLanguage.code));
+      });
     }
-  }, [user, fetchSpeeches]);
+  }, [user, fetchSpeeches, t, currentLanguage.code]);
   
   useEffect(() => {
     if (!isLoading && !user) {
@@ -63,7 +67,7 @@ const Dashboard = () => {
     // Total number of speeches
     const totalSpeeches = speeches.length;
     
-    // Current month speeches (in progress)
+    // Current month speeches
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
@@ -74,7 +78,7 @@ const Dashboard = () => {
              speechDate.getFullYear() === currentYear;
     });
     
-    // Speeches in last 30 days (to measure improvement)
+    // Speeches in last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
@@ -83,10 +87,17 @@ const Dashboard = () => {
       return speechDate >= thirtyDaysAgo;
     });
     
+    // Speech types distribution for performance metrics
+    const speechTypeDistribution = speeches.reduce((acc, speech) => {
+      acc[speech.speech_type] = (acc[speech.speech_type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
     return {
       totalSpeeches,
       inProgressCount: thisMonthSpeeches.length,
-      recentImprovementCount: last30DaysSpeeches.length
+      recentImprovementCount: last30DaysSpeeches.length,
+      speechTypeDistribution
     };
   }, [speeches]);
 
@@ -157,13 +168,13 @@ const Dashboard = () => {
               
               <PreviousSpeeches />
               
-              <PerformanceMetrics />
+              <PerformanceMetrics speechData={dashboardMetrics.speechTypeDistribution} />
             </div>
             
             <div className="space-y-6">
-              <UpcomingSpeeches />
+              <UpcomingSpeeches speeches={speeches} />
               
-              <RecentActivities />
+              <RecentActivities speeches={speeches} />
             </div>
           </div>
         </main>
