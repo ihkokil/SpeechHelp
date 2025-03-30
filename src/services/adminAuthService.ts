@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -64,6 +65,12 @@ export const adminAuthService = {
       
       if (!data.success) {
         console.log('Admin creation failed with error:', data.error);
+        // If the admin already exists, we'll treat this as a success for the UI
+        if (data.error && data.error.includes('already exists')) {
+          console.log('Admin already exists, treating as success');
+          return { success: true };
+        }
+        
         return { 
           success: false, 
           error: data.error || 'Failed to create admin' 
@@ -85,8 +92,14 @@ export const adminAuthService = {
   async signIn(credentials: AdminCredentials): Promise<AdminSignInResponse> {
     try {
       // Get the client's IP address (for logging purposes)
-      const ipResponse = await fetch('https://api.ipify.org?format=json');
-      const { ip } = await ipResponse.json();
+      let ip = "unknown";
+      try {
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        ip = ipData.ip;
+      } catch (ipErr) {
+        console.warn('Could not fetch IP address:', ipErr);
+      }
 
       console.log(`Attempting to sign in user: ${credentials.username}`);
       

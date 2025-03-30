@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Navigate } from 'react-router-dom';
@@ -76,6 +75,11 @@ const AdminAuth = () => {
       
       if (result.success && result.requires2FA) {
         setNeeds2FA(true);
+      } else if (result.success) {
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${result.user?.username}!`,
+        });
       } else if (!result.success) {
         setLoginError(result.error || 'Invalid credentials');
         toast({
@@ -160,24 +164,12 @@ const AdminAuth = () => {
         loginForm.setValue('username', 'speechhelpmaster');
         loginForm.setValue('password', 'Admin@123');
       } else {
-        if (result.error?.includes("already exists")) {
-          setSetupSuccess(true);
-          toast({
-            title: "Admin already exists",
-            description: "The default admin account already exists. You can login with username 'speechhelpmaster' and password 'Admin@123'.",
-          });
-          
-          // Pre-fill the login form
-          loginForm.setValue('username', 'speechhelpmaster');
-          loginForm.setValue('password', 'Admin@123');
-        } else {
-          setSetupError(result.error || "Failed to create default admin account.");
-          toast({
-            title: "Setup failed",
-            description: result.error || "Failed to create default admin account.",
-            variant: "destructive",
-          });
-        }
+        setSetupError(result.error || "Failed to create default admin account.");
+        toast({
+          title: "Setup failed",
+          description: result.error || "Failed to create default admin account.",
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
       console.error('Create default admin error:', error);
@@ -192,7 +184,6 @@ const AdminAuth = () => {
     setIsCreatingAdmin(false);
   };
 
-  // Redirect if already authenticated
   if (isAuthenticated && !isLoading) {
     return <Navigate to="/admin/dashboard" replace />;
   }
@@ -350,7 +341,6 @@ const AdminAuth = () => {
             </Tabs>
           )}
 
-          {/* First-time setup section */}
           {!needs2FA && (
             <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="flex items-center justify-center mb-3">
