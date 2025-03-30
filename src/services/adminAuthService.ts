@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -39,14 +38,10 @@ export const adminAuthService = {
         body: { 
           action: 'create_admin',
           username: 'speechhelpmaster', 
-          password: 'Admin@123', // You should change this in production
+          password: 'Admin@123', 
           email: 'admin@speechhelp.com',
           is_super_admin: true
         },
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
       });
 
       if (error) {
@@ -54,7 +49,7 @@ export const adminAuthService = {
         return { success: false, error: error.message };
       }
       
-      if (!data.success) {
+      if (data && !data.success) {
         return { success: false, error: data.error || 'Failed to create admin' };
       }
 
