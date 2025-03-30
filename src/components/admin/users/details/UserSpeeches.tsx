@@ -1,11 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { User, Speech } from '@/components/admin/users/types';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Eye, FileText, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Speech } from '../types';
 
 interface UserSpeechesProps {
   user: User;
@@ -13,21 +16,21 @@ interface UserSpeechesProps {
 
 export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
   const [speeches, setSpeeches] = useState<Speech[]>([]);
-  const [isLoadingSpeeches, setIsLoadingSpeeches] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      fetchUserSpeeches(user.id);
-    }
-  }, [user]);
+    fetchUserSpeeches();
+  }, [user.id]);
 
-  const fetchUserSpeeches = async (userId: string) => {
-    setIsLoadingSpeeches(true);
+  const fetchUserSpeeches = async () => {
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from('speeches')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
         
       if (error) {
@@ -38,48 +41,73 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
     } catch (error) {
       console.error('Exception fetching user speeches:', error);
     } finally {
-      setIsLoadingSpeeches(false);
+      setIsLoading(false);
     }
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    return format(new Date(dateString), 'PPP p');
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+  };
+
+  const handleViewSpeech = (speech: Speech) => {
+    setSelectedSpeech(speech);
+    // Implement view dialog functionality if needed
   };
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Speeches</CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle>User Speeches</CardTitle>
         <CardDescription>
-          All speeches created by this user
+          All speeches created by {user.user_metadata?.full_name || user.email}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoadingSpeeches ? (
-          <div className="flex flex-col items-center justify-center py-8">
+        {isLoading ? (
+          <div className="flex justify-center items-center h-40">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-2 text-sm text-muted-foreground">Loading speeches...</p>
           </div>
         ) : speeches.length === 0 ? (
-          <p className="text-center py-8 text-muted-foreground">No speeches found for this user.</p>
-        ) : (
-          <div className="space-y-4">
-            {speeches.map((speech) => (
-              <div key={speech.id} className="border rounded-md p-4">
-                <div className="flex justify-between">
-                  <h4 className="font-medium">{speech.title}</h4>
-                  <Badge>{speech.speech_type}</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Created: {formatDate(speech.created_at)}
-                </p>
-                <p className="text-sm mt-2 line-clamp-2">
-                  {speech.content.substring(0, 150)}...
-                </p>
-              </div>
-            ))}
+          <div className="text-center py-8 text-muted-foreground">
+            <FileText className="h-12 w-12 mx-auto opacity-20 mb-2" />
+            <p>No speeches found for this user.</p>
           </div>
+        ) : (
+          <ScrollArea className="h-[350px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Updated</TableHead>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {speeches.map((speech) => (
+                  <TableRow key={speech.id}>
+                    <TableCell className="font-medium">{speech.title}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{speech.speech_type}</Badge>
+                    </TableCell>
+                    <TableCell>{formatDate(speech.created_at)}</TableCell>
+                    <TableCell>{speech.updated_at ? formatDate(speech.updated_at) : '-'}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleViewSpeech(speech)}
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span className="sr-only">View</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         )}
       </CardContent>
     </Card>

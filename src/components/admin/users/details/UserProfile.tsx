@@ -1,78 +1,92 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { User } from '@/components/admin/users/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { User } from '../types';
+import { Mail, Phone, MapPin, Calendar } from 'lucide-react';
 
 interface UserProfileProps {
   user: User;
 }
 
 export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    return format(new Date(dateString), 'PPP p');
-  };
-
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Information</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">User ID</p>
-              <p className="text-sm break-all">{user.id}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Status</p>
-              <p className="text-sm">{user.is_active !== false ? 'Active' : 'Inactive'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Created</p>
-              <p className="text-sm">{formatDate(user.created_at)}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Last Updated</p>
-              <p className="text-sm">{formatDate(user.updated_at)}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Last Login</p>
-              <p className="text-sm">{formatDate(user.last_sign_in_at) || 'Never'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Provider</p>
-              <p className="text-sm">{user.app_metadata?.provider || 
-                                    (user.app_metadata?.providers && user.app_metadata.providers[0]) || 
-                                    'email'}</p>
-            </div>
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle>Profile Information</CardTitle>
+        <CardDescription>
+          Personal details and account information
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-1">
+          <h3 className="text-sm font-medium text-muted-foreground">Account Status</h3>
+          <div>
+            <Badge className={user.is_active !== false ? 'bg-green-500' : ''}>
+              {user.is_active !== false ? 'Active' : 'Inactive'}
+            </Badge>
+            {user.is_admin && (
+              <Badge variant="outline" className="ml-2 bg-purple-100 text-purple-800 border-purple-300">
+                Admin
+              </Badge>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">First Name</p>
-              <p className="text-sm">{user.user_metadata?.first_name || 'Not provided'}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium text-muted-foreground">Full Name</h3>
+            <p>{user.user_metadata?.full_name || 'Not provided'}</p>
+          </div>
+          
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium text-muted-foreground">Email</h3>
+            <p className="flex items-center">
+              <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+              {user.email || user.user_metadata?.email || 'Not provided'}
+            </p>
+          </div>
+          
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium text-muted-foreground">Phone</h3>
+            <p className="flex items-center">
+              <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+              {user.user_metadata?.phone || 'Not provided'}
+            </p>
+          </div>
+          
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium text-muted-foreground">Address</h3>
+            <p className="flex items-center">
+              <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+              {user.user_metadata?.street_address 
+                ? `${user.user_metadata.street_address}, ${user.user_metadata.city || ''} ${user.user_metadata.state || ''} ${user.user_metadata.zip_code || ''}`
+                : 'Not provided'}
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-border space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium text-muted-foreground">Account Created</h3>
+              <p className="flex items-center">
+                <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                {user.created_at ? format(new Date(user.created_at), 'PPP') : 'Unknown'}
+              </p>
             </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Last Name</p>
-              <p className="text-sm">{user.user_metadata?.last_name || 'Not provided'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Email</p>
-              <p className="text-sm">{user.email}</p>
+            
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium text-muted-foreground">Last Sign In</h3>
+              <p className="flex items-center">
+                <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                {user.last_sign_in_at ? format(new Date(user.last_sign_in_at), 'PPP p') : 'Never'}
+              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
