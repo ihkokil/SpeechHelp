@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,11 +49,12 @@ export const UserTable: React.FC<UserTableProps> = ({
   setIsDeleteDialogOpen,
   searchTerm
 }) => {
-  const filteredUsers = users.filter(user => 
+  // Use useMemo to prevent unnecessary recalculations on every render
+  const filteredUsers = useMemo(() => users.filter(user => 
     (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
     (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  ), [users, searchTerm]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Never';
@@ -154,7 +155,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                         <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10} forceMount>
+                    <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
                       <DropdownMenuItem onClick={() => handleViewUserDetails(user)}>
                         <Eye className="mr-2 h-4 w-4" />
                         <span>View Details</span>
