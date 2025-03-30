@@ -74,7 +74,7 @@ export const UserTable: React.FC<UserTableProps> = ({
             <TableHead className="w-12">
               <Checkbox 
                 checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0} 
-                onCheckedChange={toggleAllUsers}
+                onCheckedChange={() => toggleAllUsers()}
                 disabled={isLoading}
               />
             </TableHead>
@@ -153,7 +153,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                         <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
+                    <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10} forceMount>
                       <DropdownMenuItem onClick={() => handleViewUserDetails(user)}>
                         <Eye className="mr-2 h-4 w-4" />
                         <span>View Details</span>
