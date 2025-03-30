@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,8 @@ import {
   Mail,
   Eye,
   UserCheck,
-  Loader2
+  Loader2,
+  Shield
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,24 +28,8 @@ import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { format } from 'date-fns';
 import UserDetailsDrawer from '@/components/admin/users/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/AddUserDialog';
-
-// User type definition
-type User = {
-  id: string;
-  email: string;
-  last_sign_in_at: string | null;
-  created_at: string;
-  updated_at: string;
-  app_metadata: {
-    provider?: string;
-    providers?: string[];
-  };
-  user_metadata: {
-    name?: string;
-    full_name?: string;
-  };
-  is_active?: boolean;
-};
+import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
+import { User } from '@/components/admin/users/types';
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,6 +41,7 @@ const UserManagement = () => {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
   
@@ -92,14 +77,12 @@ const UserManagement = () => {
     }
   };
 
-  // Filter users based on search term
   const filteredUsers = users.filter(user => 
     (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
     (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-  
-  // Toggle user selection
+
   const toggleUserSelection = (userId: string) => {
     setSelectedUsers(prev => 
       prev.includes(userId) 
@@ -107,8 +90,7 @@ const UserManagement = () => {
         : [...prev, userId]
     );
   };
-  
-  // Toggle all users selection
+
   const toggleAllUsers = () => {
     if (selectedUsers.length === filteredUsers.length) {
       setSelectedUsers([]);
@@ -120,11 +102,8 @@ const UserManagement = () => {
   const handleDeleteUsers = async () => {
     setIsActionLoading(true);
     try {
-      // In a real implementation, we would make API calls to delete the selected users
-      // For now, we'll simulate this with a timeout
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Remove the deleted users from the state
       setUsers(prevUsers => prevUsers.filter(user => !selectedUsers.includes(user.id)));
       setSelectedUsers([]);
       
@@ -148,10 +127,8 @@ const UserManagement = () => {
   const handleToggleUserStatus = async (userId: string, isActive: boolean) => {
     setIsActionLoading(true);
     try {
-      // Would make actual API call to update user status
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Update user status in the state
       setUsers(prevUsers => 
         prevUsers.map(user => 
           user.id === userId ? { ...user, is_active: isActive } : user
@@ -177,6 +154,24 @@ const UserManagement = () => {
   const handleViewUserDetails = (user: User) => {
     setSelectedUser(user);
     setIsDetailsOpen(true);
+  };
+
+  const handleManagePermissions = (user: User) => {
+    setSelectedUser(user);
+    setIsPermissionsDialogOpen(true);
+  };
+
+  const handlePermissionsUpdated = (updatedUser: User) => {
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
+        user.id === updatedUser.id ? updatedUser : user
+      )
+    );
+    
+    toast({
+      title: 'Permissions Updated',
+      description: `${updatedUser.email}'s admin permissions have been updated.`,
+    });
   };
 
   const formatDate = (dateString: string | null) => {
@@ -315,7 +310,14 @@ const UserManagement = () => {
                           disabled={isActionLoading}
                         />
                       </TableCell>
-                      <TableCell className="font-medium">{getUserName(user)}</TableCell>
+                      <TableCell className="font-medium">
+                        {getUserName(user)}
+                        {user.is_admin && (
+                          <Badge variant="outline" className="ml-2 bg-purple-100 text-purple-800 border-purple-300">
+                            Admin
+                          </Badge>
+                        )}
+                      </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
                         <Badge 
@@ -348,6 +350,10 @@ const UserManagement = () => {
                             <DropdownMenuItem>
                               <UserCog className="mr-2 h-4 w-4" />
                               <span>Edit User</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleManagePermissions(user)}>
+                              <Shield className="mr-2 h-4 w-4" />
+                              <span>Manage Permissions</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                               <Mail className="mr-2 h-4 w-4" />
@@ -397,7 +403,6 @@ const UserManagement = () => {
         </CardContent>
       </Card>
       
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -432,14 +437,12 @@ const UserManagement = () => {
         </DialogContent>
       </Dialog>
       
-      {/* User Details Drawer */}
       <UserDetailsDrawer 
         user={selectedUser} 
         open={isDetailsOpen} 
         onClose={() => setIsDetailsOpen(false)} 
       />
       
-      {/* Add User Dialog */}
       <AddUserDialog 
         open={isAddUserDialogOpen} 
         onOpenChange={setIsAddUserDialogOpen} 
@@ -447,6 +450,13 @@ const UserManagement = () => {
           setUsers(prev => [...prev, newUser]);
           setIsAddUserDialogOpen(false);
         }}
+      />
+
+      <AdminPermissionsDialog
+        user={selectedUser}
+        open={isPermissionsDialogOpen}
+        onOpenChange={setIsPermissionsDialogOpen}
+        onPermissionsUpdated={handlePermissionsUpdated}
       />
     </div>
   );

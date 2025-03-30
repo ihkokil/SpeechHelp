@@ -16,6 +16,10 @@ export type User = {
     last_name?: string;
   };
   is_active?: boolean;
+  // Admin role related fields
+  is_admin?: boolean;
+  admin_role?: string;
+  permissions?: string[];
 };
 
 export type Speech = {
@@ -29,4 +33,16 @@ export type Speech = {
 export type SpeechTypeStats = {
   type: string;
   count: number;
+};
+
+export type AdminRole = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+export type AdminPermission = {
+  id: string;
+  name: string;
+  description: string;
 };
