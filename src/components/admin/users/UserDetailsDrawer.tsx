@@ -25,8 +25,13 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
   const [userJoinedDays, setUserJoinedDays] = useState<number>(0);
   const [totalActivityTime, setTotalActivityTime] = useState<number>(0);
   
+  // Reset states when the drawer opens with a new user
   useEffect(() => {
     if (user && open) {
+      setSpeeches([]);
+      setIsLoadingSpeeches(false);
+      setUserJoinedDays(0);
+      setTotalActivityTime(0);
       fetchUserSpeeches(user.id);
       calculateUserStats(user);
     }
@@ -71,6 +76,8 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
   // Handle closing the drawer
   const handleSheetOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
+      // Ensure we only call onClose when the drawer is actually closing
+      console.log('Drawer closing, calling onClose');
       onClose();
     }
   };
@@ -84,7 +91,7 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
           <div className="flex justify-between items-center">
             <SheetTitle>User Details</SheetTitle>
             <SheetClose asChild>
-              <Button variant="ghost" size="sm">Close</Button>
+              <Button variant="ghost" size="sm" onClick={() => onClose()}>Close</Button>
             </SheetClose>
           </div>
           <SheetDescription>

@@ -239,13 +239,16 @@ const UserManagement = () => {
   };
 
   const handleViewUserDetails = (user: User) => {
+    console.log('Opening details for user:', user.id);
     setSelectedUser(user);
     setIsDetailsOpen(true);
   };
 
   const handleCloseUserDetails = () => {
+    console.log('Closing user details drawer');
     setIsDetailsOpen(false);
     setTimeout(() => {
+      console.log('Resetting selected user to null');
       setSelectedUser(null);
     }, 300);
   };
