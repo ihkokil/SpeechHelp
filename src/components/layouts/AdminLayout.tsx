@@ -38,7 +38,8 @@ interface NavItemProps {
 const NavItem = ({ icon: Icon, label, href, active, onClick }: NavItemProps) => {
   const navigate = useNavigate();
   
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     navigate(href);
     if (onClick) onClick();
   };
@@ -254,7 +255,7 @@ const AdminLayout = () => {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" forceMount>
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
                       <p className="font-medium">{adminUser?.username}</p>
