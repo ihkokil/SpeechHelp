@@ -1,6 +1,13 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ToastProps } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
+
+// Define the ToastProps type directly here to avoid the import error
+type ToastProps = {
+  title?: string;
+  description?: string;
+  variant?: 'default' | 'destructive';
+};
 
 // Create a type for the showToast function that will be passed in
 type ShowToastFunction = (props: ToastProps) => void;
