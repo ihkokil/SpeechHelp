@@ -1,27 +1,30 @@
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
-import { formatPhoneNumber } from '../utils/phoneUtils';
-import { getCountryByCode, getStatesForCountry } from '../utils/locationUtils';
+import { getCountryCodeFromPhoneNumber } from '../utils/phoneUtils';
+import { getStatesForCountry } from '../utils/locationUtils';
 import { ProfileFormValues } from '../types';
 
+/**
+ * Hook to load user profile data into the form
+ */
 export const useUserProfileData = (
   form: UseFormReturn<ProfileFormValues>,
   setFormattedPhone: (value: string) => void,
   setSelectedDialCode: (value: string) => void,
-  setAvailableStates: (value: any[]) => void,
-  setOriginalEmail: (value: string) => void
+  setAvailableStates: (states: any[]) => void,
+  setOriginalEmail: (email: string) => void
 ) => {
   const { user, isLoading } = useAuth();
-  
-  // Update form with user data when user is loaded
+  const [dataLoaded, setDataLoaded] = useState(false);
+
   useEffect(() => {
-    if (user) {
+    const loadUserData = async () => {
+      if (!user || dataLoaded) return;
+
       const metadata = user.user_metadata || {};
-      console.log('Loading user data into form:', metadata);
       
-      // Store original email
       if (user.email) {
         setOriginalEmail(user.email);
       }
@@ -41,24 +44,27 @@ export const useUserProfileData = (
         country: metadata.country || 'United States',
       });
       
-      // Initialize formatted phone based on loaded data
+      console.log('Form reset with values:', {
+        firstName: metadata.first_name || '',
+        lastName: metadata.last_name || '',
+        email: user.email || '',
+        phone: metadata.phone || '',
+        countryCode: metadata.country_code || 'US',
+        streetAddress: metadata.street_address || '',
+        city: metadata.city || '',
+        state: metadata.state || '',
+        zipCode: metadata.zip_code || '',
+        country: metadata.country || 'United States',
+      });
+      
+      // Handle phone number formatting
       if (metadata.phone) {
-        try {
-          const countryCode = metadata.country_code || 'US';
-          setFormattedPhone(formatPhoneNumber(metadata.phone, countryCode));
-        } catch (error) {
-          console.error('Error formatting loaded phone number:', error);
-          setFormattedPhone(metadata.phone);
-        }
+        setFormattedPhone(metadata.phone);
+        const countryCode = getCountryCodeFromPhoneNumber(metadata.phone) || '1';
+        setSelectedDialCode(countryCode);
       }
       
-      // Update selected dial code based on the loaded country code
-      const countryEntry = getCountryByCode(metadata.country_code || 'US');
-      if (countryEntry) {
-        setSelectedDialCode(countryEntry.dialCode);
-      }
-      
-      // Set available states based on the loaded country
+      // Load available states for the user's country
       if (metadata.country) {
         const countryCode = metadata.country_code || 'US';
         const states = getStatesForCountry(countryCode);
@@ -68,13 +74,20 @@ export const useUserProfileData = (
         // Important: Ensure state value is properly set after states are loaded
         if (metadata.state) {
           console.log('Setting state value from metadata:', metadata.state);
+          // Use a slightly longer timeout to ensure the states are loaded first
           setTimeout(() => {
             form.setValue('state', metadata.state, { shouldValidate: true });
-          }, 100);
+          }, 150);
         }
       }
+      
+      setDataLoaded(true);
+    };
+
+    if (user && !isLoading) {
+      loadUserData();
     }
-  }, [user, form, setFormattedPhone, setSelectedDialCode, setAvailableStates, setOriginalEmail]);
-  
-  return { isLoading };
+  }, [user, isLoading, form, setFormattedPhone, setSelectedDialCode, setAvailableStates, setOriginalEmail, dataLoaded]);
+
+  return { isLoading: isLoading || !dataLoaded };
 };

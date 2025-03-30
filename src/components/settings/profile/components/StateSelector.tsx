@@ -34,7 +34,7 @@ const StateSelector = ({ form, availableStates }: StateSelectorProps) => {
                 defaultValue={field.value || ''}
               >
                 <SelectTrigger 
-                  className="w-full pl-10" 
+                  className="w-full pl-10 focus:border-pink-500" 
                   data-focus-visible="true"
                 >
                   <SelectValue placeholder="Select State / Province" />

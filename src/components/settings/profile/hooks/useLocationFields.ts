@@ -53,6 +53,12 @@ export const useLocationFields = (form: UseFormReturn<ProfileFormValues>) => {
     if (countryEntry) {
       setValue('countryCode', countryEntry.code, { shouldDirty: true, shouldTouch: true });
       
+      // If user selects United States, pre-populate common fields
+      if (countryEntry.code === 'US') {
+        // This would be a placeholder for actual address auto-completion
+        console.log('Auto-populating for US address');
+      }
+      
       // Update available states
       const states = getStatesForCountry(countryEntry.code);
       setAvailableStates(states);
