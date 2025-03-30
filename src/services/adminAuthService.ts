@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -35,7 +34,7 @@ export const adminAuthService = {
     try {
       console.log('Attempting to create default admin user');
       
-      const response = await supabase.functions.invoke('admin-auth', {
+      const { data, error } = await supabase.functions.invoke('admin-auth', {
         body: { 
           action: 'create_admin',
           username: 'speechhelpmaster', 
@@ -45,17 +44,17 @@ export const adminAuthService = {
         },
       });
       
-      console.log('Response from admin-auth function:', response);
+      console.log('Response from admin-auth function:', { data, error });
       
-      if (response.error) {
-        console.error('Error creating default admin:', response.error);
+      if (error) {
+        console.error('Error creating default admin:', error);
         return { 
           success: false, 
-          error: response.error.message || 'Failed to connect to authentication service' 
+          error: error.message || 'Failed to connect to authentication service' 
         };
       }
       
-      if (!response.data) {
+      if (!data) {
         console.error('No data returned from admin-auth function');
         return { 
           success: false, 
@@ -63,11 +62,11 @@ export const adminAuthService = {
         };
       }
       
-      if (!response.data.success) {
-        console.log('Admin creation failed with error:', response.data.error);
+      if (!data.success) {
+        console.log('Admin creation failed with error:', data.error);
         return { 
           success: false, 
-          error: response.data.error || 'Failed to create admin' 
+          error: data.error || 'Failed to create admin' 
         };
       }
 
@@ -85,71 +84,71 @@ export const adminAuthService = {
   // Sign in admin user
   async signIn(credentials: AdminCredentials): Promise<AdminSignInResponse> {
     try {
-      // Get the client's IP address
+      // Get the client's IP address (for logging purposes)
       const ipResponse = await fetch('https://api.ipify.org?format=json');
       const { ip } = await ipResponse.json();
 
+      console.log(`Attempting to sign in user: ${credentials.username}`);
+      
       // Call the admin-auth edge function to verify credentials
-      const { error: functionError, data: authResult } = await supabase.functions.invoke('admin-auth', {
+      const { data, error } = await supabase.functions.invoke('admin-auth', {
         body: { 
           username: credentials.username, 
           password: credentials.password 
         },
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
       });
 
-      if (functionError) {
-        console.error('Admin auth function error:', functionError);
+      console.log('Sign in response:', { data, error });
+
+      if (error) {
+        console.error('Admin auth function error:', error);
         return { 
           success: false, 
           error: 'Authentication service error. Please try again later.' 
         };
       }
 
-      if (!authResult.success) {
+      if (!data || !data.success) {
         // Log failed login attempt
         await this.logActivity({
           adminUserId: 'unknown',
           action: 'FAILED_LOGIN',
           entityType: 'ADMIN_USER',
           entityId: 'unknown',
-          details: { reason: authResult.error || 'Unknown error', ip },
+          details: { reason: data?.error || 'Unknown error', ip },
           ipAddress: ip
         });
         
         return { 
           success: false, 
-          error: authResult.error || 'Invalid credentials.' 
+          error: data?.error || 'Invalid credentials.' 
         };
       }
 
       // If 2FA is enabled, require verification
-      if (authResult.requires2FA) {
+      if (data.requires2FA) {
         // Log 2FA prompt
         await this.logActivity({
-          adminUserId: authResult.user.id,
+          adminUserId: data.user.id,
           action: 'TWO_FACTOR_PROMPT',
           entityType: 'ADMIN_USER',
-          entityId: authResult.user.id,
+          entityId: data.user.id,
           ipAddress: ip
         });
         
         return { 
           success: true, 
           requires2FA: true,
-          user: authResult.user
+          user: data.user
         };
       }
 
       // Log successful login
       await this.logActivity({
-        adminUserId: authResult.user.id,
+        adminUserId: data.user.id,
         action: 'LOGIN',
         entityType: 'ADMIN_USER',
-        entityId: authResult.user.id,
+        entityId: data.user.id,
         ipAddress: ip
       });
 
@@ -157,11 +156,11 @@ export const adminAuthService = {
       await supabase
         .from('admin_users')
         .update({ last_login: new Date().toISOString() })
-        .eq('id', authResult.user.id);
+        .eq('id', data.user.id);
 
       return { 
         success: true, 
-        user: authResult.user
+        user: data.user
       };
     } catch (err: any) {
       console.error('Admin sign in error:', err);
@@ -180,18 +179,14 @@ export const adminAuthService = {
       const { ip } = await ipResponse.json();
 
       // Call the admin-auth edge function to verify 2FA code
-      const { error: functionError, data: verificationResult } = await supabase.functions.invoke('admin-auth', {
+      const { data, error } = await supabase.functions.invoke('admin-auth', {
         body: { 
           adminId: userId, 
           code 
         },
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
       });
 
-      if (functionError || !verificationResult?.success) {
+      if (error || !data?.success) {
         await this.logActivity({
           adminUserId: userId,
           action: 'FAILED_TWO_FACTOR',
@@ -203,7 +198,7 @@ export const adminAuthService = {
         
         return { 
           success: false, 
-          error: 'Invalid verification code.' 
+          error: data?.error || 'Invalid verification code.' 
         };
       }
 
