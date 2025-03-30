@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
@@ -226,6 +227,8 @@ export const useUserManagement = () => {
   const handleCloseUserDetails = useCallback(() => {
     console.log('UserManagement: Closing user details drawer');
     setIsDetailsOpen(false);
+    // Don't immediately clear selectedUser to avoid UI flicker
+    // The selectedUser will be cleared by the useEffect below after a short delay
   }, []);
 
   const handleToggleUserSubscription = async (userId: string, extensionDays: number = 30) => {
@@ -268,10 +271,11 @@ export const useUserManagement = () => {
     }
   };
 
-  const handleManagePermissions = (user: User) => {
+  const handleManagePermissions = useCallback((user: User) => {
+    console.log('UserManagement: Opening permissions dialog for user:', user.id);
     setSelectedUser(user);
     setIsPermissionsDialogOpen(true);
-  };
+  }, []);
 
   const handlePermissionsUpdated = (updatedUser: User) => {
     setUsers(prevUsers => 
@@ -286,15 +290,20 @@ export const useUserManagement = () => {
     });
   };
 
+  // Clean up selectedUser state after drawers/dialogs close
   useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
     if (!isDetailsOpen && !isPermissionsDialogOpen) {
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         console.log('Clearing selected user after drawer closed');
         setSelectedUser(null);
       }, 300);
-      
-      return () => clearTimeout(timer);
     }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [isDetailsOpen, isPermissionsDialogOpen]);
 
   return {

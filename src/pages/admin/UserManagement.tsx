@@ -99,7 +99,7 @@ const UserManagement = () => {
       
       {selectedUser && (
         <UserDetailsDrawer 
-          key={`drawer-${selectedUser.id}`}
+          key={`drawer-${selectedUser.id}-${isDetailsOpen}`}
           user={selectedUser} 
           open={isDetailsOpen} 
           onClose={handleCloseUserDetails} 
@@ -121,6 +121,7 @@ const UserManagement = () => {
 
       {selectedUser && (
         <AdminPermissionsDialog
+          key={`permissions-${selectedUser.id}-${isPermissionsDialogOpen}`}
           user={selectedUser}
           open={isPermissionsDialogOpen}
           onOpenChange={setIsPermissionsDialogOpen}
