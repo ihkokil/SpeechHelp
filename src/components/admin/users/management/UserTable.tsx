@@ -1,3 +1,4 @@
+
 import React, { useMemo, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,8 @@ import {
   UserCheck,
   Shield,
   Clock,
-  Loader2
+  Loader2,
+  Flag
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { User } from '../types';
@@ -173,12 +175,21 @@ export const UserTable: React.FC<UserTableProps> = ({
                   />
                 </TableCell>
                 <TableCell className="font-medium">
-                  {getUserName(user)}
-                  {user.is_admin && (
-                    <Badge variant="outline" className="ml-2 bg-purple-100 text-purple-800 border-purple-300">
-                      Admin
-                    </Badge>
-                  )}
+                  <div className="flex items-center">
+                    <span>{getUserName(user)}</span>
+                    {user.user_metadata?.country_code && (
+                      <Flag 
+                        className="h-4 w-4 ml-2 text-gray-500" 
+                        data-country-code={user.user_metadata.country_code}
+                        title={user.user_metadata.country || user.user_metadata.country_code}
+                      />
+                    )}
+                    {user.is_admin && (
+                      <Badge variant="outline" className="ml-2 bg-purple-100 text-purple-800 border-purple-300">
+                        Admin
+                      </Badge>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{getUserPhone(user)}</TableCell>
