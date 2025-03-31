@@ -23,7 +23,7 @@ const EditSpeechForm = ({
   const isMobile = useIsMobile();
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="space-y-2">
         <label 
           htmlFor="speech-title" 
@@ -52,7 +52,7 @@ const EditSpeechForm = ({
           value={editContent}
           onChange={(e) => setEditContent(e.target.value)}
           placeholder="Speech Content"
-          className="min-h-[200px] md:min-h-[300px] w-full text-sm md:text-base"
+          className={`w-full text-sm md:text-base ${isMobile ? 'min-h-[200px]' : 'min-h-[300px]'}`}
         />
       </div>
     </div>

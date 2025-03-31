@@ -8,6 +8,7 @@ import Step3GenerateSpeech from './steps/Step3GenerateSpeech';
 import Step4EditSpeech from './steps/Step4EditSpeech';
 import { useSpeechLabState } from './hooks/useSpeechLabState';
 import { speechTypesData } from './data/speechTypesData';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const SpeechLabContent: React.FC = () => {
   const {
@@ -22,15 +23,17 @@ const SpeechLabContent: React.FC = () => {
     handleSpeechTitleChange,
     handleSpeechDetailsChange
   } = useSpeechLabState();
+  
+  const isMobile = useIsMobile();
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8">
+    <div className={`py-6 md:py-12 px-4 sm:px-6 lg:px-8 ${isMobile ? 'mt-16' : ''}`}>
       <div className="max-w-7xl mx-auto">
         <SpeechLabHeader />
         
         <SpeechStepIndicator currentStep={currentStep} steps={steps} />
 
-        <div className="mt-8">
+        <div className="mt-4 md:mt-8">
           {currentStep === 1 && (
             <Step1SelectOccasion 
               selectedSpeechType={selectedSpeechType} 
