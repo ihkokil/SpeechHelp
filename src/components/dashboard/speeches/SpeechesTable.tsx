@@ -58,7 +58,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                     <span className="truncate">{speech.title}</span>
                     <span className="md:hidden mt-1">
                       <Badge 
-                        className={`${getTypeColor(speech.speech_type)} text-xs max-w-[120px] inline-flex justify-center`}
+                        className={`${getTypeColor(speech.speech_type)} text-xs w-24 inline-flex justify-center`}
                       >
                         <span className="truncate">{getSpeechTypeLabel(speech.speech_type)}</span>
                       </Badge>
@@ -70,7 +70,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                 </TableCell>
                 <TableCell className="text-center hidden md:table-cell">
                   <Badge 
-                    className={`${getTypeColor(speech.speech_type)} max-w-[120px] inline-flex justify-center`}
+                    className={`${getTypeColor(speech.speech_type)} w-24 inline-flex justify-center`}
                   >
                     <span className="truncate">{getSpeechTypeLabel(speech.speech_type)}</span>
                   </Badge>
