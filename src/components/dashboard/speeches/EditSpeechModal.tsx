@@ -10,12 +10,12 @@ import {
 import { Speech } from '@/types/auth';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import Translate from '@/components/Translate';
-import EditSpeechForm from '../components/EditSpeechForm';
+import EditSpeechForm from './components/EditSpeechForm';
 
 interface EditSpeechModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  speech: Speech;
+  speech: Speech | null;
   editTitle: string;
   editContent: string;
   setEditTitle: (title: string) => void;
@@ -33,6 +33,16 @@ const EditSpeechModal = ({
   setEditContent, 
   onSave 
 }: EditSpeechModalProps) => {
+  // Debug log
+  console.log('EditSpeechModal rendered with:', {
+    isOpen,
+    speechId: speech?.id,
+    editTitle,
+    editContent
+  });
+
+  if (!speech) return null;
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">

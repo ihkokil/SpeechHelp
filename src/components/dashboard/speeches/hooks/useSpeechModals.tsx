@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Speech } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { getEditableContent } from '@/components/speech/utils/speechFormattingUtils';
@@ -14,7 +14,6 @@ export const useSpeechModals = () => {
   const handleEditModalOpen = (open: boolean, selectedSpeech: Speech | null) => {
     // If opening the modal, set the initial values
     if (open && selectedSpeech) {
-      // Set the title
       setTitle(selectedSpeech.title);
       
       // Get the editable content from the speech
@@ -24,12 +23,9 @@ export const useSpeechModals = () => {
       console.log('Edit modal opened for speech:', {
         id: selectedSpeech.id,
         title: selectedSpeech.title,
-        originalContent: selectedSpeech.content.substring(0, 100) + '...',
-        parsedContent: editableContent.substring(0, 100) + '...'
+        originalContent: selectedSpeech.content,
+        parsedContent: editableContent
       });
-    } else {
-      // Modal is closing, clear the state
-      console.log('Edit modal is closing, values before clearing:', { title, contentLength: content.length });
     }
     
     return open;
@@ -50,17 +46,6 @@ export const useSpeechModals = () => {
           contentToSave = JSON.stringify({
             ...originalContent,
             content: content
-          });
-          console.log('Saving speech with JSON structure:', {
-            id: selectedSpeech.id,
-            title,
-            contentToSave: contentToSave.substring(0, 100) + '...'
-          });
-        } else {
-          console.log('Saving speech with plain content:', {
-            id: selectedSpeech.id,
-            title,
-            contentToSave: contentToSave.substring(0, 100) + '...'
           });
         }
       } catch (error) {

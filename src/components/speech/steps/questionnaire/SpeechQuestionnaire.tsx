@@ -1,16 +1,18 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Progress } from '@/components/ui/progress';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { QuestionItem } from '@/components/speech/questionnaires/types';
+import { QuestionItem } from '../../questionnaires';
 import QuestionRenderer from './QuestionRenderer';
 import Translate from '@/components/Translate';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useTranslation } from '@/translations';
+import EncouragementMessage from '../../components/EncouragementMessage';
 
 interface SpeechQuestionnaireProps {
   questions: QuestionItem[];
   formData: Record<string, string>;
-  onFormDataChange: (formData: Record<string, string>) => void;
+  onFormDataChange: (data: Record<string, string>) => void;
   onNext: () => void;
   onPrev: () => void;
 }
@@ -22,58 +24,139 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
   onNext,
   onPrev
 }) => {
-  const isMobile = useIsMobile();
-  const [currentQuestions, setCurrentQuestions] = useState<Record<string, string>>(formData);
+  const { t } = useTranslation();
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [showEncouragement, setShowEncouragement] = useState(false);
+  const [encouragementKey, setEncouragementKey] = useState(0);
 
-  const handleChange = useCallback((questionKey: string, value: string) => {
-    setCurrentQuestions(prev => {
-      const updatedQuestions = { ...prev, [questionKey]: value };
-      return updatedQuestions;
-    });
-  }, []);
+  // Safeguard against invalid question index
+  useEffect(() => {
+    if (questions.length === 0) {
+      console.warn('No questions provided to SpeechQuestionnaire');
+      return;
+    }
+    
+    if (currentQuestionIndex >= questions.length) {
+      console.warn(`Current question index (${currentQuestionIndex}) is out of bounds, resetting to ${questions.length - 1}`);
+      setCurrentQuestionIndex(questions.length - 1);
+    }
+  }, [currentQuestionIndex, questions.length]);
 
-  const handleContinue = () => {
-    onFormDataChange(currentQuestions);
-    onNext();
+  // Update progress when moving through questions
+  useEffect(() => {
+    if (questions.length > 0) {
+      setProgress(((currentQuestionIndex + 1) / questions.length) * 100);
+      
+      // Show encouragement message every 3 questions
+      if ((currentQuestionIndex + 1) % 3 === 0 && currentQuestionIndex > 0) {
+        // Reset encouragement to trigger fresh animation
+        setShowEncouragement(false);
+        setTimeout(() => {
+          setEncouragementKey(prev => prev + 1);
+          setShowEncouragement(true);
+        }, 100);
+      } else {
+        setShowEncouragement(false);
+      }
+    }
+  }, [currentQuestionIndex, questions.length]);
+
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      onNext();
+    }
   };
 
-  // Check if all required questions are answered
-  const isFormValid = questions.every(q => 
-    !q.required || (currentQuestions[q.question] && currentQuestions[q.question].trim() !== '')
-  );
+  const handlePrevQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+    } else {
+      onPrev();
+    }
+  };
 
+  const handleInputChange = (value: string) => {
+    if (!questions[currentQuestionIndex]) {
+      console.error('Current question is undefined', { currentQuestionIndex, questionsLength: questions.length });
+      return;
+    }
+
+    const updatedFormData = {
+      ...formData,
+      [questions[currentQuestionIndex].question]: value
+    };
+    
+    onFormDataChange(updatedFormData);
+  };
+
+  // Current question data with safeguard
+  const currentQuestion = questions[currentQuestionIndex];
+  
+  if (!currentQuestion || questions.length === 0) {
+    console.error('No questions available or current question is undefined', { 
+      currentQuestionIndex, 
+      questionsLength: questions.length,
+      currentQuestion
+    });
+    return <div>Loading questions...</div>;
+  }
+
+  const currentQuestionNumber = currentQuestionIndex + 1;
+  
   return (
-    <div className="space-y-4">
-      <div className={`space-y-4 ${isMobile ? 'mobile-scrollable-area pb-2' : ''}`}>
-        {questions.map((question) => (
-          <QuestionRenderer
-            key={question.question}
-            questionData={question}
-            value={currentQuestions[question.question] || ''}
-            onChange={(value) => handleChange(question.question, value)}
-          />
-        ))}
+    <div className="space-y-6 relative">
+      {/* Progress bar */}
+      <div className="space-y-2">
+        <div className="flex justify-between text-sm">
+          <span>Question {currentQuestionNumber} of {questions.length}</span>
+          <span>{Math.round(progress)}% complete</span>
+        </div>
+        <Progress value={progress} className="h-2" />
+      </div>
+      
+      {/* Current question */}
+      <div className="space-y-4">
+        <QuestionRenderer 
+          questionData={currentQuestion}
+          value={formData[currentQuestion.question] || ''}
+          onChange={handleInputChange}
+        />
       </div>
 
-      <div className={`${isMobile ? 'flex flex-col space-y-3 pt-2 sticky bottom-0 bg-white mt-4 border-t py-3' : 'flex justify-between pt-4'}`}>
-        <ButtonCustom 
-          onClick={onPrev} 
-          variant="outline"
-          className={isMobile ? 'w-full' : ''}
-        >
+      {/* Navigation buttons */}
+      <div className="flex justify-between pt-4">
+        <ButtonCustom onClick={handlePrevQuestion} variant="outline">
           <ArrowLeft className="mr-2 h-4 w-4" />
           <Translate text="speechLab.backButton" />
         </ButtonCustom>
-        <ButtonCustom 
-          onClick={handleContinue} 
-          variant="magenta" 
-          disabled={!isFormValid}
-          className={isMobile ? 'w-full mt-2' : ''}
-        >
-          <Translate text="speechLab.nextButton" />
-          <ArrowRight className="ml-2 h-4 w-4" />
+        <ButtonCustom onClick={handleNextQuestion} variant="magenta">
+          {currentQuestionIndex < questions.length - 1 ? (
+            <>
+              <Translate text="speechLab.nextQuestion" fallback="Next Question" />
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </>
+          ) : (
+            <>
+              <Translate text="speechLab.nextButton" />
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </>
+          )}
         </ButtonCustom>
       </div>
+
+      {/* Encouraging message component with key to force remount and animation */}
+      {showEncouragement && (
+        <div className="mt-8 pt-6 flex justify-center">
+          <EncouragementMessage 
+            key={encouragementKey}
+            currentQuestionIndex={currentQuestionIndex} 
+            totalQuestions={questions.length} 
+          />
+        </div>
+      )}
     </div>
   );
 };
