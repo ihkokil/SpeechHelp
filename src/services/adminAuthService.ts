@@ -36,21 +36,21 @@ export const adminAuthService = {
       console.log('Attempting to create default admin user');
       
       // Try to check if the edge function exists first
-      const { error: functionCheckError } = await supabase.functions.invoke('admin-auth', {
+      const functionCheckResult = await supabase.functions.invoke('admin-auth', {
         body: { action: 'ping' },
       }).catch(error => {
         return { error };
       });
       
-      if (functionCheckError) {
-        console.error('Edge function check failed:', functionCheckError);
+      if (functionCheckResult.error) {
+        console.error('Edge function check failed:', functionCheckResult.error);
         return { 
           success: false, 
           error: 'Admin authentication service is not available. Please check your deployment.' 
         };
       }
       
-      const { data, error } = await supabase.functions.invoke('admin-auth', {
+      const functionResult = await supabase.functions.invoke('admin-auth', {
         body: { 
           action: 'create_admin',
           username: 'speechhelpmaster', 
@@ -58,19 +58,25 @@ export const adminAuthService = {
           email: 'admin@speechhelp.com',
           is_super_admin: true
         },
+      }).catch(error => {
+        console.error('Error invoking admin-auth function:', error);
+        return { error };
       });
       
-      console.log('Response from admin-auth function:', { data, error });
+      console.log('Response from admin-auth function:', functionResult);
       
-      if (error) {
-        console.error('Error creating default admin:', error);
+      if (functionResult.error) {
+        console.error('Error creating default admin:', functionResult.error);
         return { 
           success: false, 
-          error: error.message || 'Failed to connect to authentication service' 
+          error: functionResult.error.message || 'Failed to connect to authentication service' 
         };
       }
       
-      if (!data) {
+      // Check if data exists on the response
+      const responseData = 'data' in functionResult ? functionResult.data : null;
+      
+      if (!responseData) {
         console.error('No data returned from admin-auth function');
         return { 
           success: false, 
@@ -78,17 +84,17 @@ export const adminAuthService = {
         };
       }
       
-      if (!data.success) {
-        console.log('Admin creation failed with error:', data.error);
+      if (!responseData.success) {
+        console.log('Admin creation failed with error:', responseData.error);
         // If the admin already exists, we'll treat this as a success for the UI
-        if (data.error && data.error.includes('already exists')) {
+        if (responseData.error && responseData.error.includes('already exists')) {
           console.log('Admin already exists, treating as success');
           return { success: true };
         }
         
         return { 
           success: false, 
-          error: data.error || 'Failed to create admin' 
+          error: responseData.error || 'Failed to create admin' 
         };
       }
 
@@ -119,7 +125,7 @@ export const adminAuthService = {
       console.log(`Attempting to sign in user: ${credentials.username}`);
       
       // Call the admin-auth edge function to verify credentials
-      const { data, error } = await supabase.functions.invoke('admin-auth', {
+      const functionResult = await supabase.functions.invoke('admin-auth', {
         body: { 
           username: credentials.username, 
           password: credentials.password 
@@ -137,13 +143,13 @@ export const adminAuthService = {
         return { error };
       });
 
-      console.log('Sign in response:', { data, error });
+      console.log('Sign in response:', functionResult);
 
-      if (error) {
-        console.error('Admin auth function error:', error);
+      if (functionResult.error) {
+        console.error('Admin auth function error:', functionResult.error);
         
         // Check for specific error types
-        if (error.message?.includes('not found') || error.message?.includes('404')) {
+        if (functionResult.error.message?.includes('not found') || functionResult.error.message?.includes('404')) {
           return { 
             success: false, 
             error: 'Authentication service is not available. Please contact the administrator.' 
@@ -156,47 +162,50 @@ export const adminAuthService = {
         };
       }
 
-      if (!data || !data.success) {
+      // Check if data exists on the response
+      const responseData = 'data' in functionResult ? functionResult.data : null;
+      
+      if (!responseData || !responseData.success) {
         // Log failed login attempt
         await this.logActivity({
           adminUserId: 'unknown',
           action: 'FAILED_LOGIN',
           entityType: 'ADMIN_USER',
           entityId: 'unknown',
-          details: { reason: data?.error || 'Unknown error', ip },
+          details: { reason: responseData?.error || 'Unknown error', ip },
           ipAddress: ip
         });
         
         return { 
           success: false, 
-          error: data?.error || 'Invalid credentials.' 
+          error: responseData?.error || 'Invalid credentials.' 
         };
       }
 
       // If 2FA is enabled, require verification
-      if (data.requires2FA) {
+      if (responseData.requires2FA) {
         // Log 2FA prompt
         await this.logActivity({
-          adminUserId: data.user.id,
+          adminUserId: responseData.user.id,
           action: 'TWO_FACTOR_PROMPT',
           entityType: 'ADMIN_USER',
-          entityId: data.user.id,
+          entityId: responseData.user.id,
           ipAddress: ip
         });
         
         return { 
           success: true, 
           requires2FA: true,
-          user: data.user
+          user: responseData.user
         };
       }
 
       // Log successful login
       await this.logActivity({
-        adminUserId: data.user.id,
+        adminUserId: responseData.user.id,
         action: 'LOGIN',
         entityType: 'ADMIN_USER',
-        entityId: data.user.id,
+        entityId: responseData.user.id,
         ipAddress: ip
       });
 
@@ -204,11 +213,11 @@ export const adminAuthService = {
       await supabase
         .from('admin_users')
         .update({ last_login: new Date().toISOString() })
-        .eq('id', data.user.id);
+        .eq('id', responseData.user.id);
 
       return { 
         success: true, 
-        user: data.user
+        user: responseData.user
       };
     } catch (err: any) {
       console.error('Admin sign in error:', err);
@@ -227,14 +236,20 @@ export const adminAuthService = {
       const { ip } = await ipResponse.json();
 
       // Call the admin-auth edge function to verify 2FA code
-      const { data, error } = await supabase.functions.invoke('admin-auth', {
+      const functionResult = await supabase.functions.invoke('admin-auth', {
         body: { 
           adminId: userId, 
           code 
         },
+      }).catch(error => {
+        console.error('Error invoking 2FA verification:', error);
+        return { error };
       });
 
-      if (error || !data?.success) {
+      // Check if data exists and for success
+      const responseData = 'data' in functionResult ? functionResult.data : null;
+      
+      if (functionResult.error || !responseData?.success) {
         await this.logActivity({
           adminUserId: userId,
           action: 'FAILED_TWO_FACTOR',
@@ -246,7 +261,7 @@ export const adminAuthService = {
         
         return { 
           success: false, 
-          error: data?.error || 'Invalid verification code.' 
+          error: responseData?.error || 'Invalid verification code.' 
         };
       }
 
