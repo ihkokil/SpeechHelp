@@ -4,10 +4,12 @@ import { useFetchUsers } from './hooks/useFetchUsers';
 import { useUserSearch } from './hooks/useUserSearch';
 import { useUserSelection } from './hooks/useUserSelection';
 import { useUserActions } from './hooks/useUserActions';
+import { useToast } from '@/hooks/use-toast';
 
 export const useUserManagement = () => {
   const isInitialMount = useRef(true);
   const isMounted = useRef(true);
+  const { toast } = useToast();
   
   const {
     users,
@@ -26,7 +28,8 @@ export const useUserManagement = () => {
     selectedUsers,
     setSelectedUsers,
     toggleUserSelection,
-    toggleAllUsers: baseToggleAllUsers
+    toggleAllUsers: baseToggleAllUsers,
+    clearSelection
   } = useUserSelection();
   
   const {
@@ -50,12 +53,11 @@ export const useUserManagement = () => {
   } = useUserActions();
   
   // Wrapper functions to include users and setUsers
-  const toggleAllUsers = useCallback((filteredUsers = []) => {
+  const toggleAllUsers = useCallback((filteredUsers) => {
     if (isMounted.current) {
-      const currentFilteredUsers = filterUsers(users, searchTerm);
-      baseToggleAllUsers(currentFilteredUsers);
+      baseToggleAllUsers(filteredUsers);
     }
-  }, [baseToggleAllUsers, users, searchTerm, filterUsers]);
+  }, [baseToggleAllUsers]);
   
   const handleDeleteUsers = useCallback(async () => {
     if (isMounted.current) {
@@ -83,6 +85,91 @@ export const useUserManagement = () => {
       baseHandlePermissionsUpdated(updatedUser, users, setUsers);
     }
   }, [baseHandlePermissionsUpdated, users, setUsers]);
+
+  // Bulk action handlers
+  const handleBulkDelete = useCallback(() => {
+    if (selectedUsers.length === 0) {
+      toast({
+        title: "No users selected",
+        description: "Please select at least one user to delete.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsDeleteDialogOpen(true);
+  }, [selectedUsers.length, setIsDeleteDialogOpen, toast]);
+
+  const handleBulkActivate = useCallback(async () => {
+    if (selectedUsers.length === 0) {
+      toast({
+        title: "No users selected",
+        description: "Please select at least one user to activate.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedUsers = [...users];
+    let successCount = 0;
+
+    for (const userId of selectedUsers) {
+      try {
+        const success = await baseHandleToggleUserStatus(userId, true, users, (newUsers) => {
+          updatedUsers.splice(0, updatedUsers.length, ...newUsers);
+        });
+        if (success) successCount++;
+      } catch (error) {
+        console.error(`Error activating user ${userId}:`, error);
+      }
+    }
+
+    setUsers(updatedUsers);
+    
+    toast({
+      title: `${successCount} users activated`,
+      description: `Successfully activated ${successCount} out of ${selectedUsers.length} selected users.`
+    });
+    
+    if (successCount > 0) {
+      clearSelection();
+    }
+  }, [selectedUsers, users, setUsers, baseHandleToggleUserStatus, toast, clearSelection]);
+
+  const handleBulkDeactivate = useCallback(async () => {
+    if (selectedUsers.length === 0) {
+      toast({
+        title: "No users selected",
+        description: "Please select at least one user to deactivate.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedUsers = [...users];
+    let successCount = 0;
+
+    for (const userId of selectedUsers) {
+      try {
+        const success = await baseHandleToggleUserStatus(userId, false, users, (newUsers) => {
+          updatedUsers.splice(0, updatedUsers.length, ...newUsers);
+        });
+        if (success) successCount++;
+      } catch (error) {
+        console.error(`Error deactivating user ${userId}:`, error);
+      }
+    }
+
+    setUsers(updatedUsers);
+    
+    toast({
+      title: `${successCount} users deactivated`,
+      description: `Successfully deactivated ${successCount} out of ${selectedUsers.length} selected users.`
+    });
+    
+    if (successCount > 0) {
+      clearSelection();
+    }
+  }, [selectedUsers, users, setUsers, baseHandleToggleUserStatus, toast, clearSelection]);
 
   // Global cleanup function
   const cleanup = useCallback(() => {
@@ -138,6 +225,9 @@ export const useUserManagement = () => {
     handleToggleUserSubscription,
     handleManagePermissions,
     handlePermissionsUpdated,
+    handleBulkDelete,
+    handleBulkActivate,
+    handleBulkDeactivate,
     cleanup
   };
 };
