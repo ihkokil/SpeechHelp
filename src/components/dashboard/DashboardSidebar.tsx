@@ -7,7 +7,6 @@ import {
   MicIcon, 
   PencilRulerIcon, 
   FolderIcon, 
-  CreditCardIcon, 
   SettingsIcon,
   HelpCircleIcon,
   LogOutIcon 
@@ -62,11 +61,6 @@ const DashboardSidebar = () => {
   ];
   
   const secondaryNavItems: NavItem[] = [
-    {
-      icon: <CreditCardIcon className="h-5 w-5" />,
-      label: 'Subscription',
-      href: '/subscription',
-    },
     {
       icon: <SettingsIcon className="h-5 w-5" />,
       label: 'Settings',
