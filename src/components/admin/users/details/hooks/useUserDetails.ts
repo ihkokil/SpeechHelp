@@ -25,6 +25,9 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     setIsLoadingSpeeches(true);
     try {
       console.log('Fetching speeches for user:', userId);
+      // Delay fetch to ensure we don't have race conditions
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const { data, error } = await supabase
         .from('speeches')
         .select('*')
@@ -75,8 +78,8 @@ export const useUserDetails = (user: User | null, open: boolean) => {
       }
       
       if (isMounted) {
-        fetchUserSpeeches(user.id);
         calculateUserStats(user);
+        fetchUserSpeeches(user.id);
       }
     }
     

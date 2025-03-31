@@ -47,7 +47,7 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
 
   return (
     <Sheet open={open} onOpenChange={handleSheetOpenChange}>
-      <SheetContent className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto" onEscapeKeyDown={onClose} onPointerDownOutside={onClose}>
+      <SheetContent className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto">
         {user && (
           <DrawerContent
             user={user}

@@ -57,34 +57,6 @@ export const UserTable: React.FC<UserTableProps> = ({
     toggleAllUsers(filteredUsers);
   };
 
-  // Specific action handlers with debugging
-  const onViewDetails = (user: User) => {
-    console.log("UserTable: View details for user:", user.id);
-    handleViewUserDetails(user);
-  };
-
-  const onManagePermissions = (user: User) => {
-    console.log("UserTable: Manage permissions for user:", user.id);
-    handleManagePermissions(user);
-  };
-
-  const onToggleUserActive = (userId: string, isActive: boolean) => {
-    console.log("UserTable: Toggle status for user:", userId, isActive);
-    handleToggleUserStatus(userId, isActive);
-  };
-
-  const onExtendSubscription = (userId: string) => {
-    console.log("UserTable: Extend subscription for user:", userId);
-    handleToggleUserSubscription(userId);
-  };
-
-  const onDeleteUser = (userId: string) => {
-    console.log("UserTable: Delete user:", userId);
-    handleDeleteUser(userId);
-  };
-
-  console.log('UserTable: Rendering with', filteredUsers.length, 'filtered users, all selected:', isAllSelected);
-
   return (
     <div className="rounded-md border">
       <Table>
@@ -109,11 +81,11 @@ export const UserTable: React.FC<UserTableProps> = ({
                 user={user}
                 isSelected={selectedUsers.some(selectedUser => selectedUser.id === user.id)}
                 onToggleSelection={toggleUserSelection}
-                onViewDetails={onViewDetails}
-                onManagePermissions={onManagePermissions}
-                onToggleUserActive={onToggleUserActive}
-                onExtendSubscription={onExtendSubscription}
-                onDeleteUser={onDeleteUser}
+                onViewDetails={handleViewUserDetails}
+                onManagePermissions={handleManagePermissions}
+                onToggleUserActive={handleToggleUserStatus}
+                onExtendSubscription={handleToggleUserSubscription}
+                onDeleteUser={handleDeleteUser}
               />
             ))
           )}
