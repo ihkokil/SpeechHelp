@@ -4,7 +4,7 @@ import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
 
 export const usePermissionActions = (
-  setIsPermissionsDialogOpen: (isOpen: boolean) => void
+  setIsPermissionsDialogOpen?: (isOpen: boolean) => void
 ) => {
   const { toast } = useToast();
 
@@ -25,7 +25,9 @@ export const usePermissionActions = (
     });
     
     // Close the dialog
-    setIsPermissionsDialogOpen(false);
+    if (setIsPermissionsDialogOpen) {
+      setIsPermissionsDialogOpen(false);
+    }
   }, [toast, setIsPermissionsDialogOpen]);
 
   return {

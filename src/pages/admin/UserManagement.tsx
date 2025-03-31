@@ -28,6 +28,7 @@ const UserManagement = () => {
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
+    filteredUsers,
     fetchUsers,
     toggleUserSelection,
     toggleAllUsers,
@@ -81,7 +82,7 @@ const UserManagement = () => {
           />
           
           <UserTable 
-            users={users}
+            users={filteredUsers}
             isLoading={isLoading}
             selectedUsers={selectedUsers}
             toggleUserSelection={toggleUserSelection}

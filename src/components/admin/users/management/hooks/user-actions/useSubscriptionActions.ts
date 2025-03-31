@@ -74,8 +74,8 @@ export const useSubscriptionActions = (
       const now = new Date();
       let newSubscriptionDate = null;
       
-      if (user?.subscription_end) {
-        const currentEnd = new Date(user.subscription_end);
+      if (user?.subscription_end_date) {
+        const currentEnd = new Date(user.subscription_end_date);
         // If subscription is active, toggle off
         if (currentEnd > now) {
           newSubscriptionDate = null;
@@ -96,8 +96,8 @@ export const useSubscriptionActions = (
           user.id === userId
             ? { 
                 ...user, 
-                subscription_end: newSubscriptionDate ? newSubscriptionDate.toISOString() : null,
-                plan: newSubscriptionDate ? 'premium' : 'free'
+                subscription_end_date: newSubscriptionDate ? newSubscriptionDate.toISOString() : null,
+                subscription_tier: newSubscriptionDate ? 'premium' : 'free'
               }
             : user
         )

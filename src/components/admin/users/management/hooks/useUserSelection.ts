@@ -1,16 +1,15 @@
-
 import { useState, useCallback } from 'react';
 import { User } from '../../types';
 
 export const useUserSelection = () => {
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
-  const toggleUserSelection = useCallback((userId: string) => {
-    console.log('Toggling user selection:', userId);
+  const toggleUserSelection = useCallback((user: User) => {
+    console.log('Toggling user selection:', user.id);
     setSelectedUsers(prev => 
-      prev.includes(userId) 
-        ? prev.filter(id => id !== userId) 
-        : [...prev, userId]
+      prev.some(selectedUser => selectedUser.id === user.id) 
+        ? prev.filter(selectedUser => selectedUser.id !== user.id) 
+        : [...prev, user]
     );
   }, []);
 
@@ -19,17 +18,17 @@ export const useUserSelection = () => {
     setSelectedUsers(prev => {
       // If all filtered users are currently selected, deselect all
       if (prev.length === filteredUsers.length && 
-          filteredUsers.every(user => prev.includes(user.id))) {
+          filteredUsers.every(user => prev.some(selectedUser => selectedUser.id === user.id))) {
         return [];
       } else {
         // Otherwise, select all filtered users
-        return filteredUsers.map(user => user.id);
+        return filteredUsers;
       }
     });
   }, []);
 
-  const selectMultipleUsers = useCallback((userIds: string[]) => {
-    setSelectedUsers(userIds);
+  const selectMultipleUsers = useCallback((users: User[]) => {
+    setSelectedUsers(users);
   }, []);
 
   const clearSelection = useCallback(() => {
@@ -37,13 +36,13 @@ export const useUserSelection = () => {
   }, []);
 
   const isUserSelected = useCallback((userId: string) => {
-    return selectedUsers.includes(userId);
+    return selectedUsers.some(user => user.id === userId);
   }, [selectedUsers]);
 
   const isAllSelected = useCallback((filteredUsers: User[]) => {
     return filteredUsers.length > 0 && 
       selectedUsers.length === filteredUsers.length && 
-      filteredUsers.every(user => selectedUsers.includes(user.id));
+      filteredUsers.every(user => selectedUsers.some(selectedUser => selectedUser.id === user.id));
   }, [selectedUsers]);
 
   return {

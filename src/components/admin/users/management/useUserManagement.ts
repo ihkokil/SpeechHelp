@@ -39,8 +39,8 @@ export const useUserManagement = () => {
   const { 
     selectedUsers, 
     setSelectedUsers, 
-    toggleUserSelection: baseToggleUserSelection,
-    toggleAllUsers: baseToggleAllUsers 
+    toggleUserSelection,
+    toggleAllUsers 
   } = useUserSelection();
   
   // Action state
@@ -55,7 +55,7 @@ export const useUserManagement = () => {
     handleBulkDelete: baseHandleBulkDelete,
     handleBulkActivate: baseHandleBulkActivate,
     handleBulkDeactivate: baseHandleBulkDeactivate
-  } = useUserCrud(setActionLoading, setSelectedUsers);
+  } = useUserCrud(setActionLoading);
   
   // Subscription actions
   const {
@@ -97,17 +97,17 @@ export const useUserManagement = () => {
   }, [apiFetchUsers]);
   
   // Wrapper functions to include users and setUsers
-  const toggleAllUsers = useCallback((filteredUsers: User[]) => {
+  const handleToggleAllUsers = useCallback((usersToToggle: User[]) => {
     if (isMounted.current) {
-      baseToggleAllUsers(filteredUsers);
+      toggleAllUsers(usersToToggle);
     }
-  }, [baseToggleAllUsers]);
+  }, [toggleAllUsers]);
   
-  const toggleUserSelection = useCallback((user: User) => {
+  const handleToggleUserSelection = useCallback((user: User) => {
     if (isMounted.current) {
-      baseToggleUserSelection(user);
+      toggleUserSelection(user);
     }
-  }, [baseToggleUserSelection]);
+  }, [toggleUserSelection]);
   
   const handleDeleteUsers = useCallback(async () => {
     if (isMounted.current) {
@@ -214,11 +214,12 @@ export const useUserManagement = () => {
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
+    filteredUsers,
     
     // Functions
     fetchUsers,
-    toggleUserSelection,
-    toggleAllUsers,
+    toggleUserSelection: handleToggleUserSelection,
+    toggleAllUsers: handleToggleAllUsers,
     handleDeleteUsers,
     handleToggleUserStatus,
     handleViewUserDetails,
