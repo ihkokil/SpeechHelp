@@ -1,11 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import SpeechContentEditor from '@/components/speech/components/SpeechContentEditor';
-import SpeechExportButtons from './SpeechExportButtons';
 import { Speech } from '@/types/auth';
 import Translate from '@/components/Translate';
 import SpeechPreview from '@/components/speech/components/SpeechPreview';
+import SpeechExportButtons from './SpeechExportButtons';
 
 interface EditSpeechFormProps {
   speech: Speech | null;

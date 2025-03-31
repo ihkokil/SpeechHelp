@@ -30,8 +30,6 @@ export const useSpeechModals = () => {
         setContent(selectedSpeech.content || '');
         console.log('Using fallback content:', selectedSpeech.content);
       }
-    } else {
-      console.log('Closing edit modal or no speech selected');
     }
     
     return open;
