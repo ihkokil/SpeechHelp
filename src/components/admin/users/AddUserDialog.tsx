@@ -52,6 +52,8 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange, onUse
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
+      console.log('Creating new user with values:', values);
+      
       // In a real implementation, we would call the Supabase API to create a user
       // For now, we'll simulate a success response
       const { data, error } = await supabase.auth.admin.createUser({
@@ -72,6 +74,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange, onUse
           description: error.message || 'Failed to create user. Please try again.',
           variant: 'destructive',
         });
+        setIsSubmitting(false);
         return;
       }
       
@@ -80,8 +83,25 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange, onUse
         description: 'User has been created successfully.',
       });
       
+      // Create a user object to pass back that matches our User type
+      const newUser = {
+        id: data.user.id,
+        email: data.user.email,
+        name: values.name,
+        status: values.isActive ? 'active' : 'inactive',
+        role: values.role,
+        created_at: data.user.created_at,
+        updated_at: data.user.updated_at,
+        last_sign_in_at: null,
+        avatar_url: null,
+        subscription: {
+          status: 'none',
+          end_date: null
+        }
+      };
+      
       // Pass the new user to the parent component
-      onUserAdded(data.user);
+      onUserAdded(newUser);
       
       // Reset the form
       form.reset();

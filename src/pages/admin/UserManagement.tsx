@@ -56,6 +56,18 @@ const UserManagement = () => {
     };
   }, [cleanup]);
 
+  // Handler for when a user is added via the AddUserDialog
+  const handleUserAdded = (newUser: User) => {
+    console.log("New user added:", newUser);
+    if (addUser) {
+      addUser(newUser);
+      toast({
+        title: "User added",
+        description: `${newUser.email} has been added successfully.`
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
@@ -80,7 +92,7 @@ const UserManagement = () => {
           />
           
           <UserTable 
-            users={users}
+            users={filteredUsers}
             isLoading={isLoading}
             selectedUsers={selectedUsers}
             toggleUserSelection={toggleUserSelection}
@@ -118,16 +130,7 @@ const UserManagement = () => {
       <AddUserDialog 
         open={isAddUserDialogOpen} 
         onOpenChange={setIsAddUserDialogOpen} 
-        onUserAdded={(newUser: User) => {
-          if (addUser) {
-            addUser(newUser);
-            toast({
-              title: "User added",
-              description: `${newUser.email} has been added successfully.`
-            });
-          }
-          setIsAddUserDialogOpen(false);
-        }}
+        onUserAdded={handleUserAdded}
       />
 
       {isPermissionsDialogOpen && selectedUser && (
