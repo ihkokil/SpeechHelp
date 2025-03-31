@@ -26,30 +26,39 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   const [displayContent, setDisplayContent] = useState(editContent);
   
-  // Update display content when editContent changes
+  // Update display content when component mounts or editContent changes
   useEffect(() => {
-    if (editContent) {
-      setDisplayContent(editContent);
+    if (speech) {
+      console.log('Speech data in EditSpeechForm:', {
+        id: speech.id,
+        title: speech.title,
+        contentPreview: speech.content.substring(0, 50) + '...',
+        editTitle,
+        editContentPreview: editContent ? editContent.substring(0, 50) + '...' : 'empty'
+      });
+      
+      if (editContent) {
+        setDisplayContent(editContent);
+      } else if (speech.content) {
+        // If editContent is empty but speech has content, use speech content
+        const processed = getEditableContent(speech.content, true, true);
+        setDisplayContent(processed);
+        setEditContent(processed);
+      }
     }
-  }, [editContent]);
+  }, [speech, editContent, setEditContent]);
   
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
     setEditContent(newContent);
     setDisplayContent(newContent);
+    console.log('Content changed:', newContent.substring(0, 50) + '...');
   };
 
-  // Debug log
-  useEffect(() => {
-    console.log('EditSpeechForm rendered with:', {
-      speechId: speech?.id,
-      editTitle,
-      editContent,
-      displayContent
-    });
-  }, [speech, editTitle, editContent, displayContent]);
-
-  if (!speech) return null;
+  if (!speech) {
+    console.log('EditSpeechForm: No speech provided');
+    return null;
+  }
 
   return (
     <div className="space-y-4">
@@ -62,12 +71,13 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
           value={editTitle}
           onChange={(e) => setEditTitle(e.target.value)}
           className="w-full"
+          placeholder={speech.title} // Fallback to original title
         />
       </div>
       <div>
         {viewMode === 'edit' ? (
           <SpeechContentEditor 
-            content={displayContent}
+            content={displayContent || speech.content}
             onContentChange={handleContentChange}
             preserveHtml={true}
             forceEditMode={true}
@@ -93,8 +103,8 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
       </div>
       <SpeechExportButtons 
         speech={speech}
-        title={editTitle}
-        content={editContent}
+        title={editTitle || speech.title}
+        content={displayContent || speech.content}
       />
     </div>
   );

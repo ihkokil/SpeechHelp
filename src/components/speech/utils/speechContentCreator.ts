@@ -18,7 +18,7 @@ export const createFormattedSpeech = (speechTitle: string, speechDetails: Speech
   let formattedSpeech = `# ${speechTitle}\n\n`;
   
   // Extract key information from the questionnaire
-  const keyInfo = extractKeyInformation(speechDetails);
+  const keyInfo = extractKeyInformation(JSON.stringify(speechDetails));
   
   // Introduction section
   formattedSpeech += "## Introduction\n\n";

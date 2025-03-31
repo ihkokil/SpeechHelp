@@ -4,6 +4,8 @@
 export const formatSpeechContent = (content: string): string => {
   if (!content) return '';
   
+  console.log('Formatting speech content:', content.substring(0, 50) + '...');
+  
   // Check if content is JSON with a 'content' field
   if (content.includes('{"content"')) {
     try {
@@ -24,6 +26,8 @@ export const getEditableContent = (
   showFormattedContent: boolean = false
 ): string => {
   if (!content) return '';
+  
+  console.log('Getting editable content:', content.substring(0, 50) + '...');
   
   // If content is stored as JSON
   if (content.includes('{"content"')) {
@@ -50,11 +54,20 @@ export const createSafeHtml = (content: string): string => {
 export const extractKeyInformation = (content: string): Record<string, string> => {
   try {
     // If the content is in JSON format, try to extract information
-    if (content && content.includes('{"content"')) {
+    if (content && typeof content === 'string' && content.includes('{"content"')) {
       const parsed = JSON.parse(content);
       // Return any additional fields that might be in the JSON
       const { content: _, ...rest } = parsed;
       return rest;
+    }
+    
+    // If content is a JSON string but not in {"content": ""} format
+    if (content && typeof content === 'string' && content.startsWith('{')) {
+      try {
+        return JSON.parse(content);
+      } catch (e) {
+        console.error('Error parsing content as JSON:', e);
+      }
     }
   } catch (e) {
     console.error('Error extracting key information from speech content', e);
