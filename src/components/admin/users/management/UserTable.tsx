@@ -47,27 +47,28 @@ export const UserTable: React.FC<UserTableProps> = ({
   const { filterUsers } = useUserSearch(users);
   const filteredUsers = useMemo(() => filterUsers(users, searchTerm), [users, searchTerm, filterUsers]);
 
-  const viewUserDetails = (user: User) => {
+  // We'll pass these handlers directly to the UserTableRow
+  const onViewUserDetails = (user: User) => {
     console.log('UserTable: View details clicked for user:', user.id);
     handleViewUserDetails(user);
   };
 
-  const managePermissions = (user: User) => {
+  const onManagePermissions = (user: User) => {
     console.log('UserTable: Manage permissions clicked for user:', user.id);
     handleManagePermissions(user);
   };
 
-  const toggleUserActive = (userId: string, isActive: boolean) => {
+  const onToggleUserActive = (userId: string, isActive: boolean) => {
     console.log('UserTable: Toggling user status:', userId, isActive);
     handleToggleUserStatus(userId, isActive);
   };
 
-  const extendSubscription = (userId: string) => {
+  const onExtendSubscription = (userId: string) => {
     console.log('UserTable: Extending subscription for user:', userId);
     handleToggleUserSubscription(userId, 30);
   };
 
-  const deleteUser = (userId: string) => {
+  const onDeleteUser = (userId: string) => {
     console.log('UserTable: Preparing to delete user:', userId);
     // Find the user by ID and select it
     const userToDelete = users.find(user => user.id === userId);
@@ -111,11 +112,11 @@ export const UserTable: React.FC<UserTableProps> = ({
                 user={user}
                 isSelected={selectedUsers.some(selectedUser => selectedUser.id === user.id)}
                 onToggleSelection={toggleUserSelection}
-                onViewDetails={viewUserDetails}
-                onManagePermissions={managePermissions}
-                onToggleUserActive={toggleUserActive}
-                onExtendSubscription={extendSubscription}
-                onDeleteUser={deleteUser}
+                onViewDetails={onViewUserDetails}
+                onManagePermissions={onManagePermissions}
+                onToggleUserActive={onToggleUserActive}
+                onExtendSubscription={onExtendSubscription}
+                onDeleteUser={onDeleteUser}
               />
             ))
           )}
