@@ -17,7 +17,7 @@ const SpeechLabHeader: React.FC = () => {
           <Translate text="speechLab.subtitle" />
         </p>
       </div>
-      <div className={`${isMobile ? 'self-start' : ''}`}>
+      <div className={`${isMobile ? 'self-end' : ''}`}>
         <LanguageSelector />
       </div>
     </div>

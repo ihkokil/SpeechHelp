@@ -44,7 +44,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-5">
+      <div className={`space-y-5 ${isMobile ? 'max-h-[60vh] overflow-y-auto pr-1' : ''}`}>
         {questions.map((question) => (
           <QuestionRenderer
             key={question.question}
@@ -55,7 +55,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
         ))}
       </div>
 
-      <div className={`${isMobile ? 'flex flex-col space-y-3 pt-2' : 'flex justify-between pt-4'}`}>
+      <div className={`${isMobile ? 'flex flex-col space-y-3 pt-2 sticky bottom-0 bg-white mt-4 border-t py-3' : 'flex justify-between pt-4'}`}>
         <ButtonCustom 
           onClick={onPrev} 
           variant="outline"
