@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import { AuthContextType, Speech } from '@/types/auth';
@@ -14,6 +14,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [speeches, setSpeeches] = useState<Speech[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   
   const { toast } = useToast();
   const speechService = useSpeechService();
@@ -34,17 +35,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // Fetch speeches when needed
-  const fetchSpeeches = async () => {
+  const fetchSpeeches = useCallback(async () => {
     if (!user) {
       console.log('Cannot fetch speeches: No user logged in');
-      return;
+      return [];
     }
     
     console.log('AuthContext: Fetching speeches for user:', user.id);
-    const fetchedSpeeches = await speechService.fetchSpeeches(user.id);
-    console.log(`AuthContext: Got ${fetchedSpeeches.length} speeches`);
-    setSpeeches(fetchedSpeeches);
-  };
+    try {
+      const fetchedSpeeches = await speechService.fetchSpeeches(user.id);
+      console.log(`AuthContext: Got ${fetchedSpeeches.length} speeches`);
+      setSpeeches(fetchedSpeeches);
+      return fetchedSpeeches;
+    } catch (error) {
+      console.error('Error fetching speeches:', error);
+      toast({
+        title: "Error fetching speeches",
+        description: "Could not retrieve your speeches. Please try again later.",
+        variant: "destructive"
+      });
+      return [];
+    }
+  }, [user, speechService, toast]);
 
   // Save a new speech
   const saveSpeech = async (title: string, content: string, speechType: string) => {
@@ -57,9 +69,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
     
-    const newSpeech = await speechService.saveSpeech(user.id, title, content, speechType);
-    // Update the speeches array with the new speech
-    setSpeeches(prev => [newSpeech, ...prev]);
+    try {
+      const newSpeech = await speechService.saveSpeech(user.id, title, content, speechType);
+      // Update the speeches array with the new speech
+      setSpeeches(prev => [newSpeech, ...prev]);
+      return newSpeech;
+    } catch (error) {
+      console.error('Error saving speech:', error);
+      toast({
+        title: "Error saving speech",
+        description: "Could not save your speech. Please try again later.",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   // Update an existing speech
@@ -73,11 +96,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
     
-    const updatedSpeech = await speechService.updateSpeech(user.id, id, title, content);
-    // Update the speeches array
-    setSpeeches(prev => prev.map(speech => 
-      speech.id === id ? updatedSpeech : speech
-    ));
+    try {
+      const updatedSpeech = await speechService.updateSpeech(user.id, id, title, content);
+      // Update the speeches array
+      setSpeeches(prev => prev.map(speech => 
+        speech.id === id ? updatedSpeech : speech
+      ));
+      return updatedSpeech;
+    } catch (error) {
+      console.error('Error updating speech:', error);
+      toast({
+        title: "Error updating speech",
+        description: "Could not update your speech. Please try again later.",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   // Delete a speech
@@ -91,9 +125,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
     
-    await speechService.deleteSpeech(user.id, id);
-    // Remove the speech from the speeches array
-    setSpeeches(prev => prev.filter(speech => speech.id !== id));
+    try {
+      await speechService.deleteSpeech(user.id, id);
+      // Remove the speech from the speeches array
+      setSpeeches(prev => prev.filter(speech => speech.id !== id));
+    } catch (error) {
+      console.error('Error deleting speech:', error);
+      toast({
+        title: "Error deleting speech",
+        description: "Could not delete your speech. Please try again later.",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   // Auth functions wrapped to control loading state
@@ -121,66 +165,66 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await signOut(toast);
       // Clear speeches on sign out
       setSpeeches([]);
+      setUser(null);
+      setSession(null);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    // Check for existing session
-    const getSession = async () => {
+    console.log('AuthContext initializing');
+    const initializeAuth = async () => {
       setIsLoading(true);
-      const { data, error } = await supabase.auth.getSession();
       
-      if (error) {
-        console.error('Error getting session:', error);
-      } else if (data?.session) {
+      // First set up auth listener
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (event, newSession) => {
+          console.log(`Auth state changed: ${event}`);
+          
+          // Update session state
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          
+          // Don't fetch speeches in the listener to avoid race conditions
+          setIsLoading(false);
+        }
+      );
+      
+      // Then check for existing session
+      const { data } = await supabase.auth.getSession();
+      if (data?.session) {
         console.log('Got existing session, setting user:', data.session.user.id);
         setSession(data.session);
         setUser(data.session.user);
-        // Fetch speeches after setting the user
-        try {
-          const fetchedSpeeches = await speechService.fetchSpeeches(data.session.user.id);
-          console.log(`Initial fetch: Got ${fetchedSpeeches.length} speeches`);
-          setSpeeches(fetchedSpeeches);
-        } catch (e) {
-          console.error('Error fetching speeches on init:', e);
-        }
       }
       
+      setIsInitialized(true);
       setIsLoading(false);
-    };
-
-    getSession();
-
-    // Listen for auth state changes
-    const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      console.log(`Auth state changed: ${event}`);
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
       
-      if (newSession?.user) {
-        console.log('Auth changed, new user set:', newSession.user.id);
-        try {
-          const fetchedSpeeches = await speechService.fetchSpeeches(newSession.user.id);
-          console.log(`Auth change: Got ${fetchedSpeeches.length} speeches`);
-          setSpeeches(fetchedSpeeches);
-        } catch (e) {
-          console.error('Error fetching speeches on auth change:', e);
-          setSpeeches([]);
-        }
-      } else {
-        console.log('Auth changed, no user, clearing speeches');
-        setSpeeches([]);
-      }
-      
-      setIsLoading(false);
-    });
-
-    return () => {
-      data.subscription.unsubscribe();
+      return () => {
+        subscription.unsubscribe();
+      };
     };
+    
+    initializeAuth();
   }, []);
+  
+  // Fetch speeches when user is set but only after initialization
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (user && isInitialized) {
+        console.log('User authenticated, fetching speeches');
+        try {
+          await fetchSpeeches();
+        } catch (e) {
+          console.error('Error fetching speeches after auth:', e);
+        }
+      }
+    };
+    
+    loadUserData();
+  }, [user, isInitialized, fetchSpeeches]);
 
   return (
     <AuthContext.Provider value={{ 
