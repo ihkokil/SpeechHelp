@@ -51,18 +51,27 @@ export const useSpeechModals = () => {
       if (selectedSpeech.content && selectedSpeech.content.includes('{"content"')) {
         try {
           const jsonContent = JSON.parse(selectedSpeech.content);
-          finalContent = JSON.stringify({ ...jsonContent, content });
+          jsonContent.content = content;
+          finalContent = JSON.stringify(jsonContent);
           console.log('Updated JSON content structure');
         } catch (e) {
           console.error('Error updating JSON content structure:', e);
         }
       }
       
+      console.log('Updating speech:', { 
+        id: selectedSpeech.id, 
+        title, 
+        contentLength: finalContent.length 
+      });
+      
       await updateSpeech(selectedSpeech.id, title, finalContent);
+      
       toast({
         title: "Speech updated",
         description: "Your speech has been updated successfully."
       });
+      
       return true;
     } catch (error) {
       console.error('Error updating speech:', error);
