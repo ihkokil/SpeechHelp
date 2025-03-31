@@ -20,6 +20,14 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent }) => {
   const [category, setCategory] = useState('');
   const [duration, setDuration] = useState('');
   
+  // Speech type options - matching the available types in the system
+  const speechTypes = [
+    'wedding', 'graduation', 'birthday', 'business', 'tedtalk', 
+    'motivational', 'funeral', 'keynote', 'social', 'farewell',
+    'informative', 'persuasive', 'entertaining', 'retirement', 
+    'award', 'personal', 'academic', 'other'
+  ];
+  
   const handleAddEvent = () => {
     if (!title || !date || !category || !duration) {
       // Display error or validation message
@@ -92,14 +100,14 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent }) => {
         <div>
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger>
-              <SelectValue placeholder="Category" />
+              <SelectValue placeholder="Select Speech Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="business">Business</SelectItem>
-              <SelectItem value="personal">Personal</SelectItem>
-              <SelectItem value="academic">Academic</SelectItem>
-              <SelectItem value="social">Social</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              {speechTypes.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
