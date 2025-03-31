@@ -7,14 +7,14 @@ import MobileNav from "./navigation/MobileNav";
 const Navbar = () => {
   const isScrolled = useScrollDetection();
   
-  // Using Supabase hosted SVG file
+  // Using Supabase hosted SVG file for logo
   const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
         isScrolled
-          ? "bg-white/50 backdrop-blur-md shadow-md py-3"
+          ? "bg-white/80 backdrop-blur-md shadow-md py-3"
           : "bg-white py-5"
       }`}
     >
@@ -28,7 +28,7 @@ const Navbar = () => {
             <img 
               src={logoPath}
               alt="SpeechHelp Logo" 
-              className="h-12" // Increased from h-10 to h-12 (20% increase)
+              className="h-12"
             />
           </Link>
 
