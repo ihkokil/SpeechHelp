@@ -106,7 +106,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange, onUse
       // Reset the form
       form.reset();
       
-      // Close the dialog
+      // Only close the dialog after successful submission
       onOpenChange(false);
     } catch (error) {
       console.error('Exception creating user:', error);
@@ -120,8 +120,20 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange, onUse
     }
   };
   
+  // Handle dialog close
+  const handleDialogClose = (open: boolean) => {
+    // Only allow closing if we're not in the middle of submitting
+    if (!isSubmitting) {
+      // If the dialog is closing, reset the form
+      if (!open) {
+        form.reset();
+      }
+      onOpenChange(open);
+    }
+  };
+  
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>
@@ -226,8 +238,10 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ open, onOpenChange, onUse
                 type="button" 
                 variant="outline" 
                 onClick={() => {
-                  form.reset();
-                  onOpenChange(false);
+                  if (!isSubmitting) {
+                    form.reset();
+                    onOpenChange(false);
+                  }
                 }}
                 disabled={isSubmitting}
               >
