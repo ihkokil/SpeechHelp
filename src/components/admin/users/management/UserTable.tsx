@@ -77,15 +77,19 @@ export const UserTable: React.FC<UserTableProps> = ({
     setIsDeleteDialogOpen(true);
   };
 
-  console.log('UserTable: Rendering with', filteredUsers.length, 'filtered users');
+  const isAllSelected = filteredUsers.length > 0 && 
+    selectedUsers.length === filteredUsers.length &&
+    filteredUsers.every(user => selectedUsers.includes(user.id));
+
+  console.log('UserTable: Rendering with', filteredUsers.length, 'filtered users, all selected:', isAllSelected);
 
   return (
     <div className="rounded-md border">
       <Table>
         <UserTableHeader 
-          onToggleAll={toggleAllUsers}
-          isAllSelected={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
-          disabled={isLoading}
+          onToggleAll={() => toggleAllUsers()}
+          isAllSelected={isAllSelected}
+          disabled={isLoading || filteredUsers.length === 0}
         />
         <TableBody>
           {isLoading ? (
