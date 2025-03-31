@@ -30,12 +30,13 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
 }) => {
   const fullName = getUserName(user);
   
-  // Handle checkbox clicks with proper propagation stopping
+  // Handle checkbox click with proper propagation stopping
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    onToggleSelection(user);
   };
   
-  // Handle row clicks for selection
+  // Handle row click for selection
   const handleRowClick = () => {
     onToggleSelection(user);
   };
@@ -45,7 +46,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       <TableCell className="p-4">
         <Checkbox 
           checked={isSelected} 
-          onCheckedChange={() => onToggleSelection(user)} 
           onClick={handleCheckboxClick}
           className="checkbox"
         />
@@ -84,7 +84,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
           {user.is_active !== false ? 'active' : 'inactive'}
         </Badge>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
         <UserActionMenu 
           user={user}
           onViewDetails={onViewDetails}
