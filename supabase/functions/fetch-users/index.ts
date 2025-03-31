@@ -32,6 +32,8 @@ serve(async (req) => {
       throw error;
     }
     
+    console.log(`Fetched ${users.users.length} users from auth.users`);
+    
     // Fetch all profiles to join with users
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
@@ -41,6 +43,8 @@ serve(async (req) => {
       console.error('Error fetching profiles:', profilesError);
       // We'll continue but with empty profiles
     }
+    
+    console.log(`Fetched ${profiles?.length || 0} profiles`);
     
     // Create a map of profiles by id for faster lookup
     const profilesMap = new Map();
@@ -66,6 +70,8 @@ serve(async (req) => {
         profile
       };
     });
+    
+    console.log(`Returning ${enhancedUsers.length} enhanced users`);
     
     // Return the enhanced users
     return new Response(

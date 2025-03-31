@@ -306,7 +306,6 @@ export const useUserManagement = () => {
     });
   }, [toast]);
 
-  // Clear selected data when component unmounts
   useEffect(() => {
     return () => {
       console.log('useUserManagement cleanup');
@@ -316,6 +315,14 @@ export const useUserManagement = () => {
       setIsPermissionsDialogOpen(false);
     };
   }, []);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      console.log('UserManagement: Initial fetch of users');
+      fetchUsers();
+      isInitialMount.current = false;
+    }
+  }, [fetchUsers]);
 
   return {
     searchTerm,
