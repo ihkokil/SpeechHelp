@@ -1,9 +1,10 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const MySpeeches = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -11,6 +12,7 @@ const MySpeeches = () => {
   const navigate = useNavigate();
   const [initialFilter, setInitialFilter] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const fetchedRef = useRef(false);
   
   // Check for filter query param
   useEffect(() => {
@@ -27,22 +29,28 @@ const MySpeeches = () => {
   // Fetch speeches when component mounts or when user changes
   useEffect(() => {
     const refreshSpeeches = async () => {
-      if (user && !isLoading) {
+      if (user && !isLoading && !fetchedRef.current) {
         setIsRefreshing(true);
+        fetchedRef.current = true;
+        
         try {
-          console.log('Fetching speeches for user:', user.id);
+          console.log('MySpeeches: Fetching speeches for user:', user.id);
           await fetchSpeeches();
         } catch (error) {
           console.error('Error fetching speeches:', error);
+          toast.error('Could not load your speeches. Please try again later.');
         } finally {
           setIsRefreshing(false);
         }
       }
     };
     
-    if (user) {
-      refreshSpeeches();
-    }
+    refreshSpeeches();
+    
+    // Reset fetchedRef when user changes
+    return () => {
+      fetchedRef.current = false;
+    };
   }, [user, fetchSpeeches, isLoading]);
 
   if (isLoading || isRefreshing) {
@@ -80,7 +88,10 @@ const MySpeeches = () => {
             </p>
           </div>
           
-          <SpeechesManager speeches={speeches} initialFilter={initialFilter} />
+          <SpeechesManager 
+            speeches={speeches} 
+            initialFilter={initialFilter} 
+          />
         </main>
       </div>
     </div>
