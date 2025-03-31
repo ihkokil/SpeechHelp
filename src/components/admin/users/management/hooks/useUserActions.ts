@@ -6,13 +6,14 @@ import { useUserCrud } from './user-actions/useUserCrud';
 import { useUserDetails } from './user-actions/useUserDetails';
 import { useSubscriptionActions } from './user-actions/useSubscriptionActions';
 import { usePermissionActions } from './user-actions/usePermissionActions';
+import { useState } from 'react';
 
 export const useUserActions = () => {
-  // Create a dummy setState function to pass to useActionState
-  const dummySetState = () => {};
+  // Create a local state to track action loading
+  const [isActionLoading, setIsActionLoading] = useState(false);
   
-  // Get the setActionLoading function by providing the dummy setState function
-  const { setActionLoading } = useActionState(dummySetState);
+  // Use the actual state setter instead of a dummy function
+  const { setActionLoading } = useActionState(setIsActionLoading);
   
   // Initialize hooks with necessary parameters
   const { 
@@ -27,15 +28,20 @@ export const useUserActions = () => {
     handleToggleUserSubscription
   } = useSubscriptionActions(setActionLoading);
   
+  // Create local states for user details and permissions dialogs
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
+  
   const {
     handleViewUserDetails,
     handleCloseUserDetails,
     handleManagePermissions
-  } = useUserDetails(dummySetState, dummySetState, dummySetState);
+  } = useUserDetails(setSelectedUser, setIsDetailsOpen, setIsPermissionsDialogOpen);
   
-  const { handlePermissionsUpdated } = usePermissionActions(dummySetState);
+  const { handlePermissionsUpdated } = usePermissionActions(setIsPermissionsDialogOpen);
   
-  // Return all actions from sub-hooks
+  // Return all actions and state from sub-hooks
   return {
     // User CRUD operations
     handleDeleteUsers,
@@ -54,5 +60,12 @@ export const useUserActions = () => {
     
     // Permission operations
     handlePermissionsUpdated,
+    
+    // States
+    isActionLoading,
+    selectedUser,
+    isDetailsOpen,
+    isPermissionsDialogOpen,
+    setIsPermissionsDialogOpen
   };
 };
