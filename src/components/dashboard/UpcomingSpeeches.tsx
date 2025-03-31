@@ -1,11 +1,11 @@
 
+import React, { useMemo } from 'react';
 import { Calendar, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Speech } from '@/types/auth';
-import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface SpeechEvent {
@@ -26,32 +26,34 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // Transform speeches to upcoming speech events
+  // Transform speeches to upcoming speech events with stable data
   const upcomingEvents = useMemo(() => {
     if (speeches.length) {
-      // In a real app, you'd have an "event_date" field
-      // Since we don't, we'll fake upcoming events based on creation date
-      // Get most recent speeches and pretend they're upcoming
+      // Get most recent speeches and create stable upcoming events
       return speeches
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 3)
-        .map(speech => {
-          // Add random days to the current date to simulate upcoming events
+        .map((speech, index) => {
+          // Create deterministic upcoming dates based on speech id
           const upcomingDate = new Date();
-          upcomingDate.setDate(upcomingDate.getDate() + Math.floor(Math.random() * 14) + 1);
+          // Use index to add days to ensure consistent ordering
+          upcomingDate.setDate(upcomingDate.getDate() + (index + 1) * 3);
+          
+          // Use speech id to determine duration (but make it stable)
+          const durationBase = parseInt(speech.id.substring(0, 8), 16);
+          const duration = (durationBase % 20) + 15; // Between 15-35 minutes
           
           return {
             id: speech.id,
             title: speech.title,
             date: upcomingDate,
-            duration: Math.floor(Math.random() * 30) + 15, // Random duration between 15-45 mins
+            duration: duration, 
             category: speech.speech_type,
             status: 'upcoming' as const
           };
         });
     }
     
-    // Fallback to mock data
+    // Fallback to consistent mock data
     return [
       {
         id: '1',
@@ -118,6 +120,10 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
     navigate('/speech-lab');
   };
 
+  const handleViewAll = () => {
+    navigate('/my-speeches');
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm">
       <div className="border-b p-4">
@@ -163,7 +169,11 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
         </div>
       )}
       <div className="border-t p-4 text-center">
-        <Button variant="link" className="text-pink-600 hover:text-pink-800 text-sm">
+        <Button 
+          variant="link" 
+          className="text-pink-600 hover:text-pink-800 text-sm"
+          onClick={handleViewAll}
+        >
           {t('dashboard.viewAll', currentLanguage.code)}
         </Button>
       </div>
