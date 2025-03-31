@@ -90,16 +90,16 @@ const DashboardSidebar = () => {
   const fullName = firstName && lastName ? `${firstName} ${lastName}` : displayName;
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen">
+    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen shadow-md">
       {/* Logo - Updated to match homepage logo with link to home */}
-      <div className="p-6">
+      <div className="p-6 border-b border-gray-100">
         <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <img src={logoPath} alt="Speech Help" className="h-10" />
         </Link>
       </div>
 
       {/* User Info */}
-      <div className="px-6 mb-6">
+      <div className="px-6 py-4 border-b border-gray-100">
         <div className="flex items-center">
           <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-medium">
             {user?.email ? user.email[0].toUpperCase() : '?'}
@@ -116,7 +116,7 @@ const DashboardSidebar = () => {
       </div>
 
       {/* Primary Navigation */}
-      <nav className="flex-1 overflow-y-auto">
+      <nav className="flex-1 overflow-y-auto py-4">
         <div className="px-3">
           <div className="space-y-1">
             {primaryNavItems.map((item) => (
@@ -125,7 +125,7 @@ const DashboardSidebar = () => {
                 to={item.href}
                 className={cn(
                   "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                  currentPath === item.href 
+                  currentPath.startsWith(item.href) 
                     ? "bg-purple-50 text-purple-700" 
                     : "text-gray-700 hover:bg-gray-100"
                 )}
@@ -152,7 +152,7 @@ const DashboardSidebar = () => {
                 to={item.href}
                 className={cn(
                   "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                  currentPath === item.href 
+                  currentPath.startsWith(item.href) 
                     ? "bg-purple-50 text-purple-700" 
                     : "text-gray-700 hover:bg-gray-100"
                 )}

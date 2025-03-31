@@ -9,13 +9,13 @@ interface SpeechLabLayoutProps {
 const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex">
-      {/* Dashboard Sidebar - Fixed position */}
-      <div className="fixed top-0 left-0 h-screen">
+      {/* Dashboard Sidebar - Fixed position with full visibility */}
+      <div className="fixed top-0 left-0 h-full z-40">
         <DashboardSidebar />
       </div>
       
-      {/* Main Content - With left padding to account for fixed sidebar */}
-      <div className="flex-1 ml-64 bg-gray-50 overflow-auto">
+      {/* Main Content - With left margin to account for fixed sidebar */}
+      <div className="flex-1 ml-64 bg-gray-50 overflow-auto min-h-screen">
         {children}
       </div>
     </div>
