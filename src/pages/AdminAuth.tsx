@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Navigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -12,8 +12,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { toast } from '@/hooks/use-toast';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, CheckCircle, LockKeyhole, Shield, Settings } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, CheckCircle, LockKeyhole, Shield, Settings, Info } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -41,6 +42,30 @@ const AdminAuth = () => {
   const [setupError, setSetupError] = useState<string | null>(null);
   const [setupSuccess, setSetupSuccess] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [deploymentError, setDeploymentError] = useState<boolean>(false);
+  const [checkingDeployment, setCheckingDeployment] = useState<boolean>(true);
+
+  useEffect(() => {
+    const checkFunctionDeployment = async () => {
+      try {
+        await supabase.functions.invoke('admin-auth', {
+          body: { action: 'ping' },
+        }).catch(error => {
+          if (error.message?.includes('not found') || error.message?.includes('404')) {
+            console.error('Admin auth function not deployed:', error);
+            setDeploymentError(true);
+          }
+          return { error };
+        });
+      } catch (error) {
+        console.error('Function deployment check error:', error);
+      } finally {
+        setCheckingDeployment(false);
+      }
+    };
+
+    checkFunctionDeployment();
+  }, []);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -88,6 +113,10 @@ const AdminAuth = () => {
           description: result.error || "Invalid credentials. Please try again.",
           variant: "destructive",
         });
+
+        if (result.error?.includes('not available') || result.error?.includes('not deployed')) {
+          setDeploymentError(true);
+        }
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -198,6 +227,33 @@ const AdminAuth = () => {
         />
         <div className="text-2xl font-bold text-pink-600">Admin Portal</div>
       </div>
+      
+      {deploymentError && (
+        <Alert variant="destructive" className="mb-4 max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Deployment Issue Detected</AlertTitle>
+          <AlertDescription>
+            The admin authentication service is not available. The Supabase Edge Function 'admin-auth' may not be deployed correctly.
+            <div className="mt-2">
+              <strong>Troubleshooting:</strong>
+              <ul className="list-disc pl-5 mt-1 text-sm">
+                <li>Check if your Supabase project is properly configured</li>
+                <li>Verify that the admin-auth function is deployed in your Supabase project</li>
+                <li>Try refreshing the page after a few moments</li>
+              </ul>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {checkingDeployment && (
+        <Alert className="mb-4 max-w-md bg-blue-50 border-blue-200">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-700">
+            Checking authentication service availability...
+          </AlertDescription>
+        </Alert>
+      )}
       
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
