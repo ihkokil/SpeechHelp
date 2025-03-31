@@ -21,6 +21,8 @@ export const useUserManagementUIState = () => {
     setSelectedUser(null);
   };
 
+  console.log("useUserManagementUIState - isAddUserDialogOpen:", isAddUserDialogOpen);
+
   return {
     // Dialog and drawer states
     isDeleteDialogOpen,

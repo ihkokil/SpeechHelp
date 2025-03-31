@@ -68,6 +68,8 @@ const UserManagement = () => {
     }
   };
 
+  console.log("UserManagement rendering, isAddUserDialogOpen:", isAddUserDialogOpen);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">

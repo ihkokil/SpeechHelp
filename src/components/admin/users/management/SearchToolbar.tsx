@@ -35,8 +35,10 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
   setIsDeleteDialogOpen,
   setIsAddUserDialogOpen
 }) => {
-  const handleAddUserClick = () => {
-    console.log("Add User button clicked");
+  const handleAddUserClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Add User button clicked, opening dialog");
     setIsAddUserDialogOpen(true);
   };
 
@@ -98,7 +100,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
           <FileUp className="mr-2 h-4 w-4" />
           Import
         </Button>
-        <Button onClick={handleAddUserClick}>
+        <Button onClick={handleAddUserClick} type="button">
           <UserPlus className="mr-2 h-4 w-4" />
           Add User
         </Button>
