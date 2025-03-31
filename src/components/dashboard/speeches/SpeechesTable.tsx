@@ -1,4 +1,3 @@
-
 import { 
   Table, 
   TableBody, 
@@ -27,7 +26,6 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   const isMobile = useIsMobile();
   
   const formatDate = (dateString: string) => {
-    // Ensure we're parsing the ISO string correctly before formatting
     const date = parseISO(dateString);
     return format(date, isMobile ? 'MM/dd/yy' : 'MMM d, yyyy');
   };
@@ -46,7 +44,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
               <TableHead className="w-[40%]"><Translate text="common.title" /></TableHead>
               <TableHead className="w-[16%] text-center hidden md:table-cell"><Translate text="common.type" /></TableHead>
               <TableHead className="w-[13%] hidden md:table-cell"><Translate text="dashboard.created" /></TableHead>
-              <TableHead className="w-[13%] hidden md:table-cell"><Translate text="dashboard.modified" /></TableHead>
+              <TableHead className="w-[13%] hidden md:table-cell"><Translate text="dashboard.Modified" /></TableHead>
               <TableHead className="w-[18%] text-right"><Translate text="common.actions" /></TableHead>
             </TableRow>
           </TableHeader>
