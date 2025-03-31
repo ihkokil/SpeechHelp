@@ -5,5 +5,6 @@ export interface SpeechEvent {
   date: Date;
   duration: number; // in minutes
   category: string;
-  status: 'upcoming' | 'in-progress' | 'completed';
+  status?: 'upcoming' | 'in-progress' | 'completed';
+  createdAt?: Date;
 }

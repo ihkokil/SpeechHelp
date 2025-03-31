@@ -32,7 +32,8 @@ const EventForm: React.FC<EventFormProps> = ({ onAddEvent }) => {
       date: date as Date,
       category,
       duration: parseInt(duration),
-      createdAt: new Date()
+      createdAt: new Date(),
+      status: 'upcoming'
     };
     
     onAddEvent(newEvent);
