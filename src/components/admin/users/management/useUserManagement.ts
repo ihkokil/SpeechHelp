@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useFetchUsers } from './hooks/useFetchUsers';
 import { useUserSearch } from './hooks/useUserSearch';
 import { useUserSelection } from './hooks/useUserSelection';
@@ -44,7 +44,8 @@ export const useUserManagement = () => {
     handleCloseUserDetails,
     handleToggleUserSubscription: baseHandleToggleUserSubscription,
     handleManagePermissions,
-    handlePermissionsUpdated: baseHandlePermissionsUpdated
+    handlePermissionsUpdated: baseHandlePermissionsUpdated,
+    reset: resetUserActions
   } = useUserActions();
   
   // Wrapper functions to include users and setUsers
@@ -61,18 +62,22 @@ export const useUserManagement = () => {
   const handlePermissionsUpdated = (updatedUser: any) => 
     baseHandlePermissionsUpdated(updatedUser, users, setUsers);
 
+  // Global cleanup function
+  const cleanup = useCallback(() => {
+    setSelectedUsers([]);
+    resetUserActions();
+  }, [setSelectedUsers, resetUserActions]);
+
   // Cleanup effect
   useEffect(() => {
     return () => {
-      console.log('useUserManagement cleanup');
-      setSelectedUsers([]);
+      cleanup();
     };
-  }, [setSelectedUsers]);
+  }, [cleanup]);
 
   // Initial fetch effect
   useEffect(() => {
     if (isInitialMount.current) {
-      console.log('UserManagement: Initial fetch of users');
       fetchUsers();
       isInitialMount.current = false;
     }
@@ -104,6 +109,7 @@ export const useUserManagement = () => {
     handleCloseUserDetails,
     handleToggleUserSubscription,
     handleManagePermissions,
-    handlePermissionsUpdated
+    handlePermissionsUpdated,
+    cleanup
   };
 };

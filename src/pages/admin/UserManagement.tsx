@@ -37,24 +37,21 @@ const UserManagement = () => {
     handleCloseUserDetails,
     handleToggleUserSubscription,
     handleManagePermissions,
-    handlePermissionsUpdated
+    handlePermissionsUpdated,
+    cleanup
   } = useUserManagement();
   
   const { toast } = useToast();
   
-  // Only fetch users on initial mount
+  // Fetch users on initial mount
   useEffect(() => {
-    console.log('UserManagement: Fetching users on mount');
     fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  console.log('UserManagement rendering with state:', { 
-    selectedUsersCount: selectedUsers.length,
-    isDetailsOpen,
-    selectedUser: selectedUser?.id,
-    usersCount: users.length
-  });
+    
+    // Clean up all state when component unmounts
+    return () => {
+      cleanup();
+    };
+  }, [fetchUsers, cleanup]);
 
   return (
     <div className="space-y-6">

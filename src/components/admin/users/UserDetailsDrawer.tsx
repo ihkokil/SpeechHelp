@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { User } from './types';
 import { DrawerSheetContent } from './details/DrawerSheetContent';
@@ -21,36 +21,30 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
     isLoadingSpeeches,
     userJoinedDays,
     totalActivityTime,
+    resetState
   } = useUserDetails(user, open);
   
-  console.log("UserDetailsDrawer render:", { user: user?.id, open });
-  
-  const handleCloseClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('UserDetailsDrawer: close button clicked');
-    onClose();
-  };
+  // Handle cleanup when drawer closes
+  useEffect(() => {
+    if (!open) {
+      resetState();
+    }
+  }, [open, resetState]);
   
   // When sheet is closed with escape key or by clicking outside
   const handleSheetOpenChange = (isOpen: boolean) => {
-    console.log('UserDetailsDrawer: Sheet open state changed to', isOpen);
     if (!isOpen) {
-      // Use setTimeout to avoid React state update conflicts
-      setTimeout(() => {
-        onClose();
-      }, 0);
+      onClose();
     }
   };
 
-  // Always render the component but conditionally show content
   return (
     <Sheet open={open} onOpenChange={handleSheetOpenChange}>
       <SheetContent className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto">
         {user && (
           <DrawerSheetContent
             user={user}
-            onClose={handleCloseClick}
+            onClose={onClose}
             speeches={speeches}
             isLoadingSpeeches={isLoadingSpeeches}
             userJoinedDays={userJoinedDays}

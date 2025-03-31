@@ -12,6 +12,16 @@ export const useUserActions = () => {
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   const { toast } = useToast();
 
+  // Reset all state
+  const reset = useCallback(() => {
+    setIsActionLoading(false);
+    setSelectedUser(null);
+    setIsDetailsOpen(false);
+    setIsDeleteDialogOpen(false);
+    setIsAddUserDialogOpen(false);
+    setIsPermissionsDialogOpen(false);
+  }, []);
+
   const handleDeleteUsers = useCallback(async (selectedUsers: string[], users: User[], setUsers: (users: User[]) => void) => {
     console.log('Deleting users:', selectedUsers);
     setIsActionLoading(true);
@@ -78,8 +88,6 @@ export const useUserActions = () => {
     
     // Then open the drawer
     setIsDetailsOpen(true);
-    
-    console.log('UserManagement: Details drawer should now be open');
   }, []);
 
   const handleCloseUserDetails = useCallback(() => {
@@ -88,10 +96,10 @@ export const useUserActions = () => {
     // Close the drawer first
     setIsDetailsOpen(false);
     
-    // Clear the selected user
-    setSelectedUser(null);
-    
-    console.log('UserManagement: Selected user cleared');
+    // Clear the selected user after a short delay to avoid state conflicts
+    setTimeout(() => {
+      setSelectedUser(null);
+    }, 300);
   }, []);
 
   const handleToggleUserSubscription = useCallback(async (userId: string, extensionDays: number = 30, users: User[], setUsers: (users: User[]) => void) => {
@@ -145,8 +153,6 @@ export const useUserActions = () => {
     
     // Open the permissions dialog
     setIsPermissionsDialogOpen(true);
-    
-    console.log('UserManagement: Permissions dialog should now be open');
   }, []);
 
   const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[], setUsers: (users: User[]) => void) => {
@@ -182,6 +188,7 @@ export const useUserActions = () => {
     handleCloseUserDetails,
     handleToggleUserSubscription,
     handleManagePermissions,
-    handlePermissionsUpdated
+    handlePermissionsUpdated,
+    reset
   };
 };
