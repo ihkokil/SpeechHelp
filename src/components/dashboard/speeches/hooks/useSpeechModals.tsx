@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Speech } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,11 +13,24 @@ export const useSpeechModals = () => {
   const handleEditModalOpen = (open: boolean, selectedSpeech: Speech | null) => {
     // If opening the modal, set the initial values
     if (open && selectedSpeech) {
+      console.log('Initializing edit form with speech:', selectedSpeech);
       setTitle(selectedSpeech.title);
       
-      // Extract the content for editing, making sure we get the actual content and not JSON wrapper
-      const extractedContent = getEditableContent(selectedSpeech.content, true, true);
-      setContent(extractedContent);
+      try {
+        // Try to extract content from JSON if it's in that format
+        if (selectedSpeech.content && selectedSpeech.content.includes('{"content"')) {
+          const jsonContent = JSON.parse(selectedSpeech.content);
+          setContent(jsonContent.content || '');
+        } else {
+          // Otherwise use the content as is
+          setContent(selectedSpeech.content || '');
+        }
+        console.log('Content successfully extracted');
+      } catch (error) {
+        console.error('Error parsing speech content:', error);
+        // Fallback to raw content if parsing fails
+        setContent(selectedSpeech.content || '');
+      }
     }
     
     return open;
@@ -30,7 +42,18 @@ export const useSpeechModals = () => {
     
     setIsSubmitting(true);
     try {
-      await updateSpeech(selectedSpeech.id, title, content);
+      // For JSON content, we need to preserve the structure
+      let finalContent = content;
+      if (selectedSpeech.content && selectedSpeech.content.includes('{"content"')) {
+        try {
+          const jsonContent = JSON.parse(selectedSpeech.content);
+          finalContent = JSON.stringify({ ...jsonContent, content });
+        } catch (e) {
+          console.error('Error updating JSON content structure:', e);
+        }
+      }
+      
+      await updateSpeech(selectedSpeech.id, title, finalContent);
       return true;
     } catch (error) {
       console.error('Error updating speech:', error);

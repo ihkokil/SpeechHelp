@@ -23,12 +23,24 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
   showFormattedContent = false
 }) => {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>(forceEditMode ? 'edit' : 'edit');
-  const [processedContent, setProcessedContent] = useState(content);
+  const [processedContent, setProcessedContent] = useState(content || '');
   const [htmlContent, setHtmlContent] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Log initial content for debugging
+  useEffect(() => {
+    console.log('SpeechContentEditor initialized with content:', { 
+      rawContent: content,
+      preserveHtml,
+      forceEditMode,
+      showFormattedContent
+    });
+  }, []);
+
   // Process content on initial load and when content changes
   useEffect(() => {
+    console.log('Content changed, processing:', content);
+    
     // Make sure we have content to display
     if (!content) {
       console.warn('No content provided to SpeechContentEditor');
@@ -37,64 +49,46 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
       return;
     }
 
-    // Extract content appropriately for editing
-    const extractedContent = getEditableContent(content, preserveHtml, showFormattedContent);
+    // Try to format the content properly for the editor
+    let extractedContent = content;
+    
+    // If it's JSON content, extract the actual content
+    if (content.includes('{"content"')) {
+      try {
+        const jsonContent = JSON.parse(content);
+        extractedContent = jsonContent.content || content;
+        console.log('Extracted content from JSON:', extractedContent);
+      } catch (e) {
+        console.error('Failed to parse JSON content', e);
+      }
+    }
+    
     setProcessedContent(extractedContent);
-
-    // Generate HTML representation for the editor when in preview mode
-    const formattedHtml = formatSpeechContent(content);
+    
+    // Generate HTML representation for preview mode
+    const formattedHtml = formatSpeechContent(extractedContent);
     setHtmlContent(formattedHtml);
+    
   }, [content, preserveHtml, showFormattedContent]);
 
-  // Custom handler for content changes to maintain JSON structure if it exists
+  // Custom handler for content changes
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setProcessedContent(newValue);
     
-    // If original content was JSON and we need to preserve structure
-    if (content && content.includes('{"content"') && preserveHtml) {
-      try {
-        const jsonContent = JSON.parse(content);
-        // Create new event with updated content structure
-        const newEvent = {
-          ...e,
-          target: {
-            ...e.target,
-            value: JSON.stringify({
-              ...jsonContent,
-              content: newValue
-            })
-          }
-        };
-        onContentChange(newEvent as React.ChangeEvent<HTMLTextAreaElement>);
-      } catch (e) {
-        // If JSON parsing fails, just update with the raw value
-        onContentChange({
-          ...e,
-          target: {
-            ...e.target,
-            value: newValue
-          }
-        } as React.ChangeEvent<HTMLTextAreaElement>);
+    // Just pass the updated value directly
+    onContentChange({
+      ...e,
+      target: {
+        ...e.target,
+        value: newValue
       }
-    } else {
-      // If not JSON, just update normally
-      onContentChange({
-        ...e,
-        target: {
-          ...e.target,
-          value: newValue
-        }
-      } as React.ChangeEvent<HTMLTextAreaElement>);
-    }
+    } as React.ChangeEvent<HTMLTextAreaElement>);
   };
 
   const handleViewModeChange = (mode: 'edit' | 'preview') => {
     setViewMode(mode);
   };
-
-  // Get the appropriate content for editing
-  const editableContent = processedContent || '';
 
   return (
     <div>
@@ -113,7 +107,7 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
 
       {viewMode === 'edit' ? (
         <EditModeTextarea
-          content={editableContent}
+          content={processedContent}
           onContentChange={handleContentChange}
           forceEditMode={forceEditMode}
           ref={textareaRef}

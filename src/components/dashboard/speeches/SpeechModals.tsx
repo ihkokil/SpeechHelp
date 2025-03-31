@@ -38,11 +38,13 @@ const SpeechModals = ({
   
   // Handle edit modal opening/closing
   const onEditModalOpenChange = (open: boolean) => {
+    console.log('Edit modal state changing:', { open, selectedSpeech });
     setIsEditModalOpen(handleEditModalOpen(open, selectedSpeech));
   };
   
   // Handle speech update
   const onSaveEdit = async () => {
+    console.log('Saving speech with:', { title, content });
     const success = await handleUpdateSpeech(selectedSpeech);
     if (success) {
       setIsEditModalOpen(false);
