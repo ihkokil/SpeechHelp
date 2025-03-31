@@ -36,7 +36,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
           <TableHead><Translate text="common.title" /></TableHead>
           <TableHead className="text-center"><Translate text="common.type" /></TableHead>
           <TableHead><Translate text="dashboard.created" /></TableHead>
-          <TableHead><Translate text="dashboard.lastUpdated" /></TableHead>
+          <TableHead><Translate text="dashboard.modified" /></TableHead>
           <TableHead className="text-right"><Translate text="common.actions" /></TableHead>
         </TableRow>
       </TableHeader>

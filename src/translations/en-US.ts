@@ -44,7 +44,7 @@ export const enUS = {
   'dashboard.title': 'Title',
   'dashboard.type': 'Type',
   'dashboard.created': 'Created',
-  'dashboard.updated': 'Last Updated',
+  'dashboard.modified': 'Modified',
   'dashboard.actions': 'Actions',
   'dashboard.viewAll': 'View All',
   'dashboard.close': 'Close',
