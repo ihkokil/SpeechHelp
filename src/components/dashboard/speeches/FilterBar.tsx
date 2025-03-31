@@ -1,23 +1,19 @@
 
-import { useState } from 'react';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
   SelectGroup,
-  SelectLabel
+  SelectLabel,
 } from '@/components/ui/select';
-import { SearchIcon } from 'lucide-react';
-import Translate from '@/components/Translate';
 import { speechTypesData } from '@/components/speech/data/speechTypesData';
-import { useTranslatedSpeechType } from './speech-utils';
 
-export type SortOption = 'newest' | 'oldest' | 'title';
-export type FilterOption = string;
+export type FilterOption = 'all' | 'upcoming' | string;
+export type SortOption = 'newest' | 'oldest' | 'title-asc' | 'title-desc';
 
 interface FilterBarProps {
   searchQuery: string;
@@ -25,7 +21,7 @@ interface FilterBarProps {
   filterType: FilterOption;
   setFilterType: (type: FilterOption) => void;
   sortBy: SortOption;
-  setSortBy: (option: SortOption) => void;
+  setSortBy: (sort: SortOption) => void;
 }
 
 const FilterBar = ({
@@ -34,69 +30,67 @@ const FilterBar = ({
   filterType,
   setFilterType,
   sortBy,
-  setSortBy
+  setSortBy,
 }: FilterBarProps) => {
-  const { getTranslatedTypeLabel } = useTranslatedSpeechType();
-  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div>
-        <Label htmlFor="search-speeches" className="mb-1 block text-sm">
-          <Translate text="common.search" fallback="Search Speeches" />
-        </Label>
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+    <div className="bg-white p-4 rounded-lg border mb-6">
+      <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+        {/* Search */}
+        <div className="relative flex-1">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
           <Input
-            id="search-speeches"
             placeholder="Search speeches..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-8"
           />
         </div>
-      </div>
-      
-      <div>
-        <Label htmlFor="filter-type" className="mb-1 block text-sm">
-          <Translate text="dashboard.filterByType" fallback="Filter by Type" />
-        </Label>
-        <Select
-          value={filterType}
-          onValueChange={(value) => setFilterType(value as FilterOption)}
-        >
-          <SelectTrigger id="filter-type">
-            <SelectValue placeholder="All Types" />
-          </SelectTrigger>
-          <SelectContent className="max-h-[300px] overflow-y-auto">
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectGroup>
-              {speechTypesData.map((type) => (
-                <SelectItem key={type.id} value={type.id}>
-                  {getTranslatedTypeLabel(type.id)}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div>
-        <Label htmlFor="sort-by" className="mb-1 block text-sm">
-          <Translate text="dashboard.sortBy" fallback="Sort By" />
-        </Label>
-        <Select
-          value={sortBy}
-          onValueChange={(value) => setSortBy(value as SortOption)}
-        >
-          <SelectTrigger id="sort-by">
-            <SelectValue placeholder="Newest First" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">Newest First</SelectItem>
-            <SelectItem value="oldest">Oldest First</SelectItem>
-            <SelectItem value="title">Title A-Z</SelectItem>
-          </SelectContent>
-        </Select>
+        
+        {/* Filter by Type */}
+        <div className="w-full md:w-60">
+          <Select
+            value={filterType}
+            onValueChange={(value) => setFilterType(value as FilterOption)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by Type" />
+            </SelectTrigger>
+            <SelectContent className="max-h-60 overflow-y-auto">
+              <SelectGroup>
+                <SelectLabel>Filter Options</SelectLabel>
+                <SelectItem value="all">All Speeches</SelectItem>
+                <SelectItem value="upcoming">Upcoming Speeches</SelectItem>
+              </SelectGroup>
+              
+              <SelectGroup>
+                <SelectLabel>Speech Types</SelectLabel>
+                {speechTypesData.map((type) => (
+                  <SelectItem key={type.id} value={type.id}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {/* Sort */}
+        <div className="w-full md:w-60">
+          <Select
+            value={sortBy}
+            onValueChange={(value) => setSortBy(value as SortOption)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="oldest">Oldest First</SelectItem>
+              <SelectItem value="title-asc">Title (A-Z)</SelectItem>
+              <SelectItem value="title-desc">Title (Z-A)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   );

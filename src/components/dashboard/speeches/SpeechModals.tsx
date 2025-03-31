@@ -81,14 +81,14 @@ const SpeechModals = ({
           <ViewSpeechModal
             speech={selectedSpeech}
             isOpen={isViewModalOpen}
-            setIsOpen={setIsViewModalOpen}
+            onOpenChange={setIsViewModalOpen}
             onEditClick={onEditClick}
           />
           
           <EditSpeechModal
             speech={selectedSpeech}
             isOpen={isEditModalOpen}
-            setIsOpen={setIsEditModalOpen}
+            onOpenChange={setIsEditModalOpen}
             title={editTitle}
             setTitle={setEditTitle}
             content={editContent}
@@ -100,7 +100,7 @@ const SpeechModals = ({
           <DeleteSpeechAlert
             speech={selectedSpeech}
             isOpen={isDeleteAlertOpen}
-            setIsOpen={setIsDeleteAlertOpen}
+            onOpenChange={setIsDeleteAlertOpen}
             onDelete={handleDeleteSpeech}
             isSubmitting={isSubmitting}
           />

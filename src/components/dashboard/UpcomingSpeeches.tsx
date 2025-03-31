@@ -117,7 +117,7 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
     setEventType('');
     setEventTitle('');
     
-    toast.success(t('dashboard.eventAdded', currentLanguage.code, 'Event added successfully'));
+    toast.success(t('dashboard.eventAdded', currentLanguage.code));
   };
 
   const handleCreateSpeech = (event: SpeechEvent) => {
@@ -127,7 +127,9 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   };
 
   const handleViewAll = () => {
-    navigate('/my-speeches');
+    // Create a dedicated page for upcoming speeches or navigate with query params
+    localStorage.setItem('viewingUpcomingEvents', 'true');
+    navigate('/my-speeches?filter=upcoming');
   };
 
   const formatDate = (date: Date) => {

@@ -9,9 +9,10 @@ import { useSpeechesFilter } from './useSpeechesFilter';
 
 interface SpeechesManagerProps {
   speeches: Speech[];
+  initialFilter?: string;
 }
 
-const SpeechesManager = ({ speeches }: SpeechesManagerProps) => {
+const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterOption>('all');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -20,6 +21,13 @@ const SpeechesManager = ({ speeches }: SpeechesManagerProps) => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  
+  // Set initial filter based on prop
+  useEffect(() => {
+    if (initialFilter === 'upcoming') {
+      setFilterType('upcoming');
+    }
+  }, [initialFilter]);
   
   const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
   
