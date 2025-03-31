@@ -38,91 +38,95 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   };
 
   return (
-    <div className="w-full overflow-x-auto sm:overflow-visible">
-      <Table className="min-w-full">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[40%] sm:w-[30%]"><Translate text="common.title" /></TableHead>
-            <TableHead className="w-[15%] text-center hidden sm:table-cell"><Translate text="common.type" /></TableHead>
-            <TableHead className="w-[15%] hidden md:table-cell"><Translate text="dashboard.created" /></TableHead>
-            <TableHead className="w-[15%] hidden md:table-cell"><Translate text="dashboard.lastUpdated" /></TableHead>
-            <TableHead className="w-[25%] sm:w-[15%] text-right"><Translate text="common.actions" /></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {speeches.map((speech) => (
-            <TableRow key={speech.id}>
-              <TableCell className="font-medium max-w-[150px] sm:max-w-none">
-                <div className="flex flex-col">
-                  <span className="truncate">{speech.title}</span>
-                  <span className="sm:hidden mt-1">
+    <div className="overflow-x-auto">
+      <div className="min-w-full inline-block align-middle">
+        <div className="overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[35%]"><Translate text="common.title" /></TableHead>
+                <TableHead className="w-[15%] text-center hidden sm:table-cell"><Translate text="common.type" /></TableHead>
+                <TableHead className="w-[12%] hidden md:table-cell"><Translate text="dashboard.created" /></TableHead>
+                <TableHead className="w-[12%] hidden md:table-cell"><Translate text="dashboard.lastUpdated" /></TableHead>
+                <TableHead className="w-[15%] text-right"><Translate text="common.actions" /></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {speeches.map((speech) => (
+                <TableRow key={speech.id}>
+                  <TableCell className="font-medium max-w-[150px] sm:max-w-none">
+                    <div className="flex flex-col">
+                      <span className="truncate">{speech.title}</span>
+                      <span className="sm:hidden mt-1">
+                        <Badge 
+                          className={`${getTypeColor(speech.speech_type)} text-xs w-24 inline-flex justify-center`}
+                          title={getSpeechTypeLabel(speech.speech_type)}
+                        >
+                          {getSpeechTypeLabel(speech.speech_type)}
+                        </Badge>
+                      </span>
+                      <span className="text-xs text-muted-foreground md:hidden mt-1">
+                        {formatDate(speech.created_at)}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center hidden sm:table-cell">
                     <Badge 
-                      className={`${getTypeColor(speech.speech_type)} text-xs w-24 inline-flex justify-center`}
+                      className={`${getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center w-24 px-2 text-center`}
                       title={getSpeechTypeLabel(speech.speech_type)}
                     >
-                      {getSpeechTypeLabel(speech.speech_type)}
+                      <span className="truncate">{getSpeechTypeLabel(speech.speech_type)}</span>
                     </Badge>
-                  </span>
-                  <span className="text-xs text-muted-foreground md:hidden mt-1">
-                    {formatDate(speech.created_at)}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell className="text-center hidden sm:table-cell">
-                <Badge 
-                  className={`${getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center w-24 px-2 text-center`}
-                  title={getSpeechTypeLabel(speech.speech_type)}
-                >
-                  <span className="truncate">{getSpeechTypeLabel(speech.speech_type)}</span>
-                </Badge>
-              </TableCell>
-              <TableCell className="hidden md:table-cell text-sm whitespace-nowrap">
-                <div className="flex flex-col">
-                  <span>{formatDate(speech.created_at)}</span>
-                  <span className="text-xs text-muted-foreground">{formatTime(speech.created_at)}</span>
-                </div>
-              </TableCell>
-              <TableCell className="hidden md:table-cell text-sm whitespace-nowrap">
-                <div className="flex flex-col">
-                  <span>{formatDate(speech.updated_at)}</span>
-                  <span className="text-xs text-muted-foreground">{formatTime(speech.updated_at)}</span>
-                </div>
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-1">
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className="h-8 w-8"
-                    onClick={() => onView(speech)}
-                    title="View"
-                  >
-                    <EyeIcon className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => onEdit(speech)}
-                    title="Edit"
-                  >
-                    <EditIcon className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => onDelete(speech)}
-                    title="Delete"
-                  >
-                    <Trash2Icon className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-sm whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span>{formatDate(speech.created_at)}</span>
+                      <span className="text-xs text-muted-foreground">{formatTime(speech.created_at)}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-sm whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span>{formatDate(speech.updated_at)}</span>
+                      <span className="text-xs text-muted-foreground">{formatTime(speech.updated_at)}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right whitespace-nowrap">
+                    <div className="flex justify-end gap-1">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => onView(speech)}
+                        title="View"
+                      >
+                        <EyeIcon className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onEdit(speech)}
+                        title="Edit"
+                      >
+                        <EditIcon className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => onDelete(speech)}
+                        title="Delete"
+                      >
+                        <Trash2Icon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
     </div>
   );
 };
