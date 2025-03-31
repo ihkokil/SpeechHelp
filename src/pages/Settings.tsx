@@ -17,7 +17,7 @@ const Settings = () => {
 
   return (
     <SpeechLabLayout>
-      <div className="max-w-6xl mx-auto px-4 py-8 mt-4">
+      <div className="max-w-6xl mx-auto px-4 py-8 mt-8">
         <header className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">
             {t('settings.title', currentLanguage.code)}
@@ -28,52 +28,52 @@ const Settings = () => {
         </header>
 
         <Tabs defaultValue="profile" onValueChange={setActiveTab} value={activeTab} className="space-y-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-gradient-to-r from-pink-500 via-pink-500 to-purple-600 rounded-lg overflow-hidden h-14">
+          <div className="bg-white p-4 rounded-xl shadow-md">
+            <TabsList className="flex w-full max-w-2xl rounded-lg overflow-hidden h-16 p-1.5 bg-gray-100">
               <TabsTrigger 
                 value="profile" 
-                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <User className="h-5 w-5" />
-                <span>{t('settings.tabs.profile', currentLanguage.code)}</span>
+                <span className="text-sm font-medium">{t('settings.tabs.profile', currentLanguage.code)}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="billing" 
-                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <CreditCard className="h-5 w-5" />
-                <span>{t('settings.tabs.billing', currentLanguage.code)}</span>
+                <span className="text-sm font-medium">{t('settings.tabs.billing', currentLanguage.code)}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="notifications" 
-                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <Bell className="h-5 w-5" />
-                <span>{t('settings.tabs.notifications', currentLanguage.code)}</span>
+                <span className="text-sm font-medium">{t('settings.tabs.notifications', currentLanguage.code)}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="security" 
-                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <Shield className="h-5 w-5" />
-                <span>{t('settings.tabs.security', currentLanguage.code)}</span>
+                <span className="text-sm font-medium">{t('settings.tabs.security', currentLanguage.code)}</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="profile" className="mt-6">
+          <TabsContent value="profile" className="bg-white p-6 rounded-xl shadow-sm mt-6">
             <ProfileSettings />
           </TabsContent>
 
-          <TabsContent value="billing" className="mt-6">
+          <TabsContent value="billing" className="bg-white p-6 rounded-xl shadow-sm mt-6">
             <BillingSettings />
           </TabsContent>
 
-          <TabsContent value="notifications" className="mt-6">
+          <TabsContent value="notifications" className="bg-white p-6 rounded-xl shadow-sm mt-6">
             <NotificationsSettings />
           </TabsContent>
 
-          <TabsContent value="security" className="mt-6">
+          <TabsContent value="security" className="bg-white p-6 rounded-xl shadow-sm mt-6">
             <SecuritySettings />
           </TabsContent>
         </Tabs>

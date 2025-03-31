@@ -42,7 +42,7 @@ const HelpSupport = () => {
 
   return (
     <SpeechLabLayout>
-      <div className="max-w-6xl mx-auto px-4 py-8 mt-4">
+      <div className="max-w-6xl mx-auto px-4 py-8 mt-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Help & Support</h1>
           <p className="text-gray-600 mt-1">Find answers to common questions or contact our support team</p>
@@ -53,52 +53,52 @@ const HelpSupport = () => {
         </div>
 
         <Tabs defaultValue="faq" className="space-y-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-gradient-to-r from-pink-500 via-pink-500 to-purple-600 rounded-lg overflow-hidden h-14">
+          <div className="bg-white p-4 rounded-xl shadow-md">
+            <TabsList className="flex w-full max-w-2xl rounded-lg overflow-hidden h-16 p-1.5 bg-gray-100">
               <TabsTrigger 
                 value="faq" 
-                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <HelpCircle className="h-5 w-5" />
-                <span>FAQs</span>
+                <span className="text-sm font-medium">FAQs</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="guides" 
-                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <BookOpen className="h-5 w-5" />
-                <span>Guides</span>
+                <span className="text-sm font-medium">Guides</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="contact" 
-                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <MessageSquare className="h-5 w-5" />
-                <span>Contact Us</span>
+                <span className="text-sm font-medium">Contact Us</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="resources" 
-                className="flex flex-col items-center gap-1 py-2 h-full data-[state=active]:bg-white data-[state=active]:text-pink-600 data-[state=active]:shadow-md rounded-md transition-all"
+                className="flex-1 flex flex-col items-center justify-center gap-1.5 h-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md rounded-lg transition-all"
               >
                 <FileText className="h-5 w-5" />
-                <span>Resources</span>
+                <span className="text-sm font-medium">Resources</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="faq" className="space-y-6">
+          <TabsContent value="faq" className="bg-white p-6 rounded-xl shadow-sm mt-6">
             <FAQsTab faqs={faqs} />
           </TabsContent>
 
-          <TabsContent value="guides" className="space-y-6">
+          <TabsContent value="guides" className="bg-white p-6 rounded-xl shadow-sm mt-6">
             <GuidesTab />
           </TabsContent>
 
-          <TabsContent value="contact" className="space-y-6">
+          <TabsContent value="contact" className="bg-white p-6 rounded-xl shadow-sm mt-6">
             <ContactTab />
           </TabsContent>
 
-          <TabsContent value="resources" className="space-y-6">
+          <TabsContent value="resources" className="bg-white p-6 rounded-xl shadow-sm mt-6">
             <ResourcesTab />
           </TabsContent>
         </Tabs>
