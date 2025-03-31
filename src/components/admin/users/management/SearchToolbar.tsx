@@ -12,13 +12,14 @@ import {
   FileUp,
   UserPlus 
 } from 'lucide-react';
+import { User } from '../types';
 
 interface SearchToolbarProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   isLoading: boolean;
   fetchUsers: () => void;
-  selectedUsers: string[];
+  selectedUsers: User[];  // Updated from string[] to User[]
   isActionLoading: boolean;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
   setIsAddUserDialogOpen: (isOpen: boolean) => void;
