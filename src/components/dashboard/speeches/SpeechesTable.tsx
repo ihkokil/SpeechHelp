@@ -38,29 +38,29 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   };
 
   return (
-    <div className="w-full">
-      <Table>
+    <div className="relative w-full overflow-x-auto sm:overflow-x-visible">
+      <Table className="min-w-full table-fixed">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[40%]"><Translate text="common.title" /></TableHead>
+            <TableHead className="w-[50%] sm:w-[40%]"><Translate text="common.title" /></TableHead>
             <TableHead className="w-[15%] text-center hidden sm:table-cell"><Translate text="common.type" /></TableHead>
-            <TableHead className="w-[12%] hidden md:table-cell"><Translate text="dashboard.created" /></TableHead>
-            <TableHead className="w-[12%] hidden md:table-cell"><Translate text="dashboard.lastUpdated" /></TableHead>
-            <TableHead className="w-[18%] text-right"><Translate text="common.actions" /></TableHead>
+            <TableHead className="w-[15%] hidden md:table-cell"><Translate text="dashboard.created" /></TableHead>
+            <TableHead className="w-[15%] hidden md:table-cell"><Translate text="dashboard.lastUpdated" /></TableHead>
+            <TableHead className="w-[20%] sm:w-[15%] text-right"><Translate text="common.actions" /></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {speeches.map((speech) => (
             <TableRow key={speech.id}>
-              <TableCell className="font-medium max-w-[150px] sm:max-w-none">
+              <TableCell className="font-medium">
                 <div className="flex flex-col">
                   <span className="truncate">{speech.title}</span>
                   <span className="sm:hidden mt-1">
                     <Badge 
-                      className={`${getTypeColor(speech.speech_type)} text-xs w-24 inline-flex justify-center`}
+                      className={`${getTypeColor(speech.speech_type)} text-xs w-fit max-w-24 inline-flex justify-center`}
                       title={getSpeechTypeLabel(speech.speech_type)}
                     >
-                      {getSpeechTypeLabel(speech.speech_type)}
+                      <span className="truncate">{getSpeechTypeLabel(speech.speech_type)}</span>
                     </Badge>
                   </span>
                   <span className="text-xs text-muted-foreground md:hidden mt-1">
@@ -70,7 +70,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
               </TableCell>
               <TableCell className="text-center hidden sm:table-cell">
                 <Badge 
-                  className={`${getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center w-24 px-2 text-center`}
+                  className={`${getTypeColor(speech.speech_type)} max-w-24 mx-auto inline-flex justify-center px-2 text-center`}
                   title={getSpeechTypeLabel(speech.speech_type)}
                 >
                   <span className="truncate">{getSpeechTypeLabel(speech.speech_type)}</span>
