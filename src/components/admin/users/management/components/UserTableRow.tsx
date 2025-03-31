@@ -11,11 +11,11 @@ interface UserTableRowProps {
   user: User;
   isSelected: boolean;
   onToggleSelection: (user: User) => void;
-  onViewDetails: (e: React.MouseEvent, user: User) => void;
-  onManagePermissions: (e: React.MouseEvent, user: User) => void;
-  onToggleUserActive: (e: React.MouseEvent, userId: string, isActive: boolean) => void;
-  onExtendSubscription: (e: React.MouseEvent, userId: string) => void;
-  onDeleteUser: (e: React.MouseEvent, userId: string) => void;
+  onViewDetails: (user: User) => void;
+  onManagePermissions: (user: User) => void;
+  onToggleUserActive: (userId: string, isActive: boolean) => void;
+  onExtendSubscription: (userId: string) => void;
+  onDeleteUser: (userId: string) => void;
 }
 
 const UserTableRow: React.FC<UserTableRowProps> = ({

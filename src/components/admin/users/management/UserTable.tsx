@@ -47,37 +47,27 @@ export const UserTable: React.FC<UserTableProps> = ({
   const { filterUsers } = useUserSearch(users);
   const filteredUsers = useMemo(() => filterUsers(users, searchTerm), [users, searchTerm, filterUsers]);
 
-  const viewUserDetails = (e: React.MouseEvent, user: User) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const viewUserDetails = (user: User) => {
     console.log('UserTable: View details clicked for user:', user.id);
     handleViewUserDetails(user);
   };
 
-  const managePermissions = (e: React.MouseEvent, user: User) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const managePermissions = (user: User) => {
     console.log('UserTable: Manage permissions clicked for user:', user.id);
     handleManagePermissions(user);
   };
 
-  const toggleUserActive = (e: React.MouseEvent, userId: string, isActive: boolean) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const toggleUserActive = (userId: string, isActive: boolean) => {
     console.log('UserTable: Toggling user status:', userId, isActive);
     handleToggleUserStatus(userId, isActive);
   };
 
-  const extendSubscription = (e: React.MouseEvent, userId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const extendSubscription = (userId: string) => {
     console.log('UserTable: Extending subscription for user:', userId);
     handleToggleUserSubscription(userId, 30);
   };
 
-  const deleteUser = (e: React.MouseEvent, userId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const deleteUser = (userId: string) => {
     console.log('UserTable: Preparing to delete user:', userId);
     // Find the user by ID and select it
     const userToDelete = users.find(user => user.id === userId);

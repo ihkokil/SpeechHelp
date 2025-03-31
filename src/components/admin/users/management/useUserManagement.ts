@@ -103,6 +103,7 @@ export const useUserManagement = () => {
     }
   }, [baseHandlePermissionsUpdated, users, setUsers]);
   
+  // Updated to accept user directly
   const handleViewUserDetails = useCallback((user: User) => {
     if (isMounted.current) {
       console.log("UserManagement: View details called for user:", user.id);
@@ -114,10 +115,13 @@ export const useUserManagement = () => {
   const handleCloseUserDetails = useCallback(() => {
     if (isMounted.current) {
       setIsDetailsOpen(false);
-      setSelectedUser(null);
+      setTimeout(() => {
+        setSelectedUser(null);
+      }, 300);
     }
   }, [setIsDetailsOpen, setSelectedUser]);
   
+  // Updated to accept user directly
   const handleManagePermissions = useCallback((user: User) => {
     if (isMounted.current) {
       setSelectedUser(user);
