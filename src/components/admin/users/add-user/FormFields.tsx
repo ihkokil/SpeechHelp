@@ -1,0 +1,111 @@
+
+import React from 'react';
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { UseFormReturn } from 'react-hook-form';
+import { FormValues } from './hooks/useAddUserForm';
+
+interface NameFieldProps {
+  form: UseFormReturn<FormValues>;
+}
+
+export const NameField: React.FC<NameFieldProps> = ({ form }) => (
+  <FormField
+    control={form.control}
+    name="name"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Full Name</FormLabel>
+        <FormControl>
+          <Input placeholder="John Doe" {...field} />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
+export const EmailField: React.FC<NameFieldProps> = ({ form }) => (
+  <FormField
+    control={form.control}
+    name="email"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Email</FormLabel>
+        <FormControl>
+          <Input type="email" placeholder="john.doe@example.com" {...field} />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
+export const PasswordField: React.FC<NameFieldProps> = ({ form }) => (
+  <FormField
+    control={form.control}
+    name="password"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Password</FormLabel>
+        <FormControl>
+          <Input type="password" placeholder="••••••••" {...field} />
+        </FormControl>
+        <FormDescription>
+          Password must be at least 8 characters and include uppercase, lowercase, and numbers.
+        </FormDescription>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
+export const RoleField: React.FC<NameFieldProps> = ({ form }) => (
+  <FormField
+    control={form.control}
+    name="role"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Role</FormLabel>
+        <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <FormControl>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a role" />
+            </SelectTrigger>
+          </FormControl>
+          <SelectContent>
+            <SelectItem value="user">User</SelectItem>
+            <SelectItem value="premium">Premium User</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
+export const ActiveStatusField: React.FC<NameFieldProps> = ({ form }) => (
+  <FormField
+    control={form.control}
+    name="isActive"
+    render={({ field }) => (
+      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+        <div className="space-y-0.5">
+          <FormLabel>Active Status</FormLabel>
+          <FormDescription>
+            User will be able to sign in immediately if active.
+          </FormDescription>
+        </div>
+        <FormControl>
+          <Switch
+            checked={field.value}
+            onCheckedChange={field.onChange}
+          />
+        </FormControl>
+      </FormItem>
+    )}
+  />
+);
