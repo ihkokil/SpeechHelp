@@ -48,30 +48,12 @@ export const useUserManagement = () => {
         return;
       }
       
-      console.log('Fetched auth users:', authUsersData);
-      
-      // Fetch profile data
-      console.log('Fetching profiles from Supabase');
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*');
-      
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        toast({
-          title: 'Error',
-          description: 'Failed to load user profiles. Please try again.',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return;
-      }
-      
-      console.log('Fetched profiles:', profilesData);
+      console.log('Fetched auth users with profiles:', authUsersData);
       
       // Map users with their profiles
       const mappedUsers: User[] = authUsersData.users.map((authUser: any) => {
-        const profile = profilesData.find((p: any) => p.id === authUser.id) || {};
+        // Get the profile data from our enhanced structure
+        const profile = authUser.profile || {};
         
         const user: User = {
           id: authUser.id,
