@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { User } from '../../../types';
+import { User } from '../../types';
 
 // Form validation schema
 const formSchema = z.object({
