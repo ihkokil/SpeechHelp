@@ -45,7 +45,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
             <TableHead className="w-[40%]"><Translate text="common.title" /></TableHead>
             <TableHead className="w-[15%] text-center hidden sm:table-cell"><Translate text="common.type" /></TableHead>
             <TableHead className="w-[20%] hidden md:table-cell"><Translate text="dashboard.created" /></TableHead>
-            <TableHead className="w-[20%] hidden lg:table-cell"><Translate text="dashboard.lastUpdated" /></TableHead>
+            <TableHead className="w-[20%] hidden md:table-cell"><Translate text="dashboard.lastUpdated" /></TableHead>
             <TableHead className="w-[25%] sm:w-[15%] text-right"><Translate text="common.actions" /></TableHead>
           </TableRow>
         </TableHeader>
@@ -82,7 +82,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                   <span className="text-xs text-muted-foreground">{formatTime(speech.created_at)}</span>
                 </div>
               </TableCell>
-              <TableCell className="hidden lg:table-cell text-sm whitespace-nowrap">
+              <TableCell className="hidden md:table-cell text-sm whitespace-nowrap">
                 <div className="flex flex-col">
                   <span>{formatDate(speech.updated_at)}</span>
                   <span className="text-xs text-muted-foreground">{formatTime(speech.updated_at)}</span>
