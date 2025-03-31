@@ -55,7 +55,7 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
       <div className="space-y-6">
         <UserHeader user={user} />
         
-        <Tabs defaultValue="profile">
+        <Tabs defaultValue="profile" className="w-full">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="profile">
               <User className="mr-2 h-4 w-4" />
