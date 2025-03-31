@@ -56,7 +56,7 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
       <div>
         {viewMode === 'edit' ? (
           <SpeechContentEditor 
-            content={editContent}
+            content={editContent || ''}  
             onContentChange={handleContentChange}
             preserveHtml={false}
             forceEditMode={true}

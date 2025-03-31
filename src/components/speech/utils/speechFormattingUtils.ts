@@ -5,14 +5,15 @@ export const formatSpeechContent = (content: string): string => {
   if (!content) return '';
   
   // Check if content is JSON with a 'content' field
-  if (content.includes('{"content"')) {
-    try {
+  try {
+    if (typeof content === 'string' && content.trim().startsWith('{')) {
       const parsed = JSON.parse(content);
-      return parsed.content || content;
-    } catch (e) {
-      console.error('Failed to parse JSON content', e);
-      return content;
+      if (parsed.content) {
+        return parsed.content;
+      }
     }
+  } catch (e) {
+    console.error('Failed to parse JSON content', e);
   }
   
   return content;
@@ -26,14 +27,15 @@ export const getEditableContent = (
   if (!content) return '';
   
   // If content is stored as JSON
-  if (content.includes('{"content"')) {
-    try {
+  try {
+    if (typeof content === 'string' && content.trim().startsWith('{')) {
       const parsed = JSON.parse(content);
-      return parsed.content || content;
-    } catch (e) {
-      console.error('Failed to parse JSON content', e);
-      return content;
+      if (parsed.content) {
+        return parsed.content;
+      }
     }
+  } catch (e) {
+    console.error('Failed to parse JSON content', e);
   }
   
   return content;
@@ -50,7 +52,7 @@ export const createSafeHtml = (content: string): string => {
 export const extractKeyInformation = (content: string): Record<string, string> => {
   try {
     // If the content is in JSON format, try to extract information
-    if (content && content.includes('{"content"')) {
+    if (content && typeof content === 'string' && content.includes('{"content"')) {
       const parsed = JSON.parse(content);
       // Return any additional fields that might be in the JSON
       const { content: _, ...rest } = parsed;

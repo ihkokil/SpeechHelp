@@ -23,14 +23,14 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
   showFormattedContent = false
 }) => {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>(forceEditMode ? 'edit' : 'edit');
-  const [displayContent, setDisplayContent] = useState(content || '');
+  const [displayContent, setDisplayContent] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Process content on initial load and when content changes
   useEffect(() => {
     console.log('SpeechContentEditor received content:', typeof content, content ? `${content.substring(0, 50)}...` : 'empty');
     
-    if (content) {
+    if (content !== undefined && content !== null) {
       setDisplayContent(content);
     } else {
       setDisplayContent('');
