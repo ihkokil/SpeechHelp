@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { speechTypesData } from '@/components/speech/data/speechTypesData';
 import { toast } from 'sonner';
+import UpcomingEventActions from './speeches/components/UpcomingEventActions';
 
 interface SpeechEvent {
   id: string;
@@ -51,9 +52,8 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   const [eventTitle, setEventTitle] = useState<string>('');
   const [upcomingEvents, setUpcomingEvents] = useState<SpeechEvent[]>([]);
   
-  // Create or load upcoming speech events
-  useMemo(() => {
-    // Load upcoming events from localStorage if they exist
+  // Load upcoming events from localStorage
+  const loadEvents = () => {
     const savedEvents = localStorage.getItem('upcomingEvents');
     if (savedEvents) {
       try {
@@ -89,6 +89,11 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
         });
       setUpcomingEvents(exampleEvents);
     }
+  };
+  
+  // Create or load upcoming speech events
+  useEffect(() => {
+    loadEvents();
   }, [speeches]);
 
   const handleAddEvent = () => {
@@ -269,14 +274,11 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
                 <Badge className={`${getCategoryColor(speech.category)}`}>
                   {speech.category.charAt(0).toUpperCase() + speech.category.slice(1)}
                 </Badge>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="text-xs"
-                  onClick={() => handleCreateSpeech(speech)}
-                >
-                  Create
-                </Button>
+                <UpcomingEventActions 
+                  event={speech}
+                  onCreateSpeech={handleCreateSpeech}
+                  refreshEvents={loadEvents}
+                />
               </div>
             </div>
           ))}
