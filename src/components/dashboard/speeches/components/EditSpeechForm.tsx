@@ -53,10 +53,10 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
           className="w-full"
         />
       </div>
-      <div>
+      <div className="mt-4">
         {viewMode === 'edit' ? (
           <SpeechContentEditor 
-            content={editContent || ''}  
+            content={editContent}  
             onContentChange={handleContentChange}
             preserveHtml={false}
             forceEditMode={true}
