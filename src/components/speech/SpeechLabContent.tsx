@@ -27,13 +27,13 @@ const SpeechLabContent: React.FC = () => {
   const isMobile = useIsMobile();
 
   return (
-    <div className={`py-4 md:py-12 px-3 sm:px-6 lg:px-8 ${isMobile ? 'mt-14' : ''}`}>
-      <div className="max-w-3xl mx-auto">
+    <div className={`py-4 md:py-8 px-3 sm:px-6 lg:px-8 mobile-full-width ${isMobile ? 'mt-16' : ''}`}>
+      <div className="w-full max-w-3xl mx-auto">
         <SpeechLabHeader />
         
         <SpeechStepIndicator currentStep={currentStep} steps={steps} />
 
-        <div className="mt-4 md:mt-8">
+        <div className="mt-4 md:mt-6 w-full">
           {currentStep === 1 && (
             <Step1SelectOccasion 
               selectedSpeechType={selectedSpeechType} 

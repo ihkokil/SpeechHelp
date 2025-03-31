@@ -18,7 +18,7 @@ const SpeechOccasionGrid: React.FC<SpeechOccasionGridProps> = ({
   const isMobile = useIsMobile();
 
   return (
-    <div className={`grid ${isMobile ? 'grid-cols-2 gap-2' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'}`}>
+    <div className="mobile-card-grid w-full">
       {speechTypes.map((type) => (
         <SpeechOccasionCard 
           key={type.id}

@@ -40,4 +40,21 @@
   .grid-responsive {
     @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6;
   }
+  
+  /* Mobile-specific utilities */
+  .mobile-full-width {
+    @apply w-full max-w-full overflow-x-hidden;
+  }
+  
+  .mobile-content-container {
+    @apply px-2 sm:px-4 md:px-6 w-full;
+  }
+  
+  .mobile-card-grid {
+    @apply grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-4;
+  }
+  
+  .mobile-scrollable-area {
+    @apply max-h-[60vh] overflow-y-auto pr-1 hide-scrollbar;
+  }
 }

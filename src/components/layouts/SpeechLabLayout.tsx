@@ -12,7 +12,7 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
   
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-gray-50 w-full">
       {/* Mobile Navigation - Only visible on mobile */}
       {isMobile && <MobileDashboardNav />}
       
@@ -22,7 +22,7 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
       </div>
       
       {/* Main Content - With margin for desktop, full width for mobile */}
-      <div className={`flex-1 min-h-screen overflow-y-auto ${isMobile ? 'w-full pb-6' : 'ml-64'}`}>
+      <div className={`flex-1 min-h-screen overflow-x-hidden w-full ${isMobile ? 'w-full pb-6' : 'ml-64'}`}>
         {children}
       </div>
     </div>

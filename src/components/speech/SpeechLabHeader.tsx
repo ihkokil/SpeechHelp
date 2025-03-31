@@ -8,12 +8,12 @@ const SpeechLabHeader: React.FC = () => {
   const isMobile = useIsMobile();
   
   return (
-    <div className={`flex flex-col md:flex-row md:justify-between md:items-center mb-3 md:mb-8 ${isMobile ? 'space-y-2' : ''}`}>
+    <div className={`flex flex-col ${isMobile ? 'space-y-2 mb-2' : 'md:flex-row md:justify-between md:items-center mb-6'}`}>
       <div>
         <h1 className="text-xl md:text-3xl font-bold text-gray-900">
           <Translate text="speechLab.title" />
         </h1>
-        <p className="mt-1 md:mt-2 text-xs md:text-base text-gray-600">
+        <p className="mt-1 text-xs md:text-sm text-gray-600">
           <Translate text="speechLab.subtitle" />
         </p>
       </div>
