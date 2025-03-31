@@ -1,4 +1,3 @@
-
 import React, { useMemo, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -20,6 +19,7 @@ import { format } from 'date-fns';
 import { User } from '../types';
 import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
 import countries from '@/data/countries';
+import { useUserSearch } from './hooks/useUserSearch';
 
 interface UserTableProps {
   users: User[];
@@ -52,11 +52,8 @@ export const UserTable: React.FC<UserTableProps> = ({
 }) => {
   console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
-  const filteredUsers = useMemo(() => users.filter(user => 
-    (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase())) || 
-    (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (user.user_metadata?.full_name && user.user_metadata.full_name.toLowerCase().includes(searchTerm.toLowerCase()))
-  ), [users, searchTerm]);
+  const { filterUsers } = useUserSearch();
+  const filteredUsers = useMemo(() => filterUsers(users, searchTerm), [users, searchTerm, filterUsers]);
 
   const formatDate = useCallback((dateString: string | null) => {
     if (!dateString) return 'Never';
