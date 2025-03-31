@@ -30,7 +30,7 @@ export const useUserManagement = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
   // Fetch users data
-  const { fetchUsers: apiFetchUsers } = useFetchUsers();
+  const { users: fetchedUsers, isLoading: isFetchLoading, fetchUsers: apiFetchUsers } = useFetchUsers();
   
   // User search
   const { searchTerm, setSearchTerm, filteredUsers } = useUserSearch(users);
@@ -70,17 +70,21 @@ export const useUserManagement = () => {
     handleManagePermissions: baseHandleManagePermissions
   } = useUserDetails(setSelectedUser, setIsDetailsOpen, setIsPermissionsDialogOpen);
   
+  // Update users when fetchedUsers changes
+  useEffect(() => {
+    if (fetchedUsers && fetchedUsers.length > 0) {
+      setUsers(fetchedUsers);
+      setIsLoading(false);
+    }
+  }, [fetchedUsers]);
+  
   // Fetch users
   const fetchUsers = useCallback(async () => {
     console.log("Fetching users...");
     if (isMounted.current) {
       setIsLoading(true);
       try {
-        const fetchedUsers = await apiFetchUsers();
-        console.log("Fetched users:", fetchedUsers);
-        if (isMounted.current) {
-          setUsers(fetchedUsers || []);
-        }
+        await apiFetchUsers();
       } catch (error) {
         console.error("Error fetching users:", error);
         toast({
@@ -88,10 +92,6 @@ export const useUserManagement = () => {
           description: "Failed to fetch users. Please try again.",
           variant: "destructive"
         });
-      } finally {
-        if (isMounted.current) {
-          setIsLoading(false);
-        }
       }
     }
   }, [apiFetchUsers]);
@@ -114,25 +114,25 @@ export const useUserManagement = () => {
       await baseHandleDeleteUsers(selectedUsers, users, setUsers);
       setIsDeleteDialogOpen(false);
     }
-  }, [baseHandleDeleteUsers, selectedUsers, users, setUsers]);
+  }, [baseHandleDeleteUsers, selectedUsers, users]);
   
   const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean) => {
     if (isMounted.current) {
       return await baseHandleToggleUserStatus(userId, isActive, users, setUsers);
     }
-  }, [baseHandleToggleUserStatus, users, setUsers]);
+  }, [baseHandleToggleUserStatus, users]);
   
   const handleToggleUserSubscription = useCallback(async (userId: string, days = 30) => {
     if (isMounted.current) {
       return await baseHandleToggleUserSubscription(userId, days, users, setUsers);
     }
-  }, [baseHandleToggleUserSubscription, users, setUsers]);
+  }, [baseHandleToggleUserSubscription, users]);
   
   const handlePermissionsUpdated = useCallback((updatedUser: User) => {
     if (isMounted.current) {
       baseHandlePermissionsUpdated(updatedUser, users, setUsers);
     }
-  }, [baseHandlePermissionsUpdated, users, setUsers]);
+  }, [baseHandlePermissionsUpdated, users]);
   
   const handleViewUserDetails = useCallback((user: User) => {
     if (isMounted.current) {
@@ -157,28 +157,31 @@ export const useUserManagement = () => {
     if (isMounted.current) {
       await baseHandleBulkDelete(selectedUsers, users, setUsers);
     }
-  }, [baseHandleBulkDelete, selectedUsers, users, setUsers]);
+  }, [baseHandleBulkDelete, selectedUsers, users]);
   
   const handleBulkActivate = useCallback(async () => {
     if (isMounted.current) {
       await baseHandleBulkActivate(selectedUsers, users, setUsers);
     }
-  }, [baseHandleBulkActivate, selectedUsers, users, setUsers]);
+  }, [baseHandleBulkActivate, selectedUsers, users]);
   
   const handleBulkDeactivate = useCallback(async () => {
     if (isMounted.current) {
       await baseHandleBulkDeactivate(selectedUsers, users, setUsers);
     }
-  }, [baseHandleBulkDeactivate, selectedUsers, users, setUsers]);
+  }, [baseHandleBulkDeactivate, selectedUsers, users]);
   
   // Lifecycle hooks
   useEffect(() => {
     isMounted.current = true;
     
+    // Fetch users on initial mount
+    fetchUsers();
+    
     return () => {
       isMounted.current = false;
     };
-  }, []);
+  }, [fetchUsers]);
   
   // Cleanup function for component unmount
   const cleanup = useCallback(() => {
@@ -204,7 +207,7 @@ export const useUserManagement = () => {
     setSearchTerm,
     selectedUsers,
     setSelectedUsers,
-    isLoading,
+    isLoading: isLoading || isFetchLoading,
     isActionLoading,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,

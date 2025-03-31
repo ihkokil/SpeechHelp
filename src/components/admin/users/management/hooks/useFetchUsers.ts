@@ -37,13 +37,13 @@ export const useFetchUsers = () => {
           variant: 'destructive',
         });
         setIsLoading(false);
-        return;
+        return [];
       }
       
       console.log('Fetched auth users with profiles:', authUsersData);
       
       // Map users with their profiles
-      const mappedUsers: User[] = authUsersData.users.map((authUser: any) => {
+      const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
         // Get the profile data from our enhanced structure
         const profile = authUser.profile || {};
         
@@ -78,7 +78,7 @@ export const useFetchUsers = () => {
         };
         
         return user;
-      });
+      }) || [];
       
       // Add admin user if it doesn't exist and current user is admin
       const adminExists = mappedUsers.some(user => user.is_admin);
@@ -105,6 +105,7 @@ export const useFetchUsers = () => {
       
       console.log('Mapped users with profiles:', mappedUsers);
       setUsers(mappedUsers);
+      return mappedUsers;
     } catch (error) {
       console.error('Exception fetching users:', error);
       toast({
@@ -112,6 +113,7 @@ export const useFetchUsers = () => {
         description: 'Failed to load users. Please check console for details.',
         variant: 'destructive',
       });
+      return [];
     } finally {
       setIsLoading(false);
     }

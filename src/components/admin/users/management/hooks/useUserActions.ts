@@ -8,9 +8,8 @@ import { useSubscriptionActions } from './user-actions/useSubscriptionActions';
 import { usePermissionActions } from './user-actions/usePermissionActions';
 
 export const useUserActions = () => {
-  // Get the setActionLoading function without providing setIsActionLoading
-  // as we don't need it in this composition hook
-  const { setActionLoading } = useActionState();
+  // Get the setActionLoading function by providing a dummy setState function
+  const { setActionLoading } = useActionState(() => {});
   
   // Initialize hooks with necessary parameters
   const { 
@@ -29,9 +28,9 @@ export const useUserActions = () => {
     handleViewUserDetails,
     handleCloseUserDetails,
     handleManagePermissions
-  } = useUserDetails();
+  } = useUserDetails(() => {}, () => {}, () => {});
   
-  const { handlePermissionsUpdated } = usePermissionActions();
+  const { handlePermissionsUpdated } = usePermissionActions(() => {});
   
   // Return all actions from sub-hooks
   return {
