@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export type Step = {
   number: number;
@@ -14,6 +15,8 @@ type StepIndicatorProps = {
 };
 
 const SpeechStepIndicator = ({ currentStep, steps: customSteps }: StepIndicatorProps) => {
+  const isMobile = useIsMobile();
+  
   // Default steps if none are provided
   const defaultSteps = [
     { number: 1, title: 'Select Occasion' },
@@ -26,7 +29,7 @@ const SpeechStepIndicator = ({ currentStep, steps: customSteps }: StepIndicatorP
   const steps = customSteps || defaultSteps;
 
   return (
-    <div className="w-full mb-6">
+    <div className="w-full mb-4 md:mb-6">
       <div className="flex justify-between items-center relative">
         {/* Progress bar */}
         <div className="absolute h-1 bg-slate-200 top-1/2 left-0 right-0 -translate-y-1/2 z-0" />
@@ -37,10 +40,10 @@ const SpeechStepIndicator = ({ currentStep, steps: customSteps }: StepIndicatorP
         
         {/* Step circles */}
         {steps.map((step) => (
-          <div key={step.number} className="z-20 flex flex-col items-center gap-2">
+          <div key={step.number} className="z-20 flex flex-col items-center gap-1 md:gap-2">
             <div 
               className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors duration-300",
+                `${isMobile ? 'w-6 h-6' : 'w-8 h-8'} rounded-full flex items-center justify-center ${isMobile ? 'text-xs' : 'text-sm'} font-medium transition-colors duration-300`,
                 currentStep === step.number 
                   ? "bg-purple-600 text-white border-2 border-purple-600" 
                   : currentStep > step.number
@@ -52,7 +55,7 @@ const SpeechStepIndicator = ({ currentStep, steps: customSteps }: StepIndicatorP
             </div>
             <span 
               className={cn(
-                "text-xs font-medium whitespace-nowrap transition-colors duration-300",
+                `${isMobile ? 'text-[10px]' : 'text-xs'} font-medium whitespace-nowrap transition-colors duration-300`,
                 currentStep === step.number 
                   ? "text-purple-600" 
                   : currentStep > step.number
@@ -60,7 +63,10 @@ const SpeechStepIndicator = ({ currentStep, steps: customSteps }: StepIndicatorP
                     : "text-slate-400"
               )}
             >
-              {step.title}
+              {isMobile ? 
+                step.title.split(' ')[0] : // Show only first word on mobile
+                step.title
+              }
             </span>
           </div>
         ))}

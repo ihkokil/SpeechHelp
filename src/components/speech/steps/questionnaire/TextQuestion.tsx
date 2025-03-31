@@ -19,8 +19,8 @@ const TextQuestion: React.FC<TextQuestionProps> = ({
   const isMobile = useIsMobile();
   
   return (
-    <div className="space-y-2">
-      <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-medium`}>{question}</h3>
+    <div className="space-y-1 md:space-y-2">
+      <h3 className={`${isMobile ? 'text-sm' : 'text-lg'} font-medium`}>{question}</h3>
       <Input 
         value={value}
         onChange={(e) => onChange(e.target.value)}
