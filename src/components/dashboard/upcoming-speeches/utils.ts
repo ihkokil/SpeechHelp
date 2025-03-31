@@ -36,6 +36,22 @@ export const getCategoryColor = (category: string): string => {
   return categories[category.toLowerCase()] || 'bg-gray-100 text-gray-700';
 };
 
+// Calculate days remaining until the speech date
+export const getDaysRemaining = (date: Date): number => {
+  const today = new Date();
+  // Reset hours to compare just the dates
+  today.setHours(0, 0, 0, 0);
+  const speechDate = new Date(date);
+  speechDate.setHours(0, 0, 0, 0);
+  
+  // Calculate the difference in milliseconds
+  const differenceMs = speechDate.getTime() - today.getTime();
+  // Convert to days
+  const daysDifference = Math.ceil(differenceMs / (1000 * 60 * 60 * 24));
+  
+  return Math.max(0, daysDifference); // Ensure we don't show negative days
+};
+
 // Load events from localStorage
 export const loadEventsFromStorage = (): SpeechEvent[] => {
   const savedEvents = localStorage.getItem('upcomingEvents');
