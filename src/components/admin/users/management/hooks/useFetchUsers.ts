@@ -9,6 +9,7 @@ export const useFetchUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastFetchTime, setLastFetchTime] = useState(0);
+  const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
 
@@ -16,11 +17,13 @@ export const useFetchUsers = () => {
     const now = Date.now();
     if (now - lastFetchTime < 1000) {
       console.log('Debouncing fetch request');
-      return; // Debounce fetch requests
+      return []; // Debounce fetch requests
     }
     
     setLastFetchTime(now);
     setIsLoading(true);
+    setError(null);
+    
     try {
       console.log('Fetching users from Supabase auth');
       
@@ -31,6 +34,7 @@ export const useFetchUsers = () => {
       
       if (authUsersError) {
         console.error('Error fetching auth users:', authUsersError);
+        setError(new Error(authUsersError.message || 'Failed to load users'));
         toast({
           title: 'Error',
           description: 'Failed to load users. Please try again.',
@@ -106,8 +110,10 @@ export const useFetchUsers = () => {
       console.log('Mapped users with profiles:', mappedUsers);
       setUsers(mappedUsers);
       return mappedUsers;
-    } catch (error) {
-      console.error('Exception fetching users:', error);
+    } catch (err) {
+      console.error('Exception fetching users:', err);
+      const error = err instanceof Error ? err : new Error('Failed to load users');
+      setError(error);
       toast({
         title: 'Error',
         description: 'Failed to load users. Please check console for details.',
@@ -123,6 +129,7 @@ export const useFetchUsers = () => {
     users,
     setUsers,
     isLoading,
-    fetchUsers
+    fetchUsers,
+    error
   };
 };

@@ -61,6 +61,7 @@ export const useUserManagementData = () => {
     setUsers,
     isLoading: isLoading || isFetchLoading,
     fetchUsers,
-    addUser
+    addUser,
+    error: fetchError
   };
 };
