@@ -7,7 +7,9 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
+  SelectGroup,
+  SelectLabel
 } from '@/components/ui/select';
 import { SearchIcon } from 'lucide-react';
 import Translate from '@/components/Translate';
@@ -65,13 +67,15 @@ const FilterBar = ({
           <SelectTrigger id="filter-type">
             <SelectValue placeholder="All Types" />
           </SelectTrigger>
-          <SelectContent className="max-h-[300px]">
+          <SelectContent className="max-h-[300px] overflow-y-auto">
             <SelectItem value="all">All Types</SelectItem>
-            {speechTypesData.map((type) => (
-              <SelectItem key={type.id} value={type.id}>
-                {getTranslatedTypeLabel(type.id)}
-              </SelectItem>
-            ))}
+            <SelectGroup>
+              {speechTypesData.map((type) => (
+                <SelectItem key={type.id} value={type.id}>
+                  {getTranslatedTypeLabel(type.id)}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </SelectContent>
         </Select>
       </div>
