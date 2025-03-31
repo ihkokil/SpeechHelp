@@ -1,10 +1,13 @@
+
 import { useState } from 'react';
 import { Speech } from '@/types/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { getEditableContent } from '@/components/speech/utils/speechFormattingUtils';
+import { useToast } from '@/hooks/use-toast';
 
 export const useSpeechModals = () => {
   const { updateSpeech, deleteSpeech } = useAuth();
+  const { toast } = useToast();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,15 +20,10 @@ export const useSpeechModals = () => {
       setTitle(selectedSpeech.title);
       
       try {
-        // Try to extract content from JSON if it's in that format
-        if (selectedSpeech.content && selectedSpeech.content.includes('{"content"')) {
-          const jsonContent = JSON.parse(selectedSpeech.content);
-          setContent(jsonContent.content || '');
-        } else {
-          // Otherwise use the content as is
-          setContent(selectedSpeech.content || '');
-        }
-        console.log('Content successfully extracted');
+        // Extract content from JSON if it's in that format
+        const extractedContent = getEditableContent(selectedSpeech.content);
+        console.log('Extracted content:', extractedContent);
+        setContent(extractedContent);
       } catch (error) {
         console.error('Error parsing speech content:', error);
         // Fallback to raw content if parsing fails
@@ -54,9 +52,18 @@ export const useSpeechModals = () => {
       }
       
       await updateSpeech(selectedSpeech.id, title, finalContent);
+      toast({
+        title: "Speech updated",
+        description: "Your speech has been updated successfully."
+      });
       return true;
     } catch (error) {
       console.error('Error updating speech:', error);
+      toast({
+        title: "Error updating speech",
+        description: "There was a problem updating your speech.",
+        variant: "destructive"
+      });
       return false;
     } finally {
       setIsSubmitting(false);
@@ -70,9 +77,18 @@ export const useSpeechModals = () => {
     setIsSubmitting(true);
     try {
       await deleteSpeech(selectedSpeech.id);
+      toast({
+        title: "Speech deleted",
+        description: "Your speech has been deleted successfully."
+      });
       return true;
     } catch (error) {
       console.error('Error deleting speech:', error);
+      toast({
+        title: "Error deleting speech",
+        description: "There was a problem deleting your speech.",
+        variant: "destructive"
+      });
       return false;
     } finally {
       setIsSubmitting(false);
