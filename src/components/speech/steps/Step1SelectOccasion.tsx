@@ -56,7 +56,9 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
                 selectedSpeechType === type.id ? 'bg-pink-600' : 'bg-purple-600'
               }`}>
                 {isMobile ? 
-                  <div className="w-3 h-3">{React.cloneElement(type.icon, { size: 12 })}</div> : 
+                  <div className="w-3 h-3">
+                    {type.icon}
+                  </div> : 
                   type.icon
                 }
               </div>
