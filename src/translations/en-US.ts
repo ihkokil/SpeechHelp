@@ -1,3 +1,4 @@
+
 export const enUS = {
   // General terms
   'common.title': 'Title',
@@ -87,7 +88,6 @@ export const enUS = {
   'auth.editProfile': 'Edit Profile',
   'auth.changePassword': 'Change Password',
   'auth.currentPassword': 'Current Password',
-  'auth.newPassword': 'New Password',
   'auth.confirmPassword': 'Confirm Password',
   'auth.saveChanges': 'Save Changes',
   'auth.deleteAccount': 'Delete Account',
@@ -187,20 +187,6 @@ export const enUS = {
   'speechLab.speechPracticeRecordingTitle': 'Speech Practice Recording',
   'speechLab.speechPracticeFeedbackTitle': 'Speech Practice Feedback',
   'speechLab.speechPracticeAnalysisTitle': 'Speech Practice Analysis',
-  'speechLab.speechPracticeNotesPlaceholder': 'Enter speech practice notes',
-  'speechLab.speechPracticeScriptPlaceholder': 'Enter speech practice script',
-  'speechLab.speechPracticeContentPlaceholder': 'Enter speech practice content',
-  'speechLab.speechPracticeTitlePlaceholder': 'Enter speech practice title',
-  'speechLab.speechPracticeTypePlaceholder': 'Select speech practice type',
-  'speechLab.speechPracticeDatePlaceholder': 'Select speech practice date',
-  'speechLab.speechPracticeTimePlaceholder': 'Select speech practice time',
-  'speechLab.speechPracticeLocationPlaceholder': 'Enter speech practice location',
-  'speechLab.speechPracticeAudiencePlaceholder': 'Enter speech practice audience',
-  'speechLab.speechPracticePurposePlaceholder': 'Enter speech practice purpose',
-  'speechLab.speechPracticeNotesTitle': 'Speech Practice Notes',
-  'speechLab.speechScriptTitle': 'Speech Script',
-  'speechLab.speechContentTitle': 'Speech Content',
-  'speechLab.speechTitleTitle': 'Speech Title',
  
   // Speech Types
   'speechType.informative': 'Informative',
@@ -455,7 +441,7 @@ export const enUS = {
   'validation.validAlpha': 'This field must be a valid alpha string',
   'validation.validAlphaNum': 'This field must be a valid alpha-numeric string',
   'validation.validAlphaDash': 'This field must be a valid alpha-dash string',
-  'validation.validImage': 'This field must be a valid image',
+  'validation.validImage': 'This field must be an image',
   'validation.validFile': 'This field must be a valid file',
   'validation.validMimes': 'This field must be a valid file with one of the following MIME types: {types}',
   'validation.validMimeTypes': 'This field must be a valid file with one of the following MIME types: {types}',
