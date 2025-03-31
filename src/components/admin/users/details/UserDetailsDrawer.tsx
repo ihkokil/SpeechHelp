@@ -26,6 +26,7 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
   
   // Handle cleanup when drawer closes
   useEffect(() => {
+    console.log("UserDetailsDrawer: Open state changed to", open);
     if (!open) {
       // Delay reset to avoid state conflicts during animations
       const timer = setTimeout(() => {
@@ -38,6 +39,7 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
   
   // When sheet is closed with escape key or by clicking outside
   const handleSheetOpenChange = (isOpen: boolean) => {
+    console.log("UserDetailsDrawer: Sheet open change to", isOpen);
     if (!isOpen) {
       onClose();
     }
@@ -45,7 +47,7 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
 
   return (
     <Sheet open={open} onOpenChange={handleSheetOpenChange}>
-      <SheetContent className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto">
+      <SheetContent className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto" onEscapeKeyDown={onClose} onPointerDownOutside={onClose}>
         {user && (
           <DrawerContent
             user={user}

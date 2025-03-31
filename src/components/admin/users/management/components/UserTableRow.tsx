@@ -42,7 +42,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   };
   
   return (
-    <TableRow key={user.id} onClick={handleRowClick} className="cursor-pointer">
+    <TableRow key={user.id} onClick={handleRowClick} className="cursor-pointer hover:bg-muted/20">
       <TableCell className="p-4">
         <Checkbox 
           checked={isSelected} 
@@ -84,15 +84,17 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
           {user.is_active !== false ? 'active' : 'inactive'}
         </Badge>
       </TableCell>
-      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-        <UserActionMenu 
-          user={user}
-          onViewDetails={onViewDetails}
-          onManagePermissions={onManagePermissions}
-          onToggleUserActive={onToggleUserActive}
-          onExtendSubscription={onExtendSubscription}
-          onDeleteUser={onDeleteUser}
-        />
+      <TableCell className="text-right">
+        <div onClick={(e) => e.stopPropagation()}>
+          <UserActionMenu 
+            user={user}
+            onViewDetails={onViewDetails}
+            onManagePermissions={onManagePermissions}
+            onToggleUserActive={onToggleUserActive}
+            onExtendSubscription={onExtendSubscription}
+            onDeleteUser={onDeleteUser}
+          />
+        </div>
       </TableCell>
     </TableRow>
   );
