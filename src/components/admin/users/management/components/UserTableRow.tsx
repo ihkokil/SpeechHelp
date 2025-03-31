@@ -41,14 +41,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       <TableCell className="font-medium">
         <div className="flex items-center">
           <span>{fullName}</span>
-          {getCountryCode(user) && (
-            <img 
-              src={getCountryFlagUrl(getCountryCode(user))}
-              alt={user.user_metadata?.country || getCountryCode(user)}
-              className="h-4 w-4 ml-2 object-cover rounded-sm"
-              title={user.user_metadata?.country || getCountryCode(user)}
-            />
-          )}
           {user.is_admin && (
             <Badge variant="outline" className="ml-2 bg-purple-100 text-purple-800 border-purple-300">
               Admin
