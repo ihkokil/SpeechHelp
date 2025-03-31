@@ -1,111 +1,60 @@
 
-import React, { useState, useEffect } from 'react';
+import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import SpeechContentEditor from '@/components/speech/components/SpeechContentEditor';
-import SpeechExportButtons from './SpeechExportButtons';
+import { useEffect } from 'react';
 import { Speech } from '@/types/auth';
-import Translate from '@/components/Translate';
-import SpeechPreview from '@/components/speech/components/SpeechPreview';
-import { getEditableContent } from '@/components/speech/utils/speechFormattingUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface EditSpeechFormProps {
-  speech: Speech | null;
+  speech: Speech;
   editTitle: string;
   editContent: string;
   setEditTitle: (title: string) => void;
   setEditContent: (content: string) => void;
 }
 
-const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
+const EditSpeechForm = ({
   speech,
   editTitle,
   editContent,
   setEditTitle,
-  setEditContent
-}) => {
-  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
-  const [displayContent, setDisplayContent] = useState(editContent);
+  setEditContent,
+}: EditSpeechFormProps) => {
+  const isMobile = useIsMobile();
   
-  // Update display content when component mounts or editContent changes
-  useEffect(() => {
-    if (speech) {
-      console.log('Speech data in EditSpeechForm:', {
-        id: speech.id,
-        title: speech.title,
-        contentPreview: speech.content.substring(0, 50) + '...',
-        editTitle,
-        editContentPreview: editContent ? editContent.substring(0, 50) + '...' : 'empty'
-      });
-      
-      if (editContent) {
-        setDisplayContent(editContent);
-      } else if (speech.content) {
-        // If editContent is empty but speech has content, use speech content
-        const processed = getEditableContent(speech.content, true, true);
-        setDisplayContent(processed);
-        setEditContent(processed);
-      }
-    }
-  }, [speech, editContent, setEditContent]);
-  
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value;
-    setEditContent(newContent);
-    setDisplayContent(newContent);
-    console.log('Content changed:', newContent.substring(0, 50) + '...');
-  };
-
-  if (!speech) {
-    console.log('EditSpeechForm: No speech provided');
-    return null;
-  }
-
   return (
-    <div className="space-y-4">
-      <div>
-        <label htmlFor="editTitle" className="text-sm font-medium">
-          <Translate text="common.title" />
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <label 
+          htmlFor="speech-title" 
+          className="block text-sm font-medium text-gray-700"
+        >
+          Title
         </label>
         <Input
-          id="editTitle"
+          id="speech-title"
           value={editTitle}
           onChange={(e) => setEditTitle(e.target.value)}
+          placeholder="Speech Title"
           className="w-full"
-          placeholder={speech.title} // Fallback to original title
         />
       </div>
-      <div>
-        {viewMode === 'edit' ? (
-          <SpeechContentEditor 
-            content={displayContent || speech.content}
-            onContentChange={handleContentChange}
-            preserveHtml={true}
-            forceEditMode={true}
-            showFormattedContent={true}
-          />
-        ) : (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-pink-600 font-medium uppercase">
-                <Translate text="speechLab.content" fallback="Speech Content" />
-              </label>
-              <button 
-                onClick={() => setViewMode('edit')}
-                className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                <Translate text="speechLab.edit" fallback="Edit" />
-              </button>
-            </div>
-            <SpeechPreview content={displayContent} />
-          </div>
-        )}
+      
+      <div className="space-y-2">
+        <label 
+          htmlFor="speech-content" 
+          className="block text-sm font-medium text-gray-700"
+        >
+          Content
+        </label>
+        <Textarea
+          id="speech-content"
+          value={editContent}
+          onChange={(e) => setEditContent(e.target.value)}
+          placeholder="Speech Content"
+          className="min-h-[200px] md:min-h-[300px] w-full text-sm md:text-base"
+        />
       </div>
-      <SpeechExportButtons 
-        speech={speech}
-        title={editTitle || speech.title}
-        content={displayContent || speech.content}
-      />
     </div>
   );
 };

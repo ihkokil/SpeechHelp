@@ -7,6 +7,7 @@ import { Speech } from '@/types/auth';
 import EventForm from './upcoming-speeches/EventForm';
 import EventList from './upcoming-speeches/EventList';
 import { useUpcomingEvents } from './upcoming-speeches/useUpcomingEvents';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface UpcomingSpeechesProps {
   speeches?: Speech[];
@@ -15,6 +16,7 @@ interface UpcomingSpeechesProps {
 const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const { 
     upcomingEvents, 
     addEvent, 
@@ -25,8 +27,8 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm">
-      <div className="border-b p-4">
-        <h2 className="text-lg font-semibold text-gray-800">{t('dashboard.upcomingSpeeches', currentLanguage.code)}</h2>
+      <div className="border-b p-3 md:p-4">
+        <h2 className="text-base md:text-lg font-semibold text-gray-800">{t('dashboard.upcomingSpeeches', currentLanguage.code)}</h2>
       </div>
       
       {/* Add new event form */}
@@ -39,7 +41,7 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
         refreshEvents={loadEvents}
       />
       
-      <div className="border-t p-4 text-center">
+      <div className="border-t p-3 md:p-4 text-center">
         <Button 
           variant="link" 
           className="text-pink-600 hover:text-pink-800 text-sm"
