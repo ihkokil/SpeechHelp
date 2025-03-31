@@ -1,37 +1,43 @@
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { useFetchUsers } from './hooks/useFetchUsers';
+import { useCallback, useEffect, useRef } from 'react';
+import { useUserManagementData } from './hooks/useUserManagementData';
 import { useUserSearch } from './hooks/useUserSearch';
 import { useUserSelection } from './hooks/useUserSelection';
 import { useUserActions } from './hooks/useUserActions';
+import { useUserManagementUIState } from './hooks/useUserManagementUIState';
 import { User } from '../types';
-import { useToast } from '@/hooks/use-toast';
 
 export const useUserManagement = () => {
   console.log("Initializing useUserManagement");
   const isMounted = useRef(true);
-  const isInitialMount = useRef(true);
 
-  // User data state
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Get user data operations
+  const {
+    users,
+    setUsers,
+    isLoading,
+    fetchUsers
+  } = useUserManagementData();
   
-  // Dialogs and drawer state
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  // Get UI state management
+  const {
+    isDeleteDialogOpen,
+    setIsDeleteDialogOpen,
+    isAddUserDialogOpen,
+    setIsAddUserDialogOpen,
+    resetUIState
+  } = useUserManagementUIState();
   
-  // Fetch users data
-  const { users: fetchedUsers, isLoading: isFetchLoading, fetchUsers: apiFetchUsers } = useFetchUsers();
-  
-  // User search
+  // User search functionality
   const { searchTerm, setSearchTerm, filteredUsers } = useUserSearch(users);
   
-  // User selection
+  // User selection functionality
   const { 
     selectedUsers, 
     setSelectedUsers, 
     toggleUserSelection,
-    toggleAllUsers 
+    toggleAllUsers,
+    clearSelection
   } = useUserSelection();
   
   // Get all user actions and their states from the useUserActions hook
@@ -56,32 +62,6 @@ export const useUserManagement = () => {
     setIsPermissionsDialogOpen
   } = useUserActions();
   
-  // Update users when fetchedUsers changes
-  useEffect(() => {
-    if (fetchedUsers && fetchedUsers.length > 0) {
-      setUsers(fetchedUsers);
-      setIsLoading(false);
-    }
-  }, [fetchedUsers]);
-  
-  // Fetch users
-  const fetchUsers = useCallback(async () => {
-    console.log("Fetching users...");
-    if (isMounted.current) {
-      setIsLoading(true);
-      try {
-        await apiFetchUsers();
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        useToast().toast({
-          title: "Error",
-          description: "Failed to fetch users. Please try again.",
-          variant: "destructive"
-        });
-      }
-    }
-  }, [apiFetchUsers]);
-  
   // Wrapper functions to include users and setUsers
   const handleToggleAllUsers = useCallback((usersToToggle: User[]) => {
     if (isMounted.current) {
@@ -100,25 +80,25 @@ export const useUserManagement = () => {
       await baseHandleDeleteUsers(selectedUsers, users, setUsers);
       setIsDeleteDialogOpen(false);
     }
-  }, [baseHandleDeleteUsers, selectedUsers, users]);
+  }, [baseHandleDeleteUsers, selectedUsers, users, setUsers, setIsDeleteDialogOpen]);
   
   const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean) => {
     if (isMounted.current) {
       return await baseHandleToggleUserStatus(userId, isActive, users, setUsers);
     }
-  }, [baseHandleToggleUserStatus, users]);
+  }, [baseHandleToggleUserStatus, users, setUsers]);
   
   const handleToggleUserSubscription = useCallback(async (userId: string, days = 30) => {
     if (isMounted.current) {
       return await baseHandleToggleUserSubscription(userId, days, users, setUsers);
     }
-  }, [baseHandleToggleUserSubscription, users]);
+  }, [baseHandleToggleUserSubscription, users, setUsers]);
   
   const handlePermissionsUpdated = useCallback((updatedUser: User) => {
     if (isMounted.current) {
       baseHandlePermissionsUpdated(updatedUser, users, setUsers);
     }
-  }, [baseHandlePermissionsUpdated, users]);
+  }, [baseHandlePermissionsUpdated, users, setUsers]);
   
   const handleViewUserDetails = useCallback((user: User) => {
     if (isMounted.current) {
@@ -144,19 +124,26 @@ export const useUserManagement = () => {
     if (isMounted.current) {
       await baseHandleBulkDelete(selectedUsers, users, setUsers);
     }
-  }, [baseHandleBulkDelete, selectedUsers, users]);
+  }, [baseHandleBulkDelete, selectedUsers, users, setUsers]);
   
   const handleBulkActivate = useCallback(async () => {
     if (isMounted.current) {
       await baseHandleBulkActivate(selectedUsers, users, setUsers);
     }
-  }, [baseHandleBulkActivate, selectedUsers, users]);
+  }, [baseHandleBulkActivate, selectedUsers, users, setUsers]);
   
   const handleBulkDeactivate = useCallback(async () => {
     if (isMounted.current) {
       await baseHandleBulkDeactivate(selectedUsers, users, setUsers);
     }
-  }, [baseHandleBulkDeactivate, selectedUsers, users]);
+  }, [baseHandleBulkDeactivate, selectedUsers, users, setUsers]);
+  
+  // Cleanup function for component unmount
+  const cleanup = useCallback(() => {
+    setSelectedUsers([]);
+    setSearchTerm('');
+    resetUIState();
+  }, [setSelectedUsers, setSearchTerm, resetUIState]);
   
   // Lifecycle hooks
   useEffect(() => {
@@ -170,14 +157,6 @@ export const useUserManagement = () => {
     };
   }, [fetchUsers]);
   
-  // Cleanup function for component unmount
-  const cleanup = useCallback(() => {
-    setSelectedUsers([]);
-    setSearchTerm('');
-    setIsDeleteDialogOpen(false);
-    setIsAddUserDialogOpen(false);
-  }, [setSelectedUsers, setSearchTerm]);
-  
   return {
     // State
     users,
@@ -186,7 +165,7 @@ export const useUserManagement = () => {
     setSearchTerm,
     selectedUsers,
     setSelectedUsers,
-    isLoading: isLoading || isFetchLoading,
+    isLoading,
     isActionLoading,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
