@@ -56,101 +56,75 @@ export const useUserManagement = () => {
     handleBulkDeactivate: baseHandleBulkDeactivate,
     handleToggleUserStatus: baseHandleToggleUserStatus,
     handleToggleUserSubscription: baseHandleToggleUserSubscription,
-    handleViewUserDetails: baseHandleViewUserDetails,
-    handleCloseUserDetails: baseHandleCloseUserDetails,
-    handleManagePermissions: baseHandleManagePermissions,
-    handlePermissionsUpdated: baseHandlePermissionsUpdated,
     
     // States
     isActionLoading
   } = useUserActions();
   
-  // Wrapper functions to include users and setUsers
-  const handleToggleAllUsers = useCallback((usersToToggle: User[]) => {
-    if (isMounted.current) {
-      toggleAllUsers(usersToToggle);
-    }
-  }, [toggleAllUsers]);
-  
-  const handleToggleUserSelection = useCallback((user: User) => {
-    if (isMounted.current) {
-      toggleUserSelection(user);
-    }
-  }, [toggleUserSelection]);
-  
-  const handleDeleteUsers = useCallback(async () => {
-    if (isMounted.current) {
-      await baseHandleDeleteUsers(selectedUsers, users, setUsers);
-      setIsDeleteDialogOpen(false);
-    }
-  }, [baseHandleDeleteUsers, selectedUsers, users, setUsers, setIsDeleteDialogOpen]);
-  
-  const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean) => {
-    if (isMounted.current) {
-      console.log("useUserManagement: Toggle user status called for user:", userId, isActive);
-      return await baseHandleToggleUserStatus(userId, isActive, users, setUsers);
-    }
-  }, [baseHandleToggleUserStatus, users, setUsers]);
-  
-  const handleToggleUserSubscription = useCallback(async (userId: string, days = 30) => {
-    if (isMounted.current) {
-      console.log("useUserManagement: Toggle subscription called for user:", userId, days);
-      return await baseHandleToggleUserSubscription(userId, days, users, setUsers);
-    }
-  }, [baseHandleToggleUserSubscription, users, setUsers]);
-  
-  const handlePermissionsUpdated = useCallback((updatedUser: User) => {
-    if (isMounted.current) {
-      console.log("useUserManagement: Permissions updated for user:", updatedUser.id);
-      baseHandlePermissionsUpdated(updatedUser, users, setUsers);
-    }
-  }, [baseHandlePermissionsUpdated, users, setUsers]);
-  
-  // Simplified direct handlers for view/manage operations
+  // Direct action handlers
   const handleViewUserDetails = useCallback((user: User) => {
-    if (isMounted.current) {
-      console.log("useUserManagement: View details called for user:", user.id);
-      setSelectedUser(user);
-      setIsDetailsOpen(true);
-    }
+    console.log("useUserManagement: View details called for user:", user.id);
+    setSelectedUser(user);
+    setIsDetailsOpen(true);
   }, [setSelectedUser, setIsDetailsOpen]);
   
   const handleCloseUserDetails = useCallback(() => {
-    if (isMounted.current) {
-      console.log("useUserManagement: Close details called");
-      setIsDetailsOpen(false);
-      // Use a timeout to prevent UI flicker when drawer is closing
-      setTimeout(() => {
-        setSelectedUser(null);
-      }, 300);
-    }
+    console.log("useUserManagement: Close details called");
+    setIsDetailsOpen(false);
+    setTimeout(() => {
+      setSelectedUser(null);
+    }, 300);
   }, [setIsDetailsOpen, setSelectedUser]);
   
   const handleManagePermissions = useCallback((user: User) => {
-    if (isMounted.current) {
-      console.log("useUserManagement: Manage permissions called for user:", user.id);
-      setSelectedUser(user);
-      setIsPermissionsDialogOpen(true);
-    }
+    console.log("useUserManagement: Manage permissions called for user:", user.id);
+    setSelectedUser(user);
+    setIsPermissionsDialogOpen(true);
   }, [setSelectedUser, setIsPermissionsDialogOpen]);
   
-  // Bulk actions
-  const handleBulkDelete = useCallback(async () => {
-    if (isMounted.current) {
-      await baseHandleBulkDelete(selectedUsers, users, setUsers);
+  const handlePermissionsUpdated = useCallback((updatedUser: User) => {
+    console.log("useUserManagement: Permissions updated for user:", updatedUser.id);
+    setUsers(prevUsers => 
+      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
+    );
+    setIsPermissionsDialogOpen(false);
+  }, [setUsers, setIsPermissionsDialogOpen]);
+  
+  // Wrapper functions to include users and setUsers
+  const handleToggleUserStatus = useCallback((userId: string, isActive: boolean) => {
+    console.log("useUserManagement: Toggle user status called for user:", userId, isActive);
+    return baseHandleToggleUserStatus(userId, isActive, users, setUsers);
+  }, [baseHandleToggleUserStatus, users, setUsers]);
+  
+  const handleToggleUserSubscription = useCallback((userId: string) => {
+    console.log("useUserManagement: Toggle subscription called for user:", userId);
+    return baseHandleToggleUserSubscription(userId, 30, users, setUsers);
+  }, [baseHandleToggleUserSubscription, users, setUsers]);
+  
+  const handleDeleteUsers = useCallback(() => {
+    baseHandleDeleteUsers(selectedUsers, users, setUsers);
+    setIsDeleteDialogOpen(false);
+  }, [baseHandleDeleteUsers, selectedUsers, users, setUsers, setIsDeleteDialogOpen]);
+  
+  const handleDeleteUser = useCallback((userId: string) => {
+    const userToDelete = users.find(user => user.id === userId);
+    if (userToDelete) {
+      setSelectedUsers([userToDelete]);
+      setIsDeleteDialogOpen(true);
     }
+  }, [users, setSelectedUsers, setIsDeleteDialogOpen]);
+  
+  // Bulk actions
+  const handleBulkDelete = useCallback(() => {
+    baseHandleBulkDelete(selectedUsers, users, setUsers);
   }, [baseHandleBulkDelete, selectedUsers, users, setUsers]);
   
-  const handleBulkActivate = useCallback(async () => {
-    if (isMounted.current) {
-      await baseHandleBulkActivate(selectedUsers, users, setUsers);
-    }
+  const handleBulkActivate = useCallback(() => {
+    baseHandleBulkActivate(selectedUsers, users, setUsers);
   }, [baseHandleBulkActivate, selectedUsers, users, setUsers]);
   
-  const handleBulkDeactivate = useCallback(async () => {
-    if (isMounted.current) {
-      await baseHandleBulkDeactivate(selectedUsers, users, setUsers);
-    }
+  const handleBulkDeactivate = useCallback(() => {
+    baseHandleBulkDeactivate(selectedUsers, users, setUsers);
   }, [baseHandleBulkDeactivate, selectedUsers, users, setUsers]);
   
   // Cleanup function for component unmount
@@ -194,9 +168,10 @@ export const useUserManagement = () => {
     
     // Functions
     fetchUsers,
-    toggleUserSelection: handleToggleUserSelection,
-    toggleAllUsers: handleToggleAllUsers,
+    toggleUserSelection,
+    toggleAllUsers,
     handleDeleteUsers,
+    handleDeleteUser,
     handleToggleUserStatus,
     handleViewUserDetails,
     handleCloseUserDetails,

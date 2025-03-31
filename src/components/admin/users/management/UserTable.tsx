@@ -16,13 +16,14 @@ interface UserTableProps {
   handleViewUserDetails: (user: User) => void;
   handleManagePermissions: (user: User) => void;
   handleToggleUserStatus: (userId: string, isActive: boolean) => void;
-  handleToggleUserSubscription: (userId: string, days: number) => void;
+  handleToggleUserSubscription: (userId: string) => void;
   setSelectedUsers: (users: User[]) => void;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
   searchTerm: string;
   handleBulkDelete: () => void;
   handleBulkActivate: () => void;
   handleBulkDeactivate: () => void;
+  handleDeleteUser: (userId: string) => void;
 }
 
 export const UserTable: React.FC<UserTableProps> = ({ 
@@ -40,43 +41,13 @@ export const UserTable: React.FC<UserTableProps> = ({
   searchTerm,
   handleBulkDelete,
   handleBulkActivate,
-  handleBulkDeactivate
+  handleBulkDeactivate,
+  handleDeleteUser
 }) => {
   console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
   const { filterUsers } = useUserSearch(users);
   const filteredUsers = useMemo(() => filterUsers(users, searchTerm), [users, searchTerm, filterUsers]);
-
-  // Direct pass-through handlers for improved reliability
-  const onViewUserDetails = (user: User) => {
-    console.log('UserTable: View details clicked for user:', user.id);
-    handleViewUserDetails(user);
-  };
-
-  const onManagePermissions = (user: User) => {
-    console.log('UserTable: Manage permissions clicked for user:', user.id);
-    handleManagePermissions(user);
-  };
-
-  const onToggleUserActive = (userId: string, isActive: boolean) => {
-    console.log('UserTable: Toggling user status:', userId, isActive);
-    handleToggleUserStatus(userId, isActive);
-  };
-
-  const onExtendSubscription = (userId: string) => {
-    console.log('UserTable: Extending subscription for user:', userId);
-    handleToggleUserSubscription(userId, 30);
-  };
-
-  const onDeleteUser = (userId: string) => {
-    console.log('UserTable: Preparing to delete user:', userId);
-    // Find the user by ID and select it
-    const userToDelete = users.find(user => user.id === userId);
-    if (userToDelete) {
-      setSelectedUsers([userToDelete]);
-      setIsDeleteDialogOpen(true);
-    }
-  };
 
   const isAllSelected = filteredUsers.length > 0 && 
     selectedUsers.length === filteredUsers.length &&
@@ -112,11 +83,11 @@ export const UserTable: React.FC<UserTableProps> = ({
                 user={user}
                 isSelected={selectedUsers.some(selectedUser => selectedUser.id === user.id)}
                 onToggleSelection={toggleUserSelection}
-                onViewDetails={onViewUserDetails}
-                onManagePermissions={onManagePermissions}
-                onToggleUserActive={onToggleUserActive}
-                onExtendSubscription={onExtendSubscription}
-                onDeleteUser={onDeleteUser}
+                onViewDetails={handleViewUserDetails}
+                onManagePermissions={handleManagePermissions}
+                onToggleUserActive={handleToggleUserStatus}
+                onExtendSubscription={handleToggleUserSubscription}
+                onDeleteUser={handleDeleteUser}
               />
             ))
           )}
