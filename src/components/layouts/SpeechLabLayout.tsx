@@ -10,12 +10,12 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex">
       {/* Dashboard Sidebar - Fixed position with full visibility */}
-      <div className="fixed top-0 left-0 h-full z-40">
+      <div className="fixed top-0 left-0 h-screen z-40 overflow-y-auto">
         <DashboardSidebar />
       </div>
       
       {/* Main Content - With left margin to account for fixed sidebar */}
-      <div className="flex-1 ml-64 bg-gray-50 overflow-auto min-h-screen">
+      <div className="flex-1 ml-64 bg-gray-50 min-h-screen">
         {children}
       </div>
     </div>
