@@ -16,19 +16,16 @@ export const useSpeechModals = () => {
     if (open && selectedSpeech) {
       setTitle(selectedSpeech.title);
       
-      // Extract content properly from the speech object
-      try {
-        // Check if content is stored as JSON
-        if (selectedSpeech.content && selectedSpeech.content.includes('{"content"')) {
-          const parsedContent = JSON.parse(selectedSpeech.content);
-          setContent(parsedContent.content || selectedSpeech.content);
-        } else {
-          setContent(selectedSpeech.content);
-        }
-      } catch (error) {
-        console.error('Error parsing speech content:', error);
-        setContent(selectedSpeech.content); // Fallback to using content as-is
-      }
+      // Get the editable content from the speech
+      const editableContent = getEditableContent(selectedSpeech.content, true, true);
+      setContent(editableContent);
+      
+      console.log('Edit modal opened for speech:', {
+        id: selectedSpeech.id,
+        title: selectedSpeech.title,
+        originalContent: selectedSpeech.content,
+        parsedContent: editableContent
+      });
     }
     
     return open;

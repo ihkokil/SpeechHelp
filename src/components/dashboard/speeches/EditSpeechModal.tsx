@@ -33,6 +33,14 @@ const EditSpeechModal = ({
   setEditContent, 
   onSave 
 }: EditSpeechModalProps) => {
+  // Debug log
+  console.log('EditSpeechModal rendered with:', {
+    isOpen,
+    speechId: speech?.id,
+    editTitle,
+    editContent
+  });
+
   if (!speech) return null;
 
   return (

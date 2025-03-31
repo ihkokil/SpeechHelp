@@ -23,19 +23,27 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
   showFormattedContent = false
 }) => {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>(forceEditMode ? 'edit' : 'edit');
-  const [processedContent, setProcessedContent] = useState(content);
+  const [processedContent, setProcessedContent] = useState(content || '');
   const [htmlContent, setHtmlContent] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Process content on initial load and when content changes
   useEffect(() => {
-    // Extract content appropriately
-    const extractedContent = getEditableContent(content, preserveHtml, showFormattedContent);
-    setProcessedContent(extractedContent);
+    console.log('SpeechContentEditor received content:', content);
+    
+    if (content) {
+      // Extract content appropriately
+      const extractedContent = getEditableContent(content, preserveHtml, showFormattedContent);
+      console.log('Extracted content:', extractedContent);
+      setProcessedContent(extractedContent);
 
-    // Generate HTML representation for the editor when in preview mode
-    const formattedHtml = formatSpeechContent(content);
-    setHtmlContent(formattedHtml);
+      // Generate HTML representation for the editor when in preview mode
+      const formattedHtml = formatSpeechContent(content);
+      setHtmlContent(formattedHtml);
+    } else {
+      setProcessedContent('');
+      setHtmlContent('');
+    }
   }, [content, preserveHtml, showFormattedContent]);
 
   // Custom handler for content changes to maintain JSON structure if it exists
@@ -108,7 +116,7 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
           ref={textareaRef}
         />
       ) : (
-        <SpeechPreview content={content} />
+        <SpeechPreview content={processedContent} />
       )}
     </div>
   );

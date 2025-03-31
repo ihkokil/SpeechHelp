@@ -24,11 +24,30 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
   setEditContent
 }) => {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
+  const [displayContent, setDisplayContent] = useState(editContent);
+  
+  // Update display content when editContent changes
+  useEffect(() => {
+    if (editContent) {
+      setDisplayContent(editContent);
+    }
+  }, [editContent]);
   
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
     setEditContent(newContent);
+    setDisplayContent(newContent);
   };
+
+  // Debug log
+  useEffect(() => {
+    console.log('EditSpeechForm rendered with:', {
+      speechId: speech?.id,
+      editTitle,
+      editContent,
+      displayContent
+    });
+  }, [speech, editTitle, editContent, displayContent]);
 
   if (!speech) return null;
 
@@ -48,7 +67,7 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
       <div>
         {viewMode === 'edit' ? (
           <SpeechContentEditor 
-            content={editContent}
+            content={displayContent}
             onContentChange={handleContentChange}
             preserveHtml={true}
             forceEditMode={true}
@@ -68,7 +87,7 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
                 <Translate text="speechLab.edit" fallback="Edit" />
               </button>
             </div>
-            <SpeechPreview content={editContent} />
+            <SpeechPreview content={displayContent} />
           </div>
         )}
       </div>

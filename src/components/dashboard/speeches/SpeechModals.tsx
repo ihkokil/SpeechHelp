@@ -1,9 +1,10 @@
 
 import { Speech } from '@/types/auth';
 import ViewSpeechModal from './modals/ViewSpeechModal';
-import EditSpeechModal from './modals/EditSpeechModal';
+import EditSpeechModal from './EditSpeechModal';
 import DeleteSpeechAlert from './modals/DeleteSpeechAlert';
 import { useSpeechModals } from './hooks/useSpeechModals';
+import { useEffect } from 'react';
 
 interface SpeechModalsProps {
   selectedSpeech: Speech | null;
@@ -36,13 +37,31 @@ const SpeechModals = ({
     handleDeleteSpeech
   } = useSpeechModals();
   
+  // Debug log when selected speech changes
+  useEffect(() => {
+    if (selectedSpeech) {
+      console.log('Selected speech changed:', {
+        id: selectedSpeech.id,
+        title: selectedSpeech.title,
+        content: selectedSpeech.content.substring(0, 100) + '...' // Log just the beginning
+      });
+    }
+  }, [selectedSpeech]);
+  
   // Handle edit modal opening/closing
   const onEditModalOpenChange = (open: boolean) => {
+    console.log('Edit modal open state changing to:', open);
     setIsEditModalOpen(handleEditModalOpen(open, selectedSpeech));
   };
   
   // Handle speech update
   const onSaveEdit = async () => {
+    console.log('Saving edit with:', {
+      speechId: selectedSpeech?.id,
+      title,
+      content: content.substring(0, 100) + '...' // Log just the beginning
+    });
+    
     const success = await handleUpdateSpeech(selectedSpeech);
     if (success) {
       setIsEditModalOpen(false);
