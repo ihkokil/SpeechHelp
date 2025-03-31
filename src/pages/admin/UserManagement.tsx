@@ -43,7 +43,8 @@ const UserManagement = () => {
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
-    cleanup
+    cleanup,
+    addUser
   } = useUserManagement();
   
   const { toast } = useToast();
@@ -118,11 +119,13 @@ const UserManagement = () => {
         open={isAddUserDialogOpen} 
         onOpenChange={setIsAddUserDialogOpen} 
         onUserAdded={(newUser: User) => {
-          setUsers([...users, newUser]);
-          toast({
-            title: "User added",
-            description: `${newUser.email} has been added successfully.`
-          });
+          if (addUser) {
+            addUser(newUser);
+            toast({
+              title: "User added",
+              description: `${newUser.email} has been added successfully.`
+            });
+          }
           setIsAddUserDialogOpen(false);
         }}
       />
