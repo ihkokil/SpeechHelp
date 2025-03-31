@@ -35,30 +35,65 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Fetch speeches when needed
   const fetchSpeeches = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log('Cannot fetch speeches: No user logged in');
+      return;
+    }
+    
+    console.log('AuthContext: Fetching speeches for user:', user.id);
     const fetchedSpeeches = await speechService.fetchSpeeches(user.id);
+    console.log(`AuthContext: Got ${fetchedSpeeches.length} speeches`);
     setSpeeches(fetchedSpeeches);
   };
 
   // Save a new speech
   const saveSpeech = async (title: string, content: string, speechType: string) => {
-    if (!user) return;
-    await speechService.saveSpeech(user.id, title, content, speechType);
-    await fetchSpeeches();
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to save a speech.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const newSpeech = await speechService.saveSpeech(user.id, title, content, speechType);
+    // Update the speeches array with the new speech
+    setSpeeches(prev => [newSpeech, ...prev]);
   };
 
   // Update an existing speech
   const updateSpeech = async (id: string, title: string, content: string) => {
-    if (!user) return;
-    await speechService.updateSpeech(user.id, id, title, content);
-    await fetchSpeeches();
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to update a speech.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const updatedSpeech = await speechService.updateSpeech(user.id, id, title, content);
+    // Update the speeches array
+    setSpeeches(prev => prev.map(speech => 
+      speech.id === id ? updatedSpeech : speech
+    ));
   };
 
   // Delete a speech
   const deleteSpeech = async (id: string) => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to delete a speech.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     await speechService.deleteSpeech(user.id, id);
-    await fetchSpeeches();
+    // Remove the speech from the speeches array
+    setSpeeches(prev => prev.filter(speech => speech.id !== id));
   };
 
   // Auth functions wrapped to control loading state
@@ -84,6 +119,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       await signOut(toast);
+      // Clear speeches on sign out
+      setSpeeches([]);
     } finally {
       setIsLoading(false);
     }
@@ -98,9 +135,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error) {
         console.error('Error getting session:', error);
       } else if (data?.session) {
+        console.log('Got existing session, setting user:', data.session.user.id);
         setSession(data.session);
         setUser(data.session.user);
-        await fetchSpeeches();
+        // Fetch speeches after setting the user
+        try {
+          const fetchedSpeeches = await speechService.fetchSpeeches(data.session.user.id);
+          console.log(`Initial fetch: Got ${fetchedSpeeches.length} speeches`);
+          setSpeeches(fetchedSpeeches);
+        } catch (e) {
+          console.error('Error fetching speeches on init:', e);
+        }
       }
       
       setIsLoading(false);
@@ -115,8 +160,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(newSession?.user ?? null);
       
       if (newSession?.user) {
-        await fetchSpeeches();
+        console.log('Auth changed, new user set:', newSession.user.id);
+        try {
+          const fetchedSpeeches = await speechService.fetchSpeeches(newSession.user.id);
+          console.log(`Auth change: Got ${fetchedSpeeches.length} speeches`);
+          setSpeeches(fetchedSpeeches);
+        } catch (e) {
+          console.error('Error fetching speeches on auth change:', e);
+          setSpeeches([]);
+        }
       } else {
+        console.log('Auth changed, no user, clearing speeches');
         setSpeeches([]);
       }
       

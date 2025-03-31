@@ -10,6 +10,7 @@ const MySpeeches = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [initialFilter, setInitialFilter] = useState('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Check for filter query param
   useEffect(() => {
@@ -23,14 +24,30 @@ const MySpeeches = () => {
     }
   }, [location]);
   
-  // Fetch speeches when component mounts
+  // Fetch speeches when component mounts or when user changes
   useEffect(() => {
-    if (user) {
-      fetchSpeeches();
-    }
+    const refreshSpeeches = async () => {
+      if (user) {
+        setIsRefreshing(true);
+        try {
+          console.log('Fetching speeches for user:', user.id);
+          await fetchSpeeches();
+        } catch (error) {
+          console.error('Error fetching speeches:', error);
+        } finally {
+          setIsRefreshing(false);
+        }
+      }
+    };
+    
+    refreshSpeeches();
   }, [user, fetchSpeeches]);
 
-  if (isLoading) {
+  useEffect(() => {
+    console.log('Current speeches in MySpeeches:', speeches);
+  }, [speeches]);
+
+  if (isLoading || isRefreshing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
         <div className="flex flex-col items-center">

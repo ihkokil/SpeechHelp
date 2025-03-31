@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -24,14 +23,25 @@ const Dashboard = () => {
   const [lastName, setLastName] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   useEffect(() => {
-    if (user) {
-      fetchSpeeches().catch(error => {
-        console.error('Error fetching speeches:', error);
-        toast.error(t('errors.fetchSpeeches', currentLanguage.code));
-      });
-    }
+    const refreshSpeeches = async () => {
+      if (user) {
+        setIsRefreshing(true);
+        try {
+          console.log('Dashboard: Fetching speeches for user:', user.id);
+          await fetchSpeeches();
+        } catch (error) {
+          console.error('Error fetching speeches:', error);
+          toast.error(t('errors.fetchSpeeches', currentLanguage.code));
+        } finally {
+          setIsRefreshing(false);
+        }
+      }
+    };
+    
+    refreshSpeeches();
   }, [user, fetchSpeeches, t, currentLanguage.code]);
   
   useEffect(() => {
@@ -61,6 +71,10 @@ const Dashboard = () => {
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    console.log('Current speeches in Dashboard:', speeches);
+  }, [speeches]);
 
   // Calculate relevant metrics from speeches
   const dashboardMetrics = useMemo(() => {
@@ -95,13 +109,20 @@ const Dashboard = () => {
     
     return {
       totalSpeeches,
-      inProgressCount: thisMonthSpeeches.length,
-      recentImprovementCount: last30DaysSpeeches.length,
+      inProgressCount: speeches.filter(speech => {
+        const speechDate = new Date(speech.created_at);
+        return speechDate.getMonth() === new Date().getMonth() && 
+               speechDate.getFullYear() === new Date().getFullYear();
+      }).length,
+      recentImprovementCount: speeches.filter(speech => {
+        const speechDate = new Date(speech.created_at);
+        return speechDate >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      }).length,
       speechTypeDistribution
     };
   }, [speeches]);
 
-  if (isLoading) {
+  if (isLoading || isRefreshing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
         <div className="flex flex-col items-center">
