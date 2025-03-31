@@ -28,6 +28,8 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   onExtendSubscription,
   onDeleteUser
 }) => {
+  const fullName = getUserName(user);
+  
   return (
     <TableRow key={user.id}>
       <TableCell>
@@ -38,7 +40,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       </TableCell>
       <TableCell className="font-medium">
         <div className="flex items-center">
-          <span>{getUserName(user)}</span>
+          <span>{fullName}</span>
           {getCountryCode(user) && (
             <img 
               src={getCountryFlagUrl(getCountryCode(user))}
