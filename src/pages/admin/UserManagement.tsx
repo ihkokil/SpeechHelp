@@ -48,6 +48,7 @@ const UserManagement = () => {
   
   // Fetch users on initial mount
   useEffect(() => {
+    console.log("UserManagement: Fetching users on mount");
     fetchUsers();
     
     // Clean up all state when component unmounts

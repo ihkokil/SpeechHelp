@@ -251,7 +251,7 @@ const AdminLayout = () => {
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={adminUser?.email ? `https://gravatar.com/avatar/${btoa(adminUser.email)}?d=mp` : undefined} alt={adminUser?.username || 'Admin'} />
-                      <AvatarFallback>{adminUser?.username.charAt(0).toUpperCase() || 'A'}</AvatarFallback>
+                      <AvatarFallback>{adminUser?.username?.charAt(0).toUpperCase() || 'A'}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>

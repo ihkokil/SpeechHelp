@@ -1,63 +1,56 @@
 
+import { useCallback } from 'react';
+import { User } from '../../types';
 import { useActionState } from './user-actions/useActionState';
 import { useUserCrud } from './user-actions/useUserCrud';
-import { useSubscriptionActions } from './user-actions/useSubscriptionActions';
 import { useUserDetails } from './user-actions/useUserDetails';
+import { useSubscriptionActions } from './user-actions/useSubscriptionActions';
 import { usePermissionActions } from './user-actions/usePermissionActions';
 
 export const useUserActions = () => {
+  // Get the setActionLoading function without providing setIsActionLoading
+  // as we don't need it in this composition hook
+  const { setActionLoading } = useActionState();
+  
+  // Initialize hooks with necessary parameters
+  const { 
+    handleDeleteUsers, 
+    handleBulkDelete,
+    handleBulkActivate,
+    handleBulkDeactivate
+  } = useUserCrud(setActionLoading);
+  
   const {
-    isActionLoading,
-    setIsActionLoading,
-    selectedUser,
-    setSelectedUser,
-    isDetailsOpen,
-    setIsDetailsOpen,
-    isDeleteDialogOpen,
-    setIsDeleteDialogOpen,
-    isAddUserDialogOpen,
-    setIsAddUserDialogOpen,
-    isPermissionsDialogOpen,
-    setIsPermissionsDialogOpen,
-    reset
-  } = useActionState();
-
-  const {
-    handleDeleteUsers,
-    handleToggleUserStatus
-  } = useUserCrud(setIsActionLoading, setIsDeleteDialogOpen);
-
-  const {
+    handleToggleUserStatus,
     handleToggleUserSubscription
-  } = useSubscriptionActions(setIsActionLoading);
-
+  } = useSubscriptionActions(setActionLoading);
+  
   const {
     handleViewUserDetails,
     handleCloseUserDetails,
     handleManagePermissions
-  } = useUserDetails(setSelectedUser, setIsDetailsOpen, setIsPermissionsDialogOpen);
-
-  const {
-    handlePermissionsUpdated
-  } = usePermissionActions(setIsPermissionsDialogOpen);
-
+  } = useUserDetails();
+  
+  const { handlePermissionsUpdated } = usePermissionActions();
+  
+  // Return all actions from sub-hooks
   return {
-    isActionLoading,
-    selectedUser,
-    isDetailsOpen,
-    isDeleteDialogOpen,
-    isAddUserDialogOpen,
-    isPermissionsDialogOpen,
-    setIsDeleteDialogOpen,
-    setIsAddUserDialogOpen,
-    setIsPermissionsDialogOpen,
+    // User CRUD operations
     handleDeleteUsers,
+    handleBulkDelete,
+    handleBulkActivate,
+    handleBulkDeactivate,
+    
+    // User subscription and status operations
     handleToggleUserStatus,
+    handleToggleUserSubscription,
+    
+    // User details operations
     handleViewUserDetails,
     handleCloseUserDetails,
-    handleToggleUserSubscription,
     handleManagePermissions,
+    
+    // Permission operations
     handlePermissionsUpdated,
-    reset
   };
 };
