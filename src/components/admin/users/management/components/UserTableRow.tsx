@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { User } from '../../types';
 import UserActionMenu from './UserActionMenu';
-import { formatDate, getUserName, getUserPhone, getCountryCode, getCountryFlagUrl } from '../utils/userDisplayUtils';
+import { formatDate, getUserName, getUserPhone } from '../utils/userDisplayUtils';
 
 interface UserTableRowProps {
   user: User;

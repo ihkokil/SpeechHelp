@@ -82,7 +82,9 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({ user, open, onClo
     setTotalActivityTime(5 * speeches.length);
   };
   
-  const handleCloseClick = () => {
+  const handleCloseClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('UserDetailsDrawer: close button clicked');
     onClose();
   };
