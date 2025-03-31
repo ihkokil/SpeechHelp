@@ -65,7 +65,7 @@ const FilterBar = ({
           <SelectTrigger id="filter-type">
             <SelectValue placeholder="All Types" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[300px]">
             <SelectItem value="all">All Types</SelectItem>
             {speechTypesData.map((type) => (
               <SelectItem key={type.id} value={type.id}>
