@@ -1,8 +1,8 @@
 
 import React, { useEffect } from 'react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { User } from './types';
-import { DrawerSheetContent } from './details/DrawerSheetContent';
+import { User } from '../types';
+import { DrawerContent } from './DrawerContent';
 import { useUserDetails } from './hooks/useUserDetails';
 
 interface UserDetailsDrawerProps {
@@ -47,7 +47,7 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
     <Sheet open={open} onOpenChange={handleSheetOpenChange}>
       <SheetContent className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl overflow-y-auto">
         {user && (
-          <DrawerSheetContent
+          <DrawerContent
             user={user}
             onClose={onClose}
             speeches={speeches}
