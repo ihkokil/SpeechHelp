@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Navigate } from 'react-router-dom';
@@ -180,7 +181,7 @@ const AdminAuth = () => {
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-100 to-pink-100 p-4">
       <div className="mb-6 flex items-center space-x-2">
         <img 
-          src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg" 
+          src="/Speech Help - Logo.svg" 
           alt="Speech Help Logo" 
           className="h-10" 
         />

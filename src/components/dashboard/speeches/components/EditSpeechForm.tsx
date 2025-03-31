@@ -1,10 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
+import SpeechContentEditor from '@/components/speech/components/SpeechContentEditor';
+import SpeechExportButtons from './SpeechExportButtons';
 import { Speech } from '@/types/auth';
 import Translate from '@/components/Translate';
 import SpeechPreview from '@/components/speech/components/SpeechPreview';
-import SpeechExportButtons from './SpeechExportButtons';
 
 interface EditSpeechFormProps {
   speech: Speech | null;
@@ -23,14 +24,23 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   
-  useEffect(() => {
-    // Log values for debugging
-    console.log('EditSpeechForm received:', { speech, editTitle, editContent });
-  }, [speech, editTitle, editContent]);
-  
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    console.log('Content changed:', e.target.value);
-    setEditContent(e.target.value);
+    const newContent = e.target.value;
+    setEditContent(newContent);
+  };
+
+  // Extract the content from JSON if needed
+  const getFormattedContent = (content: string): string => {
+    if (content.includes('{"content"')) {
+      try {
+        const jsonContent = JSON.parse(content);
+        return jsonContent.content || content;
+      } catch (e) {
+        console.error('Failed to parse JSON content', e);
+        return content;
+      }
+    }
+    return content;
   };
 
   if (!speech) return null;
@@ -48,52 +58,33 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
           className="w-full"
         />
       </div>
-      
       <div>
         {viewMode === 'edit' ? (
-          <>
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-pink-600 font-medium uppercase text-sm">
-                <Translate text="speechLab.content" fallback="Speech Content" />
-              </label>
-              
-              <button 
-                onClick={() => setViewMode('preview')}
-                className="px-2 py-1 text-xs sm:text-sm sm:px-3 sm:py-1 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                <Translate text="speechLab.preview" fallback="Preview" />
-              </button>
-            </div>
-            
-            <textarea
-              value={editContent}
-              onChange={handleContentChange}
-              className="w-full min-h-[250px] sm:min-h-[300px] p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 resize-y"
-              placeholder="Enter your speech content here..."
-            />
-          </>
+          <SpeechContentEditor 
+            content={editContent}
+            onContentChange={handleContentChange}
+            preserveHtml={true}
+            forceEditMode={true}
+            showFormattedContent={true}  // New prop to ensure formatted content is shown
+          />
         ) : (
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-pink-600 font-medium uppercase text-sm">
+              <label className="text-pink-600 font-medium uppercase">
                 <Translate text="speechLab.content" fallback="Speech Content" />
               </label>
               <button 
                 onClick={() => setViewMode('edit')}
-                className="px-2 py-1 text-xs sm:text-sm sm:px-3 sm:py-1 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center"
+                className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
                 <Translate text="speechLab.edit" fallback="Edit" />
               </button>
             </div>
-            <div className="border rounded-md p-3 min-h-[250px] sm:min-h-[300px] overflow-auto">
-              <SpeechPreview content={editContent} />
-            </div>
+            <SpeechPreview content={editContent} />
           </div>
         )}
       </div>
-      
       <SpeechExportButtons 
         speech={speech}
         title={editTitle}

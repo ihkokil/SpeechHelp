@@ -5,7 +5,6 @@ export const enGB = {
   'dashboard.inProgress': 'In Progress',
   'dashboard.niceDay': 'Have a pleasant',
   'dashboard.thisMonth': 'This month',
-  'dashboard.Modified': 'Modified',
   
   // Settings
   'settings.title': 'Account Settings',

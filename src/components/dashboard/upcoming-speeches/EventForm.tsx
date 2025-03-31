@@ -1,140 +1,123 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Plus, CalendarIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CalendarIcon, PlusIcon } from 'lucide-react';
-import { DatePicker } from '@/components/ui/date-picker';
-import Translate from '@/components/Translate';
-import { SpeechEvent } from './types';
-import { v4 as uuidv4 } from 'uuid';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { speechTypesData } from '@/components/speech/data/speechTypesData';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/translations';
 
 interface EventFormProps {
-  onAddEvent: (event: SpeechEvent) => void;
+  onAddEvent: (title: string, type: string, date: Date) => void;
 }
 
 const EventForm: React.FC<EventFormProps> = ({ onAddEvent }) => {
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [category, setCategory] = useState('');
-  const [duration, setDuration] = useState('');
-  
-  // Speech type options - matching the available types in the system
-  const speechTypes = [
-    'wedding', 'graduation', 'birthday', 'business', 'tedtalk', 
-    'motivational', 'funeral', 'keynote', 'social', 'farewell',
-    'informative', 'persuasive', 'entertaining', 'retirement', 
-    'award', 'personal', 'academic', 'other'
-  ];
-  
+  const [eventDate, setEventDate] = useState<Date | undefined>(undefined);
+  const [eventType, setEventType] = useState<string>('');
+  const [eventTitle, setEventTitle] = useState<string>('');
+  const { currentLanguage } = useLanguage();
+  const { t } = useTranslation();
+
   const handleAddEvent = () => {
-    if (!title || !date || !category || !duration) {
-      // Display error or validation message
+    if (!eventDate || !eventType) {
+      toast.error(t('errors.missingFields', currentLanguage.code));
       return;
     }
     
-    const newEvent: SpeechEvent = {
-      id: uuidv4(),
-      title,
-      date: date as Date,
-      category,
-      duration: parseInt(duration),
-      createdAt: new Date(),
-      status: 'upcoming'
-    };
-    
-    onAddEvent(newEvent);
+    onAddEvent(eventTitle, eventType, eventDate);
     
     // Reset form
-    setTitle('');
-    setDate(undefined);
-    setCategory('');
-    setDuration('');
-    setIsFormOpen(false);
+    setEventDate(undefined);
+    setEventType('');
+    setEventTitle('');
   };
-  
-  if (!isFormOpen) {
-    return (
-      <div className="p-3 sm:p-4">
-        <Button 
-          className="w-full flex items-center justify-center space-x-2 bg-pink-600 hover:bg-pink-700 text-white"
-          onClick={() => setIsFormOpen(true)}
-        >
-          <PlusIcon className="h-4 w-4" />
-          <span><Translate text="dashboard.addUpcomingSpeech" fallback="Add Upcoming Speech" /></span>
-        </Button>
-      </div>
-    );
-  }
-  
+
   return (
-    <div className="border-b p-3 sm:p-4">
-      <h3 className="text-sm font-medium mb-3"><Translate text="dashboard.newSpeechEvent" fallback="New Speech Event" /></h3>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="col-span-1 sm:col-span-2">
-          <Input
-            placeholder="Speech Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-        
-        <div>
-          <DatePicker
-            date={date}
-            onSelect={setDate}
-            className="w-full"
-          >
-            <Button
-              variant="outline"
-              className="w-full flex justify-between items-center"
-            >
-              {date ? date.toLocaleDateString() : <Translate text="common.selectDate" fallback="Select Date" />}
-              <CalendarIcon className="h-4 w-4 opacity-50" />
-            </Button>
-          </DatePicker>
-        </div>
-        
-        <div>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Speech Type" />
-            </SelectTrigger>
-            <SelectContent>
-              {speechTypes.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <Input
-            type="number"
-            placeholder="Duration (minutes)"
-            value={duration}
-            onChange={(e) => setDuration(e.target.value)}
-          />
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => setIsFormOpen(false)}
-            className="flex-1"
-          >
-            <Translate text="common.cancel" fallback="Cancel" />
-          </Button>
+    <div className="p-4 border-b">
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="event-title" className="block text-sm mb-1">Speech Title (Optional)</Label>
+            <Input 
+              id="event-title"
+              placeholder="Enter a title"
+              value={eventTitle}
+              onChange={(e) => setEventTitle(e.target.value)}
+            />
+          </div>
           
-          <Button
-            className="flex-1 bg-pink-600 hover:bg-pink-700 text-white"
+          <div>
+            <Label htmlFor="event-type" className="block text-sm mb-1">Speech Type</Label>
+            <Select
+              value={eventType}
+              onValueChange={setEventType}
+            >
+              <SelectTrigger id="event-type">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60 overflow-y-auto">
+                {speechTypesData.map((type) => (
+                  <SelectItem key={type.id} value={type.id}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        
+        <div className="flex items-end space-x-4">
+          <div className="flex-1">
+            <Label htmlFor="event-date" className="block text-sm mb-1">Event Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  id="event-date"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !eventDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {eventDate ? format(eventDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={eventDate}
+                  onSelect={setEventDate}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <Button 
             onClick={handleAddEvent}
+            className="flex items-center"
           >
-            <Translate text="common.add" fallback="Add" />
+            <Plus className="mr-1 h-4 w-4" />
+            Add Event
           </Button>
         </div>
       </div>

@@ -1,4 +1,3 @@
-
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -70,11 +69,11 @@ const PerformanceMetrics = ({ speechData = {} }: PerformanceMetricsProps) => {
           </div>
         </div>
         
-        <div className="h-64 w-full">
+        <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              margin={{ top: 20, right: 5, left: 0, bottom: 5 }}
+              margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
