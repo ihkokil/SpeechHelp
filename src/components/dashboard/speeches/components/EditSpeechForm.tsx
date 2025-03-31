@@ -6,7 +6,6 @@ import SpeechExportButtons from './SpeechExportButtons';
 import { Speech } from '@/types/auth';
 import Translate from '@/components/Translate';
 import SpeechPreview from '@/components/speech/components/SpeechPreview';
-import { getEditableContent } from '@/components/speech/utils/speechFormattingUtils';
 
 interface EditSpeechFormProps {
   speech: Speech | null;
@@ -24,30 +23,20 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
   setEditContent
 }) => {
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
-  const [displayContent, setDisplayContent] = useState(editContent);
   
-  // Update display content when editContent changes
-  useEffect(() => {
-    if (editContent) {
-      setDisplayContent(editContent);
-    }
-  }, [editContent]);
-  
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value;
-    setEditContent(newContent);
-    setDisplayContent(newContent);
-  };
-
-  // Debug log
+  // Debug logs
   useEffect(() => {
     console.log('EditSpeechForm rendered with:', {
       speechId: speech?.id,
       editTitle,
-      editContent,
-      displayContent
+      editContent: editContent ? `${editContent.substring(0, 50)}...` : 'empty'
     });
-  }, [speech, editTitle, editContent, displayContent]);
+  }, [speech, editTitle, editContent]);
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    setEditContent(newContent);
+  };
 
   if (!speech) return null;
 
@@ -67,11 +56,11 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
       <div>
         {viewMode === 'edit' ? (
           <SpeechContentEditor 
-            content={displayContent}
+            content={editContent}
             onContentChange={handleContentChange}
-            preserveHtml={true}
+            preserveHtml={false}
             forceEditMode={true}
-            showFormattedContent={true}
+            showFormattedContent={false}
           />
         ) : (
           <div>
@@ -87,7 +76,7 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
                 <Translate text="speechLab.edit" fallback="Edit" />
               </button>
             </div>
-            <SpeechPreview content={displayContent} />
+            <SpeechPreview content={editContent} />
           </div>
         )}
       </div>

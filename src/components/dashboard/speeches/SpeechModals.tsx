@@ -1,7 +1,7 @@
 
 import { Speech } from '@/types/auth';
 import ViewSpeechModal from './modals/ViewSpeechModal';
-import EditSpeechModal from './EditSpeechModal';
+import EditSpeechModal from './modals/EditSpeechModal';
 import DeleteSpeechAlert from './modals/DeleteSpeechAlert';
 import { useSpeechModals } from './hooks/useSpeechModals';
 import { useEffect } from 'react';

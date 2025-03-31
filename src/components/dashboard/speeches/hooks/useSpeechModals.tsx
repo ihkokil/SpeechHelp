@@ -14,17 +14,31 @@ export const useSpeechModals = () => {
   const handleEditModalOpen = (open: boolean, selectedSpeech: Speech | null) => {
     // If opening the modal, set the initial values
     if (open && selectedSpeech) {
+      console.log('Setting up edit modal for speech:', selectedSpeech);
       setTitle(selectedSpeech.title);
       
       // Get the editable content from the speech
-      const editableContent = getEditableContent(selectedSpeech.content, true, true);
+      let editableContent = selectedSpeech.content;
+      
+      // Try to parse JSON content if present
+      try {
+        if (typeof selectedSpeech.content === 'string' && selectedSpeech.content.trim().startsWith('{')) {
+          const parsedContent = JSON.parse(selectedSpeech.content);
+          if (parsedContent.content) {
+            editableContent = parsedContent.content;
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing JSON content:', error);
+        // If parsing fails, use the raw content
+      }
+      
       setContent(editableContent);
       
-      console.log('Edit modal opened for speech:', {
+      console.log('Edit modal opened with content:', {
         id: selectedSpeech.id,
         title: selectedSpeech.title,
-        originalContent: selectedSpeech.content,
-        parsedContent: editableContent
+        contentPreview: editableContent.substring(0, 100) + '...'
       });
     }
     

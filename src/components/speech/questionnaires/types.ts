@@ -14,3 +14,9 @@ export type QuestionItem = {
 };
 
 export type SpeechTypeQuestionnaires = Record<string, QuestionItem[]>;
+
+// Add speech content types
+export type SpeechContentFormat = {
+  content: string;
+  metadata?: Record<string, any>;
+};
