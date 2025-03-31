@@ -38,15 +38,15 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   };
 
   return (
-    <div className="relative w-full overflow-x-auto sm:overflow-x-visible">
-      <Table className="min-w-full table-fixed">
+    <div className="w-full">
+      <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[50%] sm:w-[40%]"><Translate text="common.title" /></TableHead>
-            <TableHead className="w-[15%] text-center hidden sm:table-cell"><Translate text="common.type" /></TableHead>
-            <TableHead className="w-[15%] hidden md:table-cell"><Translate text="dashboard.created" /></TableHead>
-            <TableHead className="w-[15%] hidden md:table-cell"><Translate text="dashboard.lastUpdated" /></TableHead>
-            <TableHead className="w-[20%] sm:w-[15%] text-right"><Translate text="common.actions" /></TableHead>
+            <TableHead className="w-[45%]"><Translate text="common.title" /></TableHead>
+            <TableHead className="w-[15%] text-center"><Translate text="common.type" /></TableHead>
+            <TableHead className="w-[12%] hidden md:table-cell"><Translate text="dashboard.created" /></TableHead>
+            <TableHead className="w-[12%] hidden md:table-cell"><Translate text="dashboard.lastUpdated" /></TableHead>
+            <TableHead className="w-[16%] text-right"><Translate text="common.actions" /></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -55,10 +55,9 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
               <TableCell className="font-medium">
                 <div className="flex flex-col">
                   <span className="truncate">{speech.title}</span>
-                  <span className="sm:hidden mt-1">
+                  <span className="md:hidden mt-1">
                     <Badge 
-                      className={`${getTypeColor(speech.speech_type)} text-xs w-fit max-w-24 inline-flex justify-center`}
-                      title={getSpeechTypeLabel(speech.speech_type)}
+                      className={`${getTypeColor(speech.speech_type)} text-xs max-w-20 inline-flex justify-center`}
                     >
                       <span className="truncate">{getSpeechTypeLabel(speech.speech_type)}</span>
                     </Badge>
@@ -68,10 +67,9 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                   </span>
                 </div>
               </TableCell>
-              <TableCell className="text-center hidden sm:table-cell">
+              <TableCell className="text-center hidden md:table-cell">
                 <Badge 
-                  className={`${getTypeColor(speech.speech_type)} max-w-24 mx-auto inline-flex justify-center px-2 text-center`}
-                  title={getSpeechTypeLabel(speech.speech_type)}
+                  className={`${getTypeColor(speech.speech_type)} max-w-20 inline-flex justify-center`}
                 >
                   <span className="truncate">{getSpeechTypeLabel(speech.speech_type)}</span>
                 </Badge>
