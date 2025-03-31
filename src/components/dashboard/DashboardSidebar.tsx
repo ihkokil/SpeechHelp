@@ -63,7 +63,7 @@ const DashboardSidebar = () => {
   const secondaryNavItems: NavItem[] = [
     {
       icon: <SettingsIcon className="h-5 w-5" />,
-      label: 'Settings',
+      label: 'Account Settings',
       href: '/settings',
     },
     {
