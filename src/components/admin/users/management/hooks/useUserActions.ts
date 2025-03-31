@@ -1,9 +1,9 @@
 
 import { useCallback, useState } from 'react';
 import { User } from '../../types';
-import { useUserCrud } from './user-actions/useUserCrud';
-import { useSubscriptionActions } from './user-actions/useSubscriptionActions';
-import { usePermissionActions } from './user-actions/usePermissionActions';
+import { useBulkActions } from './user-actions/useBulkActions';
+import { useIndividualUserActions } from './user-actions/useIndividualUserActions';
+import { useUserDetailsActions } from './user-actions/useUserDetailsActions';
 
 export const useUserActions = () => {
   // Create internal state for tracking action loading
@@ -16,48 +16,62 @@ export const useUserActions = () => {
   
   // Initialize hooks with necessary parameters
   const { 
-    handleDeleteUsers, 
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate
-  } = useUserCrud(setIsActionLoading);
+  } = useBulkActions();
   
   const {
     handleToggleUserStatus,
-    handleToggleUserSubscription
-  } = useSubscriptionActions(setIsActionLoading);
+    handleToggleUserSubscription,
+    handleDeleteUser
+  } = useIndividualUserActions();
   
-  // View user details
+  const {
+    handleViewUserDetails: baseHandleViewUserDetails,
+    handleCloseUserDetails: baseHandleCloseUserDetails,
+    handleManagePermissions: baseHandleManagePermissions,
+    handlePermissionsUpdated: baseHandlePermissionsUpdated
+  } = useUserDetailsActions();
+  
+  // View user details wrapper
   const handleViewUserDetails = useCallback((user: User) => {
     console.log("useUserActions: View details called for user:", user.id);
-    setSelectedUser(user);
-    setIsDetailsOpen(true);
-  }, []);
+    baseHandleViewUserDetails(user, setSelectedUser, setIsDetailsOpen);
+  }, [baseHandleViewUserDetails]);
   
-  // Close user details
+  // Close user details wrapper
   const handleCloseUserDetails = useCallback(() => {
     console.log("useUserActions: Close details called");
-    setIsDetailsOpen(false);
-    // We set selected user to null with a delay to prevent UI flickering
-    setTimeout(() => {
-      setSelectedUser(null);
-    }, 300);
-  }, []);
+    baseHandleCloseUserDetails(setIsDetailsOpen, setSelectedUser);
+  }, [baseHandleCloseUserDetails]);
   
-  // Manage user permissions
+  // Manage user permissions wrapper
   const handleManagePermissions = useCallback((user: User) => {
     console.log("useUserActions: Manage permissions called for user:", user.id);
-    setSelectedUser(user);
-    setIsPermissionsDialogOpen(true);
-  }, []);
+    baseHandleManagePermissions(user, setSelectedUser, setIsPermissionsDialogOpen);
+  }, [baseHandleManagePermissions]);
   
-  // Handle permissions updated
-  const { handlePermissionsUpdated } = usePermissionActions(setIsPermissionsDialogOpen);
+  // Handle deleting users (plural for backward compatibility)
+  const handleDeleteUsers = useCallback(async (
+    selectedUsers: User[], 
+    users: User[], 
+    setUsers: (users: User[]) => void
+  ) => {
+    console.log('Deleting users:', selectedUsers.map(user => user.id));
+    // If only one user, use the single user delete method
+    if (selectedUsers.length === 1) {
+      await handleDeleteUser(selectedUsers[0].id, users, setUsers);
+    } else {
+      await handleBulkDelete(selectedUsers, users, setUsers);
+    }
+  }, [handleDeleteUser, handleBulkDelete]);
   
   // Return all actions and state
   return {
     // User CRUD operations
     handleDeleteUsers,
+    handleDeleteUser,
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
@@ -72,7 +86,9 @@ export const useUserActions = () => {
     handleManagePermissions,
     
     // Permission operations
-    handlePermissionsUpdated,
+    handlePermissionsUpdated: (updatedUser: User, users: User[], setUsers: (users: User[]) => void) => {
+      baseHandlePermissionsUpdated(updatedUser, users, setUsers, setIsPermissionsDialogOpen);
+    },
     
     // States
     isActionLoading,
