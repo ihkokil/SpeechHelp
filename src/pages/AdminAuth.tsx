@@ -181,7 +181,7 @@ const AdminAuth = () => {
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-100 to-pink-100 p-4">
       <div className="mb-6 flex items-center space-x-2">
         <img 
-          src="/Speech Help - Logo.svg" 
+          src="/speech-help-new-logo.svg" 
           alt="Speech Help Logo" 
           className="h-10" 
         />
