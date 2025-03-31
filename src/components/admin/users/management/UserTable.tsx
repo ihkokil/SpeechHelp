@@ -47,7 +47,7 @@ export const UserTable: React.FC<UserTableProps> = ({
   const { filterUsers } = useUserSearch(users);
   const filteredUsers = useMemo(() => filterUsers(users, searchTerm), [users, searchTerm, filterUsers]);
 
-  // We'll pass these handlers directly to the UserTableRow
+  // Direct pass-through handlers for improved reliability
   const onViewUserDetails = (user: User) => {
     console.log('UserTable: View details clicked for user:', user.id);
     handleViewUserDetails(user);

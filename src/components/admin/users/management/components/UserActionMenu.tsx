@@ -31,45 +31,45 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onExtendSubscription,
   onDeleteUser
 }) => {
-  // Create handler functions with proper stopPropagation
+  // Improve handler functions to ensure proper event propagation handling
   const handleViewDetails = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("UserActionMenu: View details called for user:", user.id);
+    console.log("UserActionMenu: View details clicked for user:", user.id);
     onViewDetails(user);
   };
   
   const handleManagePermissions = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("UserActionMenu: Manage permissions called for user:", user.id);
+    console.log("UserActionMenu: Manage permissions clicked for user:", user.id);
     onManagePermissions(user);
   };
   
   const handleToggleUserActive = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("UserActionMenu: Toggle active status for user:", user.id, !user.is_active);
+    console.log("UserActionMenu: Toggle active status clicked for user:", user.id, !user.is_active);
     onToggleUserActive(user.id, user.is_active !== false);
   };
   
   const handleExtendSubscription = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("UserActionMenu: Extend subscription for user:", user.id);
+    console.log("UserActionMenu: Extend subscription clicked for user:", user.id);
     onExtendSubscription(user.id);
   };
   
   const handleDeleteUser = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("UserActionMenu: Delete user:", user.id);
+    console.log("UserActionMenu: Delete user clicked for user:", user.id);
     onDeleteUser(user.id);
   };
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
         <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
           <MoreVertical className="h-4 w-4" />
           <span className="sr-only">Open menu</span>
