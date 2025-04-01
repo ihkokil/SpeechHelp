@@ -6,8 +6,8 @@ import { UserTable } from '@/components/admin/users/management/UserTable';
 import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
+import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
 import UpdateSubscriptionDialog from '@/components/admin/users/management/components/UpdateSubscriptionDialog';
-import { useSimpleAdminToggle } from '@/components/admin/users/management/hooks/user-actions/useSimpleAdminToggle';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/components/admin/users/types';
 
@@ -28,6 +28,8 @@ const UserManagement = () => {
     selectedUser,
     setSelectedUser,
     isDetailsOpen,
+    isPermissionsDialogOpen,
+    setIsPermissionsDialogOpen,
     filteredUsers,
     fetchUsers,
     toggleUserSelection,
@@ -37,6 +39,8 @@ const UserManagement = () => {
     handleToggleUserStatus,
     handleViewUserDetails,
     handleCloseUserDetails,
+    handleManagePermissions,
+    handlePermissionsUpdated,
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
@@ -48,9 +52,6 @@ const UserManagement = () => {
   
   // New state for subscription dialog
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
-  
-  // Get the simple admin toggle hook
-  const { handleToggleAdmin: baseHandleToggleAdmin } = useSimpleAdminToggle();
   
   const { toast } = useToast();
   
@@ -86,11 +87,6 @@ const UserManagement = () => {
       handleUpdateSubscription(userId, tier, endDate, users, setUsers);
     }
     setIsSubscriptionDialogOpen(false);
-  };
-
-  // Handler for admin toggle
-  const handleToggleAdmin = (user: User) => {
-    baseHandleToggleAdmin(user, users, setUsers);
   };
 
   // Create a wrapped toggle all users function that handles filtered users
@@ -134,7 +130,7 @@ const UserManagement = () => {
             toggleUserSelection={toggleUserSelection}
             toggleAllUsers={toggleAllUsersWithFilter}
             handleViewUserDetails={handleViewUserDetails}
-            handleToggleAdmin={handleToggleAdmin}
+            handleManagePermissions={handleManagePermissions}
             handleToggleUserStatus={handleToggleUserStatus}
             setSelectedUsers={setSelectedUsers}
             setIsDeleteDialogOpen={setIsDeleteDialogOpen}
@@ -170,6 +166,15 @@ const UserManagement = () => {
         onOpenChange={setIsAddUserDialogOpen} 
         onUserAdded={handleUserAdded}
       />
+
+      {isPermissionsDialogOpen && selectedUser && (
+        <AdminPermissionsDialog
+          user={selectedUser}
+          open={isPermissionsDialogOpen}
+          onOpenChange={setIsPermissionsDialogOpen}
+          onPermissionsUpdated={(updatedUser) => handlePermissionsUpdated(updatedUser)}
+        />
+      )}
 
       {/* Add the subscription dialog */}
       {isSubscriptionDialogOpen && selectedUser && (
