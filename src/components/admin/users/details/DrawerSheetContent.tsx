@@ -2,7 +2,7 @@
 import React from 'react';
 import { SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User as UserIcon, CreditCard, ScrollText, Clock, PieChart } from 'lucide-react';
+import { User as UserIcon, CreditCard, ScrollText, Clock, Shield, PieChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserHeader } from './UserHeader';
 import { UserProfile } from './UserProfile';
@@ -10,6 +10,7 @@ import { UserSpeeches } from './UserSpeeches';
 import { UserBilling } from './UserBilling';
 import { UserStatistics } from './UserStatistics';
 import { UserActivity } from './UserActivity';
+import { UserPermissions } from './UserPermissions';
 import { User as UserType, Speech } from '../types';
 import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
 
@@ -66,26 +67,30 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
         <UserHeader user={user} />
         
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="profile">
-              <UserIcon className="mr-1 h-4 w-4" />
+              <UserIcon className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">Profile</span>
             </TabsTrigger>
             <TabsTrigger value="speeches">
-              <ScrollText className="mr-1 h-4 w-4" />
+              <ScrollText className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">Speeches</span>
             </TabsTrigger>
             <TabsTrigger value="billing">
-              <CreditCard className="mr-1 h-4 w-4" />
+              <CreditCard className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">Billing</span>
             </TabsTrigger>
             <TabsTrigger value="statistics">
-              <PieChart className="mr-1 h-4 w-4" />
+              <PieChart className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">Statistics</span>
             </TabsTrigger>
             <TabsTrigger value="activity">
-              <Clock className="mr-1 h-4 w-4" />
+              <Clock className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">Activity</span>
+            </TabsTrigger>
+            <TabsTrigger value="permissions">
+              <Shield className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Permissions</span>
             </TabsTrigger>
           </TabsList>
           
@@ -120,6 +125,10 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
               userJoinedDays={userJoinedDays}
               totalActivityTime={totalActivityTime}
             />
+          </TabsContent>
+          
+          <TabsContent value="permissions" className="pt-4">
+            <UserPermissions user={user} />
           </TabsContent>
         </Tabs>
       </div>
