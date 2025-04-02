@@ -210,13 +210,14 @@ export const adminAuthService = {
 
           if (authUser && authUser.is_active) {
             // Create admin session
-            const adminUser = {
+            const adminUser: AdminUser = {
               id: authUser.id,
               username: authUser.username,
               email: authUser.email,
               is_active: authUser.is_active,
               is_super_admin: authUser.is_super_admin,
-              last_login: authUser.last_login
+              last_login: authUser.last_login,
+              allowed_ip_addresses: authUser.allowed_ip_addresses || null
             };
 
             await this.logActivity({
@@ -244,13 +245,14 @@ export const adminAuthService = {
       await supabase.auth.signOut();
 
       // Create admin user object from profile data
-      const adminUser = {
+      const adminUser: AdminUser = {
         id: profileData.id,
         username: profileData.username || `${profileData.first_name} ${profileData.last_name}`,
         email: authData.user.email || '',
         is_active: true,
         is_super_admin: false,
-        last_login: null
+        last_login: null,
+        allowed_ip_addresses: null
       };
 
       await this.logActivity({
