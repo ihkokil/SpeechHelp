@@ -65,7 +65,7 @@ export const UserTable: React.FC<UserTableProps> = ({
       <div className="rounded-md border bg-white shadow-sm">
         {/* Horizontal scroll container for the table */}
         <div className="overflow-x-auto">
-          <div className="min-w-[800px]">
+          <div className="min-w-[1200px]">
             <Table>
               <UserTableHeader 
                 onToggleAll={handleToggleAll}

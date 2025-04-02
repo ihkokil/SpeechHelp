@@ -83,22 +83,22 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       
       <TableCell className="px-2">
         <div className="flex flex-col">
-          <span className="text-sm font-medium">{formatUserDisplayName(user)}</span>
+          <span className="text-sm font-medium text-gray-900">{formatUserDisplayName(user)}</span>
         </div>
       </TableCell>
       
       <TableCell className="px-2">
-        <span className="text-sm">{user.email}</span>
+        <span className="text-sm text-gray-900">{user.email}</span>
       </TableCell>
       
-      <TableCell className="px-2 hidden lg:table-cell">
-        <span className="text-sm">{getUserPhone(user)}</span>
+      <TableCell className="px-2">
+        <span className="text-sm text-gray-600">{getUserPhone(user)}</span>
       </TableCell>
       
       <TableCell className="px-2 text-center">
         <Badge 
           variant={user.is_active !== false ? "default" : "secondary"}
-          className={user.is_active !== false ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
+          className={user.is_active !== false ? "bg-green-100 text-green-800 border-green-200" : "bg-gray-100 text-gray-800 border-gray-200"}
         >
           {user.is_active !== false ? 'Active' : 'Inactive'}
         </Badge>
@@ -110,23 +110,23 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
             Admin
           </Badge>
         ) : (
-          <Badge variant="outline" className="bg-gray-50 text-gray-700">
+          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
             User
           </Badge>
         )}
       </TableCell>
       
-      <TableCell className="px-2 text-center hidden md:table-cell">
-        <Badge variant="outline" className="bg-gray-50">
+      <TableCell className="px-2 text-center">
+        <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
           {formatSubscriptionPlan(user.subscription_plan)}
         </Badge>
       </TableCell>
       
-      <TableCell className="px-2 text-sm text-gray-600 hidden xl:table-cell">
+      <TableCell className="px-2 text-sm text-gray-600">
         {formatJoinedDate(user.created_at)}
       </TableCell>
       
-      <TableCell className="px-2 text-sm text-gray-600 hidden xl:table-cell">
+      <TableCell className="px-2 text-sm text-gray-600">
         {formatLastSignIn(user.last_sign_in_at)}
       </TableCell>
       

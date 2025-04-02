@@ -28,13 +28,13 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = memo(({
           />
         </TableHead>
         <TableHead className="min-w-[200px] px-2">Name</TableHead>
-        <TableHead className="min-w-[200px] px-2">Email</TableHead>
-        <TableHead className="min-w-[120px] px-2 hidden lg:table-cell">Phone</TableHead>
-        <TableHead className="w-20 text-center px-2">Status</TableHead>
+        <TableHead className="min-w-[250px] px-2">Email</TableHead>
+        <TableHead className="min-w-[150px] px-2">Phone</TableHead>
+        <TableHead className="w-24 text-center px-2">Status</TableHead>
         <TableHead className="w-20 text-center px-2">Role</TableHead>
-        <TableHead className="w-20 text-center px-2 hidden md:table-cell">Plan</TableHead>
-        <TableHead className="min-w-[120px] px-2 hidden xl:table-cell">Joined</TableHead>
-        <TableHead className="min-w-[120px] px-2 hidden xl:table-cell">Last Sign In</TableHead>
+        <TableHead className="w-24 text-center px-2">Plan</TableHead>
+        <TableHead className="min-w-[120px] px-2">Joined</TableHead>
+        <TableHead className="min-w-[120px] px-2">Last Sign In</TableHead>
         <TableHead className="w-16 text-center px-2">Actions</TableHead>
       </TableRow>
     </TableHeader>
