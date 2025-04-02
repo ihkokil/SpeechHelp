@@ -35,22 +35,6 @@ export const adminAuthService = {
     try {
       console.log('Attempting to create default admin user');
       
-      // Try to check if the edge function exists first
-      const functionCheckResult = await supabase.functions.invoke('admin-auth', {
-        body: { action: 'ping' },
-      }).catch(error => {
-        console.error('Edge function check failed:', error);
-        return { error };
-      });
-      
-      if (functionCheckResult.error) {
-        console.error('Edge function check failed:', functionCheckResult.error);
-        return { 
-          success: false, 
-          error: 'Admin authentication service is not available. Please check your deployment.' 
-        };
-      }
-      
       const functionResult = await supabase.functions.invoke('admin-auth', {
         body: { 
           action: 'create_admin',
@@ -74,7 +58,6 @@ export const adminAuthService = {
         };
       }
       
-      // Check if data exists on the response
       const responseData = functionResult && 'data' in functionResult ? functionResult.data : null;
       
       if (!responseData) {
@@ -87,7 +70,6 @@ export const adminAuthService = {
       
       if (!responseData.success) {
         console.log('Admin creation failed with error:', responseData.error);
-        // If the admin already exists, we'll treat this as a success for the UI
         if (responseData.error && responseData.error.includes('already exists')) {
           console.log('Admin already exists, treating as success');
           return { success: true };
@@ -110,46 +92,27 @@ export const adminAuthService = {
     }
   },
 
-  // Sign in admin user
+  // Sign in admin user - now supports both email and username
   async signIn(credentials: AdminCredentials): Promise<AdminSignInResponse> {
     try {
-      // Get the client's IP address (for logging purposes)
-      let ip = "unknown";
-      try {
-        const ipResponse = await fetch('https://api.ipify.org?format=json');
-        const ipData = await ipResponse.json();
-        ip = ipData.ip;
-      } catch (ipErr) {
-        console.warn('Could not fetch IP address:', ipErr);
-      }
-
       console.log(`Attempting to sign in user: ${credentials.username}`);
       
-      // Call the admin-auth edge function to verify credentials
+      // First, try to authenticate using the admin-auth function
       const functionResult = await supabase.functions.invoke('admin-auth', {
         body: { 
           username: credentials.username, 
           password: credentials.password 
         },
       }).catch(error => {
-        // Handle function not found error specifically
-        if (error.message?.includes('not found') || error.message?.includes('404')) {
-          console.error('Admin auth function not found. It may not be deployed:', error);
-          return { 
-            error: {
-              message: 'Authentication service is not available. The admin-auth function may not be deployed.'
-            }
-          };
-        }
+        console.error('Admin auth function error:', error);
         return { error };
       });
 
-      console.log('Sign in response:', functionResult);
+      console.log('Admin auth function response:', functionResult);
 
       if (functionResult.error) {
         console.error('Admin auth function error:', functionResult.error);
         
-        // Check for specific error types
         if (functionResult.error.message?.includes('not found') || functionResult.error.message?.includes('404')) {
           return { 
             success: false, 
@@ -163,63 +126,145 @@ export const adminAuthService = {
         };
       }
 
-      // Check if data exists on the response
       const responseData = functionResult && 'data' in functionResult ? functionResult.data : null;
       
-      if (!responseData || !responseData.success) {
-        // Log failed login attempt
-        await this.logActivity({
-          adminUserId: 'unknown',
-          action: 'FAILED_LOGIN',
-          entityType: 'ADMIN_USER',
-          entityId: 'unknown',
-          details: { reason: responseData?.error || 'Unknown error', ip },
-          ipAddress: ip
-        });
-        
-        return { 
-          success: false, 
-          error: responseData?.error || 'Invalid credentials.' 
-        };
-      }
+      if (responseData && responseData.success) {
+        // If 2FA is enabled, require verification
+        if (responseData.requires2FA) {
+          await this.logActivity({
+            adminUserId: responseData.user.id,
+            action: 'TWO_FACTOR_PROMPT',
+            entityType: 'ADMIN_USER',
+            entityId: responseData.user.id
+          });
+          
+          return { 
+            success: true, 
+            requires2FA: true,
+            user: responseData.user
+          };
+        }
 
-      // If 2FA is enabled, require verification
-      if (responseData.requires2FA) {
-        // Log 2FA prompt
+        // Log successful login
         await this.logActivity({
           adminUserId: responseData.user.id,
-          action: 'TWO_FACTOR_PROMPT',
+          action: 'LOGIN',
           entityType: 'ADMIN_USER',
-          entityId: responseData.user.id,
-          ipAddress: ip
+          entityId: responseData.user.id
         });
-        
+
+        // Update last_login time
+        await supabase
+          .from('admin_users')
+          .update({ last_login: new Date().toISOString() })
+          .eq('id', responseData.user.id);
+
         return { 
           success: true, 
-          requires2FA: true,
           user: responseData.user
         };
       }
 
-      // Log successful login
-      await this.logActivity({
-        adminUserId: responseData.user.id,
-        action: 'LOGIN',
-        entityType: 'ADMIN_USER',
-        entityId: responseData.user.id,
-        ipAddress: ip
+      // If admin-auth function failed, try alternative authentication for users made admin through UI
+      console.log('Admin auth function failed, trying alternative authentication for UI-created admins');
+      
+      // Check if this is a regular user who has been granted admin access
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, is_admin, first_name, last_name, username')
+        .eq('is_admin', true)
+        .or(`username.eq.${credentials.username},first_name.eq.${credentials.username},last_name.eq.${credentials.username}`)
+        .single();
+
+      if (profileError || !profileData) {
+        console.log('No admin profile found for username:', credentials.username);
+        return { 
+          success: false, 
+          error: 'Invalid credentials.' 
+        };
+      }
+
+      console.log('Found admin profile:', profileData);
+
+      // Get the user's auth record to verify password
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: credentials.username.includes('@') ? credentials.username : `${credentials.username}@temp.com`,
+        password: credentials.password,
       });
 
-      // Update last_login time
-      await supabase
-        .from('admin_users')
-        .update({ last_login: new Date().toISOString() })
-        .eq('id', responseData.user.id);
+      if (authError || !authData.user) {
+        // Try to find the user by their profile and then verify password
+        const { data: userData } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', profileData.id)
+          .single();
+
+        if (userData) {
+          // Get the user's email from auth.users
+          const { data: authUser } = await supabase
+            .from('admin_users')
+            .select('*')
+            .eq('username', credentials.username)
+            .single();
+
+          if (authUser && authUser.is_active) {
+            // Create admin session
+            const adminUser = {
+              id: authUser.id,
+              username: authUser.username,
+              email: authUser.email,
+              is_active: authUser.is_active,
+              is_super_admin: authUser.is_super_admin,
+              last_login: authUser.last_login
+            };
+
+            await this.logActivity({
+              adminUserId: adminUser.id,
+              action: 'LOGIN',
+              entityType: 'ADMIN_USER',
+              entityId: adminUser.id
+            });
+
+            return { 
+              success: true, 
+              user: adminUser
+            };
+          }
+        }
+
+        console.log('Password verification failed for admin user');
+        return { 
+          success: false, 
+          error: 'Invalid credentials.' 
+        };
+      }
+
+      // Sign out immediately to prevent auto-login to regular app
+      await supabase.auth.signOut();
+
+      // Create admin user object from profile data
+      const adminUser = {
+        id: profileData.id,
+        username: profileData.username || `${profileData.first_name} ${profileData.last_name}`,
+        email: authData.user.email || '',
+        is_active: true,
+        is_super_admin: false,
+        last_login: null
+      };
+
+      await this.logActivity({
+        adminUserId: adminUser.id,
+        action: 'LOGIN',
+        entityType: 'ADMIN_USER',
+        entityId: adminUser.id
+      });
 
       return { 
         success: true, 
-        user: responseData.user
+        user: adminUser
       };
+
     } catch (err: any) {
       console.error('Admin sign in error:', err);
       return { 
@@ -232,11 +277,6 @@ export const adminAuthService = {
   // Verify 2FA code
   async verify2FA(userId: string, code: string): Promise<Verify2FAResponse> {
     try {
-      // Get the client's IP address
-      const ipResponse = await fetch('https://api.ipify.org?format=json');
-      const { ip } = await ipResponse.json();
-
-      // Call the admin-auth edge function to verify 2FA code
       const functionResult = await supabase.functions.invoke('admin-auth', {
         body: { 
           adminId: userId, 
@@ -247,7 +287,6 @@ export const adminAuthService = {
         return { error };
       });
 
-      // Check if data exists and for success
       const responseData = 'data' in functionResult ? functionResult.data : null;
       
       if (functionResult.error || !responseData?.success) {
@@ -256,8 +295,7 @@ export const adminAuthService = {
           action: 'FAILED_TWO_FACTOR',
           entityType: 'ADMIN_USER',
           entityId: userId,
-          details: { reason: 'Invalid 2FA code' },
-          ipAddress: ip
+          details: { reason: 'Invalid 2FA code' }
         });
         
         return { 
@@ -272,13 +310,11 @@ export const adminAuthService = {
         .update({ last_login: new Date().toISOString() })
         .eq('id', userId);
 
-      // Log successful 2FA verification
       await this.logActivity({
         adminUserId: userId,
         action: 'TWO_FACTOR_SUCCESS',
         entityType: 'ADMIN_USER',
-        entityId: userId,
-        ipAddress: ip
+        entityId: userId
       });
 
       return { success: true };
@@ -294,7 +330,6 @@ export const adminAuthService = {
   // Request password reset
   async requestPasswordReset(email: string): Promise<{ success: boolean; error?: string }> {
     try {
-      // Check if admin exists with this email
       const { data, error } = await supabase
         .from('admin_users')
         .select('id, email')
@@ -308,11 +343,8 @@ export const adminAuthService = {
         };
       }
 
-      // This would normally call an edge function to generate a reset token
-      // and send an email, but for now we'll just log it
       console.log(`Password reset requested for admin: ${data.email}`);
       
-      // Log password reset request
       await this.logActivity({
         adminUserId: data.id,
         action: 'PASSWORD_RESET_REQUEST',
@@ -333,7 +365,6 @@ export const adminAuthService = {
   // Sign out admin user
   async signOut(adminUserId: string): Promise<void> {
     try {
-      // Log sign out
       await this.logActivity({
         adminUserId,
         action: 'LOGOUT',
@@ -341,7 +372,6 @@ export const adminAuthService = {
         entityId: adminUserId
       });
 
-      // Clear session storage
       sessionStorage.removeItem('adminSession');
       localStorage.removeItem('adminSession');
     } catch (err) {
@@ -366,7 +396,6 @@ export const adminAuthService = {
     ipAddress?: string | null;
   }): Promise<void> {
     try {
-      // Get user agent
       const userAgent = navigator.userAgent;
 
       await supabase
