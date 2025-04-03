@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { adminSettingsService } from '@/services/adminSettingsService';
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
@@ -27,6 +28,7 @@ const AdminProfileSettings = () => {
   const [avatar, setAvatar] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const { adminUser } = useAdminAuth();
 
   const form = useForm<AdminProfileFormValues>({
     resolver: zodResolver(adminProfileSchema),
@@ -42,30 +44,52 @@ const AdminProfileSettings = () => {
   // Load profile data on component mount
   useEffect(() => {
     loadProfileData();
-  }, []);
+  }, [adminUser]);
 
   const loadProfileData = async () => {
     setIsLoadingData(true);
     try {
-      const result = await adminSettingsService.getSettings('profile');
-      if (result.success && result.data) {
-        const settings = result.data.reduce((acc, setting) => {
-          acc[setting.setting_key] = setting.setting_value;
-          return acc;
-        }, {} as any);
+      if (adminUser) {
+        // First, populate with data from the current admin user
+        const nameParts = adminUser.username.split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
 
         form.reset({
-          firstName: settings.first_name || '',
-          lastName: settings.last_name || '',
-          email: settings.email || '',
-          phone: settings.phone || '',
-          countryCode: settings.country_code || 'US',
+          firstName,
+          lastName,
+          email: adminUser.email,
+          phone: '',
+          countryCode: 'US',
         });
 
-        setAvatar(settings.avatar || '');
+        // Then, load any additional settings from the database
+        const result = await adminSettingsService.getSettings('profile');
+        if (result.success && result.data) {
+          const settings = result.data.reduce((acc, setting) => {
+            acc[setting.setting_key] = setting.setting_value;
+            return acc;
+          }, {} as any);
+
+          // Update form with database values if they exist
+          form.reset({
+            firstName: settings.first_name || firstName,
+            lastName: settings.last_name || lastName,
+            email: settings.email || adminUser.email,
+            phone: settings.phone || '',
+            countryCode: settings.country_code || 'US',
+          });
+
+          setAvatar(settings.avatar || '');
+        }
       }
     } catch (error) {
       console.error('Error loading profile data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load profile data. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoadingData(false);
     }
@@ -92,7 +116,11 @@ const AdminProfileSettings = () => {
   const handleSave = async (data: AdminProfileFormValues) => {
     setIsLoading(true);
     try {
-      // Save each profile setting
+      if (!adminUser) {
+        throw new Error('No admin user found');
+      }
+
+      // Save each profile setting to the database
       const savePromises = [
         adminSettingsService.saveSetting('first_name', data.firstName, 'profile'),
         adminSettingsService.saveSetting('last_name', data.lastName, 'profile'),
@@ -136,8 +164,23 @@ const AdminProfileSettings = () => {
     return <div className="flex items-center justify-center p-8">Loading profile data...</div>;
   }
 
+  if (!adminUser) {
+    return <div className="flex items-center justify-center p-8">No admin user found. Please log in again.</div>;
+  }
+
   return (
     <div className="space-y-6">
+      {/* Current Admin Info */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h3 className="text-sm font-medium text-blue-800 mb-2">Current Admin Session</h3>
+        <div className="text-sm text-blue-700">
+          <p><strong>Username:</strong> {adminUser.username}</p>
+          <p><strong>Email:</strong> {adminUser.email}</p>
+          <p><strong>Admin ID:</strong> {adminUser.id}</p>
+          <p><strong>Super Admin:</strong> {adminUser.is_super_admin ? 'Yes' : 'No'}</p>
+        </div>
+      </div>
+
       {/* Avatar Upload Section */}
       <div className="flex items-center space-x-4">
         <Avatar className="h-20 w-20">
