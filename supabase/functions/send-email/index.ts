@@ -55,7 +55,7 @@ serve(async (req) => {
 				Authorization: `Bearer ${RESEND_API_KEY}`,
 			},
 			body: JSON.stringify({
-				from: 'SpeechHelp <noreply@speech-helper.com>',
+				from: 'SpeechHelp <speechhelper@strukt.io>',
 				to: email,
 				subject: subject || 'Welcome to SpeechHelp!',
 				html: emailHtml,
@@ -63,6 +63,19 @@ serve(async (req) => {
 				text: message || `Welcome to SpeechHelp! We're excited to have you on board.`
 			}),
 		})
+		if (!res.ok) {
+			console.error(await res.json())
+			return new Response(
+				JSON.stringify({ error: 'Failed to send email' }),
+				{
+					status: 500,
+					headers: {
+						...corsHeaders,
+						'Content-Type': 'application/json'
+					}
+				}
+			);
+		}
 
 		return new Response(
 			JSON.stringify({
