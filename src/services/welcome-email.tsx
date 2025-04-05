@@ -32,7 +32,7 @@ export const WelcomeEmail = ({ username = 'there' }: WelcomeEmailProps) => {
 					</Text>
 
 					<Section style={ctaSection}>
-						<Link style={button} href="https://speech-helper.com/dashboard">
+						<Link style={button} href="https://speechhelp.ai/dashboard">
 							Get Started Now
 						</Link>
 					</Section>
