@@ -88,8 +88,9 @@ export const adminSettingsService = {
       // Check if the RPC function returned success
       if (data && typeof data === 'object' && 'success' in data) {
         if (!data.success) {
-          console.error('RPC function returned error:', data.error);
-          return { success: false, error: data.error || 'Failed to save setting' };
+          const errorMessage = data.error ? String(data.error) : 'Failed to save setting';
+          console.error('RPC function returned error:', errorMessage);
+          return { success: false, error: errorMessage };
         }
       }
 
