@@ -170,17 +170,6 @@ const AdminProfileSettings = () => {
 
   return (
     <div className="space-y-6">
-      {/* Current Admin Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-medium text-blue-800 mb-2">Current Admin Session</h3>
-        <div className="text-sm text-blue-700">
-          <p><strong>Username:</strong> {adminUser.username}</p>
-          <p><strong>Email:</strong> {adminUser.email}</p>
-          <p><strong>Admin ID:</strong> {adminUser.id}</p>
-          <p><strong>Super Admin:</strong> {adminUser.is_super_admin ? 'Yes' : 'No'}</p>
-        </div>
-      </div>
-
       {/* Avatar Upload Section */}
       <div className="flex items-center space-x-4">
         <Avatar className="h-20 w-20">

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -192,15 +193,16 @@ export const adminAuthService = {
           if (userProfiles && userProfiles.length > 0) {
             const matchedProfile = userProfiles[0];
             
-            // Get the email from auth.users for this profile
-            const { data: authUser } = await supabase
-              .from('auth.users')
-              .select('email')
+            // Get the email from profiles for this user
+            const { data: userWithEmail } = await supabase
+              .from('profiles')
+              .select('*')
               .eq('id', matchedProfile.id)
               .single();
               
-            if (authUser) {
-              userEmail = authUser.email;
+            if (userWithEmail) {
+              // For now, we'll use the username as email if no email is available
+              userEmail = credentials.username.includes('@') ? credentials.username : `${matchedProfile.username || 'admin'}@speechhelp.com`;
             }
           } else {
             console.log('No admin profile found for username:', credentials.username);
@@ -271,13 +273,12 @@ export const adminAuthService = {
       console.log('Found admin profile:', profileData);
 
       // Try to authenticate the user with their regular account using email
-      const { data: authUser } = await supabase
-        .rpc('authenticate_user', {
-          user_email: credentials.username.includes('@') ? credentials.username : profileData.username,
-          user_password: credentials.password
-        });
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: credentials.username.includes('@') ? credentials.username : `${profileData.username || 'admin'}@speechhelp.com`,
+        password: credentials.password,
+      });
 
-      if (!authUser) {
+      if (authError || !authData.user) {
         console.log('Password verification failed for admin user');
         return { 
           success: false, 
@@ -285,11 +286,14 @@ export const adminAuthService = {
         };
       }
 
+      // Sign out immediately to prevent auto-login to regular app
+      await supabase.auth.signOut();
+
       // Create admin user object from profile data
       const adminUser: AdminUser = {
         id: profileData.id,
         username: profileData.username || `${profileData.first_name} ${profileData.last_name}`,
-        email: credentials.username.includes('@') ? credentials.username : '',
+        email: authData.user.email || '',
         is_active: true,
         is_super_admin: false,
         last_login: null,
