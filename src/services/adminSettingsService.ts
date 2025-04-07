@@ -45,23 +45,26 @@ export const adminSettingsService = {
 
       console.log(`Attempting to save admin setting: ${key} = ${JSON.stringify(value)} (category: ${category})`);
 
-      // For profile-based admins, we'll save settings directly to admin_settings table
-      // using the admin user's ID, bypassing the admin_users table requirement
-      const { data, error } = await supabase
-        .from('admin_settings')
-        .upsert({
+      // Use the edge function to save settings (bypasses RLS)
+      const { data, error } = await supabase.functions.invoke('admin-settings-helper', {
+        body: {
+          action: 'upsert_setting',
           admin_user_id: adminSession.user.id,
           setting_key: key,
           setting_value: value,
-          setting_category: category,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'admin_user_id,setting_key'
-        });
+          setting_category: category
+        }
+      });
 
       if (error) {
         console.error('Error saving admin setting:', error);
         return { success: false, error: error.message };
+      }
+
+      if (data && !data.success) {
+        const errorMessage = data.error || 'Failed to save setting';
+        console.error('Edge function returned error:', errorMessage);
+        return { success: false, error: errorMessage };
       }
 
       console.log(`Successfully saved admin setting: ${key}`);
@@ -82,16 +85,14 @@ export const adminSettingsService = {
 
       console.log(`Fetching admin settings for category: ${category || 'all'}`);
 
-      let query = supabase
-        .from('admin_settings')
-        .select('setting_key, setting_value, setting_category, updated_at')
-        .eq('admin_user_id', adminSession.user.id);
-
-      if (category) {
-        query = query.eq('setting_category', category);
-      }
-
-      const { data, error } = await query;
+      // Use the edge function to get settings (bypasses RLS)
+      const { data, error } = await supabase.functions.invoke('admin-settings-helper', {
+        body: {
+          action: 'get_settings',
+          admin_user_id: adminSession.user.id,
+          category_filter: category || null
+        }
+      });
 
       if (error) {
         console.error('Error fetching admin settings:', error);
