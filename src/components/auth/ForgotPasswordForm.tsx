@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ForgotPasswordFormProps {
@@ -14,29 +14,57 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      // First check if email exists by calling our edge function
+      const { data, error: functionError } = await supabase.functions.invoke('send-password-reset', {
+        body: { email }
+      });
+
+      if (functionError) {
+        throw new Error('Failed to send reset email. Please try again.');
+      }
+
+      // Also use Supabase's built-in password reset for the actual email sending
+      const { error: supabaseError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth?type=recovery`,
       });
 
-      if (error) {
-        throw error;
+      if (supabaseError) {
+        // Check if it's a user not found error
+        if (supabaseError.message.includes('User not found') || supabaseError.message.includes('Invalid email')) {
+          setError('No account found with this email address.');
+          toast({
+            title: "Email not found",
+            description: "No account found with this email address.",
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
+        throw supabaseError;
       }
 
       setEmailSent(true);
       onCodeSent(email);
+      toast({
+        title: "Reset link sent",
+        description: "Please check your email for the password reset link.",
+      });
 
     } catch (error: any) {
       console.error('Password reset request error:', error);
+      setError(error.message || 'Failed to send reset link. Please try again.');
       toast({
         title: "Error",
-        description: "Failed to send reset link. Please try again.",
+        description: error.message || "Failed to send reset link. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -48,6 +76,9 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
     return (
       <>
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <CheckCircle className="h-16 w-16 text-green-500" />
+          </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Check Your Email</h1>
           <p className="text-gray-600">
             We've sent a password reset link to <span className="font-semibold">{email}</span>
@@ -79,6 +110,7 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
               onClick={() => {
                 setEmailSent(false);
                 setEmail('');
+                setError(null);
               }}
               className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
             >
@@ -106,6 +138,22 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
         <p className="text-gray-600">Enter your email to receive a password reset link</p>
       </div>
       
+      {error && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-red-400" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Error</h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>{error}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
@@ -120,7 +168,10 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError(null);
+              }}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
               placeholder="Enter your email address"
               autoFocus
