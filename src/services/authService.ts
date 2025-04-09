@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import WelcomeEmail from './welcome-email.tsx';
 import { renderToString } from 'react-dom/server';
+import { SubscriptionPlan } from '@/lib/plan_rules.ts';
 
 // Define the ToastProps type directly here to avoid the import error
 type ToastProps = {
@@ -44,7 +45,11 @@ export const signUp = async (
 		options: {
 			data: {
 				first_name: firstName,
-				last_name: lastName
+				last_name: lastName,
+				is_active: false,
+				subscription_plan: SubscriptionPlan.FREE_TRIAL,
+				subscription_start_date: new Date().toISOString(),
+				subscription_end_date: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
 			}
 		}
 	});
