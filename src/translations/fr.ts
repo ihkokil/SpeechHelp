@@ -71,10 +71,6 @@ export const fr = {
   'common.delete': 'Supprimer',
   'common.saveChanges': 'Enregistrer les modifications',
   'common.areYouSure': 'Êtes-vous sûr?',
-  'common.error': 'Erreur',
-  'common.saving': 'Sauvegarde en cours...',
-  'common.authRequired': 'Authentification Requise',
-  'common.signInToSave': 'Veuillez vous connecter pour sauvegarder votre discours.',
 
   // Dashboard - Speeches
   'dashboard.editSpeech': 'Modifier le discours',
@@ -215,20 +211,6 @@ export const fr = {
   'speechLab.savedSuccess': 'Discours sauvegardé avec succès!',
   'speechLab.speechTitleLabel': 'Titre du discours',
   'speechLab.speechTitlePlaceholder': 'Entrez un titre pour votre discours',
-  'speechLab.titleRequired': 'Titre Requis',
-  'speechLab.pleaseEnterTitle': 'Veuillez entrer un titre pour votre discours',
-  'speechLab.contentRequired': 'Contenu Requis',
-  'speechLab.enterContentPrompt': 'Veuillez entrer du contenu pour votre discours',
-  'speechLab.speechUpdated': 'Discours Mis à Jour',
-  'speechLab.speechUpdatedDesc': 'Votre discours a été mis à jour avec succès.',
-  'speechLab.speechSaved': 'Discours Sauvegardé',
-  'speechLab.speechSavedDesc': 'Votre discours a été sauvegardé avec succès.',
-  'speechLab.saveError': 'Échec de la sauvegarde du discours. Veuillez réessayer.',
-  'speechLab.differentLanguage': 'Ce discours a été créé dans une langue différente. Certains contenus peuvent ne pas apparaître correctement.',
-  'speechLab.readyToEdit': 'Votre discours est prêt à être édité.',
-  'speechLab.generationError': 'Échec de la génération du discours. Veuillez réessayer.',
-  'speechLab.content': 'Contenu du Discours',
-  'speechLab.generateSpeech': 'Générez Votre Discours',
 
   // Settings
   'settings.title': 'Paramètres du Compte',

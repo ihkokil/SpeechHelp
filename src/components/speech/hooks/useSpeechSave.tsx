@@ -3,8 +3,6 @@ import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
 import { useSpeechService } from '@/services/speechService';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTranslation } from '@/translations';
 
 interface UseSpeechSaveProps {
 	title: string;
@@ -24,14 +22,12 @@ export const useSpeechSave = ({
 	const { toast } = useToast();
 	const { user } = useAuth();
 	const speechService = useSpeechService();
-	const { currentLanguage } = useLanguage();
-	const { t } = useTranslation();
 
 	const validateInputs = () => {
 		if (!title.trim()) {
 			toast({
-				title: t("speechLab.titleRequired", currentLanguage.code),
-				description: t("speechLab.enterTitlePrompt", currentLanguage.code),
+				title: "Title Required",
+				description: "Please enter a title for your speech",
 				variant: "destructive",
 			});
 			return false;
@@ -39,8 +35,8 @@ export const useSpeechSave = ({
 
 		if (!content.trim()) {
 			toast({
-				title: t("speechLab.contentRequired", currentLanguage.code),
-				description: t("speechLab.enterContentPrompt", currentLanguage.code),
+				title: "Content Required",
+				description: "Please enter content for your speech",
 				variant: "destructive",
 			});
 			return false;
@@ -59,11 +55,7 @@ export const useSpeechSave = ({
 		try {
 			const speechWithMetadata = {
 				content: content,
-				details: speechDetails || {},
-				metadata: {
-					language: currentLanguage.code,
-					createdAt: new Date().toISOString()
-				}
+				details: speechDetails || {}
 			};
 
 			const contentToSave = JSON.stringify(speechWithMetadata);
@@ -71,29 +63,29 @@ export const useSpeechSave = ({
 			if (speechId) {
 				await speechService.updateSpeech(user.id, speechId, title, contentToSave);
 				toast({
-					title: t("speechLab.speechUpdated", currentLanguage.code),
-					description: t("speechLab.speechUpdatedDesc", currentLanguage.code),
+					title: "Speech Updated",
+					description: "Your speech has been updated successfully.",
 				});
 			} else {
 				if (user) {
 					let speech = await speechService.saveSpeech(user.id, title, contentToSave, speechType);
 					setSpeechId(speech);
 					toast({
-						title: t("speechLab.speechSaved", currentLanguage.code),
-						description: t("speechLab.speechSavedDesc", currentLanguage.code),
+						title: "Speech Saved",
+						description: "Your speech has been saved successfully.",
 					});
 				} else {
 					toast({
-						title: t("common.authRequired", currentLanguage.code),
-						description: t("common.signInToSave", currentLanguage.code),
+						title: "Authentication Required",
+						description: "Please sign in to save your speech.",
 						variant: "destructive",
 					});
 				}
 			}
 		} catch (error) {
 			toast({
-				title: t("common.error", currentLanguage.code),
-				description: t("speechLab.saveError", currentLanguage.code),
+				title: "Error",
+				description: "Failed to save speech. Please try again.",
 				variant: "destructive",
 			});
 			console.error("Error saving speech:", error);
