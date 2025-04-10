@@ -1,54 +1,74 @@
+import { marked } from 'marked';
 
-// Utilities for handling speech content formatting
-
+/**
+ * Formats speech content for display, handling both raw text and structured content
+ */
 export const formatSpeechContent = (content: string): string => {
-  if (!content) return '';
-  
-  // Check if content is JSON with a 'content' field
   try {
-    if (typeof content === 'string' && content.trim().startsWith('{')) {
-      const parsed = JSON.parse(content);
-      if (parsed.content) {
-        return parsed.content;
-      }
+    // Check if content is a JSON string
+    const parsedContent = JSON.parse(content);
+    
+    // If it has a content property, use that
+    if (parsedContent.content) {
+      return marked.parse(parsedContent.content);
     }
+    
+    // Otherwise, just return the parsed content as a string
+    return marked.parse(content);
   } catch (e) {
-    console.error('Failed to parse JSON content', e);
+    // Not valid JSON, just use as-is
+    return marked.parse(content);
   }
-  
-  return content;
 };
 
-export const getEditableContent = (
-  content: string, 
-  preserveHtml: boolean = false,
-  showFormattedContent: boolean = false
-): string => {
-  if (!content) return '';
-  
-  // If content is stored as JSON
+/**
+ * Gets the editable content from the speech content string
+ */
+export const getEditableContent = (content: string): string => {
   try {
-    if (typeof content === 'string' && content.trim().startsWith('{')) {
-      const parsed = JSON.parse(content);
-      if (parsed.content) {
-        return parsed.content;
-      }
+    // Check if content is a JSON string
+    const parsedContent = JSON.parse(content);
+    
+    // If it has a content property, use that
+    if (parsedContent.content) {
+      return parsedContent.content;
     }
+    
+    // Otherwise, just return the original content
+    return content;
   } catch (e) {
-    console.error('Failed to parse JSON content', e);
+    // Not valid JSON, just use as-is
+    return content;
   }
-  
-  return content;
 };
 
-// Additional formatting utility for rendering HTML content safely
+/**
+ * Extracts the language code from speech content if available
+ */
+export const getContentLanguage = (content: string): string | null => {
+  try {
+    const parsedContent = JSON.parse(content);
+    if (parsedContent.metadata?.language) {
+      return parsedContent.metadata.language;
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+};
+
+/**
+ * Additional formatting utility for rendering HTML content safely
+ */
 export const createSafeHtml = (content: string): string => {
   const formattedContent = formatSpeechContent(content);
   // Replace newlines with <br> tags for HTML display
   return formattedContent.replace(/\n/g, '<br>');
 };
 
-// Extract key information from the speech content
+/**
+ * Extract key information from the speech content
+ */
 export const extractKeyInformation = (
   content: string | Record<string, string>
 ): Record<string, string> => {
@@ -72,7 +92,9 @@ export const extractKeyInformation = (
   return {};
 };
 
-// Create a questions and answers section
+/**
+ * Create a questions and answers section
+ */
 export const createQuestionsAnswersSection = (questionsAnswers: Record<string, string>): string => {
   if (!questionsAnswers || Object.keys(questionsAnswers).length === 0) {
     return '';
