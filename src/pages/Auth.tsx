@@ -61,10 +61,6 @@ const Auth = () => {
     setCurrentStep('signin');
     setResetEmail('');
     setIsRecoveryFlow(false);
-    toast({
-      title: "Password reset complete",
-      description: "You can now sign in with your new password.",
-    });
   };
 
   // Check for signup/signin flow and password recovery on component mount
@@ -104,15 +100,15 @@ const Auth = () => {
             console.log('Auth: No recovery session found');
             toast({
               title: "Invalid or expired link",
-              description: "The password reset link is invalid or has expired. Please request a new one.",
+              description: "The password reset link is invalid or has expired.",
               variant: "destructive"
             });
-            setCurrentStep('forgot-password');
+            setCurrentStep('signin');
             setIsRecoveryFlow(false);
           }
         } catch (error) {
           console.error('Auth: Recovery flow error:', error);
-          setCurrentStep('forgot-password');
+          setCurrentStep('signin');
           setIsRecoveryFlow(false);
         }
       } else if (params.get('signup') === 'true') {
