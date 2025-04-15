@@ -1,7 +1,7 @@
 
 import { User } from '../../types';
 import { format, formatDistanceToNow } from 'date-fns';
-import { formatPhoneNumber, getCountryByCode } from '@/utils/phoneUtils';
+import { formatPhoneWithCountryCode, getCountryByCode, extractCountryCodeFromUser } from '@/utils/phoneUtils';
 
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Never';
@@ -87,20 +87,11 @@ export const formatUserDisplayName = (user: User) => {
 };
 
 export const getUserPhone = (user: User) => {
-  const phone = user.user_metadata?.phone;
+  const phone = user.user_metadata?.phone || user.phone;
   if (!phone) return '—';
   
-  try {
-    const countryCode = user.user_metadata?.country_code || 'US';
-    const country = getCountryByCode(countryCode);
-    const dialCode = country?.dialCode || '1';
-    const formattedNumber = formatPhoneNumber(phone);
-    
-    return `+${dialCode} ${formattedNumber}`;
-  } catch (error) {
-    console.error('Error formatting phone number:', error);
-    return phone; // Return the raw phone number as fallback
-  }
+  // Use the improved phone formatting function
+  return formatPhoneWithCountryCode(phone, user);
 };
 
 export const getCountryFlagUrl = (countryCode: string | undefined) => {
@@ -112,12 +103,12 @@ export const getCountryFlagUrl = (countryCode: string | undefined) => {
 };
 
 export const getCountryCode = (user: User) => {
-  const countryCode = user.user_metadata?.country_code;
-  
-  if (user.user_metadata?.country === 'United Kingdom' || 
-      user.user_metadata?.country === 'England') {
-    return 'GB';
-  }
-  
-  return countryCode;
+  return extractCountryCodeFromUser(user);
+};
+
+// New function to get country flag emoji
+export const getCountryFlag = (user: User) => {
+  const countryCode = extractCountryCodeFromUser(user);
+  const country = getCountryByCode(countryCode);
+  return country?.flag || '🌍';
 };

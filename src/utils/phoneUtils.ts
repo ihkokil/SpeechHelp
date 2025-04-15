@@ -56,3 +56,47 @@ export const parsePhoneNumber = (phoneNumber: string, countryCode: string): {
   
   return { country, formattedNumber: formatted };
 };
+
+// New function to extract country code from user metadata
+export const extractCountryCodeFromUser = (user: any): string => {
+  // Check various sources for country code
+  if (user.user_metadata?.country_code) {
+    return user.user_metadata.country_code;
+  }
+  
+  if (user.country_code) {
+    return user.country_code;
+  }
+  
+  // Check if country name is provided and try to map it
+  const countryName = user.user_metadata?.country;
+  if (countryName) {
+    const country = countriesComplete.find(c => 
+      c.name.toLowerCase() === countryName.toLowerCase() ||
+      c.name.toLowerCase().includes(countryName.toLowerCase())
+    );
+    if (country) {
+      return country.code;
+    }
+  }
+  
+  // Default to US if no country code found
+  return 'US';
+};
+
+// New function to format phone with proper country code
+export const formatPhoneWithCountryCode = (phone: string, user: any): string => {
+  if (!phone) return '—';
+  
+  try {
+    const countryCode = extractCountryCodeFromUser(user);
+    const country = getCountryByCode(countryCode);
+    const dialCode = country?.dialCode || '1';
+    const formattedNumber = formatPhoneNumber(phone);
+    
+    return `+${dialCode} ${formattedNumber}`;
+  } catch (error) {
+    console.error('Error formatting phone number:', error);
+    return phone; // Return the raw phone number as fallback
+  }
+};
