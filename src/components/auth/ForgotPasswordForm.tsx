@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
@@ -73,7 +74,7 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
           </div>
 
           <div className="text-center space-y-4">
-            <div className="flex justify-center space-x-4">
+            <div className="flex flex-col items-center gap-2">
               <button
                 type="button"
                 onClick={() => {
