@@ -451,6 +451,7 @@ export type Database = {
         Row: {
           admin_role: string | null
           avatar_url: string | null
+          country_code: string | null
           created_at: string
           first_name: string | null
           id: string
@@ -475,6 +476,7 @@ export type Database = {
         Insert: {
           admin_role?: string | null
           avatar_url?: string | null
+          country_code?: string | null
           created_at?: string
           first_name?: string | null
           id: string
@@ -499,6 +501,7 @@ export type Database = {
         Update: {
           admin_role?: string | null
           avatar_url?: string | null
+          country_code?: string | null
           created_at?: string
           first_name?: string | null
           id?: string
