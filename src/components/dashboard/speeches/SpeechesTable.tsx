@@ -24,13 +24,15 @@ interface SpeechesTableProps {
 
 const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProps) => {
   const formatDate = (dateString: string) => {
+    if (!dateString) return ''; // Return empty string for empty dates
+    
     try {
       // Ensure we're parsing the ISO string correctly before formatting
       const date = parseISO(dateString);
       return format(date, 'MMM d, yyyy h:mm a');
     } catch (error) {
       console.error('Date parsing error:', error);
-      return dateString;
+      return '';
     }
   };
 
