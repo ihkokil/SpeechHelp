@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -11,12 +12,14 @@ const MySpeeches = () => {
   const [initialFilter, setInitialFilter] = useState('all');
 
   useEffect(() => {
+    // Check for filter parameter in URL
     const params = new URLSearchParams(location.search);
     const filterParam = params.get('filter');
 
     if (filterParam === 'upcoming') {
       setInitialFilter('upcoming');
-      localStorage.removeItem('viewingUpcomingEvents');
+    } else {
+      setInitialFilter('all');
     }
   }, [location]);
 
@@ -24,7 +27,7 @@ const MySpeeches = () => {
     if (user) {
       fetchSpeeches();
     }
-  }, []);
+  }, [user, fetchSpeeches]);
 
   if (isLoading) {
     return (

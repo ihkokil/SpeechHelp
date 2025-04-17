@@ -21,13 +21,38 @@ export const useSpeechesFilter = (
       );
     }
     
-    // Get upcoming speech IDs from localStorage (if any)
+    // Get upcoming speech IDs from localStorage
+    let upcomingSpeeches: Speech[] = [];
     let upcomingSpeechIds: string[] = [];
+    
     try {
       const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
       if (upcomingEventsJSON) {
         const upcomingEvents = JSON.parse(upcomingEventsJSON);
+        
+        // Extract IDs from upcoming events
         upcomingSpeechIds = upcomingEvents.map((event: any) => event.id);
+        
+        // Create "speech objects" for upcoming events that don't exist in the speeches array
+        upcomingSpeeches = upcomingEvents.map((event: any) => {
+          // Find if this event already exists as a speech
+          const existingSpeech = speeches.find(speech => speech.id === event.id);
+          
+          if (existingSpeech) {
+            return existingSpeech;
+          }
+          
+          // Otherwise, create a speech object for this upcoming event
+          return {
+            id: event.id,
+            user_id: '', // Will be filled by the system when converted to a real speech
+            title: event.title,
+            content: event.notes || '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            speech_type: event.type || ''
+          };
+        });
       }
     } catch (error) {
       console.error('Error parsing upcoming events:', error);
@@ -35,12 +60,21 @@ export const useSpeechesFilter = (
     
     // Then, filter by type
     if (filterType === 'all') {
-      // For "all", we don't need to filter by type
-      // Just keep all speeches as is (already included in 'filtered')
+      // For "all", combine regular speeches with upcoming speeches
+      // First, remove any speeches that are already in the upcoming list to avoid duplicates
+      const regularSpeeches = filtered.filter(speech => !upcomingSpeechIds.includes(speech.id));
+      
+      // Then merge unique upcoming speeches with regular speeches
+      const uniqueUpcomingSpeeches = upcomingSpeeches.filter(
+        upcoming => !speeches.some(speech => speech.id === upcoming.id)
+      );
+      
+      filtered = [...regularSpeeches, ...uniqueUpcomingSpeeches];
+      
     } else if (filterType === 'upcoming') {
-      // For upcoming, only include speeches that are in the upcoming events list
-      if (upcomingSpeechIds.length > 0) {
-        filtered = filtered.filter(speech => upcomingSpeechIds.includes(speech.id));
+      // For upcoming, only show speeches that are in the upcoming events list
+      if (upcomingSpeeches.length > 0) {
+        filtered = upcomingSpeeches;
       } else {
         filtered = []; // If no upcoming events, return empty array
       }
