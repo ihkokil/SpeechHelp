@@ -53,6 +53,11 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
     }
   };
 
+  // Ensure we have unique speeches
+  const uniqueSpeeches = Array.from(
+    new Map(speeches.map(speech => [speech.id, speech])).values()
+  );
+
   return (
     <Table>
       <TableHeader>
@@ -65,7 +70,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
         </TableRow>
       </TableHeader>
       <TableBody>
-        {speeches.map((speech) => {
+        {uniqueSpeeches.map((speech) => {
           const isUpcoming = speech.isUpcoming === true;
           const displayType = isUpcoming ? 'upcoming' : speech.speech_type;
           

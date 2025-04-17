@@ -21,6 +21,11 @@ export const useSpeechesFilter = (
         // Parse the JSON and ensure we get an array
         const parsedEvents = JSON.parse(upcomingEventsJSON);
         upcomingEvents = Array.isArray(parsedEvents) ? parsedEvents : [];
+        
+        // Deduplicate upcoming events based on id
+        upcomingEvents = Array.from(
+          new Map(upcomingEvents.map(event => [event.id, event])).values()
+        );
       }
     } catch (error) {
       console.error('Error parsing upcoming events:', error);
@@ -78,6 +83,11 @@ export const useSpeechesFilter = (
       // Filter regular speeches by speech type
       filtered = regularSpeeches.filter((speech) => speech.speech_type === filterType);
     }
+    
+    // Ensure uniqueness of speeches by ID
+    filtered = Array.from(
+      new Map(filtered.map(speech => [speech.id, speech])).values()
+    );
     
     // Finally, sort the filtered speeches
     return filtered.sort((a, b) => {
