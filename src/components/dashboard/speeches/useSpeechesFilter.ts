@@ -10,7 +10,7 @@ export const useSpeechesFilter = (
   sortBy: SortOption
 ) => {
   const filteredSpeeches = useMemo(() => {
-    // First get all regular speeches
+    // Start with regular speeches
     let regularSpeeches = [...speeches];
     
     // Get upcoming speech events from localStorage
@@ -18,7 +18,9 @@ export const useSpeechesFilter = (
     try {
       const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
       if (upcomingEventsJSON) {
-        upcomingEvents = JSON.parse(upcomingEventsJSON);
+        // Parse the JSON and ensure we get an array
+        const parsedEvents = JSON.parse(upcomingEventsJSON);
+        upcomingEvents = Array.isArray(parsedEvents) ? parsedEvents : [];
       }
     } catch (error) {
       console.error('Error parsing upcoming events:', error);
@@ -26,6 +28,7 @@ export const useSpeechesFilter = (
     }
     
     // Create speech-like objects for upcoming events
+    // Use event.id directly to maintain unique IDs
     const upcomingSpeeches = upcomingEvents.map((event) => ({
       id: event.id,
       user_id: '', 
@@ -33,7 +36,7 @@ export const useSpeechesFilter = (
       content: event.notes || '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      speech_type: event.type || '',
+      speech_type: event.type || 'upcoming',
       isUpcoming: true // Mark as upcoming for identification
     }));
     
@@ -47,11 +50,14 @@ export const useSpeechesFilter = (
       );
       
       // Also filter upcoming speeches by search query
-      upcomingSpeeches.filter(
+      const filteredUpcomingSpeeches = upcomingSpeeches.filter(
         (speech) => 
           speech.title.toLowerCase().includes(query) || 
           speech.content.toLowerCase().includes(query)
       );
+      
+      upcomingSpeeches.length = 0; // Clear the array
+      upcomingSpeeches.push(...filteredUpcomingSpeeches); // Add filtered results
     }
     
     // Apply filter based on selected type
