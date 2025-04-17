@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { Speech } from '@/types/speech';
 import { FilterOption, SortOption } from './FilterBar';
@@ -23,29 +22,45 @@ export const useSpeechesFilter = (
     }
     
     // Then, filter by type
-    if (filterType !== 'all') {
-      if (filterType === 'upcoming') {
-        // For upcoming, we need to check the localStorage for scheduled upcoming speeches
-        try {
-          const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
-          if (upcomingEventsJSON) {
-            const upcomingEvents = JSON.parse(upcomingEventsJSON);
-            const upcomingSpeechIds = upcomingEvents.map((event: any) => event.id);
-            
-            // Only include speeches that are in the upcoming events list
-            filtered = filtered.filter(speech => upcomingSpeechIds.includes(speech.id));
-          } else {
-            // If no upcoming events are stored, return an empty array
-            filtered = [];
-          }
-        } catch (error) {
-          console.error('Error parsing upcoming events:', error);
+    if (filterType === 'all') {
+      // For "all", include both regular speeches and speeches from upcoming events
+      try {
+        const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
+        if (upcomingEventsJSON) {
+          const upcomingEvents = JSON.parse(upcomingEventsJSON);
+          const upcomingSpeechIds = upcomingEvents.map((event: any) => event.id);
+          
+          // Get speeches that are not in upcoming events
+          const regularSpeeches = filtered;
+          
+          // We don't actually need to filter anything for the "all" option
+          // Just keep all speeches as is
+          filtered = regularSpeeches;
+        }
+      } catch (error) {
+        console.error('Error parsing upcoming events:', error);
+      }
+    } else if (filterType === 'upcoming') {
+      // For upcoming, we need to check the localStorage for scheduled upcoming speeches
+      try {
+        const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
+        if (upcomingEventsJSON) {
+          const upcomingEvents = JSON.parse(upcomingEventsJSON);
+          const upcomingSpeechIds = upcomingEvents.map((event: any) => event.id);
+          
+          // Only include speeches that are in the upcoming events list
+          filtered = filtered.filter(speech => upcomingSpeechIds.includes(speech.id));
+        } else {
+          // If no upcoming events are stored, return an empty array
           filtered = [];
         }
-      } else {
-        // Filter by regular speech type
-        filtered = filtered.filter((speech) => speech.speech_type === filterType);
+      } catch (error) {
+        console.error('Error parsing upcoming events:', error);
+        filtered = [];
       }
+    } else {
+      // Filter by regular speech type
+      filtered = filtered.filter((speech) => speech.speech_type === filterType);
     }
     
     // Finally, sort the filtered speeches
