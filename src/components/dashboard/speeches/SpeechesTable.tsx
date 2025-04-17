@@ -1,3 +1,4 @@
+
 import { 
   Table, 
   TableBody, 
@@ -23,9 +24,17 @@ interface SpeechesTableProps {
 
 const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProps) => {
   const formatDate = (dateString: string, eventDate?: string) => {
-    if (!dateString && eventDate && isValid(parseISO(eventDate))) {
-      const daysLeft = differenceInDays(parseISO(eventDate), new Date());
-      return `Not Yet Created (${daysLeft} days left)`;
+    if (!dateString && eventDate) {
+      try {
+        const parsedEventDate = parseISO(eventDate);
+        if (isValid(parsedEventDate)) {
+          const daysLeft = differenceInDays(parsedEventDate, new Date());
+          return `Not Yet Created (${daysLeft > 0 ? daysLeft : 0} days left)`;
+        }
+      } catch (error) {
+        console.error('Error calculating days left:', error);
+      }
+      return 'Not Yet Created';
     }
     
     if (!dateString || dateString.trim() === '') {

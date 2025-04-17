@@ -37,7 +37,8 @@ export const useSpeechesFilter = (
       created_at: '', 
       updated_at: '', 
       speech_type: event.category || 'upcoming',
-      isUpcoming: true
+      isUpcoming: true,
+      event_date: event.date
     }));
     
     // Filter by search query if provided

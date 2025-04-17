@@ -10,12 +10,13 @@ import {
 import { Speech } from '@/types/speech';
 import { Badge } from '@/components/ui/badge';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { format, parseISO, isValid } from 'date-fns';
+import { format, parseISO, isValid, differenceInDays } from 'date-fns';
 import { getSpeechTypeLabel, getTypeColor } from '../speech-utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Translate from '@/components/Translate';
 import SpeechPreview from '@/components/speech/components/SpeechPreview';
 import SpeechExportButtons from '../components/SpeechExportButtons';
+import { CalendarClock } from 'lucide-react';
 
 interface ViewSpeechModalProps {
   isOpen: boolean;
@@ -49,6 +50,24 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
     }
   };
 
+  // Calculate days remaining for upcoming events
+  const getDaysRemaining = () => {
+    if (speech.isUpcoming && speech.event_date) {
+      try {
+        const eventDate = parseISO(speech.event_date);
+        if (isValid(eventDate)) {
+          const daysLeft = differenceInDays(eventDate, new Date());
+          return daysLeft > 0 ? daysLeft : 0;
+        }
+      } catch (error) {
+        console.error('Error calculating days remaining:', error);
+      }
+    }
+    return null;
+  };
+  
+  const daysRemaining = getDaysRemaining();
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
@@ -60,6 +79,24 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
             </Badge>
           </DialogDescription>
         </DialogHeader>
+        
+        {speech.isUpcoming && (
+          <div className="bg-blue-50 p-4 border border-blue-200 rounded-md flex items-start gap-3 my-4">
+            <CalendarClock className="h-5 w-5 text-blue-500 mt-0.5" />
+            <div>
+              <h3 className="font-medium text-blue-700">Upcoming Speech Event</h3>
+              {daysRemaining !== null && (
+                <p className="text-blue-600">
+                  Not Yet Created - {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'} remaining to prepare your speech
+                </p>
+              )}
+              <p className="text-sm text-blue-500 mt-1">
+                Create this speech now to be ready for your upcoming event.
+              </p>
+            </div>
+          </div>
+        )}
+        
         <div className="overflow-auto max-h-[60vh] my-4">
           <SpeechPreview content={speech.content} />
         </div>
