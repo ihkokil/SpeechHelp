@@ -1,9 +1,10 @@
+
 import { CircleCheckBig, MicIcon, FileTextIcon, Clock } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es, fr } from 'date-fns/locale';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { useMemo } from 'react';
 
 type ActivityType = 'practice' | 'feedback' | 'completion';

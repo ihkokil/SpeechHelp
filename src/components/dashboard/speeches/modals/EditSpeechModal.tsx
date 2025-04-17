@@ -7,7 +7,7 @@ import {
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog';
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import Translate from '@/components/Translate';
 import EditSpeechForm from '../components/EditSpeechForm';

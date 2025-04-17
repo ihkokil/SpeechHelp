@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatSpeechContent, getEditableContent } from '@/components/speech/utils/speechFormattingUtils';
 

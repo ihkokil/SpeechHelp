@@ -7,7 +7,7 @@ import {
   TableRow,
   TableCell
 } from '@/components/ui/table';
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EditIcon, Trash2Icon, EyeIcon } from 'lucide-react';

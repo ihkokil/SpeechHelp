@@ -1,5 +1,5 @@
 
-import { Speech } from '@/types/auth';
+import { Speech } from '@/types/speech';
 import { getSpeechTypeLabel } from '../speech-utils';
 import { useToast } from '@/hooks/use-toast';
 import { 
