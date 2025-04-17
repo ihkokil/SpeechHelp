@@ -10,7 +10,7 @@ import {
 import { Speech } from '@/types/speech';
 import { Badge } from '@/components/ui/badge';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { getSpeechTypeLabel, getTypeColor } from '../speech-utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Translate from '@/components/Translate';
@@ -28,8 +28,25 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
   const { currentLanguage } = useLanguage();
 
   const formatDate = (dateString: string) => {
-    const date = parseISO(dateString);
-    return format(date, 'MMM d, yyyy h:mm a');
+    // Check if date string is empty or invalid (for upcoming speeches)
+    if (!dateString || dateString.trim() === '') {
+      return 'N/A';
+    }
+    
+    try {
+      // Safely parse the ISO string before formatting
+      const date = parseISO(dateString);
+      
+      // Check if the date is valid before formatting
+      if (!isValid(date)) {
+        return 'N/A';
+      }
+      
+      return format(date, 'MMM d, yyyy h:mm a');
+    } catch (error) {
+      console.error('Date parsing error:', error);
+      return 'N/A';
+    }
   };
 
   return (
@@ -46,15 +63,18 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
         <div className="overflow-auto max-h-[60vh] my-4">
           <SpeechPreview content={speech.content} />
         </div>
-        <div className="text-sm mt-2 flex">
-          <span className="text-purple-600">
-            <Translate text="dashboard.created" />: {formatDate(speech.created_at)}
-          </span> 
-          <span className="mx-2 text-gray-500">|</span> 
-          <span className="text-pink-600">
-            <Translate text="dashboard.lastUpdated" />: {formatDate(speech.updated_at)}
-          </span>
-        </div>
+        
+        {!speech.isUpcoming && (
+          <div className="text-sm mt-2 flex">
+            <span className="text-purple-600">
+              <Translate text="dashboard.created" />: {formatDate(speech.created_at)}
+            </span> 
+            <span className="mx-2 text-gray-500">|</span> 
+            <span className="text-pink-600">
+              <Translate text="dashboard.lastUpdated" />: {formatDate(speech.updated_at)}
+            </span>
+          </div>
+        )}
         
         <SpeechExportButtons 
           speech={speech}

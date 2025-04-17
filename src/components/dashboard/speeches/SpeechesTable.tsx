@@ -11,7 +11,7 @@ import { Speech } from '@/types/speech';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EditIcon, Trash2Icon, EyeIcon, CalendarClock } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { getSpeechTypeLabel, getTypeColor } from './speech-utils';
 import Translate from '@/components/Translate';
 
@@ -24,11 +24,20 @@ interface SpeechesTableProps {
 
 const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProps) => {
   const formatDate = (dateString: string) => {
-    if (!dateString) return ''; // Return empty string for empty dates
+    // Check if date string is empty or invalid (for upcoming speeches)
+    if (!dateString || dateString.trim() === '') {
+      return ''; 
+    }
     
     try {
-      // Ensure we're parsing the ISO string correctly before formatting
+      // Safely parse the ISO string before formatting
       const date = parseISO(dateString);
+      
+      // Check if the date is valid before formatting
+      if (!isValid(date)) {
+        return '';
+      }
+      
       return format(date, 'MMM d, yyyy h:mm a');
     } catch (error) {
       console.error('Date parsing error:', error);
@@ -76,8 +85,12 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                   {isUpcoming ? 'Upcoming' : getSpeechTypeLabel(displayType)}
                 </Badge>
               </TableCell>
-              <TableCell className="hidden md:table-cell">{formatDate(speech.created_at)}</TableCell>
-              <TableCell className="hidden md:table-cell">{formatDate(speech.updated_at)}</TableCell>
+              <TableCell className="hidden md:table-cell">
+                {isUpcoming ? '' : formatDate(speech.created_at)}
+              </TableCell>
+              <TableCell className="hidden md:table-cell">
+                {isUpcoming ? '' : formatDate(speech.updated_at)}
+              </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <Button 
