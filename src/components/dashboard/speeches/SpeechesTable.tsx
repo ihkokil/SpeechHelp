@@ -107,7 +107,7 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                 </div>
               </TableCell>
             </TableRow>
-          )
+          );
         })}
       </TableBody>
     </Table>
