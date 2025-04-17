@@ -25,7 +25,7 @@ export interface Speech {
 }
 
 export interface NavItem {
-  icon: React.ElementType;
+  icon: React.ReactNode;  // Changed from React.ElementType to React.ReactNode for better type compatibility
   label: string;
   href: string;
 }
