@@ -10,7 +10,7 @@ import {
 import { Speech } from '@/types/speech';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { EditIcon, Trash2Icon, EyeIcon } from 'lucide-react';
+import { EditIcon, Trash2Icon, EyeIcon, CalendarClock } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { getSpeechTypeLabel, getTypeColor } from './speech-utils';
 import Translate from '@/components/Translate';
@@ -24,9 +24,14 @@ interface SpeechesTableProps {
 
 const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProps) => {
   const formatDate = (dateString: string) => {
-    // Ensure we're parsing the ISO string correctly before formatting
-    const date = parseISO(dateString);
-    return format(date, 'MMM d, yyyy h:mm a');
+    try {
+      // Ensure we're parsing the ISO string correctly before formatting
+      const date = parseISO(dateString);
+      return format(date, 'MMM d, yyyy h:mm a');
+    } catch (error) {
+      console.error('Date parsing error:', error);
+      return dateString;
+    }
   };
 
   return (
@@ -41,59 +46,65 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
         </TableRow>
       </TableHeader>
       <TableBody>
-        {speeches.map((speech) => (
-          <TableRow key={speech.id}>
-            <TableCell className="font-medium max-w-[200px] truncate">
-              {speech.title}
-              <div className="md:hidden mt-1">
+        {speeches.map((speech) => {
+          const isUpcoming = 'isUpcoming' in speech && speech.isUpcoming === true;
+          return (
+            <TableRow key={speech.id}>
+              <TableCell className="font-medium max-w-[200px] truncate">
+                <div className="flex items-center gap-2">
+                  {isUpcoming && <CalendarClock className="h-4 w-4 text-blue-500" />}
+                  {speech.title}
+                </div>
+                <div className="md:hidden mt-1">
+                  <Badge 
+                    className={`${getTypeColor(speech.speech_type)} inline-flex justify-center h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
+                    title={getSpeechTypeLabel(speech.speech_type)}
+                  >
+                    {isUpcoming ? 'Upcoming' : getSpeechTypeLabel(speech.speech_type)}
+                  </Badge>
+                </div>
+              </TableCell>
+              <TableCell className="text-center hidden md:table-cell">
                 <Badge 
-                  className={`${getTypeColor(speech.speech_type)} inline-flex justify-center h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
-                  title={getSpeechTypeLabel(speech.speech_type)}
+                  className={`${isUpcoming ? 'bg-blue-100 text-blue-800' : getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center w-32 h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
+                  title={isUpcoming ? 'Upcoming Speech' : getSpeechTypeLabel(speech.speech_type)}
                 >
-                  {getSpeechTypeLabel(speech.speech_type)}
+                  {isUpcoming ? 'Upcoming' : getSpeechTypeLabel(speech.speech_type)}
                 </Badge>
-              </div>
-            </TableCell>
-            <TableCell className="text-center hidden md:table-cell">
-              <Badge 
-                className={`${getTypeColor(speech.speech_type)} mx-auto inline-flex justify-center w-32 h-6 px-2 whitespace-nowrap overflow-hidden text-ellipsis`}
-                title={getSpeechTypeLabel(speech.speech_type)}
-              >
-                {getSpeechTypeLabel(speech.speech_type)}
-              </Badge>
-            </TableCell>
-            <TableCell className="hidden md:table-cell">{formatDate(speech.created_at)}</TableCell>
-            <TableCell className="hidden md:table-cell">{formatDate(speech.updated_at)}</TableCell>
-            <TableCell className="text-right">
-              <div className="flex justify-end gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => onView(speech)}
-                  className="p-2"
-                >
-                  <EyeIcon className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => onEdit(speech)}
-                  className="p-2"
-                >
-                  <EditIcon className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => onDelete(speech)}
-                  className="p-2"
-                >
-                  <Trash2Icon className="h-4 w-4" />
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+              </TableCell>
+              <TableCell className="hidden md:table-cell">{formatDate(speech.created_at)}</TableCell>
+              <TableCell className="hidden md:table-cell">{formatDate(speech.updated_at)}</TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => onView(speech)}
+                    className="p-2"
+                  >
+                    <EyeIcon className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => onEdit(speech)}
+                    className="p-2"
+                  >
+                    <EditIcon className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => onDelete(speech)}
+                    className="p-2"
+                  >
+                    <Trash2Icon className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          )
+        })}
       </TableBody>
     </Table>
   );

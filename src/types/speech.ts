@@ -7,4 +7,5 @@ export type Speech = {
   created_at: string;
   updated_at: string;
   speech_type: string;
+  isUpcoming?: boolean;
 };
