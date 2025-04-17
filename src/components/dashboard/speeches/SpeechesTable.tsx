@@ -1,4 +1,3 @@
-
 import { 
   Table, 
   TableBody, 
@@ -11,7 +10,7 @@ import { Speech } from '@/types/speech';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { EditIcon, Trash2Icon, EyeIcon, CalendarClock } from 'lucide-react';
-import { format, parseISO, isValid } from 'date-fns';
+import { format, parseISO, isValid, differenceInDays } from 'date-fns';
 import { getSpeechTypeLabel, getTypeColor } from './speech-utils';
 import Translate from '@/components/Translate';
 
@@ -23,21 +22,21 @@ interface SpeechesTableProps {
 }
 
 const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProps) => {
-  const formatDate = (dateString: string) => {
-    // Check if date string is empty or invalid (for upcoming speeches)
+  const formatDate = (dateString: string, eventDate?: string) => {
+    if (!dateString && eventDate && isValid(parseISO(eventDate))) {
+      const daysLeft = differenceInDays(parseISO(eventDate), new Date());
+      return `Not Yet Created (${daysLeft} days left)`;
+    }
+    
     if (!dateString || dateString.trim() === '') {
-      return ''; 
+      return '';
     }
     
     try {
-      // Safely parse the ISO string before formatting
       const date = parseISO(dateString);
-      
-      // Check if the date is valid before formatting
       if (!isValid(date)) {
         return '';
       }
-      
       return format(date, 'MMM d, yyyy h:mm a');
     } catch (error) {
       console.error('Date parsing error:', error);
@@ -86,10 +85,10 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                 </Badge>
               </TableCell>
               <TableCell className="hidden md:table-cell">
-                {isUpcoming ? '' : formatDate(speech.created_at)}
+                {formatDate(speech.created_at, speech.event_date)}
               </TableCell>
               <TableCell className="hidden md:table-cell">
-                {isUpcoming ? '' : formatDate(speech.updated_at)}
+                {formatDate(speech.updated_at)}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
