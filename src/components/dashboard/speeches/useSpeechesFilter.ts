@@ -100,6 +100,12 @@ export const useSpeechesFilter = (
     console.log('After deduplication - Final filtered count:', filtered.length);
     console.log('Final filtered speeches:', filtered);
     
+    // If no speeches are found after all filtering, return all available speeches
+    if (filtered.length === 0 && (allSpeeches.length > 0 || upcomingSpeeches.length > 0)) {
+      console.log('No speeches found after filtering, returning all available speeches');
+      return [...regularSpeeches, ...upcomingSpeeches];
+    }
+    
     // Sort the filtered speeches
     return filtered.sort((a, b) => {
       if (sortBy === 'newest') {
@@ -136,4 +142,3 @@ export const useSpeechesFilter = (
   
   return { filteredSpeeches };
 };
-
