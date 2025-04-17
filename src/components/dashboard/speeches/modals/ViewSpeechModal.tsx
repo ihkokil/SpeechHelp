@@ -30,16 +30,13 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
   const navigate = useNavigate();
 
   const formatDate = (dateString: string) => {
-    // Check if date string is empty or invalid (for upcoming speeches)
     if (!dateString || dateString.trim() === '') {
       return 'N/A';
     }
     
     try {
-      // Safely parse the ISO string before formatting
       const date = parseISO(dateString);
       
-      // Check if the date is valid before formatting
       if (!isValid(date)) {
         return 'N/A';
       }
@@ -51,7 +48,6 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
     }
   };
 
-  // Calculate days remaining for upcoming events
   const getDaysRemaining = () => {
     if (speech.isUpcoming && speech.event_date) {
       try {
@@ -70,7 +66,6 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
   const daysRemaining = getDaysRemaining();
 
   const handleCreateSpeech = () => {
-    // Store event details for use in Speech Lab, same as dashboard functionality
     localStorage.setItem('currentEvent', JSON.stringify({
       id: speech.id,
       title: speech.title,
@@ -79,7 +74,6 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
       status: 'upcoming'
     }));
     
-    // Navigate to speech lab
     navigate('/speech-lab');
     onOpenChange(false);
   };
@@ -144,7 +138,7 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
           </ButtonCustom>
           {speech.isUpcoming ? (
             <ButtonCustom
-              variant="premium"
+              variant="default"
               onClick={handleCreateSpeech}
             >
               <Translate text="common.create" />
