@@ -6,6 +6,7 @@ import SpeechesTable from './SpeechesTable';
 import EmptyState from './EmptyState';
 import SpeechModals from './SpeechModals';
 import { useSpeechesFilter } from './useSpeechesFilter';
+import { FilterOption, SortOption } from './FilterBar';
 
 interface SpeechesManagerProps {
   speeches: Speech[];
@@ -15,7 +16,7 @@ interface SpeechesManagerProps {
 const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState(initialFilter);
-  const [sortBy, setSortBy] = useState('newest');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
