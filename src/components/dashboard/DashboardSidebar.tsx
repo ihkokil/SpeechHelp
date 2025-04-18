@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -97,7 +98,11 @@ const DashboardSidebar = () => {
         {/* Logo */}
         <div className="p-6 border-b border-gray-100">
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src={logoPath} alt="Speech Help" className="h-10" />
+            <img 
+              src={logoPath} 
+              alt="Speech Help" 
+              className="h-10 w-auto" 
+            />
           </Link>
         </div>
 
@@ -191,3 +196,4 @@ const DashboardSidebar = () => {
 };
 
 export default DashboardSidebar;
+
