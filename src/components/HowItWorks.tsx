@@ -45,8 +45,8 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
   );
 };
 
-const CurvedArrow = ({ index }: { index: number }) => {
-  const upwardCurve = index === 1;
+const CurvedArrow = ({ index, isVisible }: { index: number; isVisible: boolean }) => {
+  const upwardCurve = index % 2 === 0;
   const path = upwardCurve
     ? "M10,50 C160,-30 160,130 310,50" 
     : "M10,50 C160,130 160,-30 310,50";
@@ -57,7 +57,7 @@ const CurvedArrow = ({ index }: { index: number }) => {
         <path
           d={path}
           fill="none"
-          stroke="url(#purpleGradient)"
+          stroke={`url(#purpleGradient${index})`}
           strokeWidth="3"
           className={`opacity-0 transition-all duration-1000 ${isVisible ? 'opacity-100' : ''}`}
         />
@@ -126,7 +126,7 @@ const HowItWorks = () => {
         <div className="max-w-4xl mx-auto">
           <div className="space-y-6 sm:space-y-8">
             {[1, 2, 3, 4].map((stepNumber) => (
-              <>
+              <React.Fragment key={`step-group-${stepNumber}`}>
                 <Step
                   key={`step-${stepNumber}`}
                   icon={stepIcons[stepNumber - 1]}
@@ -135,9 +135,13 @@ const HowItWorks = () => {
                   slideDirection={stepNumber % 2 === 0 ? 'right' : 'left'}
                 />
                 {stepNumber < 4 && (
-                  <CurvedArrow key={`arrow-${stepNumber}`} index={stepNumber} />
+                  <CurvedArrow 
+                    key={`arrow-${stepNumber}`} 
+                    index={stepNumber} 
+                    isVisible={isVisible}
+                  />
                 )}
-              </>
+              </React.Fragment>
             ))}
           </div>
         </div>
