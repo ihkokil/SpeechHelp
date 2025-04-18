@@ -1,8 +1,8 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { PencilIcon, SparklesIcon, MicIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
-import Step from './Step';  // Importing Step component
 
 interface StepProps {
   icon: JSX.Element;
