@@ -17,6 +17,8 @@ interface MobileMenuProps {
 }
 
 const MobileMenu = ({ open, setOpen, navItems }: MobileMenuProps) => {
+  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
+  
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -30,9 +32,9 @@ const MobileMenu = ({ open, setOpen, navItems }: MobileMenuProps) => {
           <div className="flex items-center space-x-2">
             <Link to="/admin/dashboard">
               <img
-                src="/Speech Help - Logo.svg"
+                src={logoPath}
                 alt="Speech Help Logo"
-                className="h-8"
+                className="h-8 w-auto"
               />
             </Link>
             <span className="text-lg font-bold text-pink-600">Admin</span>
