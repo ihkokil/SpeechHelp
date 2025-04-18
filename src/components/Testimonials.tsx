@@ -1,7 +1,9 @@
+
 import { useEffect, useState, useRef } from 'react';
 import { Star, Quote } from "lucide-react";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
+import Translate from '@/components/Translate';
 
 interface TestimonialProps {
   quoteKey: string;
@@ -12,9 +14,6 @@ interface TestimonialProps {
 }
 
 const Testimonial = ({ quoteKey, authorKey, roleKey, avatar, isVisible }: TestimonialProps) => {
-  const { currentLanguage } = useLanguage();
-  const { t } = useTranslation();
-  
   return (
     <div 
       className={`bg-white rounded-lg p-6 shadow-sm border border-gray-100 flex flex-col opacity-0 ${
@@ -22,15 +21,15 @@ const Testimonial = ({ quoteKey, authorKey, roleKey, avatar, isVisible }: Testim
       }`}
     >
       <div className="flex items-center mb-4">
-        <img src={avatar} alt={t(authorKey, currentLanguage.code)} className="w-12 h-12 rounded-full mr-4 object-cover border-2 border-pink-100" />
+        <img src={avatar} alt="User avatar" className="w-12 h-12 rounded-full mr-4 object-cover border-2 border-pink-100" />
         <div>
-          <p className="font-medium text-gray-900">{t(authorKey, currentLanguage.code)}</p>
-          <p className="text-sm text-gray-500">{t(roleKey, currentLanguage.code)}</p>
+          <p className="font-medium text-gray-900"><Translate text={authorKey} /></p>
+          <p className="text-sm text-gray-500"><Translate text={roleKey} /></p>
         </div>
       </div>
       <div className="mb-4">
         <Quote className="h-5 w-5 text-pink-300 mb-2" />
-        <p className="text-gray-700 italic">{t(quoteKey, currentLanguage.code)}</p>
+        <p className="text-gray-700 italic"><Translate text={quoteKey} /></p>
       </div>
       <div className="flex mt-auto pt-4 border-t border-gray-100">
         <div className="flex">
@@ -49,8 +48,6 @@ const Testimonial = ({ quoteKey, authorKey, roleKey, avatar, isVisible }: Testim
 const Testimonials = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { currentLanguage } = useLanguage();
-  const { t } = useTranslation();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -87,7 +84,7 @@ const Testimonials = () => {
       <div className="container mx-auto px-6 md:px-12">
         <div className="max-w-3xl mx-auto text-center mb-12" ref={sectionRef}>
           <h2 className={`text-3xl md:text-4xl font-bold mb-6 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
-            {t('headers.whatClientsAboutUs', currentLanguage.code)}
+            <Translate text="headers.whatClientsAboutUs" />
           </h2>
         </div>
 
