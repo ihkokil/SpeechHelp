@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -74,7 +75,7 @@ const Hero = () => {
             <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight sm:leading-tight md:leading-tight lg:leading-tight mb-3 sm:mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
               {t('headers.needCreativeSpeech', currentLanguage.code).split(' ').map((word, index) => 
                 word.toLowerCase() === 'creative' || word.toLowerCase() === 'speech?' ? 
-                  <span key={index} className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+                  <span key={index} className="text-pink-600">
                     {word + ' '}
                   </span> : 
                   word + ' '
