@@ -1,4 +1,3 @@
-
 export const headers = {
   'headers.features': 'Características',
   'headers.howItWorks': 'Cómo',
