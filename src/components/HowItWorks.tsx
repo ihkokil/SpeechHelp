@@ -49,18 +49,18 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
 const CurvedArrow = ({ index, isVisible }: { index: number; isVisible: boolean }) => {
   const upwardCurve = index % 2 === 0;
   
-  // Define the paths for the curved arrows that connect from the circle of one step to the next circle
-  // Path format: M(start-x,start-y) C(control1-x,control1-y) (control2-x,control2-y) (end-x,end-y)
+  // Define curve direction based on index
+  // Connect from the circle of current step to the next step's circle
   const path = upwardCurve
-    ? "M10,10 C120,-50 200,100 320,10" 
-    : "M10,10 C120,100 200,-50 320,10";
+    ? "M20,10 C100,-40 220,80 300,10" 
+    : "M20,10 C100,80 220,-40 300,10";
   
   // Define marker ID for arrow
   const markerId = `arrowhead${index}`;
 
   return (
-    <div className="hidden lg:block relative w-full h-24 -mt-4">
-      <svg className="absolute left-1/2 -translate-x-1/2 w-80 h-24">
+    <div className="hidden lg:block relative w-full h-20 my-2">
+      <svg className="absolute left-1/2 -translate-x-1/2 w-80 h-20 overflow-visible">
         <defs>
           <linearGradient id={`purpleGradient${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#9333EA" />
@@ -88,8 +88,9 @@ const CurvedArrow = ({ index, isVisible }: { index: number; isVisible: boolean }
           fill="none"
           stroke={`url(#purpleGradient${index})`}
           strokeWidth="3"
+          strokeDasharray="10,5"
           markerEnd={`url(#${markerId})`}
-          className={`opacity-0 transition-all duration-1000 ${isVisible ? 'opacity-100' : ''}`}
+          className={`opacity-0 transition-all duration-1000 animate-pulse-subtle ${isVisible ? 'opacity-100 animate-float' : ''}`}
         />
       </svg>
     </div>
@@ -148,7 +149,7 @@ const HowItWorks = () => {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="space-y-6 sm:space-y-8">
+          <div className="space-y-2 sm:space-y-4">
             {[1, 2, 3, 4].map((stepNumber) => (
               <React.Fragment key={`step-group-${stepNumber}`}>
                 <Step
