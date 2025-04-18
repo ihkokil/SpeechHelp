@@ -219,4 +219,15 @@ export const es = {
   'settings.tabs.billing': 'Facturación',
   'settings.tabs.notifications': 'Notificaciones',
   'settings.tabs.security': 'Seguridad',
+
+  // Headers
+  'headers.needCreativeSpeech': '¿Necesitas un discurso creativo?',
+  'headers.weCanHelp': '¡Podemos ayudarte!',
+  'headers.welcomeTo': 'Bienvenido a',
+  'headers.whoWeAre': 'Quiénes somos y',
+  'headers.howWeHelp': 'Cómo ayudamos',
+  'headers.howItWorks': 'Cómo',
+  'headers.works': 'funciona',
+  'headers.whatClientsAboutUs': 'Lo que nuestros clientes dicen sobre nosotros',
+  'headers.readyTransform': '¿Listo para transformar tu oratoria?',
 };

@@ -219,4 +219,15 @@ export const fr = {
   'settings.tabs.billing': 'Facturation',
   'settings.tabs.notifications': 'Notifications',
   'settings.tabs.security': 'Sécurité',
+
+  // Headers
+  'headers.needCreativeSpeech': 'Besoin d\'un discours créatif ?',
+  'headers.weCanHelp': 'Nous pouvons vous aider !',
+  'headers.welcomeTo': 'Bienvenue sur',
+  'headers.whoWeAre': 'Qui sommes-nous &',
+  'headers.howWeHelp': 'Comment nous aidons',
+  'headers.howItWorks': 'Comment ça',
+  'headers.works': 'fonctionne',
+  'headers.whatClientsAboutUs': 'Ce que nos clients disent de nous',
+  'headers.readyTransform': 'Prêt à transformer votre art oratoire ?',
 };
