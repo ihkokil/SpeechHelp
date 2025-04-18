@@ -22,18 +22,19 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
   return (
     <div className={`mb-8 transform transition-all duration-700 ease-out opacity-0 ${animationClass} ${
       isVisible ? 'opacity-100 translate-x-0' : ''
-    }`}>
+    } hover:scale-105 hover:shadow-lg hover:bg-gray-50 rounded-lg p-4 transition-all duration-300 group`}>
       <div className="flex items-start">
         <div className="relative mr-6">
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-pink-100 text-pink-600 font-bold border-2 border-pink-600 z-10 transform transition-all duration-500 hover:scale-110">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-pink-100 text-pink-600 font-bold border-2 border-pink-600 z-10 
+            transform transition-all duration-500 group-hover:scale-110 group-hover:bg-pink-200">
             {stepNumber}
           </div>
         </div>
         <div className="flex-1 pt-1">
-          <h3 className="text-xl font-semibold text-pink-600 mb-2">
+          <h3 className="text-xl font-semibold text-pink-600 mb-2 group-hover:text-pink-700 transition-colors">
             {t(`howItWorks.step${stepNumber}.title`, currentLanguage.code)}
           </h3>
-          <p className="text-gray-600 mb-6 max-w-md">
+          <p className="text-gray-600 mb-6 max-w-md group-hover:text-gray-800 transition-colors">
             {t(`howItWorks.step${stepNumber}.description`, currentLanguage.code)}
           </p>
         </div>
@@ -103,20 +104,20 @@ const HowItWorks = () => {
                 slideDirection="left"
               />
               <Step
-                key={2}
-                icon={stepIcons[1]}
-                stepNumber={2}
-                isVisible={isVisible}
-                slideDirection="right"
-              />
-            </div>
-            <div className="space-y-8">
-              <Step
                 key={3}
                 icon={stepIcons[2]}
                 stepNumber={3}
                 isVisible={isVisible}
                 slideDirection="left"
+              />
+            </div>
+            <div className="space-y-8">
+              <Step
+                key={2}
+                icon={stepIcons[1]}
+                stepNumber={2}
+                isVisible={isVisible}
+                slideDirection="right"
               />
               <Step
                 key={4}
