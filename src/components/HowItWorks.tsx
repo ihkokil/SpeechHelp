@@ -79,7 +79,7 @@ const HowItWorks = () => {
 
   return (
     <section id="how-it-works" className="py-6 bg-gray-50 relative overflow-hidden">
-      <div className="container mx-auto px-3">
+      <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-4" ref={sectionRef}>
           <h2 className={`text-lg font-bold mb-2 transform transition-all duration-700 opacity-0 translate-y-8 ${
             isVisible ? 'opacity-100 translate-y-0' : ''
@@ -93,7 +93,7 @@ const HowItWorks = () => {
           </p>
         </div>
 
-        <div className="max-w-xs mx-auto">
+        <div className="max-w-xl mx-auto">
           <div className="space-y-3">
             {[1, 2, 3, 4].map((stepNumber) => (
               <Step
