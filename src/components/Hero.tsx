@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from 'react';
+
+import React, { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
 import { ButtonCustom } from './ui/button-custom';
-import { AspectRatio } from './ui/aspect-ratio';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Hero = () => {
@@ -72,11 +72,11 @@ const Hero = () => {
         
         <div className="container relative z-10 mx-auto px-4 sm:px-6 md:px-12 pt-8 sm:pt-16 pb-6 sm:pb-12">
           <div className="max-w-[95%] sm:max-w-5xl mx-auto text-center">
-            <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight sm:leading-tight md:leading-tight lg:leading-tight mb-3 sm:mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''}`}>
+            <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight sm:leading-tight md:leading-tight lg:leading-tight mb-3 sm:mb-4 opacity-0 ${isLoaded ? 'animate-fade-in stagger-1' : ''} bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent`}>
               {t('headers.needCreativeSpeech', currentLanguage.code)}
             </h1>
             
-            <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium leading-tight sm:leading-tight md:leading-tight lg:leading-tight mb-6 sm:mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''}`}>
+            <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium leading-tight sm:leading-tight md:leading-tight lg:leading-tight mb-6 sm:mb-8 opacity-0 ${isLoaded ? 'animate-fade-in stagger-2' : ''} bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent`}>
               {t('hero.subheadline', currentLanguage.code)}
             </h2>
             
