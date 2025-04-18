@@ -16,7 +16,7 @@ export const useSpeechesFilter = (
     // Also ensure we have an array even if speeches is undefined or null
     const allSpeeches = Array.isArray(speeches) ? [...speeches] : [];
     
-    // Separate regular speeches and upcoming speeches from the array
+    // Separate regular speeches and identify upcoming speeches from the array
     let regularSpeeches = allSpeeches.filter(speech => !speech.isUpcoming);
     console.log('Regular speeches count:', regularSpeeches.length);
     
@@ -60,7 +60,7 @@ export const useSpeechesFilter = (
     let filteredRegularSpeeches = [...regularSpeeches];
     let filteredUpcomingSpeeches = [...upcomingSpeeches];
     
-    if (searchQuery.trim()) {
+    if (searchQuery && searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       
       // Apply the search filter separately to regular and upcoming speeches
