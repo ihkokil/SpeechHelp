@@ -1,9 +1,10 @@
 
 import { useTranslatedContent } from '@/hooks/useTranslatedContent';
+import React, { ReactNode } from 'react';
 
 interface TranslateProps {
   text: string;
-  fallback?: string;
+  fallback?: ReactNode;
   variables?: Record<string, string>;
 }
 
@@ -13,7 +14,7 @@ const Translate: React.FC<TranslateProps> = ({ text, fallback, variables }) => {
   const translation = translate(text, variables);
   
   // If the translation is the same as the key and it looks like a translation key,
-  // render the fallback text if provided or format the key in a user-friendly way
+  // render the fallback content if provided or format the key in a user-friendly way
   if (translation === text && text.includes('.')) {
     if (fallback) {
       return <>{fallback}</>;
@@ -26,4 +27,3 @@ const Translate: React.FC<TranslateProps> = ({ text, fallback, variables }) => {
 };
 
 export default Translate;
-
