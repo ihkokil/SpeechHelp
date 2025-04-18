@@ -81,6 +81,9 @@ const Hero = () => {
                     Need a <span className="text-pink-500">creative speech</span>?
                   </>
                 } 
+                components={{
+                  highlight: (text) => <span className="text-pink-500">{text}</span>
+                }}
               />
             </h1>
             
@@ -124,3 +127,4 @@ const Hero = () => {
 };
 
 export default Hero;
+
