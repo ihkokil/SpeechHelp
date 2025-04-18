@@ -14,5 +14,5 @@ export const contact = {
   'contact.emailAddress': 'hello@speechhelp.ai',
   'contact.liveChatSupport': 'Disponible 24/7 para asistencia rápida',
   'contact.whoWeAre': 'Quiénes somos',
-  'contact.howWeHelp': 'Cómo ayudamos'
+  'contact.howWeHelp': '& Cómo ayudamos',
 };
