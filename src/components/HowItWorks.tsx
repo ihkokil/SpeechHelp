@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useRef } from 'react';
 import { PencilIcon, SparklesIcon, MicIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -33,10 +34,10 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
           </div>
         </div>
         <div className="flex-1">
-          <h3 className="text-base sm:text-lg font-semibold text-pink-600 mb-2 group-hover:text-pink-700 transition-colors">
+          <h3 className="text-lg sm:text-xl font-semibold text-pink-600 mb-2 group-hover:text-pink-700 transition-colors">
             {t(`howItWorks.step${stepNumber}.title`, currentLanguage.code)}
           </h3>
-          <p className="text-sm sm:text-base text-gray-600 group-hover:text-gray-800 transition-colors">
+          <p className="text-base sm:text-lg text-gray-600 group-hover:text-gray-800 transition-colors">
             {t(`howItWorks.step${stepNumber}.description`, currentLanguage.code)}
           </p>
         </div>
@@ -81,15 +82,15 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-8 sm:py-12 md:py-24 bg-gray-50 relative overflow-hidden">
+    <section id="how-it-works" className="py-12 sm:py-16 md:py-24 bg-gray-50 relative overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12" ref={sectionRef}>
-          <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 transform transition-all duration-700 opacity-0 translate-y-8 ${
+        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16" ref={sectionRef}>
+          <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 transform transition-all duration-700 opacity-0 translate-y-8 ${
             isVisible ? 'opacity-100 translate-y-0' : ''
           }`}>
             How It <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Works</span>
           </h2>
-          <p className={`text-sm sm:text-base text-gray-600 transform transition-all duration-700 delay-200 opacity-0 translate-y-8 ${
+          <p className={`text-lg sm:text-xl text-gray-600 transform transition-all duration-700 delay-200 opacity-0 translate-y-8 ${
             isVisible ? 'opacity-100 translate-y-0' : ''
           }`}>
             {t('howItWorks.subtitle', currentLanguage.code)}
