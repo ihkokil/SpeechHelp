@@ -17,8 +17,9 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Get saved language from localStorage or default to first language
+  // Get saved language from localStorage or default to browser preference or en-US
   const [currentLanguage, setCurrentLanguage] = useState(() => {
+    // Try to get saved language from localStorage
     const savedLanguage = localStorage.getItem('appLanguage');
     if (savedLanguage) {
       try {
@@ -27,18 +28,31 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         console.error('Error parsing saved language:', error);
       }
     }
-    return languages[0];
+
+    // Try to match browser language with available languages
+    const browserLang = navigator.language;
+    const matchedLang = languages.find(lang => 
+      browserLang.toLowerCase().startsWith(lang.code.toLowerCase())
+    );
+    
+    return matchedLang || languages[0];
   });
 
-  // Save language to localStorage when it changes
+  // Save language to localStorage and update document attributes when it changes
   useEffect(() => {
     localStorage.setItem('appLanguage', JSON.stringify(currentLanguage));
+    
     // Update document language for screen readers and SEO
     document.documentElement.lang = currentLanguage.code;
+    
+    // Update direction if needed (for RTL languages in the future)
+    document.documentElement.dir = ['ar', 'he', 'fa'].includes(currentLanguage.code) ? 'rtl' : 'ltr';
   }, [currentLanguage]);
 
   const setLanguage = (language: typeof languages[0]) => {
     setCurrentLanguage(language);
+    // Dispatch a custom event that components can listen to
+    window.dispatchEvent(new CustomEvent('languagechange', { detail: language }));
   };
 
   return (
@@ -55,3 +69,4 @@ export const useLanguage = (): LanguageContextType => {
   }
   return context;
 };
+

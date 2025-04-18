@@ -13,10 +13,13 @@ const LanguageSelector = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
-        <span className="text-lg">{currentLanguage.flag}</span>
+      <DropdownMenuTrigger 
+        className="flex items-center space-x-1 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors"
+        aria-label="Select language"
+      >
+        <span className="text-lg" aria-hidden="true">{currentLanguage.flag}</span>
         <span className="text-sm font-medium hidden sm:inline">{currentLanguage.label}</span>
-        <ChevronDownIcon className="h-4 w-4 text-gray-500" />
+        <ChevronDownIcon className="h-4 w-4 text-gray-500" aria-hidden="true" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         {languages.map((language) => (
@@ -24,8 +27,10 @@ const LanguageSelector = () => {
             key={language.code}
             onClick={() => setLanguage(language)}
             className="flex items-center cursor-pointer"
+            role="option"
+            aria-selected={currentLanguage.code === language.code}
           >
-            <span className="text-lg mr-2">{language.flag}</span>
+            <span className="text-lg mr-2" aria-hidden="true">{language.flag}</span>
             <span>{language.label}</span>
           </DropdownMenuItem>
         ))}
@@ -35,3 +40,4 @@ const LanguageSelector = () => {
 };
 
 export default LanguageSelector;
+
