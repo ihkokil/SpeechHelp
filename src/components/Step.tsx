@@ -26,16 +26,16 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
     >
       <div className="flex items-start gap-2 sm:gap-4">
         <div className="relative flex-shrink-0">
-          <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-pink-100 text-pink-600 text-lg sm:text-xl font-bold border-2 border-pink-600 z-10 
+          <div className="flex items-center justify-center w-8 h-8 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-pink-100 text-pink-600 text-sm sm:text-base font-bold border-2 border-pink-600 z-10 
             transform transition-all duration-500 group-hover:scale-110 group-hover:bg-pink-200">
             {stepNumber}
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold text-pink-600 mb-2 sm:mb-3 group-hover:text-pink-700 transition-colors">
+          <h3 className="text-base sm:text-lg md:text-xl font-semibold text-pink-600 mb-1 sm:mb-2 group-hover:text-pink-700 transition-colors">
             {t(`howItWorks.step${stepNumber}.title`, currentLanguage.code)}
           </h3>
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 group-hover:text-gray-800 transition-colors pr-1">
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 group-hover:text-gray-800 transition-colors pr-1">
             {t(`howItWorks.step${stepNumber}.description`, currentLanguage.code)}
           </p>
         </div>
