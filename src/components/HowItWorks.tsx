@@ -49,18 +49,20 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
 const CurvedArrow = ({ index, isVisible }: { index: number; isVisible: boolean }) => {
   const upwardCurve = index % 2 === 0;
   
-  // Define curve direction based on index
-  // Connect from the circle of current step to the next step's circle
+  // These path coordinates are designed to start near the number circle and point to the next one
+  // M = starting point (near first circle)
+  // C = control points for the curve
+  // End point is near the next circle
   const path = upwardCurve
-    ? "M20,10 C100,-40 220,80 300,10" 
-    : "M20,10 C100,80 220,-40 300,10";
+    ? "M15,10 C80,-30 240,-30 305,10" // Upward curve path - starts left, curves up, ends right
+    : "M15,10 C80,50 240,50 305,10";  // Downward curve path - starts left, curves down, ends right
   
   // Define marker ID for arrow
   const markerId = `arrowhead${index}`;
 
   return (
-    <div className="hidden lg:block relative w-full h-20 my-2">
-      <svg className="absolute left-1/2 -translate-x-1/2 w-80 h-20 overflow-visible">
+    <div className="hidden lg:block relative w-full h-16 -my-1">
+      <svg className="absolute left-1/2 -translate-x-1/2 w-80 h-16 overflow-visible">
         <defs>
           <linearGradient id={`purpleGradient${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#9333EA" />
@@ -87,10 +89,10 @@ const CurvedArrow = ({ index, isVisible }: { index: number; isVisible: boolean }
           d={path}
           fill="none"
           stroke={`url(#purpleGradient${index})`}
-          strokeWidth="3"
-          strokeDasharray="10,5"
+          strokeWidth="2.5"
+          strokeDasharray="6,4"
           markerEnd={`url(#${markerId})`}
-          className={`opacity-0 transition-all duration-1000 animate-pulse-subtle ${isVisible ? 'opacity-100 animate-float' : ''}`}
+          className={`opacity-0 transition-all duration-1000 ${isVisible ? 'opacity-100 animate-pulse' : ''}`}
         />
       </svg>
     </div>
@@ -149,7 +151,7 @@ const HowItWorks = () => {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="space-y-2 sm:space-y-4">
+          <div className="space-y-0">
             {[1, 2, 3, 4].map((stepNumber) => (
               <React.Fragment key={`step-group-${stepNumber}`}>
                 <Step
