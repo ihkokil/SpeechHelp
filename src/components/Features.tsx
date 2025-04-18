@@ -2,6 +2,7 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { CalendarRange, Zap, Target, Clock, Calendar, Sparkles } from 'lucide-react';
+import Translate from '@/components/Translate';
 
 const Features = () => {
   const { currentLanguage } = useLanguage();
@@ -12,13 +13,13 @@ const Features = () => {
       <div className="container mx-auto px-4 sm:px-6 md:px-12">
         <div className="max-w-[90%] sm:max-w-3xl mx-auto text-center mb-8 sm:mb-12 md:mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-            {t('headers.welcomeTo', currentLanguage.code)} <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Speech Help!</span>
+            <Translate text="headers.welcomeTo" /> <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Speech Help!</span>
           </h2>
           <p className="text-lg text-gray-700 leading-relaxed mb-4">
-            {t('features.introText1', currentLanguage.code)}
+            <Translate text="features.introText1" />
           </p>
           <p className="text-lg text-gray-700 leading-relaxed">
-            {t('features.introText2', currentLanguage.code)}
+            <Translate text="features.introText2" />
           </p>
         </div>
 
@@ -29,8 +30,8 @@ const Features = () => {
             <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-6">
               <Sparkles className="h-6 w-6 text-pink-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">{t('features.ai.title', currentLanguage.code)}</h3>
-            <p className="text-gray-600">{t('features.ai.description', currentLanguage.code)}</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3"><Translate text="features.ai.title" /></h3>
+            <p className="text-gray-600"><Translate text="features.ai.description" /></p>
           </div>
 
           {/* Feature 2 */}
@@ -38,8 +39,8 @@ const Features = () => {
             <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-6">
               <Zap className="h-6 w-6 text-purple-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">{t('features.writersBlock.title', currentLanguage.code)}</h3>
-            <p className="text-gray-600">{t('features.writersBlock.description', currentLanguage.code)}</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3"><Translate text="features.writersBlock.title" /></h3>
+            <p className="text-gray-600"><Translate text="features.writersBlock.description" /></p>
           </div>
 
           {/* Feature 3 */}
@@ -47,8 +48,8 @@ const Features = () => {
             <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-6">
               <Target className="h-6 w-6 text-pink-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">{t('features.tailored.title', currentLanguage.code)}</h3>
-            <p className="text-gray-600">{t('features.tailored.description', currentLanguage.code)}</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3"><Translate text="features.tailored.title" /></h3>
+            <p className="text-gray-600"><Translate text="features.tailored.description" /></p>
           </div>
 
           {/* Feature 4 */}
@@ -56,8 +57,8 @@ const Features = () => {
             <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-6">
               <Clock className="h-6 w-6 text-purple-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">{t('features.quick.title', currentLanguage.code)}</h3>
-            <p className="text-gray-600">{t('features.quick.description', currentLanguage.code)}</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3"><Translate text="features.quick.title" /></h3>
+            <p className="text-gray-600"><Translate text="features.quick.description" /></p>
           </div>
 
           {/* Feature 5 */}
@@ -65,8 +66,8 @@ const Features = () => {
             <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-6">
               <Calendar className="h-6 w-6 text-pink-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">{t('features.occasions.title', currentLanguage.code)}</h3>
-            <p className="text-gray-600">{t('features.occasions.description', currentLanguage.code)}</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3"><Translate text="features.occasions.title" /></h3>
+            <p className="text-gray-600"><Translate text="features.occasions.description" /></p>
           </div>
 
           {/* Feature 6 */}
@@ -74,8 +75,8 @@ const Features = () => {
             <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-6">
               <CalendarRange className="h-6 w-6 text-purple-600" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">{t('features.subscription.title', currentLanguage.code)}</h3>
-            <p className="text-gray-600">{t('features.subscription.description', currentLanguage.code)}</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3"><Translate text="features.subscription.title" /></h3>
+            <p className="text-gray-600"><Translate text="features.subscription.description" /></p>
           </div>
         </div>
       </div>
