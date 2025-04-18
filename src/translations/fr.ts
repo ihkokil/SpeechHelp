@@ -230,4 +230,9 @@ export const fr = {
   'headers.works': 'fonctionne',
   'headers.whatClientsAboutUs': 'Ce que nos clients disent de nous',
   'headers.readyTransform': 'Prêt à transformer votre art oratoire ?',
+
+  // Gallery Section
+  'gallery.header': 'Des discours pour',
+  'gallery.headerHighlight': 'toutes les occasions',
+  'gallery.subheader': 'Nous proposons des modèles de discours et des questionnaires "assistant intelligent" faciles à utiliser pour tous types d\'événements et d\'occasions',
 };
