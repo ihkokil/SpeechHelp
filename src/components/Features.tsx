@@ -1,4 +1,3 @@
-
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { CalendarRange, Zap, Target, Clock, Calendar, Sparkles } from 'lucide-react';
@@ -8,9 +7,9 @@ const Features = () => {
   const { t } = useTranslation();
 
   return (
-    <section className="bg-gradient-to-r from-purple-50 to-pink-50 py-16">
-      <div className="container mx-auto px-6 md:px-12">
-        <div className="max-w-3xl mx-auto text-center mb-16">
+    <section className="bg-gradient-to-r from-purple-50 to-pink-50 py-8 sm:py-12 md:py-16">
+      <div className="container mx-auto px-4 sm:px-6 md:px-12">
+        <div className="max-w-[90%] sm:max-w-3xl mx-auto text-center mb-8 sm:mb-12 md:mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             Welcome to <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Speech Help!</span>
           </h2>
@@ -23,7 +22,7 @@ const Features = () => {
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
           {/* Feature 1 */}
           <div className="bg-white rounded-xl shadow-md p-8 transition-all duration-300 hover:shadow-lg">
             <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mb-6">

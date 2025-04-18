@@ -137,21 +137,34 @@ const SpeechGallery = () => {
     icon: <CalendarDays className="h-4 w-4" />
   }];
 
-  return <section className="py-16 md:py-24 bg-white">
-      <div className="container mx-auto px-6 md:px-12" ref={galleryRef}>
-        <div className="max-w-3xl mx-auto text-center mb-12">
-          <h2 className={`text-3xl md:text-4xl font-bold mb-6 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
+  return (
+    <section className="py-8 sm:py-16 md:py-24 bg-white">
+      <div className="container mx-auto px-4 sm:px-6 md:px-12" ref={galleryRef}>
+        <div className="max-w-[90%] sm:max-w-3xl mx-auto text-center mb-8 sm:mb-12">
+          <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 opacity-0 ${isVisible ? 'animate-fade-in' : ''}`}>
             Speech for <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Every Occasion</span>
           </h2>
-          <p className={`text-lg text-gray-600 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>We offer speech templates and easy-to-use "prompt wizard" questionnaires for all types of events and occasions
-        </p>
+          <p className={`text-base sm:text-lg text-gray-600 opacity-0 ${isVisible ? 'animate-fade-in stagger-1' : ''}`}>
+            We offer speech templates and easy-to-use "prompt wizard" questionnaires for all types of events and occasions
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {speeches.map((speech, index) => <GalleryItem key={index} image={speech.image} title={speech.title} subtitle={speech.subtitle} isVisible={isVisible} index={index} icon={speech.icon} />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {speeches.map((speech, index) => (
+            <GalleryItem 
+              key={index} 
+              image={speech.image} 
+              title={speech.title} 
+              subtitle={speech.subtitle} 
+              isVisible={isVisible} 
+              index={index} 
+              icon={speech.icon} 
+            />
+          ))}
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
 
 export default SpeechGallery;
