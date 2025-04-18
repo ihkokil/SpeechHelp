@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { PencilIcon, SparklesIcon, MicIcon } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface StepProps {
   icon: JSX.Element;
@@ -45,12 +44,33 @@ const Step = ({ icon, stepNumber, isVisible, slideDirection }: StepProps) => {
   );
 };
 
+const ConnectingArrow = ({ isVisible }: { isVisible: boolean }) => {
+  return (
+    <div className="hidden lg:block relative w-full h-20 -my-4">
+      <svg className="absolute left-1/2 -translate-x-1/2 w-72 h-20 overflow-visible">
+        <path
+          d="M20,10 C 80,60 160,60 220,10"
+          fill="none"
+          stroke="url(#purpleGradient)"
+          strokeWidth="2"
+          className={`opacity-0 transition-all duration-1000 ${isVisible ? 'opacity-100' : ''}`}
+        />
+        <defs>
+          <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#9333EA" />
+            <stop offset="100%" stopColor="#E879F9" />
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+  );
+};
+
 const HowItWorks = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -97,15 +117,23 @@ const HowItWorks = () => {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="space-y-4">
+          <div className="space-y-0">
             {[1, 2, 3, 4].map((stepNumber) => (
-              <Step
-                key={`step-${stepNumber}`}
-                icon={stepIcons[stepNumber - 1]}
-                stepNumber={stepNumber}
-                isVisible={isVisible}
-                slideDirection={stepNumber % 2 === 0 ? 'right' : 'left'}
-              />
+              <React.Fragment key={`step-group-${stepNumber}`}>
+                <Step
+                  key={`step-${stepNumber}`}
+                  icon={stepIcons[stepNumber - 1]}
+                  stepNumber={stepNumber}
+                  isVisible={isVisible}
+                  slideDirection={stepNumber % 2 === 0 ? 'right' : 'left'}
+                />
+                {stepNumber < 4 && (
+                  <ConnectingArrow 
+                    key={`arrow-${stepNumber}`}
+                    isVisible={isVisible}
+                  />
+                )}
+              </React.Fragment>
             ))}
           </div>
         </div>
