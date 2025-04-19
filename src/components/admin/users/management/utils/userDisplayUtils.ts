@@ -91,6 +91,13 @@ export const getUserPhone = (user: User) => {
   const phone = user.user_metadata?.phone || user.phone;
   if (!phone) return '—';
   
+  // Skip formatting if phone is obviously incomplete or invalid
+  const cleanPhone = phone.replace(/\D/g, '');
+  if (cleanPhone.length < 7) {
+    console.log('📋 Phone too short, returning as-is:', phone);
+    return phone;
+  }
+  
   // Use the enhanced phone formatting function with debug logging
   console.log('📋 Getting phone for user in table:', {
     userId: user.id,
