@@ -11,6 +11,18 @@ export const UserProfile = () => {
   const displayName = firstName || emailUsername;
   const fullName = firstName && lastName ? `${firstName} ${lastName}` : displayName;
 
+  // Add debug logging for the current user's data
+  if (user) {
+    console.log('👤 Current user profile data:', {
+      userId: user.id,
+      email: user.email,
+      metadata: user.user_metadata,
+      firstName,
+      lastName,
+      fullName
+    });
+  }
+
   return (
     <div className="px-6 py-4 border-b border-gray-100">
       <div className="flex items-center">
