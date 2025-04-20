@@ -1,9 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { User, Speech } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, FileText, Calendar, Type } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Loader2, FileText, Calendar, Type, Eye, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface UserSpeechesProps {
@@ -17,6 +20,8 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
   speeches,
   isLoadingSpeeches
 }) => {
+  const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
+
   console.log('UserSpeeches component rendering:', {
     userId: user.id,
     speechesLength: speeches?.length,
@@ -80,6 +85,25 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
     return content.substring(0, maxLength) + '...';
   };
 
+  // Helper function to format time ago
+  const formatTimeAgo = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+      
+      if (diffInHours < 1) return 'Just now';
+      if (diffInHours < 24) return `${diffInHours}h ago`;
+      
+      const diffInDays = Math.floor(diffInHours / 24);
+      if (diffInDays < 7) return `${diffInDays}d ago`;
+      
+      return format(date, 'MMM d, yyyy');
+    } catch (error) {
+      return 'Unknown';
+    }
+  };
+
   if (isLoadingSpeeches) {
     return (
       <Card>
@@ -124,52 +148,102 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <FileText className="h-5 w-5 mr-2" />
-          User Speeches ({speeches.length})
-        </CardTitle>
-        <CardDescription>Speeches created by this user</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {speeches.map((speech) => (
-            <div key={speech.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                  <h4 className="font-medium text-sm line-clamp-1">{speech.title || 'Untitled Speech'}</h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="outline" className={getSpeechTypeColor(speech.speech_type)}>
-                      <Type className="h-3 w-3 mr-1" />
-                      {getSpeechTypeDisplay(speech.speech_type)}
-                    </Badge>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <FileText className="h-5 w-5 mr-2" />
+            User Speeches ({speeches.length})
+          </CardTitle>
+          <CardDescription>Speeches created by this user</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {speeches.map((speech) => (
+              <div key={speech.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm line-clamp-1 mb-2">{speech.title || 'Untitled Speech'}</h4>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className={getSpeechTypeColor(speech.speech_type)}>
+                        <Type className="h-3 w-3 mr-1" />
+                        {getSpeechTypeDisplay(speech.speech_type)}
+                      </Badge>
+                      <div className="flex items-center text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {formatTimeAgo(speech.created_at)}
+                      </div>
+                    </div>
                   </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setSelectedSpeech(speech)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl max-h-[80vh]">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center">
+                          <FileText className="h-5 w-5 mr-2" />
+                          {speech.title || 'Untitled Speech'}
+                        </DialogTitle>
+                        <DialogDescription>
+                          <div className="flex items-center gap-4 mt-2">
+                            <Badge variant="outline" className={getSpeechTypeColor(speech.speech_type)}>
+                              {getSpeechTypeDisplay(speech.speech_type)}
+                            </Badge>
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              Created: {format(new Date(speech.created_at), 'MMM d, yyyy • HH:mm')}
+                            </div>
+                            {speech.updated_at && speech.updated_at !== speech.created_at && (
+                              <div className="flex items-center text-sm text-muted-foreground">
+                                <Calendar className="h-4 w-4 mr-1" />
+                                Updated: {format(new Date(speech.updated_at), 'MMM d, yyyy • HH:mm')}
+                              </div>
+                            )}
+                          </div>
+                        </DialogDescription>
+                      </DialogHeader>
+                      <ScrollArea className="max-h-[60vh] pr-4">
+                        <div className="prose prose-sm max-w-none">
+                          <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                            {speech.content || 'No content available'}
+                          </div>
+                        </div>
+                      </ScrollArea>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              </div>
-              
-              {speech.content && (
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                  {truncateContent(speech.content, 150)}
-                </p>
-              )}
-              
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div className="flex items-center">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  Created: {speech.created_at ? format(new Date(speech.created_at), 'MMM d, yyyy') : 'Unknown'}
-                </div>
-                {speech.updated_at && speech.updated_at !== speech.created_at && (
+                
+                {speech.content && (
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                    {truncateContent(speech.content, 150)}
+                  </p>
+                )}
+                
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center">
                     <Calendar className="h-3 w-3 mr-1" />
-                    Updated: {format(new Date(speech.updated_at), 'MMM d, yyyy')}
+                    Created: {speech.created_at ? format(new Date(speech.created_at), 'MMM d, yyyy • HH:mm') : 'Unknown'}
                   </div>
-                )}
+                  {speech.updated_at && speech.updated_at !== speech.created_at && (
+                    <div className="flex items-center">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      Updated: {format(new Date(speech.updated_at), 'MMM d, yyyy • HH:mm')}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </>
   );
 };
