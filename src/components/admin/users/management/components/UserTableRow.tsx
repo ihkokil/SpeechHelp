@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { User } from '../../types';
 import UserActionMenu from './UserActionMenu';
-import { formatUserDisplayName } from '../utils/userDisplayUtils';
+import { formatUserDisplayName, getUserPhone, getCountryFlag } from '../utils/userDisplayUtils';
 import { format } from 'date-fns';
 
 interface UserTableRowProps {
@@ -68,6 +68,10 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     }
   };
 
+  // Get user phone and country flag
+  const userPhone = getUserPhone(user);
+  const countryFlag = getCountryFlag(user);
+
   return (
     <TableRow 
       className="cursor-pointer hover:bg-gray-50 transition-colors"
@@ -89,6 +93,13 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       
       <TableCell className="px-2">
         <span className="text-sm text-gray-900">{user.email}</span>
+      </TableCell>
+      
+      <TableCell className="px-2">
+        <div className="flex items-center text-sm text-gray-600">
+          {userPhone !== '—' && <span className="mr-1">{countryFlag}</span>}
+          {userPhone}
+        </div>
       </TableCell>
       
       <TableCell className="px-2 text-center">
