@@ -1,46 +1,49 @@
 
-import React, { memo } from 'react';
+import React from 'react';
 import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface UserTableHeaderProps {
   onToggleAll: () => void;
   isAllSelected: boolean;
-  disabled: boolean;
+  disabled?: boolean;
   selectedCount: number;
 }
 
-const UserTableHeader: React.FC<UserTableHeaderProps> = memo(({ 
-  onToggleAll, 
+const UserTableHeader: React.FC<UserTableHeaderProps> = ({
+  onToggleAll,
   isAllSelected,
-  disabled,
+  disabled = false,
   selectedCount
 }) => {
+  const handleCheckboxChange = () => {
+    if (!disabled) {
+      onToggleAll();
+    }
+  };
+
   return (
     <TableHeader>
       <TableRow>
         <TableHead className="w-12 px-2">
-          <Checkbox 
+          <Checkbox
             checked={isAllSelected}
-            onCheckedChange={onToggleAll}
+            onChange={handleCheckboxChange}
             disabled={disabled}
             aria-label="Select all users"
           />
         </TableHead>
-        <TableHead className="min-w-[200px] px-2">Name</TableHead>
-        <TableHead className="min-w-[250px] px-2">Email</TableHead>
-        <TableHead className="min-w-[150px] px-2">Phone</TableHead>
-        <TableHead className="w-24 text-center px-2">Status</TableHead>
-        <TableHead className="w-20 text-center px-2">Role</TableHead>
-        <TableHead className="w-24 text-center px-2">Plan</TableHead>
-        <TableHead className="min-w-[120px] px-2">Joined</TableHead>
-        <TableHead className="min-w-[120px] px-2">Last Sign In</TableHead>
-        <TableHead className="w-16 text-center px-2">Actions</TableHead>
+        <TableHead className="px-2">Name</TableHead>
+        <TableHead className="px-2">Email</TableHead>
+        <TableHead className="px-2 text-center">Status</TableHead>
+        <TableHead className="px-2 text-center">Role</TableHead>
+        <TableHead className="px-2 text-center">Plan</TableHead>
+        <TableHead className="px-2">Joined</TableHead>
+        <TableHead className="px-2">Last Login</TableHead>
+        <TableHead className="px-2 text-right">Actions</TableHead>
       </TableRow>
     </TableHeader>
   );
-});
-
-UserTableHeader.displayName = "UserTableHeader";
+};
 
 export default UserTableHeader;
