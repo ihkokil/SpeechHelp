@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, FileText, Calendar, Type, Eye, Clock } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatSpeechContent } from '@/components/speech/utils/speechFormattingUtils';
 
 interface UserSpeechesProps {
   user: User;
@@ -79,10 +80,52 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
     return colorMap[speechType?.toLowerCase()] || 'bg-gray-100 text-gray-800';
   };
 
-  // Helper function to truncate content
+  // Helper function to truncate content for preview
   const truncateContent = (content: string, maxLength: number = 100): string => {
-    if (!content || content.length <= maxLength) return content || '';
-    return content.substring(0, maxLength) + '...';
+    if (!content) return '';
+    
+    // Format the content first to get clean text
+    const formattedContent = formatSpeechContent(content);
+    
+    // Remove any HTML tags for preview
+    const cleanText = formattedContent.replace(/<[^>]*>/g, '');
+    
+    if (cleanText.length <= maxLength) return cleanText;
+    return cleanText.substring(0, maxLength) + '...';
+  };
+
+  // Helper function to format content for display in modal
+  const formatContentForDisplay = (content: string): string => {
+    if (!content) return 'No content available';
+    
+    const formattedContent = formatSpeechContent(content);
+    
+    // Convert markdown-like formatting to HTML
+    let htmlContent = formattedContent;
+    
+    // Handle headings
+    htmlContent = htmlContent.replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold mb-4 text-purple-800">$1</h1>');
+    htmlContent = htmlContent.replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3 text-purple-700">$1</h2>');
+    htmlContent = htmlContent.replace(/^### (.+)$/gm, '<h3 class="text-lg font-bold mt-5 mb-2 text-purple-600">$1</h3>');
+    
+    // Handle bold text
+    htmlContent = htmlContent.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold">$1</strong>');
+    
+    // Handle italic text
+    htmlContent = htmlContent.replace(/\*(.+?)\*/g, '<em class="italic">$1</em>');
+    
+    // Handle line breaks
+    htmlContent = htmlContent.replace(/\n\n/g, '</p><p class="mb-4">');
+    htmlContent = htmlContent.replace(/\n/g, '<br>');
+    
+    // Wrap in paragraph tags
+    htmlContent = `<div class="prose prose-sm max-w-none"><p class="mb-4">${htmlContent}</p></div>`;
+    
+    // Fix any double paragraph tags
+    htmlContent = htmlContent.replace(/<p class="mb-4"><p class="mb-4">/g, '<p class="mb-4">');
+    htmlContent = htmlContent.replace(/<\/p><\/p>/g, '</p>');
+    
+    return htmlContent;
   };
 
   // Helper function to format time ago
@@ -186,7 +229,7 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
                         View
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-3xl max-h-[80vh]">
+                    <DialogContent className="max-w-4xl max-h-[80vh]">
                       <DialogHeader>
                         <DialogTitle className="flex items-center">
                           <FileText className="h-5 w-5 mr-2" />
@@ -211,11 +254,12 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
                         </DialogDescription>
                       </DialogHeader>
                       <ScrollArea className="max-h-[60vh] pr-4">
-                        <div className="prose prose-sm max-w-none">
-                          <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                            {speech.content || 'No content available'}
-                          </div>
-                        </div>
+                        <div 
+                          className="text-sm leading-relaxed"
+                          dangerouslySetInnerHTML={{ 
+                            __html: formatContentForDisplay(speech.content) 
+                          }} 
+                        />
                       </ScrollArea>
                     </DialogContent>
                   </Dialog>
