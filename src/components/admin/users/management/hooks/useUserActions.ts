@@ -34,7 +34,7 @@ export const useUserActions = () => {
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate
-  } = useBulkActions(setIsActionLoading);
+  } = useBulkActions();
   
   const {
     handleToggleUserStatus,
@@ -49,7 +49,7 @@ export const useUserActions = () => {
   
   const {
     handleDeleteUser
-  } = useIndividualUserActions(setIsActionLoading, toast);
+  } = useIndividualUserActions();
   
   // Handle deleting users (plural for backward compatibility)
   const handleDeleteUsers = useCallback(async (
