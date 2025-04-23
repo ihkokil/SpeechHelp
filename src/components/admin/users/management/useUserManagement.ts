@@ -56,10 +56,6 @@ export const useUserManagement = () => {
     handleBulkDeactivate: baseHandleBulkDeactivate,
     handleToggleUserStatus: baseHandleToggleUserStatus,
     handleToggleUserSubscription: baseHandleToggleUserSubscription,
-    handleViewUserDetails: baseHandleViewUserDetails,
-    handleCloseUserDetails: baseHandleCloseUserDetails,
-    handleManagePermissions: baseHandleManagePermissions,
-    handlePermissionsUpdated: baseHandlePermissionsUpdated,
     
     // States
     isActionLoading
@@ -68,32 +64,31 @@ export const useUserManagement = () => {
   // Direct action handlers
   const handleViewUserDetails = useCallback((user: User) => {
     console.log("useUserManagement: View details called for user:", user.id);
-    baseHandleViewUserDetails(user);
     setSelectedUser(user);
     setIsDetailsOpen(true);
-  }, [baseHandleViewUserDetails, setSelectedUser, setIsDetailsOpen]);
+  }, [setSelectedUser, setIsDetailsOpen]);
   
   const handleCloseUserDetails = useCallback(() => {
     console.log("useUserManagement: Close details called");
-    baseHandleCloseUserDetails();
     setIsDetailsOpen(false);
     setTimeout(() => {
       setSelectedUser(null);
     }, 300);
-  }, [baseHandleCloseUserDetails, setIsDetailsOpen, setSelectedUser]);
+  }, [setIsDetailsOpen, setSelectedUser]);
   
   const handleManagePermissions = useCallback((user: User) => {
     console.log("useUserManagement: Manage permissions called for user:", user.id);
-    baseHandleManagePermissions(user);
     setSelectedUser(user);
     setIsPermissionsDialogOpen(true);
-  }, [baseHandleManagePermissions, setSelectedUser, setIsPermissionsDialogOpen]);
+  }, [setSelectedUser, setIsPermissionsDialogOpen]);
   
   const handlePermissionsUpdated = useCallback((updatedUser: User) => {
     console.log("useUserManagement: Permissions updated for user:", updatedUser.id);
-    baseHandlePermissionsUpdated(updatedUser, users, setUsers);
+    setUsers(prevUsers => 
+      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
+    );
     setIsPermissionsDialogOpen(false);
-  }, [baseHandlePermissionsUpdated, users, setUsers, setIsPermissionsDialogOpen]);
+  }, [setUsers, setIsPermissionsDialogOpen]);
   
   // Wrapper functions to include users and setUsers
   const handleToggleUserStatus = useCallback((userId: string, isActive: boolean) => {

@@ -1,104 +1,135 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { User } from '../../types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
 export const useFetchUsers = () => {
-  const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastFetchTime, setLastFetchTime] = useState(0);
   const [error, setError] = useState<Error | null>(null);
+  const { toast } = useToast();
+  const { adminUser } = useAdminAuth();
 
   const fetchUsers = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastFetchTime < 1000) {
+      console.log('Debouncing fetch request');
+      return []; // Debounce fetch requests
+    }
+    
+    setLastFetchTime(now);
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log('Fetching users via admin-user-operations function...');
+      console.log('Fetching users from Supabase auth');
       
-      // Get the session for the current user to retrieve the access token
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('Error getting session:', sessionError);
-        throw new Error('Authentication error: ' + (sessionError.message || 'Failed to get session'));
-      }
-      
-      const accessToken = sessionData?.session?.access_token;
-      
-      if (!accessToken) {
-        console.error('No access token available');
-        throw new Error('No session found. Please login again.');
-      }
-      
-      console.log('Got access token, invoking admin-user-operations function...');
-      
-      // Call our edge function to fetch users with admin privileges
-      const { data, error: functionError } = await supabase.functions.invoke('admin-user-operations', {
-        body: { action: 'fetchUsers' },
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
+      // Fetch users from auth.users via a Supabase function
+      const { data: authUsersData, error: authUsersError } = await supabase.functions.invoke('fetch-users', {
+        method: 'GET'
       });
       
-      if (functionError) {
-        console.error('Error invoking admin-user-operations:', functionError);
-        throw new Error(functionError.message || 'Failed to fetch users');
+      if (authUsersError) {
+        console.error('Error fetching auth users:', authUsersError);
+        setError(new Error(authUsersError.message || 'Failed to load users'));
+        toast({
+          title: 'Error',
+          description: 'Failed to load users. Please try again.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return [];
       }
       
-      if (!data) {
-        console.error('No data returned from function');
-        throw new Error('No data returned from function');
-      }
+      console.log('Fetched auth users with profiles:', authUsersData);
       
-      console.log('Received response from admin-user-operations:', data);
-      
-      const { authUsers, profiles } = data;
-      
-      if (!authUsers || !authUsers.users || !Array.isArray(authUsers.users)) {
-        console.error('Invalid response format for authUsers:', authUsers);
-        throw new Error('Invalid response format from server');
-      }
-      
-      // Combine auth users with their profiles
-      const combinedUsers = authUsers.users.map(authUser => {
-        // Find the profile for this user, or use an empty object if not found
-        const profile = profiles?.find(p => p.id === authUser.id) || {};
+      // Map users with their profiles
+      const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
+        // Get the profile data from our enhanced structure
+        const profile = authUser.profile || {};
         
-        return {
+        const user: User = {
           id: authUser.id,
-          email: authUser.email || '',
+          email: authUser.email || 'No email',
           last_sign_in_at: authUser.last_sign_in_at,
           created_at: authUser.created_at,
-          updated_at: authUser.updated_at,
-          app_metadata: authUser.app_metadata,
-          user_metadata: authUser.user_metadata,
-          is_active: profile.is_active ?? true,
-          is_admin: profile.is_admin || false,
-          admin_role: profile.admin_role || null,
-          permissions: profile.permissions || [],
-          subscription_status: profile.subscription_end_date && new Date(profile.subscription_end_date) > new Date() ? 'active' : 'inactive',
-          subscription_end_date: profile.subscription_end_date,
-          subscription_tier: profile.subscription_plan || 'free',
-        } as User;
-      });
+          updated_at: authUser.updated_at || null,
+          app_metadata: {
+            provider: authUser.app_metadata?.provider || 'email',
+            providers: authUser.app_metadata?.providers || ['email'],
+          },
+          user_metadata: {
+            name: profile.username || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
+            full_name: authUser.user_metadata?.full_name || profile.username || '',
+            first_name: authUser.user_metadata?.first_name || '',
+            last_name: authUser.user_metadata?.last_name || '',
+            email: authUser.email,
+            phone: profile.phone || authUser.user_metadata?.phone || '',
+            street_address: authUser.user_metadata?.street_address || '',
+            city: authUser.user_metadata?.city || '',
+            state: authUser.user_metadata?.state || '',
+            zip_code: authUser.user_metadata?.zip_code || '',
+            country: authUser.user_metadata?.country || '',
+            country_code: authUser.user_metadata?.country_code || '',
+          },
+          is_active: profile.is_active !== false, // Default to true if not specified
+          subscription_status: profile.subscription_plan ? 'active' : undefined,
+          subscription_end_date: profile.subscription_end_date || undefined,
+          subscription_tier: profile.subscription_plan || undefined,
+        };
+        
+        return user;
+      }) || [];
       
-      setUsers(combinedUsers);
-      console.log('Successfully fetched and processed users:', combinedUsers.length);
-    } catch (err: any) {
-      console.error('Error fetching users:', err);
-      setError(err instanceof Error ? err : new Error(err.toString()));
+      // Add admin user if it doesn't exist and current user is admin
+      const adminExists = mappedUsers.some(user => user.is_admin);
+      if (!adminExists && adminUser) {
+        mappedUsers.push({
+          id: 'admin-id',
+          email: adminUser.email || 'admin@speechhelp.ai',
+          last_sign_in_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          app_metadata: {
+            provider: 'email',
+          },
+          user_metadata: {
+            name: adminUser.username,
+            full_name: 'Admin User',
+          },
+          is_active: true,
+          is_admin: true,
+          admin_role: 'Super Admin',
+          permissions: ['view_users', 'manage_users', 'view_speeches', 'manage_speeches', 'system_settings'],
+        });
+      }
       
+      console.log('Mapped users with profiles:', mappedUsers);
+      setUsers(mappedUsers);
+      return mappedUsers;
+    } catch (err) {
+      console.error('Exception fetching users:', err);
+      const error = err instanceof Error ? err : new Error('Failed to load users');
+      setError(error);
       toast({
         title: 'Error',
-        description: err.message || 'Failed to fetch users. Please try again.',
+        description: 'Failed to load users. Please check console for details.',
         variant: 'destructive',
       });
+      return [];
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [adminUser, toast, lastFetchTime]);
 
-  return { users, isLoading, error, fetchUsers };
+  return {
+    users,
+    setUsers,
+    isLoading,
+    fetchUsers,
+    error
+  };
 };
