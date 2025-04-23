@@ -11,6 +11,9 @@ import {
 import { Speech } from '@/types/speech';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Eye, Edit, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { getSpeechTypeLabel, getTypeColor } from './speech-utils';
 
 interface SpeechesTableProps {
   speeches: Speech[];
@@ -21,20 +24,6 @@ interface SpeechesTableProps {
 
 const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProps) => {
   const isMobile = useIsMobile();
-  
-  // Speech type to display label mapping
-  const getSpeechTypeLabel = (type: string) => {
-    switch (type) {
-      case 'wedding': return 'Wedding';
-      case 'birthday': return 'Birthday';
-      case 'funeral': return 'Eulogy';
-      case 'graduation': return 'Graduation';
-      case 'business': return 'Business';
-      case 'award': return 'Award';
-      case 'upcoming': return 'Upcoming';
-      default: return type.charAt(0).toUpperCase() + type.slice(1);
-    }
-  };
   
   // Format the display date based on various date values
   const getFormattedDate = (speech: Speech) => {
@@ -58,12 +47,12 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
             key={speech.id} 
             className="bg-white rounded-lg border p-4 shadow-sm"
           >
-            <h3 className="font-medium text-base line-clamp-2 break-words">{speech.title}</h3>
+            <h3 className="font-medium text-base break-words">{speech.title}</h3>
             <div className="flex justify-between items-center mt-2">
               <div className="text-sm text-gray-500">
-                <div className="inline-block bg-gray-100 rounded-full px-3 py-1 text-xs">
+                <Badge className={getTypeColor(speech.speech_type)}>
                   {getSpeechTypeLabel(speech.speech_type)}
-                </div>
+                </Badge>
                 <div className="mt-2">{getFormattedDate(speech)}</div>
               </div>
               <div className="flex space-x-2">
@@ -71,19 +60,19 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
                   onClick={() => onView(speech)}
                   className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
                 >
-                  View
+                  <Eye className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => onEdit(speech)}
                   className="p-2 text-gray-500 hover:text-amber-600 transition-colors"
                 >
-                  Edit
+                  <Edit className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => onDelete(speech)}
                   className="p-2 text-gray-500 hover:text-red-600 transition-colors"
                 >
-                  Delete
+                  <Trash2 className="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -110,27 +99,31 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
               <TableCell className="font-medium break-words">
                 {speech.title}
               </TableCell>
-              <TableCell>{getSpeechTypeLabel(speech.speech_type)}</TableCell>
+              <TableCell>
+                <Badge className={getTypeColor(speech.speech_type)}>
+                  {getSpeechTypeLabel(speech.speech_type)}
+                </Badge>
+              </TableCell>
               <TableCell>{getFormattedDate(speech)}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end space-x-2">
                   <button
                     onClick={() => onView(speech)}
-                    className="text-sm font-medium text-blue-600 hover:underline"
+                    className="text-gray-500 hover:text-blue-600 transition-colors"
                   >
-                    View
+                    <Eye className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => onEdit(speech)}
-                    className="text-sm font-medium text-amber-600 hover:underline"
+                    className="text-gray-500 hover:text-amber-600 transition-colors"
                   >
-                    Edit
+                    <Edit className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => onDelete(speech)}
-                    className="text-sm font-medium text-red-600 hover:underline"
+                    className="text-gray-500 hover:text-red-600 transition-colors"
                   >
-                    Delete
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </TableCell>
