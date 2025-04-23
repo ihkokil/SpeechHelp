@@ -13,17 +13,44 @@ export const usePermissionActions = (
     try {
       console.log('Permissions updated for user:', updatedUser.id);
       
-      // Update user permissions in database
+      // Update user permissions in database with appropriate type casting
+      // Only update fields that are actually in the profiles table
       const { error } = await supabase
         .from('profiles')
         .update({ 
-          is_admin: updatedUser.is_admin,
-          admin_role: updatedUser.admin_role,
-          permissions: updatedUser.permissions
+          // Use a more specific update object that matches the profiles table structure
+          // Use additional fields from the profiles table schema if needed
+          is_active: updatedUser.is_active,
+          // For admin_role and permissions, we need to ensure the profiles table has these columns
+          // or add them through SQL migrations
         })
         .eq('id', updatedUser.id);
       
       if (error) throw error;
+      
+      // Create a separate edge function call to handle admin-specific fields
+      // that don't exist in the profiles table
+      const response = await fetch(`https://yotrueuqjxmgcwlbbyps.supabase.co/functions/v1/admin-user-operations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabase.auth.getSession().then(res => res.data.session?.access_token)}`
+        },
+        body: JSON.stringify({
+          action: 'updateUserPermissions',
+          userId: updatedUser.id,
+          data: {
+            is_admin: updatedUser.is_admin,
+            admin_role: updatedUser.admin_role,
+            permissions: updatedUser.permissions
+          }
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update permissions');
+      }
       
       // Update the user in the users array if we have the array and update function
       if (setUsers && users.length > 0) {
