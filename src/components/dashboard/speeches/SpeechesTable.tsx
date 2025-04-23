@@ -27,7 +27,19 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   
   const getFormattedDate = (date: string | null) => {
     if (!date) return 'N/A';
-    return format(new Date(date), 'MMM d, yyyy');
+    
+    try {
+      // Ensure we have a valid date before formatting
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        console.error('Invalid date:', date);
+        return 'N/A';
+      }
+      return format(parsedDate, 'MMM d, yyyy');
+    } catch (error) {
+      console.error('Error formatting date:', error, date);
+      return 'N/A';
+    }
   };
 
   if (isMobile) {
@@ -89,42 +101,47 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
           </TableRow>
         </TableHeader>
         <TableBody>
-          {speeches.map((speech) => (
-            <TableRow key={speech.id}>
-              <TableCell className="font-medium break-words">
-                {speech.title}
-              </TableCell>
-              <TableCell>
-                <Badge className={getTypeColor(speech.speech_type)}>
-                  {getSpeechTypeLabel(speech.speech_type)}
-                </Badge>
-              </TableCell>
-              <TableCell>{getFormattedDate(speech.created_at)}</TableCell>
-              <TableCell>{getFormattedDate(speech.updated_at)}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end space-x-2">
-                  <button
-                    onClick={() => onView(speech)}
-                    className="text-gray-500 hover:text-blue-600 transition-colors"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => onEdit(speech)}
-                    className="text-gray-500 hover:text-amber-600 transition-colors"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => onDelete(speech)}
-                    className="text-gray-500 hover:text-red-600 transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+          {speeches.map((speech) => {
+            // Console log the date values to help with debugging
+            console.log(`Speech ${speech.id} - created_at:`, speech.created_at, 'updated_at:', speech.updated_at);
+            
+            return (
+              <TableRow key={speech.id}>
+                <TableCell className="font-medium break-words">
+                  {speech.title}
+                </TableCell>
+                <TableCell>
+                  <Badge className={getTypeColor(speech.speech_type)}>
+                    {getSpeechTypeLabel(speech.speech_type)}
+                  </Badge>
+                </TableCell>
+                <TableCell>{getFormattedDate(speech.created_at)}</TableCell>
+                <TableCell>{getFormattedDate(speech.updated_at)}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      onClick={() => onView(speech)}
+                      className="text-gray-500 hover:text-blue-600 transition-colors"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => onEdit(speech)}
+                      className="text-gray-500 hover:text-amber-600 transition-colors"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => onDelete(speech)}
+                      className="text-gray-500 hover:text-red-600 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
