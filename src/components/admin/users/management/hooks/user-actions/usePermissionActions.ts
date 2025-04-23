@@ -11,18 +11,25 @@ export const usePermissionActions = (
 
   const handlePermissionsUpdated = useCallback(async (updatedUser: User, users: User[] = [], setUsers: ((users: User[]) => void) | null = null) => {
     try {
-      console.log('Permissions updated for user:', updatedUser.id);
+      console.log('Updating permissions for user:', updatedUser.id);
       
       // Get the session for the current user to retrieve the access token
-      const { data: sessionData } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Error getting session:', sessionError);
+        throw new Error('Authentication error: ' + (sessionError.message || 'Failed to get session'));
+      }
+      
       const accessToken = sessionData?.session?.access_token;
       
       if (!accessToken) {
+        console.error('No access token available');
         throw new Error('No session found. Please login again.');
       }
       
       // Update user permissions using our edge function
-      const { data, error } = await supabase.functions.invoke('admin-user-operations', {
+      const { data, error: functionError } = await supabase.functions.invoke('admin-user-operations', {
         body: { 
           action: 'updateUserPermissions',
           userId: updatedUser.id,
@@ -37,10 +44,17 @@ export const usePermissionActions = (
         }
       });
       
-      if (error) {
-        console.error('Error invoking admin-user-operations:', error);
-        throw new Error(error.message || 'Failed to update user permissions');
+      if (functionError) {
+        console.error('Error invoking admin-user-operations:', functionError);
+        throw new Error(functionError.message || 'Failed to update user permissions');
       }
+      
+      if (!data.success) {
+        console.error('Error from function:', data);
+        throw new Error(data.error || 'Failed to update user permissions');
+      }
+      
+      console.log('Permissions updated successfully:', data);
       
       // Update the user in the users array if we have the array and update function
       if (setUsers && users.length > 0) {
@@ -65,7 +79,7 @@ export const usePermissionActions = (
       console.error('Error updating permissions:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update permissions. Please try again.',
+        description: error.message || 'Failed to update permissions. Please try again.',
         variant: 'destructive',
       });
     }
