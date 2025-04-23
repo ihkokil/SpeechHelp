@@ -17,7 +17,7 @@ export const useFetchUsers = () => {
     try {
       console.log('Fetching users via admin-user-operations function...');
       
-      // Get the access token for authorization
+      // Get the session for the current user to retrieve the access token
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
       
@@ -27,16 +27,25 @@ export const useFetchUsers = () => {
       
       // Call our edge function to fetch users with admin privileges
       const { data, error } = await supabase.functions.invoke('admin-user-operations', {
-        body: { action: 'fetchUsers' }
+        body: { action: 'fetchUsers' },
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
       });
       
       if (error) {
-        throw error;
+        console.error('Error invoking admin-user-operations:', error);
+        throw new Error(error.message || 'Failed to fetch users');
+      }
+      
+      if (!data) {
+        throw new Error('No data returned from function');
       }
       
       const { authUsers, profiles } = data;
       
       if (!authUsers || !authUsers.users) {
+        console.log('No users found or empty response');
         setUsers([]);
         return;
       }
