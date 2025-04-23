@@ -26,21 +26,39 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
   const isMobile = useIsMobile();
   
   const getFormattedDate = (date: string | null) => {
-    if (!date) return 'N/A';
+    if (!date || date === "") {
+      return 'N/A';
+    }
     
     try {
-      // Ensure we have a valid date before formatting
+      // Parse the date string to a Date object
       const parsedDate = new Date(date);
+      
+      // Check if the date is valid
       if (isNaN(parsedDate.getTime())) {
-        console.error('Invalid date:', date);
+        console.error('Invalid date format:', date);
         return 'N/A';
       }
+      
+      // Format the date
       return format(parsedDate, 'MMM d, yyyy');
     } catch (error) {
-      console.error('Error formatting date:', error, date);
+      console.error('Error formatting date:', error, 'Date value:', date);
       return 'N/A';
     }
   };
+
+  // Check date fields on initial render
+  useEffect(() => {
+    if (speeches.length > 0) {
+      console.log('Sample speech data:', {
+        id: speeches[0].id,
+        created_at: speeches[0].created_at,
+        updated_at: speeches[0].updated_at,
+        type: typeof speeches[0].created_at
+      });
+    }
+  }, [speeches]);
 
   if (isMobile) {
     return (
@@ -102,9 +120,6 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
         </TableHeader>
         <TableBody>
           {speeches.map((speech) => {
-            // Console log the date values to help with debugging
-            console.log(`Speech ${speech.id} - created_at:`, speech.created_at, 'updated_at:', speech.updated_at);
-            
             return (
               <TableRow key={speech.id}>
                 <TableCell className="font-medium break-words">
