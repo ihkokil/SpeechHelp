@@ -24,12 +24,12 @@ const DashboardSidebar = () => {
       )}
 
       <aside className={cn(
-        "bg-white border-r border-gray-200 flex flex-col h-screen shadow-md transition-all duration-300 fixed z-40",
+        "bg-white border-r border-gray-200 flex flex-col h-screen shadow-md transition-all duration-300 z-40",
         isMobile 
           ? isOpen 
-            ? "w-[280px] translate-x-0" 
-            : "w-[280px] -translate-x-full"
-          : "w-64",
+            ? "fixed w-64 translate-x-0" 
+            : "fixed w-64 -translate-x-full"
+          : "fixed w-64",
       )}>
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
@@ -44,6 +44,7 @@ const DashboardSidebar = () => {
 
         <UserProfile />
         <SidebarNavigation onItemClick={() => isMobile && setIsOpen(false)} />
+        <div className="flex-grow"></div>
         <LogoutButton />
       </aside>
 

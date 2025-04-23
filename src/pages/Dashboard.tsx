@@ -114,16 +114,11 @@ const Dashboard = () => {
     );
   }
 
-  // Calculate sidebar offset for main content
-  const contentClasses = isMobile 
-    ? "w-full pt-16" // Add top padding on mobile to account for the toggle button
-    : "ml-64"; // Add margin on desktop to account for the fixed sidebar
-
   return (
     <div className="min-h-screen flex bg-gray-50">
       <DashboardSidebar />
       
-      <div className={`flex-1 overflow-auto ${contentClasses}`}>
+      <div className={`flex-1 overflow-auto ${isMobile ? "w-full" : "ml-64"}`}>
         <header className="flex justify-between items-center p-4 sm:p-6 sticky top-0 bg-gray-50 z-10">
           <div className="flex items-center">
             <div className="bg-purple-600 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-md flex items-center text-sm sm:text-base">
