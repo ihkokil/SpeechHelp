@@ -21,10 +21,15 @@ export const useIndividualUserActions = () => {
     try {
       console.log('Deleting user:', userId);
       
-      // Simulate API call - In a real app, this would be an actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Real API call to delete the user from Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
       
-      // Remove deleted user from state if setUsers is provided
+      if (error) throw error;
+      
+      // Update UI state if setUsers function provided
       if (setUsers && users.length > 0) {
         setUsers(users.filter(user => user.id !== userId));
       }

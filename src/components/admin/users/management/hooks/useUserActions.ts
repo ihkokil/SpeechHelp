@@ -7,6 +7,7 @@ import { useUserDetails } from './user-actions/useUserDetails';
 import { usePermissionActions } from './user-actions/usePermissionActions';
 import { useSubscriptionActions } from './user-actions/useSubscriptionActions';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useUserActions = () => {
   const { toast } = useToast();

@@ -1,135 +1,65 @@
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { User } from '../../types';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
 export const useFetchUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [lastFetchTime, setLastFetchTime] = useState(0);
   const [error, setError] = useState<Error | null>(null);
-  const { toast } = useToast();
-  const { adminUser } = useAdminAuth();
 
   const fetchUsers = useCallback(async () => {
-    const now = Date.now();
-    if (now - lastFetchTime < 1000) {
-      console.log('Debouncing fetch request');
-      return []; // Debounce fetch requests
-    }
-    
-    setLastFetchTime(now);
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log('Fetching users from Supabase auth');
+      // Fetch users from Auth and their profile data
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
       
-      // Fetch users from auth.users via a Supabase function
-      const { data: authUsersData, error: authUsersError } = await supabase.functions.invoke('fetch-users', {
-        method: 'GET'
-      });
+      if (authError) throw new Error(authError.message);
       
-      if (authUsersError) {
-        console.error('Error fetching auth users:', authUsersError);
-        setError(new Error(authUsersError.message || 'Failed to load users'));
-        toast({
-          title: 'Error',
-          description: 'Failed to load users. Please try again.',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return [];
+      if (!authUsers) {
+        setUsers([]);
+        return;
       }
       
-      console.log('Fetched auth users with profiles:', authUsersData);
+      // Fetch profiles data for each user
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*');
       
-      // Map users with their profiles
-      const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
-        // Get the profile data from our enhanced structure
-        const profile = authUser.profile || {};
+      if (profilesError) throw new Error(profilesError.message);
+      
+      // Combine auth users with their profiles
+      const combinedUsers = authUsers.users.map(authUser => {
+        const userProfile = profiles?.find(profile => profile.id === authUser.id) || {};
         
-        const user: User = {
+        return {
           id: authUser.id,
-          email: authUser.email || 'No email',
+          email: authUser.email || '',
           last_sign_in_at: authUser.last_sign_in_at,
           created_at: authUser.created_at,
-          updated_at: authUser.updated_at || null,
-          app_metadata: {
-            provider: authUser.app_metadata?.provider || 'email',
-            providers: authUser.app_metadata?.providers || ['email'],
-          },
-          user_metadata: {
-            name: profile.username || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
-            full_name: authUser.user_metadata?.full_name || profile.username || '',
-            first_name: authUser.user_metadata?.first_name || '',
-            last_name: authUser.user_metadata?.last_name || '',
-            email: authUser.email,
-            phone: profile.phone || authUser.user_metadata?.phone || '',
-            street_address: authUser.user_metadata?.street_address || '',
-            city: authUser.user_metadata?.city || '',
-            state: authUser.user_metadata?.state || '',
-            zip_code: authUser.user_metadata?.zip_code || '',
-            country: authUser.user_metadata?.country || '',
-            country_code: authUser.user_metadata?.country_code || '',
-          },
-          is_active: profile.is_active !== false, // Default to true if not specified
-          subscription_status: profile.subscription_plan ? 'active' : undefined,
-          subscription_end_date: profile.subscription_end_date || undefined,
-          subscription_tier: profile.subscription_plan || undefined,
-        };
-        
-        return user;
-      }) || [];
-      
-      // Add admin user if it doesn't exist and current user is admin
-      const adminExists = mappedUsers.some(user => user.is_admin);
-      if (!adminExists && adminUser) {
-        mappedUsers.push({
-          id: 'admin-id',
-          email: adminUser.email || 'admin@speechhelp.ai',
-          last_sign_in_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          app_metadata: {
-            provider: 'email',
-          },
-          user_metadata: {
-            name: adminUser.username,
-            full_name: 'Admin User',
-          },
-          is_active: true,
-          is_admin: true,
-          admin_role: 'Super Admin',
-          permissions: ['view_users', 'manage_users', 'view_speeches', 'manage_speeches', 'system_settings'],
-        });
-      }
-      
-      console.log('Mapped users with profiles:', mappedUsers);
-      setUsers(mappedUsers);
-      return mappedUsers;
-    } catch (err) {
-      console.error('Exception fetching users:', err);
-      const error = err instanceof Error ? err : new Error('Failed to load users');
-      setError(error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load users. Please check console for details.',
-        variant: 'destructive',
+          updated_at: authUser.updated_at,
+          app_metadata: authUser.app_metadata,
+          user_metadata: authUser.user_metadata,
+          is_active: userProfile.is_active ?? true,
+          is_admin: userProfile.is_admin || false,
+          admin_role: userProfile.admin_role,
+          permissions: userProfile.permissions || [],
+          subscription_status: userProfile.subscription_status || (userProfile.subscription_end_date && new Date(userProfile.subscription_end_date) > new Date() ? 'active' : 'inactive'),
+          subscription_end_date: userProfile.subscription_end_date,
+          subscription_tier: userProfile.subscription_plan || 'free',
+        } as User;
       });
-      return [];
+      
+      setUsers(combinedUsers);
+    } catch (err: any) {
+      console.error('Error fetching users:', err);
+      setError(err instanceof Error ? err : new Error(err.toString()));
     } finally {
       setIsLoading(false);
     }
-  }, [adminUser, toast, lastFetchTime]);
+  }, []);
 
-  return {
-    users,
-    setUsers,
-    isLoading,
-    fetchUsers,
-    error
-  };
+  return { users, isLoading, error, fetchUsers };
 };
