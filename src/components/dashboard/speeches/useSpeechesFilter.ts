@@ -39,8 +39,13 @@ export const useSpeechesFilter = (
       event_date: event.date
     } as Speech));
 
+    console.log('Regular speeches count:', allSpeeches.length);
+    console.log('Upcoming speeches count:', upcomingSpeeches.length);
+
     // Combine regular and upcoming speeches for initial filtering
     let combinedSpeeches = [...allSpeeches, ...upcomingSpeeches];
+    
+    console.log('Combined speeches count (before filtering):', combinedSpeeches.length);
     
     // Apply search filter if provided
     if (searchQuery && searchQuery.trim()) {
@@ -55,20 +60,31 @@ export const useSpeechesFilter = (
     // Apply type filter
     let filtered: Speech[] = [];
     if (filterType === 'all') {
-      // FIX: Show all speeches for 'all' filter (both regular and upcoming)
+      // Show all speeches - both regular and upcoming
       filtered = combinedSpeeches;
+      console.log('All filter applied, speeches count:', filtered.length);
     } else if (filterType === 'upcoming') {
       // Only show upcoming speeches 
-      filtered = combinedSpeeches.filter(speech => speech.isUpcoming);
+      filtered = combinedSpeeches.filter(speech => speech.isUpcoming === true);
+      console.log('Upcoming filter applied, speeches count:', filtered.length);
     } else {
       // Filter by specific speech type and exclude upcoming speeches
       filtered = combinedSpeeches.filter(speech => speech.speech_type === filterType && !speech.isUpcoming);
+      console.log('Speech type filter applied:', filterType, 'speeches count:', filtered.length);
     }
+    
+    // Log info about speeches with isUpcoming flag
+    console.log('Speeches with isUpcoming = true:', 
+      filtered.filter(speech => speech.isUpcoming === true).length);
+    console.log('Speeches with isUpcoming = undefined:', 
+      filtered.filter(speech => speech.isUpcoming === undefined).length);
     
     // Ensure uniqueness of speeches by ID
     const uniqueFilteredSpeeches = Array.from(
       new Map(filtered.map(speech => [speech.id, speech])).values()
     );
+    
+    console.log('Final unique filtered speeches count:', uniqueFilteredSpeeches.length);
     
     // Sort the filtered speeches
     return uniqueFilteredSpeeches.sort((a, b) => {
