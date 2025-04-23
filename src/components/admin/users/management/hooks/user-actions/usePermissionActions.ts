@@ -8,15 +8,17 @@ export const usePermissionActions = (
 ) => {
   const { toast } = useToast();
 
-  const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[], setUsers: (users: User[]) => void) => {
+  const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[] = [], setUsers: ((users: User[]) => void) | null = null) => {
     console.log('Permissions updated for user:', updatedUser.id);
     
-    // Update the user in the users array
-    setUsers(
-      users.map(user => 
-        user.id === updatedUser.id ? updatedUser : user
-      )
-    );
+    // Update the user in the users array if we have the array and update function
+    if (setUsers && users.length > 0) {
+      setUsers(
+        users.map(user => 
+          user.id === updatedUser.id ? updatedUser : user
+        )
+      );
+    }
     
     // Show a success toast
     toast({
