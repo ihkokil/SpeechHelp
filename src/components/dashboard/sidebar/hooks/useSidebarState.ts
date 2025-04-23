@@ -24,7 +24,9 @@ export const useSidebarState = () => {
     }
   }, [isMobile, location.pathname]);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
+  const toggleSidebar = () => {
+    setIsOpen(prevState => !prevState);
+  };
 
   return {
     isOpen,

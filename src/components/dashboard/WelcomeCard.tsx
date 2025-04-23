@@ -35,7 +35,7 @@ const WelcomeCard = ({ userName, firstName, lastName }: WelcomeCardProps) => {
     : userName;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-8">
+    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold">
           <span className="text-purple-600">Hello, </span>

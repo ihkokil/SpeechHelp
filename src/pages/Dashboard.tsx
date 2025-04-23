@@ -118,7 +118,7 @@ const Dashboard = () => {
     <div className="min-h-screen flex bg-gray-50">
       <DashboardSidebar />
       
-      <div className={`flex-1 overflow-auto ${isMobile ? "w-full" : "ml-64"}`}>
+      <div className={`flex-1 ${isMobile ? "pt-16" : "ml-64"}`}>
         <header className="flex justify-between items-center p-4 sm:p-6 sticky top-0 bg-gray-50 z-10">
           <div className="flex items-center">
             <div className="bg-purple-600 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-md flex items-center text-sm sm:text-base">
