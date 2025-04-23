@@ -1,3 +1,4 @@
+
 import { useMemo } from 'react';
 import { Speech } from '@/types/speech';
 import { FilterOption, SortOption } from './FilterBar';
@@ -54,10 +55,13 @@ export const useSpeechesFilter = (
     // Apply type filter
     let filtered: Speech[] = [];
     if (filterType === 'all') {
-      filtered = combinedSpeeches; // Show all speeches for 'all' filter
+      // FIX: Show all speeches for 'all' filter (both regular and upcoming)
+      filtered = combinedSpeeches;
     } else if (filterType === 'upcoming') {
+      // Only show upcoming speeches 
       filtered = combinedSpeeches.filter(speech => speech.isUpcoming);
     } else {
+      // Filter by specific speech type and exclude upcoming speeches
       filtered = combinedSpeeches.filter(speech => speech.speech_type === filterType && !speech.isUpcoming);
     }
     

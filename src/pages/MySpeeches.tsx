@@ -34,6 +34,29 @@ const MySpeeches = () => {
     }
   }, [user, fetchSpeeches]);
 
+  // Debug log all speeches when they change
+  useEffect(() => {
+    console.log(`MySpeeches has ${speeches.length} total speeches:`, 
+      speeches.map(s => ({
+        id: s.id,
+        title: s.title,
+        type: s.speech_type,
+        isUpcoming: s.isUpcoming
+      }))
+    );
+
+    // Check for localStorage upcoming events
+    try {
+      const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
+      if (upcomingEventsJSON) {
+        const parsedEvents = JSON.parse(upcomingEventsJSON);
+        console.log(`Found ${parsedEvents.length} upcoming events in localStorage`);
+      }
+    } catch (error) {
+      console.error('Error checking localStorage events:', error);
+    }
+  }, [speeches]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">

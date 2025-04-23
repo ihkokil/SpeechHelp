@@ -25,26 +25,34 @@ interface SpeechesTableProps {
 const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProps) => {
   const isMobile = useIsMobile();
   
+  // Debug information about speeches
+  useEffect(() => {
+    console.log(`SpeechesTable rendering with ${speeches.length} speeches`);
+    console.log('Speech types breakdown:', 
+      speeches.reduce((acc, speech) => {
+        const type = speech.isUpcoming ? 'upcoming' : speech.speech_type;
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
+    );
+  }, [speeches]);
+  
   const getFormattedDate = (date: string | null) => {
     if (!date || date === "") {
-      console.log('Empty date received:', date);
       return 'N/A';
     }
     
     try {
       // Parse the date string to a Date object
-      console.log('Attempting to format date:', date);
       const parsedDate = new Date(date);
       
       // Check if the date is valid
       if (isNaN(parsedDate.getTime())) {
-        console.error('Invalid date format:', date);
         return 'N/A';
       }
       
       // Format the date
       const formatted = format(parsedDate, 'MMM d, yyyy');
-      console.log('Successfully formatted date:', date, 'to', formatted);
       return formatted;
     } catch (error) {
       console.error('Error formatting date:', error, 'Date value:', date);
@@ -62,7 +70,9 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
           created_at: speech.created_at,
           updated_at: speech.updated_at,
           created_type: typeof speech.created_at,
-          updated_type: typeof speech.updated_at
+          updated_type: typeof speech.updated_at,
+          isUpcoming: speech.isUpcoming,
+          speech_type: speech.speech_type
         });
       });
     }
