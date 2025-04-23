@@ -18,3 +18,4 @@ port = 54323
 [functions]
 [functions.admin-user-operations]
 verify_jwt = true
+

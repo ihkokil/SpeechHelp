@@ -2,8 +2,10 @@
 import { useState, useCallback } from 'react';
 import { User } from '../../types';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export const useFetchUsers = () => {
+  const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -13,22 +15,43 @@ export const useFetchUsers = () => {
     setError(null);
     
     try {
-      // Fetch users from Auth and their profile data
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      console.log('Fetching users via admin-user-operations function...');
       
-      if (authError) throw new Error(authError.message);
+      // Get the access token for authorization
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
       
-      if (!authUsers) {
+      if (!accessToken) {
+        throw new Error('No session found. Please login again.');
+      }
+      
+      // Call our edge function to fetch users with admin privileges
+      const response = await fetch(
+        'https://yotrueuqjxmgcwlbbyps.supabase.co/functions/v1/admin-user-operations',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            action: 'fetchUsers'
+          })
+        }
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch users');
+      }
+      
+      const data = await response.json();
+      const { authUsers, profiles } = data;
+      
+      if (!authUsers || !authUsers.users) {
         setUsers([]);
         return;
       }
-      
-      // Fetch profiles data for each user
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*');
-      
-      if (profilesError) throw new Error(profilesError.message);
       
       // Combine auth users with their profiles
       const combinedUsers = authUsers.users.map(authUser => {
@@ -57,13 +80,21 @@ export const useFetchUsers = () => {
       });
       
       setUsers(combinedUsers);
+      console.log('Successfully fetched and processed users:', combinedUsers.length);
     } catch (err: any) {
       console.error('Error fetching users:', err);
       setError(err instanceof Error ? err : new Error(err.toString()));
+      
+      // Show toast notification for error
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch users. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   return { users, isLoading, error, fetchUsers };
 };
