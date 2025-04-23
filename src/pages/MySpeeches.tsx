@@ -36,21 +36,23 @@ const MySpeeches = () => {
 
   // Debug log all speeches when they change
   useEffect(() => {
-    console.log(`MySpeeches has ${speeches.length} total regular speeches:`, 
-      speeches.map(s => ({
-        id: s.id,
-        title: s.title,
-        type: s.speech_type,
-        isUpcoming: s.isUpcoming || false
-      }))
-    );
+    console.log(`MySpeeches has ${speeches.length} total speeches to display`);
+    
+    // Log regular speeches from the backend
+    console.log('Regular speeches from database:', speeches.map(s => ({
+      id: s.id,
+      title: s.title,
+      type: s.speech_type
+    })));
 
     // Check for localStorage upcoming events
     try {
       const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
       if (upcomingEventsJSON) {
         const parsedEvents = JSON.parse(upcomingEventsJSON);
-        console.log(`Found ${parsedEvents.length} upcoming events in localStorage`);
+        console.log(`Found ${parsedEvents.length} upcoming events in localStorage`, parsedEvents);
+      } else {
+        console.log('No upcoming events found in localStorage');
       }
     } catch (error) {
       console.error('Error checking localStorage events:', error);
