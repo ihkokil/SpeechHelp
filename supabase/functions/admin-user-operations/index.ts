@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import { corsHeaders } from '../_shared/cors.ts'
 
@@ -45,7 +44,7 @@ Deno.serve(async (req) => {
     if (authError || !user) {
       console.error('Authentication error:', authError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized', details: authError?.message }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -60,7 +59,7 @@ Deno.serve(async (req) => {
     if (profileError) {
       console.error('Error fetching profile:', profileError);
       return new Response(
-        JSON.stringify({ error: 'Error checking admin status' }),
+        JSON.stringify({ error: 'Error checking admin status', details: profileError.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -85,7 +84,7 @@ Deno.serve(async (req) => {
         if (authError) {
           console.error('Error fetching auth users:', authError);
           return new Response(
-            JSON.stringify({ error: 'Error fetching users' }),
+            JSON.stringify({ error: 'Error fetching users', details: authError.message }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
@@ -98,7 +97,7 @@ Deno.serve(async (req) => {
         if (profilesError) {
           console.error('Error fetching profiles:', profilesError);
           return new Response(
-            JSON.stringify({ error: 'Error fetching user profiles' }),
+            JSON.stringify({ error: 'Error fetching user profiles', details: profilesError.message }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
@@ -137,7 +136,7 @@ Deno.serve(async (req) => {
         if (updateError) {
           console.error('Error updating user permissions:', updateError);
           return new Response(
-            JSON.stringify({ error: 'Failed to update user permissions' }),
+            JSON.stringify({ error: 'Failed to update user permissions', details: updateError.message }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
