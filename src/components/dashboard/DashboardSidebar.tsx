@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { X, Menu } from 'lucide-react';
@@ -19,9 +19,17 @@ import { NavItem } from '@/types/navigation';
 
 const DashboardSidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signOut, user } = useAuth();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(!isMobile);
+  
+  // Close sidebar by default on mobile when component mounts or when route changes
+  useEffect(() => {
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  }, [isMobile, location.pathname]);
   
   const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
   const currentPath = window.location.pathname;
@@ -80,11 +88,12 @@ const DashboardSidebar = () => {
 
   return (
     <>
-      {/* Mobile Toggle Button */}
+      {/* Mobile Toggle Button - Always visible on mobile */}
       {isMobile && (
         <button
           onClick={toggleSidebar}
-          className="fixed top-4 right-4 z-50 p-2 bg-white rounded-lg shadow-md md:hidden"
+          className="fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md md:hidden"
+          aria-label="Toggle sidebar"
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
@@ -92,11 +101,15 @@ const DashboardSidebar = () => {
 
       {/* Sidebar Content */}
       <aside className={cn(
-        "bg-white border-r border-gray-200 flex flex-col h-screen shadow-md transition-all duration-300",
-        isMobile ? (isOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full") : "w-64",
+        "bg-white border-r border-gray-200 flex flex-col h-screen shadow-md transition-all duration-300 fixed z-40",
+        isMobile 
+          ? isOpen 
+            ? "w-[280px] translate-x-0" 
+            : "w-[280px] -translate-x-full"
+          : "w-64",
       )}>
         {/* Logo */}
-        <div className="p-6 border-b border-gray-100">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img 
               src={logoPath} 
@@ -104,6 +117,11 @@ const DashboardSidebar = () => {
               className="h-10 w-auto" 
             />
           </Link>
+          {isMobile && (
+            <button onClick={toggleSidebar} className="p-1">
+              <X className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
         {/* User Info */}
@@ -120,27 +138,25 @@ const DashboardSidebar = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4">
+        <nav className="flex-1 overflow-y-auto py-4 px-3">
           {/* Primary Navigation */}
-          <div className="px-3">
-            <div className="space-y-1">
-              {primaryNavItems.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    currentPath.startsWith(item.href) 
-                      ? "bg-purple-50 text-purple-700" 
-                      : "text-gray-700 hover:bg-gray-100"
-                  )}
-                  onClick={() => isMobile && setIsOpen(false)}
-                >
-                  <span className="mr-3">{item.icon}</span>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+          <div className="space-y-1">
+            {primaryNavItems.map((item) => (
+              <Link
+                key={item.label}
+                to={item.href}
+                className={cn(
+                  "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                  currentPath.startsWith(item.href) 
+                    ? "bg-purple-50 text-purple-700" 
+                    : "text-gray-700 hover:bg-gray-100"
+                )}
+                onClick={() => isMobile && setIsOpen(false)}
+              >
+                <span className="mr-3">{item.icon}</span>
+                {item.label}
+              </Link>
+            ))}
           </div>
 
           {/* Divider */}
@@ -189,6 +205,7 @@ const DashboardSidebar = () => {
         <div
           className="fixed inset-0 bg-black/50 z-30"
           onClick={() => setIsOpen(false)}
+          aria-hidden="true"
         />
       )}
     </>
@@ -196,4 +213,3 @@ const DashboardSidebar = () => {
 };
 
 export default DashboardSidebar;
-

@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Dashboard = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -24,6 +25,7 @@ const Dashboard = () => {
   const [lastName, setLastName] = useState('');
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     if (user) {
@@ -112,36 +114,41 @@ const Dashboard = () => {
     );
   }
 
+  // Calculate sidebar offset for main content
+  const contentClasses = isMobile 
+    ? "w-full pt-16" // Add top padding on mobile to account for the toggle button
+    : "ml-64"; // Add margin on desktop to account for the fixed sidebar
+
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-gray-50">
       <DashboardSidebar />
       
-      <div className="flex-1 bg-gray-50 overflow-auto">
-        <header className="flex justify-between items-center p-6 sticky top-0 bg-gray-50 z-10">
+      <div className={`flex-1 overflow-auto ${contentClasses}`}>
+        <header className="flex justify-between items-center p-4 sm:p-6 sticky top-0 bg-gray-50 z-10">
           <div className="flex items-center">
-            <div className="bg-purple-600 text-white px-4 py-2 rounded-md flex items-center">
-              <CalendarIcon className="mr-2 h-5 w-5" />
+            <div className="bg-purple-600 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-md flex items-center text-sm sm:text-base">
+              <CalendarIcon className="mr-2 h-4 w-4" />
               <span>{format(new Date(), 'MMM dd, yyyy')}</span>
             </div>
           </div>
           <LanguageSelector />
         </header>
 
-        <main className="px-6 pb-12">
+        <main className="px-4 sm:px-6 pb-12">
           <WelcomeCard 
             userName={userName} 
             firstName={firstName} 
             lastName={lastName}
           />
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-            <div className="lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-800 mb-4">{t('dashboard.summary', currentLanguage.code)}</h2>
+                <h2 className="text-xl font-bold text-gray-800 mb-3 sm:mb-4">{t('dashboard.summary', currentLanguage.code)}</h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <SpeechSummaryCard 
-                    icon={<FileTextIcon className="h-6 w-6 text-gray-600" />}
+                    icon={<FileTextIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />}
                     count={dashboardMetrics.totalSpeeches}
                     label="dashboard.totalSpeeches"
                     period="dashboard.allTime"
@@ -149,7 +156,7 @@ const Dashboard = () => {
                   />
                   
                   <SpeechSummaryCard 
-                    icon={<ShieldIcon className="h-6 w-6 text-gray-600" />}
+                    icon={<ShieldIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />}
                     count={dashboardMetrics.inProgressCount}
                     label="dashboard.inProgress"
                     period="dashboard.thisMonth"
@@ -157,7 +164,7 @@ const Dashboard = () => {
                   />
                   
                   <SpeechSummaryCard 
-                    icon={<TrendingUpIcon className="h-6 w-6 text-gray-600" />}
+                    icon={<TrendingUpIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />}
                     count={dashboardMetrics.recentImprovementCount}
                     label="dashboard.improvement"
                     period="dashboard.last30Days"
@@ -171,7 +178,7 @@ const Dashboard = () => {
               <PerformanceMetrics speechData={dashboardMetrics.speechTypeDistribution} />
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <UpcomingSpeeches speeches={speeches} />
               
               <RecentActivities speeches={speeches} />
