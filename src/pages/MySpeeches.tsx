@@ -27,6 +27,8 @@ const MySpeeches = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('MySpeeches component mounted, fetching speeches for user:', user.id);
+      // Always fetch fresh data when component mounts
       fetchSpeeches();
     }
   }, [user, fetchSpeeches]);

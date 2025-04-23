@@ -9,10 +9,12 @@ export const useSpeechService = () => {
 	const fetchSpeeches = async (userId: string | undefined) => {
 		if (!userId) return [];
 
+		console.log('Fetching speeches for user:', userId);
+
 		const { data, error } = await supabase
 			.from('speeches')
 			.select('*')
-			.eq('user_id', userId) // Only fetch speeches from the current user
+			.eq('user_id', userId)
 			.order('created_at', { ascending: false });
 
 		if (error) {
@@ -25,14 +27,27 @@ export const useSpeechService = () => {
 			return [];
 		}
 
-		// Ensure timestamps are properly formatted
-		const processedSpeeches = data?.map(speech => ({
-			...speech,
-			created_at: speech.created_at || new Date().toISOString(),
-			updated_at: speech.updated_at || speech.created_at || new Date().toISOString()
-		})) || [];
+		// Debug: log the raw data from the database
+		console.log('Raw speech data from database:', data);
 
-		console.log('Fetched speeches with timestamps:', processedSpeeches);
+		// Ensure timestamps are properly formatted and never null or empty
+		const processedSpeeches = data?.map(speech => {
+			const now = new Date().toISOString();
+			const created = typeof speech.created_at === 'string' && speech.created_at.trim() !== '' 
+				? speech.created_at 
+				: now;
+			const updated = typeof speech.updated_at === 'string' && speech.updated_at.trim() !== '' 
+				? speech.updated_at 
+				: created;
+
+			return {
+				...speech,
+				created_at: created,
+				updated_at: updated
+			};
+		}) || [];
+
+		console.log('Processed speeches with timestamps:', processedSpeeches);
 		return processedSpeeches as Speech[];
 	};
 
@@ -50,7 +65,8 @@ export const useSpeechService = () => {
 				speech_type: speechType,
 				created_at: timestamp,
 				updated_at: timestamp
-			});
+			})
+			.select();
 
 		if (error) {
 			console.error('Error saving speech:', error);
