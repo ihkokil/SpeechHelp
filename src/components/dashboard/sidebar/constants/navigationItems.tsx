@@ -1,13 +1,13 @@
 
 import { 
-  LayoutDashboardIcon, 
-  MicIcon, 
-  PencilRulerIcon, 
-  FolderIcon, 
-  SettingsIcon,
-  HelpCircleIcon,
-  NavItem
-} from '@/types/navigation';
+  LayoutDashboard as LayoutDashboardIcon, 
+  Mic as MicIcon, 
+  PencilRuler as PencilRulerIcon, 
+  Folder as FolderIcon, 
+  Settings as SettingsIcon,
+  HelpCircle as HelpCircleIcon,
+} from 'lucide-react';
+import { NavItem } from '@/types/navigation';
 
 export const primaryNavItems: NavItem[] = [
   {
