@@ -10,10 +10,13 @@ export const useSpeechesFilter = (
   sortBy: SortOption
 ) => {
   const filteredSpeeches = useMemo(() => {
+    // Log the original speeches to see what we're working with
+    console.log('Original speeches:', speeches);
+    
     // Make a copy of the original speeches array and ensure isUpcoming is explicitly set to false
     const allSpeeches = Array.isArray(speeches) ? speeches.map(speech => ({
       ...speech,
-      isUpcoming: speech.isUpcoming === true ? true : false // Explicitly set to false if not true
+      isUpcoming: false // Always mark regular speeches as not upcoming
     })) : [];
     
     // Get upcoming speech events from localStorage
@@ -38,7 +41,7 @@ export const useSpeechesFilter = (
       created_at: '', 
       updated_at: '', 
       speech_type: event.category || 'upcoming',
-      isUpcoming: true,
+      isUpcoming: true, // Explicitly mark as upcoming
       event_date: event.date
     } as Speech));
 
@@ -65,7 +68,7 @@ export const useSpeechesFilter = (
     let filtered: Speech[] = [];
     if (filterType === 'all') {
       // Show all speeches - both regular and upcoming
-      filtered = combinedSpeeches;
+      filtered = combinedSpeeches; // Just use all combined speeches without filtering
       console.log('All filter applied, speeches count:', filtered.length);
     } else if (filterType === 'upcoming') {
       // Only show upcoming speeches 
@@ -77,7 +80,7 @@ export const useSpeechesFilter = (
       console.log('Speech type filter applied:', filterType, 'speeches count:', filtered.length);
     }
     
-    // Log info about speeches with isUpcoming flag
+    // Log info about speeches with isUpcoming flag for debugging
     console.log('Speeches with isUpcoming = true:', 
       filtered.filter(speech => speech.isUpcoming === true).length);
     console.log('Speeches with isUpcoming = false:', 

@@ -41,7 +41,7 @@ const MySpeeches = () => {
         id: s.id,
         title: s.title,
         type: s.speech_type,
-        isUpcoming: s.isUpcoming
+        isUpcoming: s.isUpcoming || false
       }))
     );
 
