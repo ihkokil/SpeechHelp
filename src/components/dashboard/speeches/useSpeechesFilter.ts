@@ -10,7 +10,7 @@ export const useSpeechesFilter = (
   sortBy: SortOption
 ) => {
   const filteredSpeeches = useMemo(() => {
-    // Log the original speeches to see what we're working with
+    // Log input speeches for debugging
     console.log('Original speeches array count:', speeches.length);
     console.log('Original speeches:', speeches.map(s => ({ 
       id: s.id, 
@@ -19,124 +19,81 @@ export const useSpeechesFilter = (
       isUpcoming: s.isUpcoming 
     })));
     
-    // First, ensure each speech has correct isUpcoming flag
-    // Regular speeches (from backend) should be marked as NOT upcoming
-    let allSpeeches = Array.isArray(speeches) ? speeches.map(speech => ({
+    // Ensure each regular speech has correct isUpcoming flag
+    let allSpeeches = speeches.map(speech => ({
       ...speech,
-      isUpcoming: speech.isUpcoming === true // Preserve true flags, default to false otherwise
-    })) : [];
+      isUpcoming: speech.isUpcoming || false // Default to false for regular speeches
+    }));
     
     console.log('Regular speeches after mapping:', allSpeeches.length);
     
-    // Get upcoming speech events from localStorage
+    // Get upcoming events from localStorage
     let upcomingEvents: any[] = [];
     try {
       const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
       if (upcomingEventsJSON) {
-        const parsedEvents = JSON.parse(upcomingEventsJSON);
-        upcomingEvents = Array.isArray(parsedEvents) ? parsedEvents : [];
+        upcomingEvents = JSON.parse(upcomingEventsJSON);
         console.log('Found upcoming events in localStorage:', upcomingEvents.length);
-      } else {
-        console.log('No upcoming events found in localStorage');
       }
     } catch (error) {
       console.error('Error parsing upcoming events:', error);
       upcomingEvents = [];
     }
     
-    // Create speech-like objects for upcoming events
+    // Create speech objects for upcoming events
     const upcomingSpeeches = upcomingEvents.map((event) => ({
-      id: event.id || `upcoming-${Date.now()}-${Math.random()}`,
+      id: event.id,
       user_id: '', 
       title: event.title || 'Untitled Event',
       content: event.notes || '',
-      created_at: '', 
-      updated_at: '', 
+      created_at: event.date || '', // Use event date for sorting
+      updated_at: event.date || '',
       speech_type: event.category || 'upcoming',
-      isUpcoming: true, // Explicitly mark as upcoming
+      isUpcoming: true,
       event_date: event.date
-    } as Speech));
+    }));
 
-    console.log('Created upcoming speeches objects:', upcomingSpeeches.length);
-    console.log('Upcoming speeches:', upcomingSpeeches.map(s => ({ 
-      id: s.id, 
-      title: s.title, 
-      type: s.speech_type,
-      isUpcoming: s.isUpcoming 
-    })));
-
-    // Combine regular and upcoming speeches
-    const combinedSpeeches = [...allSpeeches, ...upcomingSpeeches];
-    
-    console.log('Combined speeches before filtering:', combinedSpeeches.length);
-    console.log('Regular speeches count:', allSpeeches.length);
-    console.log('Regular speeches with isUpcoming=false:', allSpeeches.filter(s => s.isUpcoming === false).length);
-    console.log('Upcoming speeches count:', upcomingSpeeches.length);
-    
     // Apply search filter if provided
-    let searchFiltered = combinedSpeeches;
-    if (searchQuery && searchQuery.trim()) {
+    let searchFiltered = [...allSpeeches, ...upcomingSpeeches];
+    if (searchQuery) {
       const query = searchQuery.toLowerCase().trim();
-      searchFiltered = combinedSpeeches.filter(
-        (speech) => 
-          (speech.title && speech.title.toLowerCase().includes(query)) || 
-          (speech.content && speech.content.toLowerCase().includes(query))
+      searchFiltered = searchFiltered.filter(speech => 
+        speech.title?.toLowerCase().includes(query) || 
+        speech.content?.toLowerCase().includes(query)
       );
-      console.log('After search filtering, speeches count:', searchFiltered.length);
     }
     
     // Apply type filter
     let filtered: Speech[] = [];
     if (filterType === 'all') {
-      // Show all speeches - both regular and upcoming
-      filtered = searchFiltered;
-      console.log('All filter applied, speeches count:', filtered.length);
-      console.log('All filter - speeches breakdown:', filtered.map(s => ({ 
-        id: s.id, 
-        title: s.title, 
-        type: s.speech_type,
-        isUpcoming: s.isUpcoming 
-      })));
+      filtered = searchFiltered; // Show all speeches without filtering by type
     } else if (filterType === 'upcoming') {
-      // Only show upcoming speeches 
       filtered = searchFiltered.filter(speech => speech.isUpcoming === true);
-      console.log('Upcoming filter applied, speeches count:', filtered.length);
     } else {
-      // Filter by specific speech type and exclude upcoming speeches (unless the type matches)
-      filtered = searchFiltered.filter(speech => 
-        speech.speech_type === filterType
-      );
-      console.log(`Speech type filter applied: ${filterType}, speeches count:`, filtered.length);
+      filtered = searchFiltered.filter(speech => speech.speech_type === filterType);
     }
     
-    // Log info about speeches with isUpcoming flag for debugging
-    console.log('Speeches with isUpcoming = true:', 
-      filtered.filter(speech => speech.isUpcoming === true).length);
-    console.log('Speeches with isUpcoming = false:', 
-      filtered.filter(speech => speech.isUpcoming === false).length);
+    // Log filtering results for debugging
+    console.log(`Filtered speeches (${filterType}):`, filtered.length);
+    console.log('Regular speeches:', filtered.filter(s => !s.isUpcoming).length);
+    console.log('Upcoming speeches:', filtered.filter(s => s.isUpcoming).length);
     
-    // Ensure uniqueness of speeches by ID
-    const uniqueFilteredSpeeches = Array.from(
+    // Remove duplicates based on ID
+    const uniqueSpeeches = Array.from(
       new Map(filtered.map(speech => [speech.id, speech])).values()
     );
     
-    console.log('Final unique filtered speeches count:', uniqueFilteredSpeeches.length);
-    
-    // Sort the filtered speeches
-    return uniqueFilteredSpeeches.sort((a, b) => {
+    // Sort speeches
+    return uniqueSpeeches.sort((a, b) => {
       if (sortBy === 'newest') {
         if (a.isUpcoming && b.isUpcoming) {
           return new Date(b.event_date || '').getTime() - new Date(a.event_date || '').getTime();
         }
-        if (a.isUpcoming) return -1;
-        if (b.isUpcoming) return 1;
         return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
       } else if (sortBy === 'oldest') {
         if (a.isUpcoming && b.isUpcoming) {
           return new Date(a.event_date || '').getTime() - new Date(b.event_date || '').getTime();
         }
-        if (a.isUpcoming) return 1;
-        if (b.isUpcoming) return -1;
         return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
       } else if (sortBy === 'title-asc') {
         return (a.title || '').localeCompare(b.title || '');
