@@ -23,11 +23,11 @@ export const useUserActions = () => {
     handleViewUserDetails,
     handleCloseUserDetails,
     handleManagePermissions,
-  } = useUserDetails(
+  } = useUserDetails({
     setSelectedUser,
     setIsDetailsOpen,
     setIsPermissionsDialogOpen
-  );
+  });
   
   // Initialize hooks with necessary parameters
   const { 
@@ -39,7 +39,9 @@ export const useUserActions = () => {
   const {
     handleToggleUserStatus,
     handleToggleUserSubscription
-  } = useSubscriptionActions(setIsActionLoading);
+  } = useSubscriptionActions({
+    setIsActionLoading
+  });
   
   const {
     handlePermissionsUpdated
