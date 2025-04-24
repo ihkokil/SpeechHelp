@@ -287,10 +287,13 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_role: string | null
           avatar_url: string | null
           created_at: string
           id: string
           is_active: boolean | null
+          is_admin: boolean | null
+          permissions: Json | null
           phone: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -301,10 +304,13 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          admin_role?: string | null
           avatar_url?: string | null
           created_at?: string
           id: string
           is_active?: boolean | null
+          is_admin?: boolean | null
+          permissions?: Json | null
           phone?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -315,10 +321,13 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          admin_role?: string | null
           avatar_url?: string | null
           created_at?: string
           id?: string
           is_active?: boolean | null
+          is_admin?: boolean | null
+          permissions?: Json | null
           phone?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -405,6 +414,15 @@ export type Database = {
           user_agent_input?: string
         }
         Returns: string
+      }
+      update_user_admin_status: {
+        Args: {
+          user_id: string
+          is_admin_status?: boolean
+          admin_role_value?: string
+          permissions_value?: Json
+        }
+        Returns: Json
       }
     }
     Enums: {
