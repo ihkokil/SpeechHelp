@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import Translate from '@/components/Translate';
@@ -17,9 +16,19 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
       const element = document.getElementById(sectionId);
       if (element) {
         // Adding offset to account for the navbar height plus extra padding
+        // Increased offset for better positioning
         const navbarHeight = 76; // Height of the navbar in pixels
-        const extraPadding = 40; // Extra padding for better visual spacing
-        const offsetPosition = element.getBoundingClientRect().top + window.scrollY - navbarHeight - extraPadding;
+        const extraPadding = {
+          'features': 120,    // More padding for features section
+          'how-it-works': 100, // More padding for how it works section
+          'pricing': 80,      // Adjusted padding for pricing section
+          'contact': 80       // Adjusted padding for contact section
+        };
+        
+        const offsetPosition = element.getBoundingClientRect().top + 
+          window.scrollY - 
+          navbarHeight - 
+          (extraPadding[sectionId as keyof typeof extraPadding] || 40);
         
         window.scrollTo({
           top: offsetPosition,
