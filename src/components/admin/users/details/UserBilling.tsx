@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -128,12 +127,6 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
               <p className="text-sm font-medium text-muted-foreground">Amount</p>
               <p className="text-sm">{getSubscriptionAmount()}</p>
             </div>
-          </div>
-          
-          <div className="mt-4">
-            <p className="text-xs text-muted-foreground">
-              Subscription management is handled by administrators.
-            </p>
           </div>
         </CardContent>
       </Card>
