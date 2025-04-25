@@ -21,6 +21,18 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     subscription_status: user.subscription_status
   });
 
+  // Add more detailed logging for debugging
+  console.log('Raw subscription data types:', {
+    subscription_period_type: typeof user.subscription_period,
+    subscription_period_value: user.subscription_period,
+    subscription_amount_type: typeof user.subscription_amount,
+    subscription_amount_value: user.subscription_amount,
+    is_period_null: user.subscription_period === null,
+    is_period_undefined: user.subscription_period === undefined,
+    is_amount_null: user.subscription_amount === null,
+    is_amount_undefined: user.subscription_amount === undefined
+  });
+
   // Format the subscription end date for display
   const formattedEndDate = user.subscription_end_date 
     ? format(new Date(user.subscription_end_date), 'PPP') 
@@ -47,55 +59,59 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     return planType.charAt(0).toUpperCase() + planType.slice(1).replace('_', ' ');
   };
 
-  // Get billing period display
+  // Get billing period display - improved logic
   const getBillingPeriod = () => {
-    // Handle undefined/null values more explicitly
-    if (!user.subscription_period || user.subscription_period === null || user.subscription_period === undefined) {
-      // If user has a paid plan but no period info, show default
-      const planType = user.subscription_plan?.toLowerCase();
-      if (planType && planType !== 'free_trial' && planType !== 'free') {
-        return 'Monthly (Default)';
+    const period = user.subscription_period;
+    
+    console.log('getBillingPeriod - raw period value:', period, 'type:', typeof period);
+    
+    // Check if period exists and is not empty
+    if (period && period !== null && period !== undefined && String(period).trim() !== '') {
+      const periodStr = String(period).toLowerCase().trim();
+      console.log('Processing period string:', periodStr);
+      
+      switch (periodStr) {
+        case 'monthly':
+          return 'Monthly';
+        case 'yearly':
+        case 'annual':
+          return 'Yearly';
+        default:
+          return periodStr.charAt(0).toUpperCase() + periodStr.slice(1);
       }
-      return 'N/A';
     }
     
-    const period = String(user.subscription_period).toLowerCase();
-    switch (period) {
-      case 'monthly':
-        return 'Monthly';
-      case 'yearly':
-      case 'annual':
-        return 'Yearly';
-      default:
-        return period.charAt(0).toUpperCase() + period.slice(1);
+    // Fallback logic
+    const planType = user.subscription_plan?.toLowerCase();
+    if (planType && planType !== 'free_trial' && planType !== 'free') {
+      console.log('No period found, using fallback for plan:', planType);
+      return 'Period not set';
     }
+    
+    return 'N/A';
   };
 
-  // Get subscription amount display
+  // Get subscription amount display - improved logic
   const getSubscriptionAmount = () => {
-    // Handle undefined/null values more explicitly
     const amount = user.subscription_amount;
     
-    // Check for undefined, null, or 0 amount
-    if (amount === null || amount === undefined || amount === 0) {
-      const planType = user.subscription_plan?.toLowerCase();
-      if (planType === 'free_trial' || planType === 'free' || !planType) {
-        return 'Free';
-      }
-      
-      // If it's a paid plan but amount is missing, try to show plan-based estimate
-      if (planType === 'pro') {
-        return '$29.99 (Est.)';
-      } else if (planType === 'premium') {
-        return '$49.99 (Est.)';
-      }
-      
-      return 'Amount not set';
+    console.log('getSubscriptionAmount - raw amount value:', amount, 'type:', typeof amount);
+    
+    // Check if amount exists and is a valid number
+    if (amount !== null && amount !== undefined && !isNaN(Number(amount)) && Number(amount) > 0) {
+      const dollarAmount = Number(amount) / 100;
+      console.log('Converting amount from cents to dollars:', amount, '->', dollarAmount);
+      return `$${dollarAmount.toFixed(2)}`;
     }
     
-    // Convert from cents to dollars and format
-    const dollarAmount = Number(amount) / 100;
-    return `$${dollarAmount.toFixed(2)}`;
+    // Fallback logic
+    const planType = user.subscription_plan?.toLowerCase();
+    if (planType === 'free_trial' || planType === 'free' || !planType) {
+      return 'Free';
+    }
+    
+    console.log('No valid amount found, using fallback for plan:', planType);
+    return 'Amount not set';
   };
 
   // Get payment method display
