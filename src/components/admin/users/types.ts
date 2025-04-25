@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   email: string;
@@ -13,6 +14,9 @@ export interface User {
   subscription_end_date?: string | null;
   subscription_period?: string | null;
   subscription_amount?: number | null;
+  subscription_start_date?: string | null;
+  subscription_price_id?: string | null;
+  subscription_currency?: string | null;
   app_metadata?: {
     provider?: string;
     providers?: string[];

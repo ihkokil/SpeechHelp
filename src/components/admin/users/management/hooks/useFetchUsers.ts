@@ -46,7 +46,7 @@ export const useFetchUsers = () => {
       
       console.log('Fetched auth users with profiles:', authUsersData);
       
-      // Map users with their profiles, ensuring admin status is properly retrieved
+      // Map users with their profiles, ensuring all subscription fields are properly retrieved
       const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
         // Get the profile data from our enhanced structure
         const profile = authUser.profile || {};
@@ -62,12 +62,12 @@ export const useFetchUsers = () => {
             providers: authUser.app_metadata?.providers || ['email'],
           },
           user_metadata: {
-            first_name: authUser.raw_user_meta_data?.first_name || profile.first_name || '',
-            last_name: authUser.raw_user_meta_data?.last_name || profile.last_name || '',
+            first_name: authUser.raw_user_meta_data?.first_name || profile.first_name || authUser.first_name || '',
+            last_name: authUser.raw_user_meta_data?.last_name || profile.last_name || authUser.last_name || '',
             name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || authUser.email?.split('@')[0] || 'User',
             full_name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || '',
             email: authUser.email,
-            phone: authUser.raw_user_meta_data?.phone || profile.phone || '',
+            phone: authUser.raw_user_meta_data?.phone || profile.phone || authUser.phone || '',
             country_code: authUser.raw_user_meta_data?.country_code || profile.country_code || '',
             street_address: authUser.raw_user_meta_data?.street_address || '',
             city: authUser.raw_user_meta_data?.city || '',
@@ -75,19 +75,25 @@ export const useFetchUsers = () => {
             zip_code: authUser.raw_user_meta_data?.zip_code || '',
             country: authUser.raw_user_meta_data?.country || '',
           },
-          is_active: profile.is_active !== false, // Default to true if not specified
+          is_active: authUser.is_active !== false,
           // Ensure admin status comes from the profile
-          is_admin: profile.is_admin === true,
-          admin_role: profile.admin_role || null,
-          permissions: profile.permissions || [],
-          subscription_status: profile.subscription_plan ? 'active' : undefined,
-          subscription_end_date: profile.subscription_end_date || undefined,
-          subscription_plan: profile.subscription_plan || undefined,
+          is_admin: authUser.is_admin === true,
+          admin_role: authUser.admin_role || null,
+          permissions: authUser.permissions || [],
+          // Map all subscription fields properly
+          subscription_status: authUser.subscription_status || undefined,
+          subscription_plan: authUser.subscription_plan || undefined,
+          subscription_period: authUser.subscription_period || undefined,
+          subscription_amount: authUser.subscription_amount || undefined,
+          subscription_end_date: authUser.subscription_end_date || undefined,
           // Add direct fields from profiles table for easier access
-          first_name: profile.first_name || authUser.raw_user_meta_data?.first_name || '',
-          last_name: profile.last_name || authUser.raw_user_meta_data?.last_name || '',
-          phone: profile.phone || authUser.raw_user_meta_data?.phone || '',
-          country_code: profile.country_code || authUser.raw_user_meta_data?.country_code || 'US',
+          first_name: authUser.first_name || authUser.raw_user_meta_data?.first_name || '',
+          last_name: authUser.last_name || authUser.raw_user_meta_data?.last_name || '',
+          phone: authUser.phone || authUser.raw_user_meta_data?.phone || '',
+          country_code: authUser.country_code || authUser.raw_user_meta_data?.country_code || 'US',
+          // Stripe related fields
+          stripe_customer_id: authUser.stripe_customer_id || undefined,
+          stripe_subscription_id: authUser.stripe_subscription_id || undefined,
         };
         
         return user;
@@ -116,7 +122,7 @@ export const useFetchUsers = () => {
         });
       }
       
-      console.log('Mapped users with admin status and proper profile data:', mappedUsers);
+      console.log('Mapped users with complete subscription data:', mappedUsers);
       setUsers(mappedUsers);
       return mappedUsers;
     } catch (err) {
