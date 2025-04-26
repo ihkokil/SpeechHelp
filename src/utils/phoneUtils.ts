@@ -57,18 +57,65 @@ export const parsePhoneNumber = (phoneNumber: string, countryCode: string): {
   return { country, formattedNumber: formatted };
 };
 
-// Enhanced function to extract country code from database with proper fallback priority
+// Enhanced function to detect country from phone number format
+const detectCountryFromPhone = (phone: string): Country | undefined => {
+  if (!phone) return undefined;
+  
+  const cleaned = phone.replace(/\D/g, '');
+  
+  // Try to match by phone number patterns and lengths
+  // UK mobile numbers (starting with 07 and 11 digits total including country code)
+  if (cleaned.match(/^(44)?7[0-9]{9}$/)) {
+    return getCountryByCode('GB');
+  }
+  
+  // French mobile numbers (starting with 06, 07 and 10 digits total)
+  if (cleaned.match(/^(33)?[67][0-9]{8}$/) || cleaned.match(/^0[67][0-9]{8}$/)) {
+    return getCountryByCode('FR');
+  }
+  
+  // German mobile numbers (starting with 01 and 11-12 digits total)
+  if (cleaned.match(/^(49)?1[5-7][0-9]{7,8}$/) || cleaned.match(/^01[5-7][0-9]{7,8}$/)) {
+    return getCountryByCode('DE');
+  }
+  
+  // Try to detect by checking if phone starts with common international codes
+  for (const country of countriesComplete) {
+    if (cleaned.startsWith(country.dialCode) && cleaned.length > country.dialCode.length) {
+      const remainingDigits = cleaned.length - country.dialCode.length;
+      // Basic validation: most countries have 7-10 digits after country code
+      if (remainingDigits >= 7 && remainingDigits <= 10) {
+        return country;
+      }
+    }
+  }
+  
+  return undefined;
+};
+
+// Enhanced function to extract country code from database with smart detection
 export const extractCountryCodeFromUser = (user: any): string => {
   console.log('🔍 Extracting country code for user:', {
     userId: user.id,
     email: user.email,
     profileCountryCode: user.country_code,
     userMetadataCountryCode: user.user_metadata?.country_code,
-    userMetadataCountry: user.user_metadata?.country
+    userMetadataCountry: user.user_metadata?.country,
+    phone: user.phone || user.user_metadata?.phone
   });
 
+  // First, try to detect country from phone number if available
+  const phone = user.phone || user.user_metadata?.phone;
+  if (phone) {
+    const detectedCountry = detectCountryFromPhone(phone);
+    if (detectedCountry) {
+      console.log('✅ Detected country from phone pattern:', phone, '->', detectedCountry.code);
+      return detectedCountry.code;
+    }
+  }
+
   // Priority 1: Check profiles.country_code (main database field)
-  if (user.country_code && user.country_code !== '') {
+  if (user.country_code && user.country_code !== '' && user.country_code !== 'US') {
     console.log('✅ Found country code in profiles table:', user.country_code);
     return user.country_code;
   }
@@ -143,7 +190,7 @@ export const getPhoneFromDatabase = (user: any): string => {
   return '';
 };
 
-// Enhanced function to format phone with proper country code from database
+// Enhanced function to format phone with smart country detection
 export const formatPhoneWithCountryCode = (phone: string, user: any): string => {
   if (!phone) return '—';
   
@@ -154,8 +201,22 @@ export const formatPhoneWithCountryCode = (phone: string, user: any): string => 
   });
   
   try {
-    const countryCode = extractCountryCodeFromUser(user);
-    const country = getCountryByCode(countryCode);
+    // First try to detect country from phone number
+    let countryCode = '';
+    let country: Country | undefined;
+    
+    const detectedCountry = detectCountryFromPhone(phone);
+    if (detectedCountry) {
+      countryCode = detectedCountry.code;
+      country = detectedCountry;
+      console.log('✅ Using detected country from phone:', countryCode);
+    } else {
+      // Fall back to stored country code
+      countryCode = extractCountryCodeFromUser(user);
+      country = getCountryByCode(countryCode);
+      console.log('✅ Using stored country code:', countryCode);
+    }
+    
     const dialCode = country?.dialCode || '1';
     
     // Clean the phone number - remove all non-numeric characters
