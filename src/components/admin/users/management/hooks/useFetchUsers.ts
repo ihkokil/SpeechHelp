@@ -44,12 +44,26 @@ export const useFetchUsers = () => {
         return [];
       }
       
-      console.log('Fetched auth users with profiles:', authUsersData);
+      console.log('Raw edge function response:', authUsersData);
+      console.log('First user raw data from edge function:', authUsersData?.users?.[0]);
       
       // Map users with their profiles, ensuring all subscription fields are properly retrieved
       const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
+        console.log('Processing user:', authUser.id);
+        console.log('User subscription fields from edge function:', {
+          subscription_plan: authUser.subscription_plan,
+          subscription_period: authUser.subscription_period,
+          subscription_amount: authUser.subscription_amount,
+          subscription_status: authUser.subscription_status,
+          subscription_start_date: authUser.subscription_start_date,
+          subscription_end_date: authUser.subscription_end_date,
+          stripe_customer_id: authUser.stripe_customer_id,
+          stripe_subscription_id: authUser.stripe_subscription_id
+        });
+        
         // Get the profile data from our enhanced structure
         const profile = authUser.profile || {};
+        console.log('Profile data:', profile);
         
         const user: User = {
           id: authUser.id,
@@ -80,21 +94,33 @@ export const useFetchUsers = () => {
           is_admin: authUser.is_admin === true,
           admin_role: authUser.admin_role || null,
           permissions: authUser.permissions || [],
-          // Map all subscription fields properly
-          subscription_status: authUser.subscription_status || undefined,
-          subscription_plan: authUser.subscription_plan || undefined,
-          subscription_period: authUser.subscription_period || undefined,
-          subscription_amount: authUser.subscription_amount || undefined,
-          subscription_end_date: authUser.subscription_end_date || undefined,
+          // Map all subscription fields with extensive debugging
+          subscription_status: authUser.subscription_status || 'inactive',
+          subscription_plan: authUser.subscription_plan || 'free_trial',
+          subscription_period: authUser.subscription_period || null,
+          subscription_amount: authUser.subscription_amount || null,
+          subscription_start_date: authUser.subscription_start_date || null,
+          subscription_end_date: authUser.subscription_end_date || null,
+          subscription_price_id: authUser.subscription_price_id || null,
+          subscription_currency: authUser.subscription_currency || 'usd',
           // Add direct fields from profiles table for easier access
           first_name: authUser.first_name || authUser.raw_user_meta_data?.first_name || '',
           last_name: authUser.last_name || authUser.raw_user_meta_data?.last_name || '',
           phone: authUser.phone || authUser.raw_user_meta_data?.phone || '',
           country_code: authUser.country_code || authUser.raw_user_meta_data?.country_code || 'US',
           // Stripe related fields
-          stripe_customer_id: authUser.stripe_customer_id || undefined,
-          stripe_subscription_id: authUser.stripe_subscription_id || undefined,
+          stripe_customer_id: authUser.stripe_customer_id || null,
+          stripe_subscription_id: authUser.stripe_subscription_id || null,
         };
+        
+        console.log('Final mapped user subscription fields:', {
+          id: user.id,
+          subscription_plan: user.subscription_plan,
+          subscription_period: user.subscription_period,
+          subscription_amount: user.subscription_amount,
+          subscription_status: user.subscription_status,
+          stripe_customer_id: user.stripe_customer_id
+        });
         
         return user;
       }) || [];
@@ -122,7 +148,8 @@ export const useFetchUsers = () => {
         });
       }
       
-      console.log('Mapped users with complete subscription data:', mappedUsers);
+      console.log('Final mapped users count:', mappedUsers.length);
+      console.log('Sample user with subscription data:', mappedUsers.find(u => u.stripe_customer_id));
       setUsers(mappedUsers);
       return mappedUsers;
     } catch (err) {
