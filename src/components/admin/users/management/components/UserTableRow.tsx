@@ -48,21 +48,21 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     return plan.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  // Format last sign in date
+  // Format last sign in date with time
   const formatLastSignIn = (dateString: string | null | undefined) => {
     if (!dateString) return 'Never';
     try {
-      return format(new Date(dateString), 'MMM d, yyyy');
+      return format(new Date(dateString), 'MMM d, yyyy HH:mm');
     } catch (error) {
       return 'Invalid date';
     }
   };
 
-  // Format joined date
+  // Format joined date with time
   const formatJoinedDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'Unknown';
     try {
-      return format(new Date(dateString), 'MMM d, yyyy');
+      return format(new Date(dateString), 'MMM d, yyyy HH:mm');
     } catch (error) {
       return 'Invalid date';
     }
