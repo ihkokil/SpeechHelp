@@ -19,10 +19,10 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         // Adding offset to account for the navbar height plus extra padding
         const navbarHeight = 76; // Height of the navbar in pixels
         const extraPadding = {
-          'features': 180,     // Increased padding to hide video bottom
-          'how-it-works': 160, // Increased padding to hide features section bottom
-          'pricing': 140,      // Increased padding to show CTA buttons
-          'contact': 160       // Increased padding for better Who We Are section visibility
+          'features': 220,     // Increased padding to hide video bottom
+          'how-it-works': 200, // Increased padding to hide features section bottom
+          'pricing': 180,      // Increased padding to show CTA buttons
+          'contact': 200       // Increased padding for better Who We Are section visibility
         };
         
         const offsetPosition = element.getBoundingClientRect().top + 
