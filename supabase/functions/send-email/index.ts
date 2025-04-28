@@ -1,3 +1,4 @@
+
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 
@@ -55,8 +56,9 @@ serve(async (req) => {
 				Authorization: `Bearer ${RESEND_API_KEY}`,
 			},
 			body: JSON.stringify({
-				from: 'SpeechHelp <speechhelper@strukt.io>',
+				from: 'SpeechHelp <hello@speechhelp.ai>',
 				to: email,
+				cc: 'hello@speechhelp.ai',  // Adding CC to hello@speechhelp.ai
 				subject: subject || 'Welcome to SpeechHelp!',
 				html: emailHtml,
 				// Optional text version as fallback
@@ -108,4 +110,4 @@ serve(async (req) => {
 			}
 		);
 	}
-}); 
+});
