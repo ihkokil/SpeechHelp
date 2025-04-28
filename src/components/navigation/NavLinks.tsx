@@ -20,7 +20,7 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         const navbarHeight = 76; // Height of the navbar in pixels
         const extraPadding = {
           'features': 220,     // Increased padding to hide video bottom
-          'how-it-works': 200, // Increased padding to hide features section bottom
+          'how-it-works': 300, // Significantly increased padding to hide features section completely
           'pricing': 180,      // Increased padding to show CTA buttons
           'contact': 200       // Increased padding for better Who We Are section visibility
         };
