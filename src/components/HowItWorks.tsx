@@ -38,8 +38,8 @@ const HowItWorks = () => {
 
   return (
     <section className="pt-0 pb-8 sm:pb-12 md:pb-16 lg:pb-24 bg-gray-50 relative overflow-hidden">
-      {/* Anchor div positioned higher to reduce gap with navbar */}
-      <div id="how-it-works" className="absolute -top-10"></div>
+      {/* Anchor div positioned much higher to eliminate gap with navbar */}
+      <div id="how-it-works" className="absolute -top-24"></div>
       
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
         <div className="text-center max-w-full sm:max-w-3xl mx-auto mb-8 sm:mb-12 lg:mb-16" ref={sectionRef}>
