@@ -1,81 +1,81 @@
 
-import { format } from 'date-fns';
-import { enUS, es, fr } from 'date-fns/locale';
+// Utility functions for working with speech events
 import { SpeechEvent } from './types';
 
-// Get date-fns locale based on app language
-const getDateLocale = (langCode: string) => {
-  switch (langCode) {
-    case 'es': return es;
-    case 'fr': return fr;
-    default: return enUS;
-  }
+export const formatDate = (date: Date, localeCode: string): string => {
+  return date.toLocaleDateString(localeCode, { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric' 
+  });
 };
 
-// Format date for display
-export const formatDate = (date: Date, langCode: string = 'en') => {
-  const locale = getDateLocale(langCode);
-  return format(date, 'MMM d, yyyy', { locale });
+export const getCategoryColor = (category: string): string => {
+  const categories: Record<string, string> = {
+    'presentation': 'bg-blue-100 text-blue-700',
+    'meeting': 'bg-green-100 text-green-700',
+    'interview': 'bg-purple-100 text-purple-700',
+    'speech': 'bg-amber-100 text-amber-700',
+    'wedding': 'bg-pink-100 text-pink-700',
+    'birthday': 'bg-yellow-100 text-yellow-700',
+    'graduation': 'bg-indigo-100 text-indigo-700',
+    'retirement': 'bg-orange-100 text-orange-700',
+    'award': 'bg-emerald-100 text-emerald-700',
+    'funeral': 'bg-slate-100 text-slate-700',
+    'social': 'bg-rose-100 text-rose-700',
+    'business': 'bg-sky-100 text-sky-700',
+    'entertaining': 'bg-violet-100 text-violet-700',
+    'persuasive': 'bg-teal-100 text-teal-700',
+    'motivational': 'bg-lime-100 text-lime-700',
+    'informative': 'bg-cyan-100 text-cyan-700',
+    'tedtalk': 'bg-red-100 text-red-700',
+    'keynote': 'bg-blue-100 text-blue-700',
+    'other': 'bg-gray-100 text-gray-700'
+  };
+  
+  return categories[category.toLowerCase()] || 'bg-gray-100 text-gray-700';
 };
 
-// Get days remaining until event
+// Calculate days remaining until the speech date
 export const getDaysRemaining = (date: Date): number => {
   const today = new Date();
-  const diffTime = Math.abs(date.getTime() - today.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
+  // Reset hours to compare just the dates
+  today.setHours(0, 0, 0, 0);
+  const speechDate = new Date(date);
+  speechDate.setHours(0, 0, 0, 0);
+  
+  // Calculate the difference in milliseconds
+  const differenceMs = speechDate.getTime() - today.getTime();
+  // Convert to days
+  const daysDifference = Math.ceil(differenceMs / (1000 * 60 * 60 * 24));
+  
+  return Math.max(0, daysDifference); // Ensure we don't show negative days
 };
 
-// Get tailwind class for event category
-export const getCategoryColor = (category: string): string => {
-  switch (category.toLowerCase()) {
-    case 'business':
-      return 'bg-blue-100 text-blue-800';
-    case 'wedding':
-      return 'bg-pink-100 text-pink-800';
-    case 'birthday':
-      return 'bg-purple-100 text-purple-800';
-    case 'graduation':
-      return 'bg-green-100 text-green-800';
-    case 'motivational':
-      return 'bg-amber-100 text-amber-800';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
-};
-
-// Save events to localStorage with optional user-specific key
-export const saveEventsToStorage = (events: SpeechEvent[], key: string = 'upcomingEvents'): void => {
-  try {
-    const serializedEvents = JSON.stringify(events.map(event => ({
-      ...event,
-      date: event.date.toISOString() // Convert Date to string for serialization
-    })));
-    
-    localStorage.setItem(key, serializedEvents);
-  } catch (error) {
-    console.error('Error saving events to localStorage:', error);
-  }
-};
-
-// Load events from localStorage with optional user-specific key
-export const loadEventsFromStorage = (key: string = 'upcomingEvents'): SpeechEvent[] => {
-  try {
-    const serializedEvents = localStorage.getItem(key);
-    
-    if (!serializedEvents) {
+// Load events from localStorage
+export const loadEventsFromStorage = (): SpeechEvent[] => {
+  const savedEvents = localStorage.getItem('upcomingEvents');
+  if (savedEvents) {
+    try {
+      const parsedEvents = JSON.parse(savedEvents);
+      // Convert string dates back to Date objects
+      return parsedEvents.map((event: any) => ({
+        ...event,
+        date: new Date(event.date)
+      }));
+    } catch (error) {
+      console.error('Error parsing saved events:', error);
       return [];
     }
-    
-    const parsedEvents = JSON.parse(serializedEvents);
-    
-    // Convert ISO date strings back to Date objects
-    return parsedEvents.map((event: any) => ({
-      ...event,
-      date: new Date(event.date)
-    }));
+  }
+  return [];
+};
+
+// Save events to localStorage
+export const saveEventsToStorage = (events: SpeechEvent[]): void => {
+  try {
+    localStorage.setItem('upcomingEvents', JSON.stringify(events));
   } catch (error) {
-    console.error('Error loading events from localStorage:', error);
-    return [];
+    console.error('Error saving events to localStorage:', error);
   }
 };

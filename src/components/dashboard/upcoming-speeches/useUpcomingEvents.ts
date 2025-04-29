@@ -7,30 +7,19 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 
 export const useUpcomingEvents = (speeches: Speech[] = []) => {
   const [upcomingEvents, setUpcomingEvents] = useState<SpeechEvent[]>([]);
   const navigate = useNavigate();
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  const { user } = useAuth();
 
-  // Get user-specific storage key
-  const getUserStorageKey = () => {
-    if (!user) return null;
-    return `upcomingEvents_${user.id}`;
-  };
-
-  // Load events from localStorage with user-specific key
+  // Load events from localStorage
   const loadEvents = () => {
-    const storageKey = getUserStorageKey();
-    if (!storageKey) return;
-    
-    const loadedEvents = loadEventsFromStorage(storageKey);
+    const loadedEvents = loadEventsFromStorage();
     if (loadedEvents.length > 0) {
       setUpcomingEvents(loadedEvents);
-    } else if (speeches.length && !localStorage.getItem(storageKey)) {
+    } else if (speeches.length && !localStorage.getItem('upcomingEvents')) {
       // If no saved events but we have speeches, create example events (legacy behavior)
       const exampleEvents = speeches
         .slice(0, 3)
@@ -51,18 +40,12 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
           };
         });
       setUpcomingEvents(exampleEvents);
-      saveEventsToStorage(exampleEvents, storageKey);
+      saveEventsToStorage(exampleEvents);
     }
   };
 
   // Add a new event
   const addEvent = (title: string, type: string, date: Date) => {
-    const storageKey = getUserStorageKey();
-    if (!storageKey) {
-      toast.error(t('errors.notLoggedIn', currentLanguage.code));
-      return;
-    }
-    
     const eventTitle = title || `Upcoming ${type.charAt(0).toUpperCase() + type.slice(1)} Speech`;
     
     const newEvent: SpeechEvent = {
@@ -77,8 +60,8 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
     const updatedEvents = [...upcomingEvents, newEvent];
     setUpcomingEvents(updatedEvents);
     
-    // Save to localStorage with user-specific key
-    saveEventsToStorage(updatedEvents, storageKey);
+    // Save to localStorage
+    saveEventsToStorage(updatedEvents);
     
     toast.success(t('dashboard.eventAdded', currentLanguage.code));
   };
@@ -96,12 +79,10 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
     navigate('/my-speeches?filter=upcoming');
   };
   
-  // Load events on initial render and when user or speeches change
+  // Load events on initial render
   useEffect(() => {
-    if (user) {
-      loadEvents();
-    }
-  }, [user, speeches]);
+    loadEvents();
+  }, [speeches]);
 
   return {
     upcomingEvents,
