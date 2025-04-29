@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -7,6 +7,7 @@ import { Speech } from '@/types/speech';
 import EventForm from './upcoming-speeches/EventForm';
 import EventList from './upcoming-speeches/EventList';
 import { useUpcomingEvents } from './upcoming-speeches/useUpcomingEvents';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UpcomingSpeechesProps {
   speeches?: Speech[];
@@ -15,6 +16,8 @@ interface UpcomingSpeechesProps {
 const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  
   const { 
     upcomingEvents, 
     addEvent, 
@@ -22,6 +25,13 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
     viewAllEvents,
     loadEvents
   } = useUpcomingEvents(speeches);
+
+  // Reload events when user changes
+  useEffect(() => {
+    if (user) {
+      loadEvents();
+    }
+  }, [user, loadEvents]);
 
   return (
     <div className="bg-white rounded-lg shadow-sm">
