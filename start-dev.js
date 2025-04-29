@@ -30,8 +30,15 @@ function runCommand(command) {
   }
 }
 
-// First, try to fix potential issues
-console.log('Checking environment and fixing potential issues...');
+// First, try running the setup script to ensure dependencies are installed
+try {
+  console.log('Running setup script to ensure dependencies are installed...');
+  execSync('node setup.js', { stdio: 'inherit' });
+  console.log('Setup completed successfully');
+} catch (setupErr) {
+  console.error('Error running setup script:', setupErr.message);
+  console.log('Continuing with available resources...');
+}
 
 // Check Node.js version
 const nodeVersion = process.version;
@@ -63,31 +70,10 @@ if (!isPackageInstalled('vite')) {
       console.log('Vite installed globally as fallback');
     } catch (globalErr) {
       console.error('All installation attempts failed:', globalErr.message);
-      console.error('Please run "npm install vite --save-dev" manually.');
     }
   }
 } else {
   console.log('Vite is already installed.');
-}
-
-// Create a direct link to the current node_modules/.bin/vite file in the project root
-try {
-  console.log('Creating direct access to Vite executable...');
-  const isWin = process.platform === 'win32';
-  const viteSourcePath = path.join(process.cwd(), 'node_modules', '.bin', isWin ? 'vite.cmd' : 'vite');
-  const viteDestPath = path.join(process.cwd(), isWin ? 'vite.cmd' : 'vite-local');
-  
-  if (fs.existsSync(viteSourcePath)) {
-    fs.copyFileSync(viteSourcePath, viteDestPath);
-    if (!isWin) {
-      fs.chmodSync(viteDestPath, 0o755);
-    }
-    console.log('Created direct access to Vite at:', viteDestPath);
-  } else {
-    console.log('Could not find Vite executable in node_modules/.bin');
-  }
-} catch (err) {
-  console.error('Failed to create direct access to Vite:', err.message);
 }
 
 // Try different methods to find and run vite
@@ -95,7 +81,24 @@ console.log('Starting development server - attempting multiple methods...');
 let viteProcess;
 let success = false;
 
-// Method 1: Try using local vite path
+// Method 1: Try using direct copy of vite
+if (!success) {
+  try {
+    const directVitePath = process.platform === 'win32' ? 'vite-direct.cmd' : './vite-direct';
+    if (fs.existsSync(directVitePath)) {
+      console.log('Starting Vite using direct local copy:', directVitePath);
+      viteProcess = spawn(directVitePath, process.argv.slice(2), { 
+        stdio: 'inherit',
+        shell: true
+      });
+      success = true;
+    }
+  } catch (err) {
+    console.log('Error starting Vite from direct local copy:', err.message);
+  }
+}
+
+// Method 2: Try using local vite path
 if (!success) {
   try {
     // Determine the correct path to vite binary based on platform
@@ -114,23 +117,6 @@ if (!success) {
     }
   } catch (err) {
     console.log('Error starting Vite from local path:', err.message);
-  }
-}
-
-// Method 2: Try using the direct local copy we created
-if (!success) {
-  try {
-    const directVitePath = process.platform === 'win32' ? 'vite.cmd' : './vite-local';
-    if (fs.existsSync(directVitePath)) {
-      console.log('Starting Vite using direct local copy:', directVitePath);
-      viteProcess = spawn(directVitePath, process.argv.slice(2), { 
-        stdio: 'inherit',
-        shell: true
-      });
-      success = true;
-    }
-  } catch (err) {
-    console.log('Error starting Vite from direct local copy:', err.message);
   }
 }
 
@@ -192,14 +178,16 @@ if (!success) {
     
     // One final fallback attempt: direct npm install + run
     try {
-      console.log('Final attempt: Installing dependencies and starting Vite...');
+      console.log('Final attempt: Reinstalling dependencies and starting Vite...');
+      execSync('npm cache clean --force', { stdio: 'inherit' });
+      execSync('rm -rf node_modules', { stdio: 'inherit' });
       execSync('npm install', { stdio: 'inherit' });
       execSync('npm install vite @vitejs/plugin-react-swc --save-dev', { stdio: 'inherit' });
       execSync('npx vite', { stdio: 'inherit' });
       return;
     } catch (finalErr) {
       console.error('All attempts to start Vite have failed.');
-      console.error('Please try running "npm install" followed by "npm run dev" manually.');
+      console.error('Critical error details:', finalErr.message);
       process.exit(1);
     }
   }
