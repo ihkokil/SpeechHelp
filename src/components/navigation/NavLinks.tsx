@@ -19,9 +19,18 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         // Adding offset to account for the navbar height
         const navbarHeight = 76; // Height of the navbar in pixels
         
-        // Set specific offset for each section to position them correctly
-        // For Features section, position the header just below the navbar
-        const offsetPosition = element.getBoundingClientRect().top + window.scrollY - navbarHeight;
+        // Handle specific offsets for each section
+        let offsetPosition = element.getBoundingClientRect().top + window.scrollY - navbarHeight;
+        
+        // For Features section, position the header right below the navbar
+        if (sectionId === 'features') {
+          offsetPosition = element.getBoundingClientRect().top + window.scrollY - navbarHeight;
+        }
+        
+        // For How it Works section, position the header right below the navbar
+        if (sectionId === 'how-it-works') {
+          offsetPosition = element.getBoundingClientRect().top + window.scrollY - navbarHeight;
+        }
         
         window.scrollTo({
           top: offsetPosition,
