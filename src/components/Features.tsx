@@ -11,6 +11,9 @@ const Features = () => {
   return (
     <section className="bg-gradient-to-r from-purple-50 to-pink-50 py-8 sm:py-12 md:py-16">
       <div className="container mx-auto px-4 sm:px-6 md:px-12">
+        {/* We place the id at the VERY top of the component to ensure proper scroll positioning */}
+        <div id="features" className="pt-3"></div>
+        
         <div className="max-w-[90%] sm:max-w-3xl mx-auto text-center mb-8 sm:mb-12 md:mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             <Translate text="headers.welcomeTo" /> <span className="bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Speech Help!</span>

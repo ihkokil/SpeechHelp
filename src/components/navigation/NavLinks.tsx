@@ -16,21 +16,12 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
     if (location.pathname === '/') {
       const element = document.getElementById(sectionId);
       if (element) {
-        // Adding offset to account for the navbar height plus extra padding
+        // Adding offset to account for the navbar height
         const navbarHeight = 76; // Height of the navbar in pixels
         
-        // Adjusted padding values to fix scroll positioning issues
-        const extraPadding = {
-          'features': 320,     // Increased padding to better hide video bottom
-          'how-it-works': 400, // Significantly increased padding to hide features section completely
-          'pricing': 120,      // Adjusted padding to show CTA buttons
-          'contact': 350       // Increased padding for better Who We Are section visibility
-        };
-        
-        const offsetPosition = element.getBoundingClientRect().top + 
-          window.scrollY - 
-          navbarHeight - 
-          (extraPadding[sectionId as keyof typeof extraPadding] || 40);
+        // Set specific offset for each section to position them correctly
+        // For Features section, position the header just below the navbar
+        const offsetPosition = element.getBoundingClientRect().top + window.scrollY - navbarHeight;
         
         window.scrollTo({
           top: offsetPosition,
