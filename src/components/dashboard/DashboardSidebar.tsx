@@ -31,9 +31,9 @@ const DashboardSidebar = () => {
             : "fixed w-64 -translate-x-full"
           : "fixed w-64",
       )}>
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src={logoPath} alt="Speech Help" className="h-10 w-auto" />
+            <img src={logoPath} alt="Speech Help" className="h-8 w-auto" />
           </Link>
           {isMobile && isOpen && (
             <button onClick={toggleSidebar} className="p-1">
@@ -42,10 +42,13 @@ const DashboardSidebar = () => {
           )}
         </div>
 
-        <UserProfile />
-        <SidebarNavigation onItemClick={() => isMobile && setIsOpen(false)} />
-        <div className="flex-grow"></div>
-        <LogoutButton />
+        <div className="flex flex-col flex-grow overflow-hidden">
+          <UserProfile />
+          <div className="flex-grow overflow-y-auto">
+            <SidebarNavigation onItemClick={() => isMobile && setIsOpen(false)} />
+          </div>
+          <LogoutButton />
+        </div>
       </aside>
 
       {isMobile && isOpen && (
