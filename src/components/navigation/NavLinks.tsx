@@ -22,9 +22,9 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         // Base offset calculation
         let offsetPosition = element.getBoundingClientRect().top + window.scrollY - navbarHeight;
         
-        // Additional offset for "How it Works" section to position it much closer to navbar
+        // Additional offset for "How it Works" section to position it directly under navbar
         if (sectionId === 'how-it-works') {
-          offsetPosition = offsetPosition - 80; // Significantly increase the offset to eliminate gap
+          offsetPosition = offsetPosition - 120; // Drastically increase the offset to completely eliminate gap
         }
         
         window.scrollTo({
