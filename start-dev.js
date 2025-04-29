@@ -2,14 +2,14 @@
 #!/usr/bin/env node
 
 // This script helps run the locally installed Vite with improved error handling
-const { spawn, execSync } = require('child_process');
+const { spawn, execSync, exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 
 // Function to check if a package is installed
 function isPackageInstalled(packageName) {
   try {
-    // Try to resolve the package from node_modules
     require.resolve(packageName);
     return true;
   } catch (e) {
@@ -26,38 +26,48 @@ function runCommand(command) {
   }
 }
 
+// Function to run a command asynchronously
+function runCommandAsync(command, options = {}) {
+  return new Promise((resolve, reject) => {
+    exec(command, options, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve({ stdout, stderr });
+      }
+    });
+  });
+}
+
 // Ensure Vite is installed
 async function ensureViteInstalled() {
-  try {
-    console.log('Checking Vite installation...');
+  console.log('Checking Vite installation...');
+  
+  // Check if vite is installed
+  if (!isPackageInstalled('vite')) {
+    console.log('Vite not found in node_modules. Installing vite and plugin-react-swc...');
     
-    // Check if vite is installed
-    if (!isPackageInstalled('vite')) {
-      console.log('Vite not found in node_modules. Installing vite and plugin-react-swc...');
+    try {
+      console.log('Installing Vite...');
+      execSync('npm install vite@latest @vitejs/plugin-react-swc@latest --save-dev', { stdio: 'inherit' });
+      console.log('Vite and dependencies installed successfully');
+      return true;
+    } catch (err) {
+      console.error('Failed to install vite:', err.message);
+      
       try {
-        execSync('npm install vite@latest @vitejs/plugin-react-swc@latest', { stdio: 'inherit' });
-        console.log('Vite and dependencies installed successfully');
-      } catch (err) {
-        console.error('Failed to install vite:', err);
-        // More aggressive installation attempt
-        try {
-          console.log('Trying alternative installation method...');
-          execSync('npm install vite --save-dev', { stdio: 'inherit' });
-          console.log('Vite installed successfully with alternative method');
-          return true;
-        } catch (innerErr) {
-          console.error('All installation attempts failed:', innerErr);
-          return false;
-        }
+        console.log('Trying alternative installation method...');
+        execSync('npm install vite --save-dev', { stdio: 'inherit' });
+        console.log('Vite installed successfully with alternative method');
+        return true;
+      } catch (innerErr) {
+        console.error('All installation attempts failed:', innerErr.message);
+        return false;
       }
-    } else {
-      console.log('Vite is already installed.');
     }
-    
+  } else {
+    console.log('Vite is already installed.');
     return true;
-  } catch (err) {
-    console.error('Error ensuring Vite installation:', err);
-    return false;
   }
 }
 
@@ -76,7 +86,7 @@ function checkNodeVersion() {
     
     return true;
   } catch (err) {
-    console.error('Error checking Node.js version:', err);
+    console.error('Error checking Node.js version:', err.message);
     return false;
   }
 }
@@ -103,7 +113,7 @@ async function startDevServer() {
     try {
       // Determine the correct path to vite binary based on platform
       const binExtension = process.platform === 'win32' ? '.cmd' : '';
-      const vitePath = path.join(__dirname, 'node_modules', '.bin', 'vite' + binExtension);
+      const vitePath = path.join(process.cwd(), 'node_modules', '.bin', 'vite' + binExtension);
       
       if (fs.existsSync(vitePath)) {
         console.log('Starting Vite using local path:', vitePath);
@@ -174,7 +184,7 @@ async function startDevServer() {
       });
       return; // Exit function if this method works
     } catch (err) {
-      console.error('All methods to start Vite failed:', err);
+      console.error('All methods to start Vite failed:', err.message);
       
       // One final fallback attempt: direct npm install + run
       try {
@@ -194,7 +204,7 @@ async function startDevServer() {
   // Handle process events for spawned processes
   if (viteProcess) {
     viteProcess.on('error', (err) => {
-      console.error('Failed to start Vite:', err);
+      console.error('Failed to start Vite:', err.message);
       process.exit(1);
     });
 
@@ -206,6 +216,7 @@ async function startDevServer() {
 
 // Start the development server
 startDevServer().catch(err => {
-  console.error('Unhandled error:', err);
+  console.error('Unhandled error:', err.message);
   process.exit(1);
 });
+
