@@ -27,7 +27,10 @@ const ContactForm = () => {
   };
 
   return (
-    <section id="contact" className="bg-white py-20">
+    <section className="bg-white py-20 relative">
+      {/* Add an anchor div at the top for better scroll positioning */}
+      <div id="contact" className="absolute top-0"></div>
+      
       <div className="container mx-auto px-6 md:px-12">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
