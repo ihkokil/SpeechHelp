@@ -47,9 +47,10 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
   };
 
   const handlePricingClick = () => {
-    // If already on pricing page, scroll to top
+    // If already on pricing page, scroll to top with no offset
     if (location.pathname === '/pricing') {
-      scrollToTop();
+      // Use zero for no gap between navbar and header
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     if (onItemClick) onItemClick();
   };
