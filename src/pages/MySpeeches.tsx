@@ -5,6 +5,7 @@ import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { loadEventsFromStorage } from '@/components/dashboard/upcoming-speeches/utils';
 
 const MySpeeches = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -47,18 +48,15 @@ const MySpeeches = () => {
     })));
 
     // Check for localStorage upcoming events
-    try {
-      const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
-      if (upcomingEventsJSON) {
-        const parsedEvents = JSON.parse(upcomingEventsJSON);
-        console.log(`Found ${parsedEvents.length} upcoming events in localStorage`, parsedEvents);
-      } else {
-        console.log('No upcoming events found in localStorage');
+    if (user && user.id) {
+      try {
+        const upcomingEvents = loadEventsFromStorage(user.id);
+        console.log(`Found ${upcomingEvents.length} upcoming events in localStorage for user ${user.id}`, upcomingEvents);
+      } catch (error) {
+        console.error('Error checking localStorage events:', error);
       }
-    } catch (error) {
-      console.error('Error checking localStorage events:', error);
     }
-  }, [speeches]);
+  }, [speeches, user]);
 
   if (isLoading) {
     return (
