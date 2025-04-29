@@ -22,9 +22,9 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         // Get the position of the element
         let offsetPosition = element.getBoundingClientRect().top + window.scrollY;
         
-        // For "How it Works" section, use a smaller offset to position it higher
+        // For "How it Works" section, use a different offset to position it higher
         if (sectionId === 'how-it-works') {
-          offsetPosition = offsetPosition - (navbarHeight + 30); // Additional 30px offset
+          offsetPosition = offsetPosition - (navbarHeight - 10); // Reduced offset to move section higher
         } else {
           // For other sections, apply the standard offset
           offsetPosition = offsetPosition - navbarHeight;
