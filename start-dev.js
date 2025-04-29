@@ -6,14 +6,14 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-// Path to local vite executable - check both standard locations
+// Path to local vite executable - check multiple possible locations
 const nodeModulesPath = path.join(__dirname, 'node_modules');
 const binPath = path.join(nodeModulesPath, '.bin');
 const vitePath = path.join(binPath, 'vite');
 const viteModulePath = path.join(nodeModulesPath, 'vite');
 
 // Log for debugging
-console.log('\x1b[36mStarting development server...\x1b[0m');
+console.log('\x1b[36mChecking Vite installation...\x1b[0m');
 
 // Function to attempt running vite with different approaches
 function runVite() {
@@ -63,9 +63,37 @@ function handleClose(code) {
   process.exit(code);
 }
 
-// Main execution
-if (!runVite()) {
-  // If local vite wasn't found, try using npx as fallback
+// Attempt to install dependencies automatically if vite is missing
+function installDependencies() {
+  console.log('\x1b[33mAttempting to install project dependencies...\x1b[0m');
+  
+  const npmProcess = spawn('npm', ['install'], {
+    stdio: 'inherit',
+    shell: true
+  });
+  
+  npmProcess.on('error', (err) => {
+    console.error('\x1b[31mFailed to run npm install:', err, '\x1b[0m');
+    console.log('\x1b[33mPlease manually run npm install and try again.\x1b[0m');
+    process.exit(1);
+  });
+  
+  npmProcess.on('close', (code) => {
+    if (code === 0) {
+      console.log('\x1b[32mDependencies installed successfully. Trying to start Vite again...\x1b[0m');
+      // Try running Vite again after installing dependencies
+      if (!runVite()) {
+        fallbackToNpx();
+      }
+    } else {
+      console.error('\x1b[31mnpm install failed with code:', code, '\x1b[0m');
+      fallbackToNpx();
+    }
+  });
+}
+
+// Fallback to using npx as a last resort
+function fallbackToNpx() {
   console.warn('\x1b[33mLocal Vite not found. Attempting to use npx...\x1b[0m');
   
   const viteProcess = spawn('npx', ['vite'].concat(process.argv.slice(2)), {
@@ -84,4 +112,10 @@ if (!runVite()) {
   });
 
   viteProcess.on('close', handleClose);
+}
+
+// Main execution
+if (!runVite()) {
+  // Before giving up, try to install dependencies
+  installDependencies();
 }
