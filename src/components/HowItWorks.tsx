@@ -37,9 +37,9 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="py-8 sm:py-12 md:py-16 lg:py-24 bg-gray-50 relative overflow-hidden">
-      {/* Place ID target at the very top of the component for accurate scrolling */}
-      <div id="how-it-works" className="absolute top-0 pt-0"></div>
+    <section className="pt-2 pb-8 sm:py-12 md:pb-16 lg:pb-24 bg-gray-50 relative overflow-hidden">
+      {/* Anchor div positioned at the very top with minimal padding */}
+      <div id="how-it-works" className="absolute -top-2"></div>
       
       <div className="container mx-auto px-4 sm:px-6 md:px-8">
         <div className="text-center max-w-full sm:max-w-3xl mx-auto mb-8 sm:mb-12 lg:mb-16" ref={sectionRef}>
