@@ -2,19 +2,22 @@
 #!/bin/bash
 # This script runs the Node.js script to start the development server
 
-# Make sure the script is executable
-chmod +x start-dev.js
+# Make sure this script is executable
+chmod +x "$0"
 
-# Try multiple methods to run Vite
-echo "Starting development server..."
+# Check if node_modules exists, if not install dependencies
+if [ ! -d "node_modules" ]; then
+  echo "Installing dependencies..."
+  npm install
+fi
 
-# Method 1: Using node to run our start-dev.js
-node start-dev.js "$@" || \
-# Method 2: Try direct npx
-npx vite "$@" || \
-# Method 3: Try npm script
-npm run dev "$@" || \
-# Method 4: As a last resort, try installing vite globally
-echo "Failed to run Vite. Attempting to install it globally..." && \
-npm install -g vite && \
-vite "$@"
+# Check if vite is installed globally
+if ! command -v vite &> /dev/null; then
+  echo "Vite command not found, using local installation..."
+  
+  # Run the node script with any provided arguments
+  node start-dev.js "$@"
+else
+  # If vite is available, use it directly
+  vite "$@"
+fi
