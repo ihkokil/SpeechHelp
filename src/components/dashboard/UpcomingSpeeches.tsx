@@ -7,7 +7,6 @@ import { Speech } from '@/types/speech';
 import EventForm from './upcoming-speeches/EventForm';
 import EventList from './upcoming-speeches/EventList';
 import { useUpcomingEvents } from './upcoming-speeches/useUpcomingEvents';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface UpcomingSpeechesProps {
   speeches?: Speech[];
@@ -16,7 +15,6 @@ interface UpcomingSpeechesProps {
 const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  const { user } = useAuth();
   const { 
     upcomingEvents, 
     addEvent, 
