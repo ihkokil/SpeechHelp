@@ -8,6 +8,16 @@ const fs = require('fs');
 
 console.log('Starting development server...');
 
+// First, ensure dependencies are installed
+try {
+  if (!fs.existsSync('./node_modules')) {
+    console.log('Installing dependencies...');
+    execSync('npm install', { stdio: 'inherit' });
+  }
+} catch (error) {
+  console.error('Error checking/installing dependencies:', error);
+}
+
 // Possible paths for the vite executable based on OS
 const possiblePaths = [
   path.join(__dirname, 'node_modules', '.bin', 'vite'),
@@ -30,9 +40,6 @@ for (const potentialPath of possiblePaths) {
 if (!vitePath) {
   console.log('Vite executable not found in expected locations, attempting to install/repair...');
   try {
-    console.log('Checking if vite is installed in package.json...');
-    
-    // Try installing vite locally if not found
     console.log('Installing vite locally...');
     execSync('npm install --save-dev vite@latest', { stdio: 'inherit' });
     
