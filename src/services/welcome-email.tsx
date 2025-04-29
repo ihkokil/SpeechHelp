@@ -22,10 +22,10 @@ export const WelcomeEmail = ({ username = 'there' }: WelcomeEmailProps) => {
 			<Head>
 				<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=SF+Pro+Display:wght@400;500;600;700&display=swap" />
 			</Head>
-			<Preview>Welcome to SpeechHelp - Your AI Speech Assistant</Preview>
+			<Preview>Welcome to SpeechHelp - Your Personal AI Speech Assistant</Preview>
 			<Body style={styles.main}>
 				<Container style={styles.container}>
-					<EmailHeader />
+					<EmailHeader username={username} />
 					<EmailBody username={username} />
 					<EmailFooter />
 				</Container>

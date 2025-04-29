@@ -15,7 +15,13 @@ export const EmailBody = ({ username = 'there' }: EmailBodyProps) => {
       <Text style={styles.paragraph}>Hi {username},</Text>
 
       <Text style={styles.paragraph}>
-        Thank you for joining SpeechHelp! We're excited to help you create amazing speeches using our AI-powered platform.
+        Thank you for joining SpeechHelp! We're thrilled to welcome you to our community of public speaking enthusiasts. 
+        Your journey to creating impactful, memorable speeches starts now.
+      </Text>
+
+      <Text style={styles.paragraph}>
+        With your new account, you can immediately start crafting speeches that will captivate your audience, 
+        whether you're preparing for a wedding toast, a business presentation, or an inspirational keynote.
       </Text>
 
       <EmailCTA />
@@ -23,7 +29,8 @@ export const EmailBody = ({ username = 'there' }: EmailBodyProps) => {
 
       <Section style={styles.supportSection}>
         <Text style={styles.paragraph}>
-          If you have any questions or need assistance, please don't hesitate to contact our support team at <Link href="mailto:hello@speechhelp.ai" style={styles.link}>hello@speechhelp.ai</Link>.
+          We're here to support your communication journey every step of the way. If you have any questions or need assistance, 
+          please reach out to our friendly support team at <Link href="mailto:hello@speechhelp.ai" style={styles.link}>hello@speechhelp.ai</Link>.
         </Text>
       </Section>
     </>

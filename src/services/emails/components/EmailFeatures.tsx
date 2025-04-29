@@ -7,15 +7,20 @@ export const EmailFeatures = () => {
   return (
     <Section style={styles.featuresSection}>
       <Text style={styles.subheading}>
-        With SpeechHelp, you can:
+        What you can do with SpeechHelp:
       </Text>
 
       <ul style={styles.list}>
-        <li style={styles.listItem}>Generate professional speeches for any occasion</li>
-        <li style={styles.listItem}>Customize your speech with detailed preferences</li>
-        <li style={styles.listItem}>Save and organize your speeches</li>
-        <li style={styles.listItem}>Get AI-powered feedback and improvements</li>
+        <li style={styles.listItem}>Generate tailored, professional speeches in just minutes</li>
+        <li style={styles.listItem}>Customize every aspect with our intuitive speech editor</li>
+        <li style={styles.listItem}>Save and organize your speeches in your personal library</li>
+        <li style={styles.listItem}>Receive AI-powered suggestions to enhance your delivery</li>
+        <li style={styles.listItem}>Export your speeches in multiple formats for practice or presentation</li>
       </ul>
+
+      <Text style={styles.paragraph}>
+        Your free trial includes all premium features for the next 7 days. Explore everything SpeechHelp has to offer!
+      </Text>
     </Section>
   );
 };
