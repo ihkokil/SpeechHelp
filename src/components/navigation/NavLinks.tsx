@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import Translate from '@/components/Translate';
@@ -21,8 +22,13 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         // Get the position of the element
         let offsetPosition = element.getBoundingClientRect().top + window.scrollY;
         
-        // For all sections, apply the standard offset to position the header at the top
-        offsetPosition = offsetPosition - navbarHeight;
+        // For "How it Works" section, use a smaller offset to position it higher
+        if (sectionId === 'how-it-works') {
+          offsetPosition = offsetPosition - (navbarHeight + 30); // Additional 30px offset
+        } else {
+          // For other sections, apply the standard offset
+          offsetPosition = offsetPosition - navbarHeight;
+        }
         
         window.scrollTo({
           top: offsetPosition,

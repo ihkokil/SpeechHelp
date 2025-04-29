@@ -38,8 +38,8 @@ const HowItWorks = () => {
 
   return (
     <section className="bg-gray-50 relative overflow-hidden">
-      {/* Place the anchor at the top with padding to account for navbar */}
-      <div id="how-it-works" className="absolute top-0"></div>
+      {/* Place the anchor higher up to make the section appear closer to the top */}
+      <div id="how-it-works" className="absolute -top-12"></div>
       
       {/* Add padding to push content below navbar */}
       <div className="pt-20 pb-8 sm:pb-12 md:pb-16 lg:pb-24">
