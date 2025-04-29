@@ -19,12 +19,16 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         // Adding offset to account for the navbar height
         const navbarHeight = 76; // Height of the navbar in pixels
         
-        // Base offset calculation
-        let offsetPosition = element.getBoundingClientRect().top + window.scrollY - navbarHeight;
+        // Calculate the position without any offset initially
+        let offsetPosition = element.getBoundingClientRect().top + window.scrollY;
         
-        // Additional offset for "How it Works" section to position it directly under navbar
+        // For "How it Works" section, ensure we subtract the navbar height
+        // This will position the section right at the top of the viewport under the navbar
         if (sectionId === 'how-it-works') {
-          offsetPosition = offsetPosition - 200; // Extremely large offset to ensure no content from above is visible
+          offsetPosition = offsetPosition - navbarHeight;
+        } else {
+          // For other sections, apply the standard offset
+          offsetPosition = offsetPosition - navbarHeight;
         }
         
         window.scrollTo({
