@@ -22,9 +22,9 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
         // Get the position of the element
         let offsetPosition = element.getBoundingClientRect().top + window.scrollY;
         
-        // For "How it Works" section, use a different offset to position it higher
+        // For "How it Works" section, use a different offset to position it at the very top
         if (sectionId === 'how-it-works') {
-          offsetPosition = offsetPosition - (navbarHeight - 10); // Reduced offset to move section higher
+          offsetPosition = offsetPosition - 10; // Minimal offset to put header at very top
         } else if (sectionId === 'contact') {
           offsetPosition = offsetPosition - navbarHeight; // Position the contact header at the top
         } else {
@@ -47,9 +47,10 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
   };
 
   const handlePricingClick = () => {
-    // If already on pricing page, scroll to top
+    // If already on pricing page, scroll to top with no offset
     if (location.pathname === '/pricing') {
-      scrollToTop();
+      // Scroll to the top with enough space to see the header
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     if (onItemClick) onItemClick();
   };
@@ -59,7 +60,9 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
       // If already on homepage, just scroll
       scrollToSection(sectionId);
     } else {
-      // If on another page, we'll navigate to home with a hash
+      // If on another page (like pricing), store the target section in sessionStorage
+      sessionStorage.setItem('scrollTarget', sectionId);
+      // Navigation will happen through the Link component
       if (onItemClick) onItemClick();
     }
   };
@@ -107,7 +110,7 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
     );
   }
 
-  // On other pages, use links to homepage with hash
+  // On other pages (like pricing), use links to homepage with section handling
   return (
     <>
       <Link
@@ -117,20 +120,18 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
       >
         <Translate text="nav.home" />
       </Link>
-      <Link
-        to="/#features"
+      <button
+        onClick={() => handleNavigation('features')}
         className={className}
-        onClick={onItemClick}
       >
         <Translate text="nav.features" />
-      </Link>
-      <Link
-        to="/#how-it-works"
+      </button>
+      <button
+        onClick={() => handleNavigation('how-it-works')}
         className={className}
-        onClick={onItemClick}
       >
         <Translate text="nav.howItWorks" />
-      </Link>
+      </button>
       <Link
         to="/pricing"
         className={className}
@@ -138,13 +139,12 @@ const NavLinks = ({ isMobile = false, onItemClick }: NavLinksProps) => {
       >
         <Translate text="nav.pricing" />
       </Link>
-      <Link
-        to="/#contact"
+      <button
+        onClick={() => handleNavigation('contact')}
         className={className}
-        onClick={onItemClick}
       >
         <Translate text="nav.contact" />
-      </Link>
+      </button>
     </>
   );
 };
