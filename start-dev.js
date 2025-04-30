@@ -10,55 +10,108 @@ console.log("====================================");
 console.log("Starting SpeechHelp Development Server");
 console.log("====================================");
 
-// First, ensure vite is installed directly
-try {
-  console.log("Installing Vite locally...");
-  execSync('npm install --save-dev vite@latest --no-audit --no-fund', { stdio: 'inherit' });
-  
-  // Check if package.json has the correct scripts
-  const packageJsonPath = path.join(__dirname, 'package.json');
-  if (fs.existsSync(packageJsonPath)) {
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-    if (!packageJson.scripts || !packageJson.scripts.dev || packageJson.scripts.dev !== 'vite') {
-      console.log("Adding dev script to package.json...");
-      if (!packageJson.scripts) packageJson.scripts = {};
-      packageJson.scripts.dev = 'vite';
-      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-    }
+// Function to check if vite is accessible via npx
+function isViteAccessible() {
+  try {
+    const npxPath = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+    execSync(`${npxPath} vite --version`, { stdio: 'pipe' });
+    return true;
+  } catch (e) {
+    return false;
   }
-  
-  // Launch with local vite
-  const vitePath = path.join(__dirname, 'node_modules', '.bin', 'vite');
-  if (fs.existsSync(vitePath)) {
-    console.log("✅ Starting Vite from local installation...");
-    const viteProcess = spawn(vitePath, [], { stdio: 'inherit', shell: true });
-    viteProcess.on('close', (code) => {
-      process.exit(code);
-    });
-    return;
-  }
-} catch (error) {
-  console.error("⚠️ Initial installation attempt failed, trying alternatives...");
 }
 
-// Try alternative approaches
-try {
-  console.log("🔄 Trying npx vite...");
-  const npxProcess = spawn('npx', ['vite'], { stdio: 'inherit', shell: true });
-  npxProcess.on('error', () => {
-    console.log("⚠️ npx vite failed, trying npm run dev...");
-    const npmProcess = spawn('npm', ['run', 'dev'], { stdio: 'inherit', shell: true });
-    npmProcess.on('error', () => {
-      console.error("❌ All attempts failed. Please try manually installing:");
-      console.log("npm install --save-dev vite@latest");
-      console.log("npx vite");
+// Try to run vite with multiple approaches
+function runVite() {
+  // First try: Direct vite command if already installed
+  if (isViteAccessible()) {
+    console.log("✅ Vite is accessible, starting server...");
+    const npxPath = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+    const viteProcess = spawn(npxPath, ['vite'], { stdio: 'inherit', shell: true });
+    
+    viteProcess.on('close', (code) => {
+      if (code !== 0) {
+        console.log("⚠️ Server exited with code:", code);
+        tryBackupMethods();
+      }
+    });
+    
+    viteProcess.on('error', () => {
+      console.log("⚠️ Error running Vite, trying alternatives...");
+      tryBackupMethods();
+    });
+    
+    return;
+  }
+  
+  // If direct run failed, try alternative methods
+  tryBackupMethods();
+}
+
+// Backup methods to run vite
+function tryBackupMethods() {
+  try {
+    // Try to install vite locally first
+    console.log("🔄 Installing Vite locally and trying again...");
+    
+    try {
+      execSync('npm install vite@latest --no-save', { stdio: 'inherit' });
+    } catch (e) {
+      console.log("⚠️ Local installation failed, trying global installation...");
+    }
+    
+    // Check for local node_modules/.bin/vite
+    const localVitePath = path.join(process.cwd(), 'node_modules', '.bin', 'vite');
+    if (fs.existsSync(localVitePath)) {
+      console.log("✅ Found local Vite installation, starting server...");
+      const localViteProcess = spawn(localVitePath, [], { stdio: 'inherit', shell: true });
+      
+      localViteProcess.on('close', (code) => {
+        if (code !== 0) {
+          console.error("❌ Server exited with code:", code);
+          tryLastResort();
+        }
+      });
+      
+      return;
+    }
+    
+    // Try with npx vite
+    console.log("🔄 Trying with npx vite...");
+    const npxPath = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+    const npxProcess = spawn(npxPath, ['vite'], { stdio: 'inherit', shell: true });
+    
+    npxProcess.on('error', () => {
+      tryLastResort();
+    });
+  } catch (error) {
+    tryLastResort();
+  }
+}
+
+// Last resort methods
+function tryLastResort() {
+  console.error("❌ All standard methods failed. Trying last resort approaches...");
+  
+  try {
+    // Try to use global vite if installed
+    execSync('npm install -g vite', { stdio: 'inherit' });
+    
+    const globalViteProcess = spawn('vite', [], { stdio: 'inherit', shell: true });
+    globalViteProcess.on('error', () => {
+      console.error("❌ All attempts failed. Please try manually:");
+      console.log("1. npm install -g vite");
+      console.log("2. npx vite");
       process.exit(1);
     });
-  });
-} catch (error) {
-  console.error("❌ Could not start development server:", error.message);
-  console.log("Please try these commands manually:");
-  console.log("1. npm install --save-dev vite");
-  console.log("2. npx vite");
-  process.exit(1);
+  } catch (error) {
+    console.error("❌ Could not start development server:", error.message);
+    console.log("Please try these commands manually:");
+    console.log("1. npm install -g vite");
+    console.log("2. npx vite");
+    process.exit(1);
+  }
 }
+
+// Start the process
+runVite();

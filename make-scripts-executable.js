@@ -12,8 +12,8 @@ function installVite() {
   // Try different installation methods
   const installMethods = [
     'npm install --save-dev vite@latest --no-audit --no-fund',
-    'npm install --save-dev vite@latest',
-    'npm cache clean --force && npm install --save-dev vite@latest',
+    'npm install vite@latest --no-save',
+    'npx vite@latest --no-install',
     'npm install -g vite'  // Global install as last resort
   ];
   
@@ -22,53 +22,20 @@ function installVite() {
       console.log(`Trying: ${method}`);
       execSync(method, { stdio: 'inherit' });
       
-      // Check if installation worked
-      if (fs.existsSync(path.join(__dirname, 'node_modules', '.bin', 'vite'))) {
-        console.log('✅ Vite installed successfully!');
+      // Check if installation worked by looking for vite binary
+      const npxPath = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+      try {
+        execSync(`${npxPath} vite --version`, { stdio: 'pipe' });
+        console.log('✅ Vite is now accessible');
         return true;
+      } catch (e) {
+        console.log('⚠️ Vite installation method worked but vite command not available yet');
       }
     } catch (error) {
       console.log(`⚠️ Method failed: ${method}`);
     }
   }
   
-  return false;
-}
-
-// Update package.json with required scripts
-function updatePackageJson() {
-  try {
-    const packageJsonPath = path.join(__dirname, 'package.json');
-    if (fs.existsSync(packageJsonPath)) {
-      console.log('Updating package.json...');
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-      
-      // Ensure scripts section exists
-      if (!packageJson.scripts) {
-        packageJson.scripts = {};
-      }
-      
-      // Update scripts
-      packageJson.scripts.dev = 'vite';
-      packageJson.scripts.build = 'vite build';
-      packageJson.scripts.preview = 'vite preview';
-      
-      // Add vite to dev dependencies if not present
-      if (!packageJson.devDependencies) {
-        packageJson.devDependencies = {};
-      }
-      if (!packageJson.devDependencies.vite) {
-        packageJson.devDependencies.vite = "^5.0.0";
-      }
-      
-      // Write updated package.json
-      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-      console.log('✅ package.json updated successfully');
-      return true;
-    }
-  } catch (error) {
-    console.error('❌ Failed to update package.json:', error.message);
-  }
   return false;
 }
 
@@ -97,12 +64,10 @@ function main() {
   console.log('====================================');
   
   const viteInstalled = installVite();
-  const packageUpdated = updatePackageJson();
   const scriptsExecutable = makeExecutable();
   
   console.log('\nSetup summary:');
   console.log(`- Vite installation: ${viteInstalled ? '✅ Success' : '❌ Failed'}`);
-  console.log(`- Package.json update: ${packageUpdated ? '✅ Success' : '❌ Failed'}`);
   console.log(`- Scripts executable: ${scriptsExecutable ? '✅ Success' : '❌ Failed'}`);
   
   console.log('\n====================================');
