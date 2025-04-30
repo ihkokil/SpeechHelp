@@ -1,13 +1,16 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { CalendarIcon, Edit, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { MoreVertical, Edit, Trash, PenTool } from 'lucide-react';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -16,11 +19,9 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { SpeechEvent } from './types';
-import { loadEventsFromStorage, saveEventsToStorage } from './utils';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface UpcomingEventActionsProps {
   event: SpeechEvent;
@@ -28,77 +29,141 @@ interface UpcomingEventActionsProps {
   refreshEvents: () => void;
 }
 
-const UpcomingEventActions: React.FC<UpcomingEventActionsProps> = ({ 
-  event, 
-  onCreateSpeech,
-  refreshEvents
-}) => {
+const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: UpcomingEventActionsProps) => {
+  const [isEditingDate, setIsEditingDate] = useState(false);
+  const [newDate, setNewDate] = useState<Date>(new Date(event.date));
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const { user } = useAuth();
-
-  const handlePrepareSpeech = () => {
-    onCreateSpeech(event);
+  
+  const handleDateChange = (date: Date | undefined) => {
+    if (!date) return;
+    
+    setNewDate(date);
+    
+    // Update the event in localStorage
+    const savedEvents = localStorage.getItem('upcomingEvents');
+    if (savedEvents) {
+      try {
+        const parsedEvents = JSON.parse(savedEvents);
+        const updatedEvents = parsedEvents.map((savedEvent: any) => {
+          if (savedEvent.id === event.id) {
+            return {
+              ...savedEvent,
+              date: date.toISOString() // Store as ISO string for localStorage
+            };
+          }
+          return savedEvent;
+        });
+        
+        // Save back to localStorage
+        localStorage.setItem('upcomingEvents', JSON.stringify(updatedEvents));
+        
+        // Close the date picker
+        setIsEditingDate(false);
+        
+        // Show success message
+        toast.success('Event date updated successfully');
+        
+        // Refresh the events list
+        refreshEvents();
+      } catch (error) {
+        console.error('Error updating event date:', error);
+        toast.error('Failed to update event date');
+      }
+    }
   };
-
-  const handleDelete = () => {
-    if (!user || !user.id) {
-      console.error('No user ID available, cannot delete event');
-      return;
+  
+  const handleDeleteEvent = () => {
+    // Delete the event from localStorage
+    const savedEvents = localStorage.getItem('upcomingEvents');
+    if (savedEvents) {
+      try {
+        const parsedEvents = JSON.parse(savedEvents);
+        const updatedEvents = parsedEvents.filter(
+          (savedEvent: any) => savedEvent.id !== event.id
+        );
+        
+        // Save back to localStorage
+        localStorage.setItem('upcomingEvents', JSON.stringify(updatedEvents));
+        
+        // Show success message
+        toast.success('Event deleted successfully');
+        
+        // Refresh the events list
+        refreshEvents();
+      } catch (error) {
+        console.error('Error deleting event:', error);
+        toast.error('Failed to delete event');
+      }
     }
     
-    // Load current events
-    const events = loadEventsFromStorage(user.id);
-    
-    // Filter out the event to delete
-    const updatedEvents = events.filter(e => e.id !== event.id);
-    
-    // Save updated events back to storage
-    saveEventsToStorage(updatedEvents, user.id);
-    
-    // Close dialog and refresh events list
+    // Close the dialog
     setIsDeleteDialogOpen(false);
-    refreshEvents();
   };
-
+  
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handlePrepareSpeech}>
-            <PenTool className="mr-2 h-4 w-4" />
-            <span>Prepare Speech</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)}>
-            <Trash className="mr-2 h-4 w-4" />
-            <span>Delete</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
+    <div className="flex flex-col items-end space-y-2">
+      <div className="flex space-x-2">
+        {/* Edit Date Button & Popover */}
+        <Popover open={isEditingDate} onOpenChange={setIsEditingDate}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-7 w-7"
+              title="Edit date"
+            >
+              <CalendarIcon className="h-3.5 w-3.5" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={newDate}
+              onSelect={handleDateChange}
+              initialFocus
+              className="p-3 pointer-events-auto"
+            />
+          </PopoverContent>
+        </Popover>
+        
+        {/* Delete Button */}
+        <Button
+          variant="outline" 
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => setIsDeleteDialogOpen(true)}
+          title="Delete event"
+        >
+          <Trash className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+      
+      {/* Create Speech Button */}
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="text-xs"
+        onClick={() => onCreateSpeech(event)}
+      >
+        Create
+      </Button>
+      
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Event</AlertDialogTitle>
+            <AlertDialogTitle>Delete upcoming speech?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this upcoming speech? 
-              This action cannot be undone.
+              Are you sure you want to delete this upcoming speech event? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Delete
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteEvent}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 };
 
