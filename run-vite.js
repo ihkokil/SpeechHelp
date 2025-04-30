@@ -3,7 +3,7 @@
 
 /**
  * Direct Vite Runner Script
- * Finds and executes Vite reliably
+ * Reliable way to run Vite regardless of installation method
  */
 
 const { spawn } = require('child_process');
@@ -17,7 +17,7 @@ const localVitePath = path.resolve(process.cwd(), 'node_modules', '.bin', isWin 
 console.log(`Starting SpeechHelp development server...`);
 
 // Run Vite directly if it exists, or using npx as fallback
-function runVite() {
+async function runVite() {
   return new Promise((resolve, reject) => {
     let viteProcess;
     
@@ -26,7 +26,8 @@ function runVite() {
       console.log(`✅ Using local Vite installation: ${localVitePath}`);
       viteProcess = spawn(localVitePath, process.argv.slice(2), {
         stdio: 'inherit',
-        shell: true
+        shell: true,
+        env: { ...process.env, PATH: `${process.cwd()}/node_modules/.bin:${process.env.PATH}` } // Add node_modules/.bin to PATH
       });
     } else {
       // Fall back to npx
@@ -52,9 +53,41 @@ function runVite() {
   });
 }
 
+// Also try to install Vite if it's not found
+function ensureViteInstalled() {
+  if (fs.existsSync(localVitePath)) {
+    return Promise.resolve(true);
+  }
+  
+  console.log(`⚠️ Vite not found, attempting to install...`);
+  return new Promise((resolve) => {
+    const npmCommand = isWin ? 'npm.cmd' : 'npm';
+    const installProcess = spawn(npmCommand, ['install', 'vite', '@vitejs/plugin-react-swc', '--save-dev'], { 
+      stdio: 'inherit',
+      shell: true
+    });
+    
+    installProcess.on('close', (code) => {
+      resolve(code === 0);
+    });
+    
+    installProcess.on('error', () => {
+      resolve(false);
+    });
+  });
+}
+
 // Run Vite with proper error handling
-runVite().catch(err => {
-  console.error(`Fatal error running Vite: ${err.message}`);
-  console.log(`Try running 'node install-vite.js' to fix installation issues.`);
-  process.exit(1);
-});
+async function main() {
+  try {
+    // Try to ensure Vite is installed
+    await ensureViteInstalled();
+    // Run Vite
+    await runVite();
+  } catch (err) {
+    console.error(`Fatal error running Vite: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+main();
