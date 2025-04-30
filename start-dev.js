@@ -1,10 +1,39 @@
 
 #!/usr/bin/env node
 
-// This script helps run the locally installed Vite
+// This script helps run the locally installed Vite with enhanced error handling
 const { spawn, execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+
+// Function to ensure vite is added to package.json
+function ensureViteInPackageJson() {
+  try {
+    const packageJsonPath = path.join(__dirname, 'package.json');
+    if (fs.existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      const devDeps = packageJson.devDependencies || {};
+      const deps = packageJson.dependencies || {};
+      
+      if (!devDeps.vite && !deps.vite) {
+        console.log('⚠️ Vite not found in package.json. Adding it...');
+        packageJson.devDependencies = {
+          ...devDeps,
+          "vite": "^4.4.0"  // Using a stable version
+        };
+        
+        // Write updated package.json
+        fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+        console.log('✅ Updated package.json with Vite dependency');
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    console.error('❌ Failed to update package.json:', error.message);
+    return false;
+  }
+}
 
 // Function to check if a command exists
 function commandExists(command) {
@@ -19,100 +48,108 @@ function commandExists(command) {
   }
 }
 
-// Check if vite needs to be installed
-function ensureViteInstalled() {
-  const localVitePath = path.join(__dirname, 'node_modules', '.bin', 'vite');
+// Function to install vite with different methods
+function installVite() {
+  console.log('⚠️ Installing Vite...');
   
-  if (!fs.existsSync(localVitePath)) {
-    console.log('⚠️ Vite not found locally. Installing vite...');
+  try {
+    // Method 1: Normal install with no-audit (faster)
+    console.log('Trying installation method 1...');
+    execSync('npm install --save-dev vite@latest --no-audit', { stdio: 'inherit' });
+    return true;
+  } catch (e1) {
     try {
-      // Try with --no-audit for faster installation
-      execSync('npm install --save-dev vite@latest --no-audit', { stdio: 'inherit' });
-      
-      if (fs.existsSync(localVitePath)) {
-        console.log('✅ Vite installed successfully.');
+      // Method 2: Force install with cache clean
+      console.log('Trying installation method 2...');
+      execSync('npm cache clean --force && npm install --save-dev vite', { stdio: 'inherit' });
+      return true;
+    } catch (e2) {
+      try {
+        // Method 3: Install globally as last resort
+        console.log('Trying global installation...');
+        execSync('npm install -g vite', { stdio: 'inherit' });
         return true;
+      } catch (e3) {
+        console.error('❌ All installation methods failed');
+        return false;
       }
-      
-      // Try alternative method if first method failed
-      console.log('⚠️ First installation method failed. Trying alternative method...');
-      execSync('npm install --save-dev vite', { stdio: 'inherit' });
-      
-      return fs.existsSync(localVitePath);
-    } catch (err) {
-      console.error('❌ Failed to install Vite:', err.message);
-      return false;
     }
   }
-  return true;
 }
 
-// Try to find the local vite executable
+// Update package.json if needed
+const packageUpdated = ensureViteInPackageJson();
+if (packageUpdated) {
+  console.log('Installing dependencies after updating package.json...');
+  try {
+    execSync('npm install', { stdio: 'inherit' });
+  } catch (e) {
+    console.error('⚠️ Failed to run npm install, will try alternative methods');
+  }
+}
+
+// Local vite path
 const localVitePath = path.join(__dirname, 'node_modules', '.bin', 'vite');
 
+// Main function to start vite
 function startVite() {
-  console.log('Starting development server...');
+  console.log('====================================');
+  console.log('Starting Vite Development Server...');
+  console.log('====================================');
   
-  // First, make sure Vite is installed
-  if (ensureViteInstalled()) {
-    // Now check if local Vite exists (it should after ensureViteInstalled)
+  // Check if local vite exists
+  if (fs.existsSync(localVitePath)) {
+    console.log('✅ Found local Vite installation, using it...');
+    const viteProcess = spawn(process.platform === 'win32' ? localVitePath : 'node_modules/.bin/vite', [], {
+      stdio: 'inherit',
+      shell: true
+    });
+    
+    viteProcess.on('error', (err) => {
+      console.error('❌ Failed to start local Vite:', err.message);
+      tryAlternativeMethods();
+    });
+    
+    return;
+  }
+  
+  // Try to install vite if not found
+  console.log('⚠️ Local Vite not found, installing...');
+  if (installVite()) {
+    // Check again after installation
     if (fs.existsSync(localVitePath)) {
-      console.log('✅ Using locally installed Vite...');
-      const viteProcess = spawn(process.platform === 'win32' ? localVitePath : 'node_modules/.bin/vite', process.argv.slice(2), { 
+      console.log('✅ Vite installed successfully, starting server...');
+      const viteProcess = spawn(process.platform === 'win32' ? localVitePath : 'node_modules/.bin/vite', [], {
         stdio: 'inherit',
         shell: true
       });
       
-      viteProcess.on('error', (err) => {
-        console.error('❌ Failed to start local Vite:', err);
-        tryNpxVite();
-      });
-      
-      viteProcess.on('close', (code) => {
-        if (code !== 0) {
-          console.log(`⚠️ Local Vite exited with code ${code}, trying alternatives...`);
-          tryNpxVite();
-        } else {
-          process.exit(code);
-        }
-      });
-      
-    } else {
-      // This shouldn't happen if ensureViteInstalled worked
-      console.error('⚠️ Something went wrong with Vite installation, trying alternatives...');
-      tryNpxVite();
+      return;
     }
-  } else {
-    // If local Vite doesn't exist, try alternatives
-    tryNpxVite();
   }
+  
+  // If installation didn't work, try alternatives
+  tryAlternativeMethods();
 }
 
-function tryNpxVite() {
+function tryAlternativeMethods() {
   // Try using npx vite
   if (commandExists('npx')) {
     console.log('Trying npx vite...');
-    const npxProcess = spawn('npx', ['vite', ...process.argv.slice(2)], {
+    const npxProcess = spawn('npx', ['vite'], {
       stdio: 'inherit',
       shell: true
     });
     
     npxProcess.on('error', (err) => {
-      console.error('❌ Failed to start with npx:', err);
+      console.error('❌ Failed to start with npx:', err.message);
       tryNpmRunDev();
     });
     
-    npxProcess.on('close', (code) => {
-      if (code !== 0) {
-        console.log(`⚠️ npx vite exited with code ${code}, trying npm run dev...`);
-        tryNpmRunDev();
-      } else {
-        process.exit(code);
-      }
-    });
-  } else {
-    tryNpmRunDev();
+    return;
   }
+  
+  tryNpmRunDev();
 }
 
 function tryNpmRunDev() {
@@ -124,21 +161,13 @@ function tryNpmRunDev() {
   });
   
   npmProcess.on('error', (err) => {
-    console.error('❌ Failed to start with npm run dev:', err);
-    console.error('Could not start development server. Please try the following steps manually:');
+    console.error('❌ All methods failed. Please try these manual steps:');
     console.log('1. Run: npm install -g vite');
     console.log('2. Run: npm install --save-dev vite');
     console.log('3. Run: npx vite');
     process.exit(1);
   });
-  
-  npmProcess.on('close', (code) => {
-    process.exit(code);
-  });
 }
 
 // Start the main process
-console.log('====================================');
-console.log('Vite Development Server Launcher');
-console.log('====================================');
 startVite();
