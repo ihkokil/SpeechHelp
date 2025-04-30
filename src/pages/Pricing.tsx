@@ -12,8 +12,11 @@ const Pricing = () => {
   const [pricingPeriod, setPricingPeriod] = useState<PricingPeriod>('monthly');
   
   useEffect(() => {
-    // Scroll to top with no offset when the component mounts
-    window.scrollTo(0, 0);
+    // Immediately scroll to top when the component mounts, with no delay
+    window.scrollTo({
+      top: 0,
+      behavior: 'instant' // Using 'instant' instead of 'smooth' for immediate effect
+    });
   }, []);
 
   return (
