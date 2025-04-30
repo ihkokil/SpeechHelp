@@ -21,7 +21,6 @@ const makeExecutable = () => {
   }
 };
 
-// Make scripts executable
 makeExecutable();
 
 // Try to install Vite if it's not already installed
