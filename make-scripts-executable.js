@@ -11,11 +11,12 @@ function installViteIfNeeded() {
     // Check if vite is installed locally
     if (!fs.existsSync(path.join(__dirname, 'node_modules', '.bin', 'vite'))) {
       console.log('Installing vite locally...');
-      execSync('npm install vite@latest', { stdio: 'inherit' });
+      execSync('npm install vite@latest --save-dev', { stdio: 'inherit' });
       console.log('Vite installed successfully.');
     }
   } catch (error) {
     console.error('Failed to install vite:', error.message);
+    console.log('Please install vite manually with "npm install vite --save-dev"');
   }
 }
 
