@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { X } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface WritingTipArticleProps {
@@ -29,12 +28,7 @@ const WritingTipArticle: React.FC<WritingTipArticleProps> = ({ isOpen, onClose, 
               <DialogTitle className="text-2xl font-bold text-pink-600">{article.title}</DialogTitle>
               <DialogDescription className="mt-2 text-gray-600">{article.description}</DialogDescription>
             </div>
-            <DialogClose asChild>
-              <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
-                <X className="h-5 w-5" />
-                <span className="sr-only">Close</span>
-              </Button>
-            </DialogClose>
+            {/* Custom close button removed - using only the built-in DialogClose */}
           </div>
         </DialogHeader>
         <ScrollArea className="mt-4 flex-grow pr-4">
