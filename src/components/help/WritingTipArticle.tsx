@@ -29,7 +29,7 @@ const WritingTipArticle: React.FC<WritingTipArticleProps> = ({ isOpen, onClose, 
             </div>
           </div>
         </DialogHeader>
-        <ScrollArea className="mt-4 flex-grow pr-4">
+        <ScrollArea className="mt-4 flex-grow pr-4 h-[60vh]">
           <div className="prose prose-pink max-w-none">
             {article.content}
           </div>
