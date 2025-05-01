@@ -7,6 +7,67 @@ import { useCallback } from 'react';
 export const useSpeechService = () => {
 	const { toast } = useToast();
 
+	const fetchAllSpeeches = useCallback(async () => {
+		console.log('Fetching all speeches from database');
+
+		try {
+			// Fetch all speeches from all users
+			const { data, error } = await supabase
+				.from('speeches')
+				.select('*')
+				.order('created_at', { ascending: false });
+
+			if (error) {
+				console.error('Error fetching all speeches:', error);
+				console.error('Error details:', {
+					message: error.message,
+					details: error.details,
+					hint: error.hint,
+					code: error.code
+				});
+				toast({
+					title: "Error fetching speeches",
+					description: error.message,
+					variant: "destructive"
+				});
+				return [];
+			}
+
+			// Debug: log the raw data from the database
+			console.log('Raw speech data from database:', data);
+			console.log('Total number of speeches found:', data?.length || 0);
+
+			// Ensure timestamps are properly formatted and never null or empty
+			const processedSpeeches = data?.map(speech => {
+				console.log('Processing speech:', speech.id, 'for user:', speech.user_id);
+				const now = new Date().toISOString();
+				const created = typeof speech.created_at === 'string' && speech.created_at.trim() !== '' 
+					? speech.created_at 
+					: now;
+				const updated = typeof speech.updated_at === 'string' && speech.updated_at.trim() !== '' 
+					? speech.updated_at 
+					: created;
+
+				return {
+					...speech,
+					created_at: created,
+					updated_at: updated
+				};
+			}) || [];
+
+			console.log('Processed all speeches with timestamps:', processedSpeeches);
+			return processedSpeeches as Speech[];
+		} catch (fetchError) {
+			console.error('Exception in fetchAllSpeeches:', fetchError);
+			toast({
+				title: "Error fetching speeches",
+				description: "There was a problem retrieving speeches",
+				variant: "destructive"
+			});
+			return [];
+		}
+	}, [toast]);
+
 	const fetchSpeeches = useCallback(async (userId: string | undefined) => {
 		if (!userId) {
 			console.log('No userId provided, returning empty speeches array');
@@ -173,6 +234,7 @@ export const useSpeechService = () => {
 	}, [toast]);
 
 	return {
+		fetchAllSpeeches,
 		fetchSpeeches,
 		saveSpeech,
 		updateSpeech,
