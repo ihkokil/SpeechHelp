@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, FileText, Calendar, Type, Eye, Clock, RefreshCw } from 'lucide-react';
+import { Loader2, FileText, Calendar, Type, Eye, Clock, RefreshCw, Database } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface UserSpeechesProps {
@@ -22,8 +22,9 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
 }) => {
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
 
-  console.log('UserSpeeches component rendering:', {
+  console.log('🎭 UserSpeeches component rendering:', {
     userId: user.id,
+    userEmail: user.email,
     speechesLength: speeches?.length,
     isLoadingSpeeches,
     speeches: speeches,
@@ -32,13 +33,14 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
       title: s.title,
       speech_type: s.speech_type,
       created_at: s.created_at,
-      contentLength: s.content?.length
+      contentLength: s.content?.length,
+      user_id: s.user_id
     }))
   });
 
   // Manual refresh function for testing
   const handleRefresh = () => {
-    console.log('Manual refresh triggered for user:', user.id);
+    console.log('🔄 Manual refresh triggered for user:', user.id);
     window.location.reload(); // Simple refresh for debugging
   };
 
@@ -207,15 +209,41 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
         <CardContent>
           <div className="text-center py-8">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No speeches found for this user</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              This user hasn't created any speeches yet, or they may not be properly linked to this user ID.
-            </p>
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
-              <p><strong>Debug Info:</strong></p>
-              <p>User ID: {user.id}</p>
-              <p>Speeches Array Length: {speeches?.length || 0}</p>
-              <p>Loading State: {isLoadingSpeeches ? 'Yes' : 'No'}</p>
+            <p className="text-muted-foreground mb-4">No speeches found for this user</p>
+            
+            <div className="space-y-3">
+              <div className="text-sm text-muted-foreground">
+                This could mean:
+              </div>
+              <div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Database className="h-3 w-3" />
+                  User hasn't created any speeches yet
+                </div>
+                <div className="flex items-center gap-2">
+                  <Database className="h-3 w-3" />
+                  Data consistency issue between auth and speeches table
+                </div>
+                <div className="flex items-center gap-2">
+                  <Database className="h-3 w-3" />
+                  User ID mismatch in the database
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600 space-y-2">
+              <div className="font-medium text-gray-700">🔍 Debug Information:</div>
+              <div className="space-y-1 text-left">
+                <div><strong>User ID:</strong> {user.id}</div>
+                <div><strong>User Email:</strong> {user.email}</div>
+                <div><strong>Speeches Array Length:</strong> {speeches?.length || 0}</div>
+                <div><strong>Loading State:</strong> {isLoadingSpeeches ? 'Yes' : 'No'}</div>
+                <div><strong>Created At:</strong> {user.created_at || 'Unknown'}</div>
+                <div><strong>Subscription:</strong> {user.subscription_plan || 'None'}</div>
+              </div>
+              <div className="mt-3 p-2 bg-blue-50 rounded text-blue-700 text-xs">
+                💡 If you see speeches when logged in as this user, there might be a data linking issue. Check the console for detailed query results.
+              </div>
             </div>
           </div>
         </CardContent>

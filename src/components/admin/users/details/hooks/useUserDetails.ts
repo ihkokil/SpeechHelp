@@ -20,56 +20,107 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     setTotalActivityTime(0);
   }, []);
 
-  // Function to fetch speech data directly from database
+  // Enhanced function to fetch speech data with multiple approaches
   const fetchUserSpeeches = useCallback(async (userId: string) => {
     if (!userId) {
       console.log('No userId provided for speech fetching');
       return;
     }
     
-    console.log('Starting to fetch speeches for user:', userId);
+    console.log('🔍 Starting comprehensive speech fetch for user:', userId);
     setIsLoadingSpeeches(true);
     
     try {
-      // Direct query to speeches table with detailed logging
-      console.log('Querying speeches table for user_id:', userId);
+      // First, let's try the standard query
+      console.log('📋 Attempt 1: Standard query to speeches table');
       
-      const { data, error, count } = await supabase
+      const { data: standardData, error: standardError, count: standardCount } = await supabase
         .from('speeches')
         .select('*', { count: 'exact' })
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
         
-      console.log('Raw query result:', { data, error, count });
-      console.log('Query executed successfully, found', count, 'speeches');
+      console.log('📊 Standard query result:', { 
+        data: standardData, 
+        error: standardError, 
+        count: standardCount,
+        dataLength: standardData?.length 
+      });
+      
+      // Second, let's try a more flexible query to see if there are any speeches at all
+      console.log('📋 Attempt 2: Checking all speeches for debugging');
+      
+      const { data: allSpeeches, error: allError } = await supabase
+        .from('speeches')
+        .select('id, user_id, title, created_at')
+        .limit(10);
         
-      if (error) {
-        console.error('Supabase error fetching user speeches:', error);
+      console.log('📊 All speeches sample (first 10):', { 
+        data: allSpeeches, 
+        error: allError,
+        userIds: allSpeeches?.map(s => s.user_id)
+      });
+      
+      // Third, let's check if there are speeches with this exact user ID using different approaches
+      console.log('📋 Attempt 3: Case-insensitive and trimmed user ID search');
+      
+      const { data: flexibleData, error: flexibleError } = await supabase
+        .from('speeches')
+        .select('*')
+        .or(`user_id.eq.${userId},user_id.ilike.${userId}`)
+        .order('created_at', { ascending: false });
+        
+      console.log('📊 Flexible query result:', { 
+        data: flexibleData, 
+        error: flexibleError,
+        dataLength: flexibleData?.length 
+      });
+      
+      // Use the data that returned results, prioritizing standard query
+      let finalData = standardData;
+      let finalError = standardError;
+      
+      if (!standardData?.length && flexibleData?.length) {
+        console.log('⚠️ Using flexible query results as fallback');
+        finalData = flexibleData;
+        finalError = flexibleError;
+      }
+        
+      if (finalError) {
+        console.error('❌ Supabase error fetching user speeches:', finalError);
         toast({
           title: "Error loading speeches",
-          description: `Database error: ${error.message}`,
+          description: `Database error: ${finalError.message}`,
           variant: "destructive"
         });
         setSpeeches([]);
       } else {
-        console.log('Successfully fetched speeches for user:', userId);
-        console.log('Raw speeches data from database:', data);
+        console.log('✅ Successfully fetched speeches for user:', userId);
+        console.log('📄 Final speeches data from database:', finalData);
         
         // Process speeches to ensure proper formatting
-        const processedSpeeches = (data || []).map(speech => ({
+        const processedSpeeches = (finalData || []).map(speech => ({
           ...speech,
           created_at: speech.created_at || new Date().toISOString(),
           updated_at: speech.updated_at || speech.created_at || new Date().toISOString()
         }));
         
-        console.log('Processed speeches:', processedSpeeches);
-        console.log('Total speeches processed:', processedSpeeches.length);
+        console.log('✨ Processed speeches:', processedSpeeches);
+        console.log('📈 Total speeches processed:', processedSpeeches.length);
+        
+        if (processedSpeeches.length === 0) {
+          console.log('⚠️ No speeches found for user. This might indicate:');
+          console.log('   - User has not created any speeches');
+          console.log('   - Data consistency issue between auth and speeches table');
+          console.log('   - User ID mismatch');
+          console.log('   - RLS policy blocking access');
+        }
         
         setSpeeches(processedSpeeches);
         calculateTotalActivityTime(processedSpeeches);
       }
     } catch (error) {
-      console.error('Exception fetching user speeches:', error);
+      console.error('💥 Exception fetching user speeches:', error);
       toast({
         title: "Error loading speeches",
         description: "An unexpected error occurred while loading speeches.",
@@ -90,7 +141,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     const today = new Date();
     const diffTime = Math.abs(today.getTime() - createdDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    console.log('User joined days ago:', diffDays, 'from date:', user.created_at);
+    console.log('👤 User joined days ago:', diffDays, 'from date:', user.created_at);
     setUserJoinedDays(diffDays);
   }, []);
   
@@ -125,7 +176,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
       return total + estimatedMinutes;
     }, 0);
     
-    console.log('Calculated total activity time:', totalTime, 'minutes for', speeches.length, 'speeches');
+    console.log('⏱️ Calculated total activity time:', totalTime, 'minutes for', speeches.length, 'speeches');
     setTotalActivityTime(totalTime);
   }, []);
 
@@ -134,8 +185,8 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     let isMounted = true;
     
     if (user && open) {
-      console.log('User details drawer opened for user:', user.id);
-      console.log('User data:', {
+      console.log('🎯 User details drawer opened for user:', user.id);
+      console.log('📋 User data:', {
         id: user.id,
         email: user.email,
         created_at: user.created_at,
@@ -150,11 +201,11 @@ export const useUserDetails = (user: User | null, open: boolean) => {
         calculateUserStats(user);
         
         // Fetch speeches for this user
-        console.log('About to fetch speeches for user:', user.id);
+        console.log('🚀 About to fetch speeches for user:', user.id);
         fetchUserSpeeches(user.id);
       }
     } else if (!open) {
-      console.log('User details drawer closed, resetting state');
+      console.log('❌ User details drawer closed, resetting state');
       // Reset state when drawer closes
       if (isMounted) {
         resetState();
