@@ -2,13 +2,14 @@
 import React from 'react';
 import { SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User as UserIcon, CreditCard, Clock, PieChart } from 'lucide-react';
+import { User as UserIcon, CreditCard, Clock, PieChart, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserHeader } from './UserHeader';
 import { UserProfile } from './UserProfile';
 import { UserBilling } from './UserBilling';
 import { UserStatistics } from './UserStatistics';
 import { UserActivity } from './UserActivity';
+import { UserSpeeches } from './UserSpeeches';
 import { User as UserType } from '../types';
 import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
 
@@ -56,7 +57,7 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
         <UserHeader user={user} />
         
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile">
               <UserIcon className="mr-1 h-4 w-4" />
               <span className="hidden sm:inline">Profile</span>
@@ -64,6 +65,10 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
             <TabsTrigger value="billing">
               <CreditCard className="mr-1 h-4 w-4" />
               <span className="hidden sm:inline">Billing</span>
+            </TabsTrigger>
+            <TabsTrigger value="speeches">
+              <FileText className="mr-1 h-4 w-4" />
+              <span className="hidden sm:inline">Speeches</span>
             </TabsTrigger>
             <TabsTrigger value="statistics">
               <PieChart className="mr-1 h-4 w-4" />
@@ -81,6 +86,10 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
           
           <TabsContent value="billing" className="pt-4">
             <UserBilling user={user} />
+          </TabsContent>
+
+          <TabsContent value="speeches" className="pt-4">
+            <UserSpeeches user={user} />
           </TabsContent>
 
           <TabsContent value="statistics" className="pt-4">
