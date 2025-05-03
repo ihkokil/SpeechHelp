@@ -8,8 +8,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { 
   AlertDialog,
@@ -22,6 +20,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { SpeechEvent } from './types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UpcomingEventActionsProps {
   event: SpeechEvent;
@@ -31,16 +30,26 @@ interface UpcomingEventActionsProps {
 
 const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: UpcomingEventActionsProps) => {
   const [isEditingDate, setIsEditingDate] = useState(false);
-  const [newDate, setNewDate] = useState<Date>(new Date(event.date));
+  const [newDate, setNewDate] = useState<Date>(
+    event.date instanceof Date ? event.date : new Date(event.date)
+  );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { user } = useAuth();
   
   const handleDateChange = (date: Date | undefined) => {
     if (!date) return;
     
     setNewDate(date);
     
+    if (!user?.id) {
+      console.error('Cannot update event: No user ID available');
+      toast.error('User authentication required');
+      return;
+    }
+    
     // Update the event in localStorage
-    const savedEvents = localStorage.getItem('upcomingEvents');
+    const storageKey = `upcomingEvents_${user.id}`;
+    const savedEvents = localStorage.getItem(storageKey);
     if (savedEvents) {
       try {
         const parsedEvents = JSON.parse(savedEvents);
@@ -55,7 +64,7 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
         });
         
         // Save back to localStorage
-        localStorage.setItem('upcomingEvents', JSON.stringify(updatedEvents));
+        localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
         
         // Close the date picker
         setIsEditingDate(false);
@@ -73,8 +82,15 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
   };
   
   const handleDeleteEvent = () => {
+    if (!user?.id) {
+      console.error('Cannot delete event: No user ID available');
+      toast.error('User authentication required');
+      return;
+    }
+    
     // Delete the event from localStorage
-    const savedEvents = localStorage.getItem('upcomingEvents');
+    const storageKey = `upcomingEvents_${user.id}`;
+    const savedEvents = localStorage.getItem(storageKey);
     if (savedEvents) {
       try {
         const parsedEvents = JSON.parse(savedEvents);
@@ -83,7 +99,7 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
         );
         
         // Save back to localStorage
-        localStorage.setItem('upcomingEvents', JSON.stringify(updatedEvents));
+        localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
         
         // Show success message
         toast.success('Event deleted successfully');

@@ -13,7 +13,13 @@ export const loadEventsFromStorage = (userId?: string): SpeechEvent[] => {
     const eventsJson = localStorage.getItem(storageKey);
     
     if (eventsJson) {
-      return JSON.parse(eventsJson);
+      const parsedEvents = JSON.parse(eventsJson);
+      
+      // Ensure we properly convert date strings to Date objects
+      return parsedEvents.map((event: any) => ({
+        ...event,
+        date: event.date ? new Date(event.date) : new Date()
+      }));
     }
   } catch (error) {
     console.error('Error loading events from storage:', error);
@@ -22,7 +28,7 @@ export const loadEventsFromStorage = (userId?: string): SpeechEvent[] => {
   return [];
 };
 
-// Updated to take a userId parameter
+// Updated to take a userId parameter and properly handle dates for serialization
 export const saveEventsToStorage = (events: SpeechEvent[], userId?: string): void => {
   if (!userId) {
     console.error('Cannot save events: No user ID provided');
@@ -31,7 +37,12 @@ export const saveEventsToStorage = (events: SpeechEvent[], userId?: string): voi
 
   try {
     const storageKey = `upcomingEvents_${userId}`;
-    localStorage.setItem(storageKey, JSON.stringify(events));
+    // Convert Date objects to ISO strings for storage
+    const serializedEvents = events.map(event => ({
+      ...event,
+      date: event.date instanceof Date ? event.date.toISOString() : event.date
+    }));
+    localStorage.setItem(storageKey, JSON.stringify(serializedEvents));
   } catch (error) {
     console.error('Error saving events to storage:', error);
   }
@@ -63,30 +74,53 @@ export const updateEventForUser = (
 
 // Format date for display
 export const formatDate = (date: Date, locale = 'en-US'): string => {
-  return new Date(date).toLocaleDateString(locale, { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
-  });
+  if (!date) {
+    return 'No Date';
+  }
+  
+  try {
+    const dateObj = date instanceof Date ? date : new Date(date);
+    if (isNaN(dateObj.getTime())) {
+      return 'Invalid Date';
+    }
+    
+    return dateObj.toLocaleDateString(locale, { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  } catch (error) {
+    console.error('Error formatting date:', error, date);
+    return 'Date Error';
+  }
 };
 
 // Get number of days remaining until an event
 export const getDaysRemaining = (date: Date): number => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const eventDate = new Date(date);
-  eventDate.setHours(0, 0, 0, 0);
-  
-  const diffTime = eventDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  return diffDays;
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const eventDate = date instanceof Date ? date : new Date(date);
+    if (isNaN(eventDate.getTime())) {
+      return 0;
+    }
+    
+    eventDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = eventDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return Math.max(0, diffDays);
+  } catch (error) {
+    console.error('Error calculating days remaining:', error, date);
+    return 0;
+  }
 };
 
 // Get color class based on speech category
 export const getCategoryColor = (category: string): string => {
-  switch (category.toLowerCase()) {
+  switch (category?.toLowerCase() || 'other') {
     case 'wedding':
       return 'bg-pink-100 text-pink-800';
     case 'business':

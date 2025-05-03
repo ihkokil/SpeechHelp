@@ -28,20 +28,18 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
     const userId = user.id;
     console.log(`Loading upcoming events for user: ${userId}`);
     
-    // Load events from localStorage with user ID as part of the key
-    const storageKey = `upcomingEvents_${userId}`;
-    const eventsJson = localStorage.getItem(storageKey);
+    // Load events from localStorage using the utility function
+    const loadedEvents = loadEventsFromStorage(userId);
     
-    if (eventsJson) {
-      try {
-        const loadedEvents = JSON.parse(eventsJson);
-        console.log(`Loaded ${loadedEvents.length} events for user ${userId}`);
-        setUpcomingEvents(loadedEvents);
-      } catch (error) {
-        console.error('Error parsing events from storage:', error);
-        setUpcomingEvents([]);
-      }
-    } else if (speeches.length && !localStorage.getItem(storageKey)) {
+    if (loadedEvents && loadedEvents.length > 0) {
+      console.log(`Loaded ${loadedEvents.length} events for user ${userId}`);
+      // Ensure dates are properly processed
+      const eventsWithDates = loadedEvents.map(event => ({
+        ...event,
+        date: event.date instanceof Date ? event.date : new Date(event.date)
+      }));
+      setUpcomingEvents(eventsWithDates);
+    } else if (speeches.length && !localStorage.getItem(`upcomingEvents_${userId}`)) {
       // If no saved events but we have speeches, create example events (legacy behavior)
       console.log(`Creating example events for user ${userId} based on speeches`);
       const exampleEvents = speeches
@@ -77,8 +75,7 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
       return;
     }
     
-    const storageKey = `upcomingEvents_${userId}`;
-    localStorage.setItem(storageKey, JSON.stringify(events));
+    saveEventsToStorage(events, userId);
     console.log(`Saved ${events.length} events for user ${userId}`);
   }, []);
 
@@ -116,8 +113,16 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
       return;
     }
     
+    // Ensure the date is properly processed before storing
+    const processedEvent = {
+      ...event,
+      date: event.date instanceof Date 
+        ? event.date.toISOString() 
+        : new Date(event.date).toISOString()
+    };
+    
     // Store event details for use in Speech Lab
-    localStorage.setItem('currentEvent', JSON.stringify(event));
+    localStorage.setItem('currentEvent', JSON.stringify(processedEvent));
     navigate('/speech-lab');
   }, [user, navigate]);
 
