@@ -2,11 +2,12 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Speech } from '@/types/speech';
 import { useToast } from '@/hooks/use-toast';
+import { useCallback } from 'react';
 
 export const useSpeechService = () => {
 	const { toast } = useToast();
 
-	const fetchSpeeches = async (userId: string | undefined) => {
+	const fetchSpeeches = useCallback(async (userId: string | undefined) => {
 		if (!userId) {
 			console.log('No userId provided, returning empty speeches array');
 			return [];
@@ -62,9 +63,9 @@ export const useSpeechService = () => {
 			});
 			return [];
 		}
-	};
+	}, [toast]);
 
-	const saveSpeech = async (userId: string, title: string, content: string, speechType: string) => {
+	const saveSpeech = useCallback(async (userId: string, title: string, content: string, speechType: string) => {
 		if (!userId) throw new Error('User not authenticated');
 
 		const timestamp = new Date().toISOString();
@@ -96,9 +97,9 @@ export const useSpeechService = () => {
 			description: "Your speech has been saved to your account.",
 		});
 		return speech;
-	};
+	}, [toast]);
 
-	const updateSpeech = async (userId: string, id: string, title: string, content: string) => {
+	const updateSpeech = useCallback(async (userId: string, id: string, title: string, content: string) => {
 		if (!userId) throw new Error('User not authenticated');
 
 		// Explicitly set the updated_at to ensure it's refreshed
@@ -126,9 +127,9 @@ export const useSpeechService = () => {
 			title: "Speech updated",
 			description: "Your speech has been updated successfully.",
 		});
-	};
+	}, [toast]);
 
-	const deleteSpeech = async (userId: string, id: string) => {
+	const deleteSpeech = useCallback(async (userId: string, id: string) => {
 		if (!userId) throw new Error('User not authenticated');
 
 		const { error } = await supabase
@@ -151,7 +152,7 @@ export const useSpeechService = () => {
 			title: "Speech deleted",
 			description: "Your speech has been deleted successfully.",
 		});
-	};
+	}, [toast]);
 
 	return {
 		fetchSpeeches,
