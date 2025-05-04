@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Calendar, Clock, Eye, Users } from 'lucide-react';
+import { FileText, Calendar, Clock, Eye, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { User } from '../types';
 import { useSpeechService } from '@/services/speechService';
@@ -49,10 +49,12 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
   };
 
   const handleViewSpeech = (speech: Speech) => {
+    console.log('Viewing speech:', speech.id);
     setSelectedSpeech(speech);
   };
 
   const handleCloseSpeechView = () => {
+    console.log('Closing speech view');
     setSelectedSpeech(null);
   };
 
@@ -104,6 +106,7 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
           <div className="flex items-center justify-between">
             <CardTitle>Speech Details</CardTitle>
             <Button variant="ghost" size="sm" onClick={handleCloseSpeechView}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
               Back to List
             </Button>
           </div>
@@ -160,11 +163,12 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
               {speeches.map((speech) => (
                 <div
                   key={speech.id}
-                  className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                  className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => handleViewSpeech(speech)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h4 className="font-medium text-sm mb-2">{speech.title}</h4>
+                      <h4 className="font-medium text-sm mb-2 hover:text-primary">{speech.title}</h4>
                       <div className="flex items-center space-x-3 mb-2">
                         <Badge className={getSpeechTypeColor(speech.speech_type)}>
                           {speech.speech_type.replace('_', ' ')}
@@ -182,7 +186,10 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleViewSpeech(speech)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewSpeech(speech);
+                        }}
                         className="h-8 w-8 p-0"
                       >
                         <Eye className="h-4 w-4" />
