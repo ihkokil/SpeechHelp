@@ -14,12 +14,27 @@ const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({
   onModify,
   isProcessing = false 
 }) => {
+  const { toast } = useToast();
+  
+  const handleModify = (type: string) => {
+    if (isProcessing) {
+      toast({
+        title: "Processing in Progress",
+        description: "Please wait until the current modification is complete.",
+        variant: "warning"
+      });
+      return;
+    }
+    
+    onModify(type);
+  };
+  
   return (
     <div className="flex flex-wrap gap-2 mt-4">
       <ButtonCustom
         variant="outline"
         size="sm"
-        onClick={() => onModify('longer')}
+        onClick={() => handleModify('longer')}
         disabled={isProcessing}
         className="flex items-center gap-1 text-xs"
       >
@@ -30,7 +45,7 @@ const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({
       <ButtonCustom
         variant="outline"
         size="sm"
-        onClick={() => onModify('shorter')}
+        onClick={() => handleModify('shorter')}
         disabled={isProcessing}
         className="flex items-center gap-1 text-xs"
       >
@@ -41,7 +56,7 @@ const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({
       <ButtonCustom
         variant="outline"
         size="sm"
-        onClick={() => onModify('formal')}
+        onClick={() => handleModify('formal')}
         disabled={isProcessing}
         className="flex items-center gap-1 text-xs"
       >
@@ -52,7 +67,7 @@ const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({
       <ButtonCustom
         variant="outline"
         size="sm"
-        onClick={() => onModify('humor')}
+        onClick={() => handleModify('humor')}
         disabled={isProcessing}
         className="flex items-center gap-1 text-xs"
       >

@@ -21,7 +21,7 @@ const MobileMenu = ({ open, setOpen, navItems }: MobileMenuProps) => {
   
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+      <SheetTrigger>
         <Button variant="ghost" size="icon" className="md:hidden">
           <Menu className="h-6 w-6" />
           <span className="sr-only">Toggle Menu</span>

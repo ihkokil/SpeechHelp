@@ -24,9 +24,9 @@ const AdminUserMenu = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
+          <Avatar>
             <AvatarImage 
               src={adminUser?.email ? `https://gravatar.com/avatar/${btoa(adminUser.email)}?d=mp` : undefined} 
               alt={adminUser?.username || 'Admin'} 
