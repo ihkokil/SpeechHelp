@@ -24,7 +24,7 @@ const AdminUserMenu = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar>
             <AvatarImage 
@@ -43,18 +43,24 @@ const AdminUserMenu = () => {
           </div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate('/admin/profile')}>
-          <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
+        <DropdownMenuItem asChild>
+          <button className="w-full flex cursor-default items-center" onClick={() => navigate('/admin/profile')}>
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </button>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
+        <DropdownMenuItem asChild>
+          <button className="w-full flex cursor-default items-center" onClick={() => navigate('/admin/settings')}>
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </button>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Sign out</span>
+        <DropdownMenuItem asChild>
+          <button className="w-full flex cursor-default items-center" onClick={handleSignOut}>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Sign out</span>
+          </button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

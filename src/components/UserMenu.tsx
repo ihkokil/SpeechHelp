@@ -67,7 +67,7 @@ const UserMenu = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-gray-100">
           <UserCircle className="h-8 w-8 text-pink-600" />
           <span className="text-sm font-medium hidden md:block">
@@ -81,25 +81,33 @@ const UserMenu = () => {
           <p className="text-xs text-gray-500 truncate">{user.email}</p>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-          <LayoutDashboardIcon className="h-4 w-4 mr-2" />
-          Dashboard
+        <DropdownMenuItem asChild>
+          <button className="w-full flex cursor-default items-center" onClick={() => navigate('/dashboard')}>
+            <LayoutDashboardIcon className="h-4 w-4 mr-2" />
+            Dashboard
+          </button>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/settings')}>
-          <Settings className="h-4 w-4 mr-2" />
-          Account Settings
+        <DropdownMenuItem asChild>
+          <button className="w-full flex cursor-default items-center" onClick={() => navigate('/settings')}>
+            <Settings className="h-4 w-4 mr-2" />
+            Account Settings
+          </button>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/help')}>
-          <HelpCircle className="h-4 w-4 mr-2" />
-          Help & Support
+        <DropdownMenuItem asChild>
+          <button className="w-full flex cursor-default items-center" onClick={() => navigate('/help')}>
+            <HelpCircle className="h-4 w-4 mr-2" />
+            Help & Support
+          </button>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
-          onClick={handleSignOut}
-          className="text-red-600 focus:text-red-600"
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          Log Out
+        <DropdownMenuItem asChild>
+          <button 
+            className="w-full flex cursor-default items-center text-red-600 focus:text-red-600"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Log Out
+          </button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
