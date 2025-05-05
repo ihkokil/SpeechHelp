@@ -38,7 +38,7 @@ function installVite() {
   try {
     // Try with npm first
     console.log("Trying to install Vite with npm...");
-    execSync('npm install --no-save vite@latest @vitejs/plugin-react-swc@latest', { 
+    execSync('npm install vite@latest @vitejs/plugin-react-swc@latest --no-save', { 
       stdio: 'inherit',
       timeout: 120000 // 2 minute timeout
     });

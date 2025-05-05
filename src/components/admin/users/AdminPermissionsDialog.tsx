@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -139,11 +139,9 @@ const AdminPermissionsDialog: React.FC<AdminPermissionsDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            <div className="flex items-center">
-              <ShieldAlert className="mr-2 h-5 w-5 text-amber-500" />
-              Edit Admin Permissions
-            </div>
+          <DialogTitle className="flex items-center">
+            <ShieldAlert className="mr-2 h-5 w-5 text-amber-500" />
+            Edit Admin Permissions
           </DialogTitle>
           <DialogDescription>
             {user ? `Configure administrative access for ${user.email}` : 'Select user permissions'}
