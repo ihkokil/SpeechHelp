@@ -41,4 +41,9 @@ export const speechLab = {
   'speechLab.savedSuccess': 'Speech saved successfully!',
   'speechLab.speechTitleLabel': 'Speech Title',
   'speechLab.speechTitlePlaceholder': 'Enter a title for your speech',
+  // Speech quick modifiers
+  'speechLab.makeLonger': 'Make it longer',
+  'speechLab.makeShorter': 'Make it shorter',
+  'speechLab.makeFormal': 'Make it formal',
+  'speechLab.addHumor': 'Add more humor',
 };
