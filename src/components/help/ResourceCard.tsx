@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { ButtonCustom } from '@/components/ui/button-custom';
 
 interface ResourceCardProps {
   title: string;
@@ -33,15 +33,15 @@ const ResourceCard: React.FC<ResourceCardProps> = ({
           {items.map((item) => (
             <div key={item.id} className="flex justify-between items-center p-2 hover:bg-gray-50 rounded-md transition-colors">
               <span className="text-sm font-medium text-gray-700">{item.label}</span>
-              <Button 
-                variant="outline" 
+              <ButtonCustom 
+                variant="premium" 
                 size="sm" 
-                className="flex gap-1 items-center border-pink-200 hover:bg-pink-50 hover:text-pink-700"
+                className="flex gap-1 items-center hover:opacity-90"
                 onClick={item.action}
               >
                 {item.buttonIcon}
                 <span className="text-xs">{item.buttonLabel}</span>
-              </Button>
+              </ButtonCustom>
             </div>
           ))}
         </div>

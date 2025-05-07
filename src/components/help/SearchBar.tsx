@@ -3,6 +3,7 @@ import React from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
+import { Search } from 'lucide-react';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -22,14 +23,17 @@ const SearchBar = ({ searchQuery, setSearchQuery }: SearchBarProps) => {
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex gap-2">
+    <form onSubmit={handleSearch} className="flex gap-2 w-full">
       <Input
         placeholder="Search for help topics..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         className="flex-1"
       />
-      <ButtonCustom type="submit" variant="premium">Search</ButtonCustom>
+      <ButtonCustom type="submit" variant="premium" className="flex items-center gap-2">
+        <Search className="h-4 w-4" />
+        Search
+      </ButtonCustom>
     </form>
   );
 };
