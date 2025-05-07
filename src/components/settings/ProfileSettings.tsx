@@ -1,38 +1,14 @@
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Form } from '@/components/ui/form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import AddressForm from './profile/AddressForm';
 import PersonalInfoForm from './profile/PersonalInfoForm';
 import { useProfileForm } from './profile/useProfileForm';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import ProfileFormSkeleton from './profile/ProfileFormSkeleton';
-
-const profileFormSchema = z.object({
-  firstName: z.string().min(2, {
-    message: "First name must be at least 2 characters.",
-  }),
-  lastName: z.string().min(2, {
-    message: "Last name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  password: z.string().optional(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zipCode: z.string().optional(),
-  country: z.string(),
-});
-
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
+import { MapPin, User } from 'lucide-react';
 
 export default function ProfileSettings() {
   const { toast } = useToast();
@@ -51,59 +27,58 @@ export default function ProfileSettings() {
     onSubmit
   } = useProfileForm();
 
+  if (isLoading) {
+    return <ProfileFormSkeleton />;
+  }
+
   return (
     <div className="space-y-6">
-      {isLoading ? (
-        <ProfileFormSkeleton />
-      ) : (
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <Tabs defaultValue="personal" value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle>Profile Settings</CardTitle>
-                      <CardDescription>
-                        Manage your personal information and address
-                      </CardDescription>
-                    </div>
-                    <TabsList>
-                      <TabsTrigger value="personal">Personal</TabsTrigger>
-                      <TabsTrigger value="address">Address</TabsTrigger>
-                    </TabsList>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <TabsContent value="personal">
-                    <PersonalInfoForm 
-                      form={form}
-                      formattedPhone={formattedPhone}
-                      selectedDialCode={selectedDialCode}
-                      handlePhoneChange={handlePhoneChange}
-                      handleCountryCodeChange={handleCountryCodeChange}
-                      originalEmail={originalEmail}
-                    />
-                  </TabsContent>
-                  <TabsContent value="address">
-                    <AddressForm 
-                      form={form} 
-                      availableStates={availableStates}
-                      handleCountryChange={handleCountryChange}
-                    />
-                  </TabsContent>
-                </CardContent>
-              </Card>
-            </Tabs>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <div className="space-y-6">
+            <div className="flex flex-col gap-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <User className="h-5 w-5 text-pink-500" />
+                  <h3 className="text-lg font-semibold">Personal Information</h3>
+                </div>
+                <p className="text-sm text-gray-500 mb-6">Update your personal information and contact details</p>
+                <PersonalInfoForm 
+                  form={form}
+                  formattedPhone={formattedPhone}
+                  selectedDialCode={selectedDialCode}
+                  handlePhoneChange={handlePhoneChange}
+                  handleCountryCodeChange={handleCountryCodeChange}
+                  originalEmail={originalEmail}
+                />
+              </div>
 
-            <div className="flex justify-end">
-              <ButtonCustom variant="pink" type="submit" className="ml-auto">
-                Save Changes
-              </ButtonCustom>
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <MapPin className="h-5 w-5 text-pink-500" />
+                  <h3 className="text-lg font-semibold">Address Information</h3>
+                </div>
+                <p className="text-sm text-gray-500 mb-6">Update your address information</p>
+                <AddressForm 
+                  form={form} 
+                  availableStates={availableStates}
+                  handleCountryChange={handleCountryChange}
+                />
+              </div>
             </div>
-          </form>
-        </Form>
-      )}
+          </div>
+
+          <div className="flex justify-end">
+            <ButtonCustom 
+              variant="premium" 
+              type="submit" 
+              className="px-6"
+            >
+              Save Changes
+            </ButtonCustom>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }

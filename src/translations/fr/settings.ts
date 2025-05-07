@@ -7,4 +7,3 @@ export const settings = {
   'settings.tabs.notifications': 'Notifications',
   'settings.tabs.security': 'Sécurité',
 };
-
