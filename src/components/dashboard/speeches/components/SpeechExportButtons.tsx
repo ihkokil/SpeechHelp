@@ -10,7 +10,7 @@ interface SpeechExportButtonsProps {
   speech: Speech | null;
   title: string;
   content: string;
-  size?: 'default' | 'sm' | 'lg' | 'icon';
+  size?: 'default' | 'sm' | 'lg' | 'xl' | 'icon';
 }
 
 const SpeechExportButtons: React.FC<SpeechExportButtonsProps> = ({ 
