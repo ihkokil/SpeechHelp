@@ -1,81 +1,109 @@
 
-import { Card, CardContent } from '@/components/ui/card';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Form } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { User, MapPin } from 'lucide-react';
-import PersonalInfoForm from './profile/PersonalInfoForm';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { useToast } from '@/components/ui/use-toast';
 import AddressForm from './profile/AddressForm';
-import ProfileFormSkeleton from './profile/ProfileFormSkeleton';
+import PersonalInfoForm from './profile/PersonalInfoForm';
 import { useProfileForm } from './profile/useProfileForm';
+import { ButtonCustom } from '@/components/ui/button-custom';
+import ProfileFormSkeleton from './profile/ProfileFormSkeleton';
 
-const ProfileSettings = () => {
+const profileFormSchema = z.object({
+  firstName: z.string().min(2, {
+    message: "First name must be at least 2 characters.",
+  }),
+  lastName: z.string().min(2, {
+    message: "Last name must be at least 2 characters.",
+  }),
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+  password: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
+  country: z.string(),
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
+
+export default function ProfileSettings() {
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("personal");
+  
   const {
     form,
-    isLoading,
-    isSubmitting,
-    originalEmail,
     formattedPhone,
     selectedDialCode,
     availableStates,
+    isLoading,
+    originalEmail,
     handlePhoneChange,
     handleCountryCodeChange,
     handleCountryChange,
     onSubmit
   } = useProfileForm();
 
-  if (isLoading) {
-    return <ProfileFormSkeleton />;
-  }
-
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="font-medium text-gray-900 mb-4 flex items-center">
-          <User className="h-4 w-4 text-pink-600 mr-2" />
-          Personal Information
-        </h3>
-        <p className="text-sm text-gray-500 mb-6">
-          Update your personal information and contact details
-        </p>
-
+      {isLoading ? (
+        <ProfileFormSkeleton />
+      ) : (
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <PersonalInfoForm 
-              form={form}
-              formattedPhone={formattedPhone}
-              selectedDialCode={selectedDialCode}
-              handlePhoneChange={handlePhoneChange}
-              handleCountryCodeChange={handleCountryCodeChange}
-              originalEmail={originalEmail}
-            />
-            
-            <div className="mt-8">
-              <h3 className="font-medium text-gray-900 mb-4 flex items-center">
-                <MapPin className="h-4 w-4 text-pink-600 mr-2" />
-                Address Information
-              </h3>
-              
-              <AddressForm 
-                form={form}
-                availableStates={availableStates}
-                handleCountryChange={handleCountryChange}
-              />
-            </div>
-            
-            <div className="flex justify-end pt-4">
-              <Button 
-                type="submit" 
-                className="bg-purple-600 hover:bg-purple-700 text-white" 
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Saving..." : "Save Changes"}
-              </Button>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <Tabs defaultValue="personal" value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle>Profile Settings</CardTitle>
+                      <CardDescription>
+                        Manage your personal information and address
+                      </CardDescription>
+                    </div>
+                    <TabsList>
+                      <TabsTrigger value="personal">Personal</TabsTrigger>
+                      <TabsTrigger value="address">Address</TabsTrigger>
+                    </TabsList>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <TabsContent value="personal">
+                    <PersonalInfoForm 
+                      form={form}
+                      formattedPhone={formattedPhone}
+                      selectedDialCode={selectedDialCode}
+                      handlePhoneChange={handlePhoneChange}
+                      handleCountryCodeChange={handleCountryCodeChange}
+                      originalEmail={originalEmail}
+                    />
+                  </TabsContent>
+                  <TabsContent value="address">
+                    <AddressForm 
+                      form={form} 
+                      availableStates={availableStates}
+                      handleCountryChange={handleCountryChange}
+                    />
+                  </TabsContent>
+                </CardContent>
+              </Card>
+            </Tabs>
+
+            <div className="flex justify-end">
+              <ButtonCustom variant="pink" type="submit" className="ml-auto">
+                Save Changes
+              </ButtonCustom>
             </div>
           </form>
         </Form>
-      </div>
+      )}
     </div>
   );
-};
-
-export default ProfileSettings;
+}

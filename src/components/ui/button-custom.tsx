@@ -19,10 +19,10 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         premium: "bg-gradient-to-r from-pink-500 via-pink-500 to-purple-600 text-white shadow-sm hover:shadow-md hover:opacity-95 transition-all",
-        pink: "bg-pink-600 text-white shadow-sm hover:bg-pink-700 transition-all",
+        pink: "bg-pink-500 text-white shadow-sm hover:bg-pink-600 transition-all",
         minimal: "bg-white border border-gray-200 text-gray-800 shadow-sm hover:shadow hover:border-gray-300 transition-all",
         subtle: "bg-secondary/50 text-secondary-foreground hover:bg-secondary/70 transition-all",
-        magenta: "bg-pink-600 text-white rounded-full shadow-sm hover:bg-pink-700 transition-all px-8 font-semibold",
+        magenta: "bg-pink-500 text-white rounded-md shadow-sm hover:bg-pink-600 transition-all px-8 font-semibold",
       },
       size: {
         default: "h-10 px-6 py-2",
