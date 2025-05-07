@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { ButtonCustom } from '@/components/ui/button-custom';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -28,12 +29,7 @@ const SearchBar = ({ searchQuery, setSearchQuery }: SearchBarProps) => {
         onChange={(e) => setSearchQuery(e.target.value)}
         className="flex-1"
       />
-      <button 
-        type="submit" 
-        className="inline-flex items-center justify-center whitespace-nowrap rounded-md bg-[#b84c9f] px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#a3428e] transition-all"
-      >
-        Search
-      </button>
+      <ButtonCustom type="submit" variant="pink">Search</ButtonCustom>
     </form>
   );
 };

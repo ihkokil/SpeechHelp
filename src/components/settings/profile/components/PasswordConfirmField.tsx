@@ -4,6 +4,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
 import { ProfileFormValues } from '../types';
+import { ButtonCustom } from '@/components/ui/button-custom';
 
 interface PasswordConfirmFieldProps {
   form: UseFormReturn<ProfileFormValues>;
