@@ -1,3 +1,4 @@
+
 import { useCallback, useState } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
@@ -20,21 +21,11 @@ export const useIndividualUserActions = () => {
     setIsActionLoading(true);
     
     try {
-      console.log('Deleting user from database:', userId);
+      console.log('Starting user deletion process for user:', userId);
       
-      // First delete the user's profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
-      
-      if (profileError) {
-        console.error('Error deleting user profile:', profileError);
-        throw profileError;
-      }
-      
-      // Then delete the user from auth.users using the admin function
-      // Pass both the user ID to delete and the admin user ID for verification
+      // First, delete the user from auth.users using the admin function
+      // This is the primary deletion that should happen first
+      console.log('Calling admin-delete-user function...');
       const { data, error: deleteError } = await supabase.functions.invoke('admin-delete-user', {
         body: { 
           userId,
@@ -49,10 +40,66 @@ export const useIndividualUserActions = () => {
       
       if (!data?.success) {
         console.error('Function returned error:', data);
-        throw new Error(data?.error || 'Failed to delete user');
+        throw new Error(data?.error || 'Failed to delete user from authentication system');
       }
       
-      console.log('User deleted successfully from database');
+      console.log('User deleted successfully from auth.users via edge function');
+      
+      // The profile deletion should be handled by the database CASCADE constraint
+      // But let's explicitly delete it to be sure and handle any related data
+      console.log('Cleaning up user profile and related data...');
+      
+      // Delete user's speeches first (if any)
+      const { error: speechesError } = await supabase
+        .from('speeches')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (speechesError) {
+        console.warn('Error deleting user speeches (non-critical):', speechesError);
+      }
+      
+      // Delete user's payment methods (if any)
+      const { error: paymentMethodsError } = await supabase
+        .from('payment_methods')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (paymentMethodsError) {
+        console.warn('Error deleting user payment methods (non-critical):', paymentMethodsError);
+      }
+      
+      // Delete user's payment history (if any)
+      const { error: paymentHistoryError } = await supabase
+        .from('payment_history')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (paymentHistoryError) {
+        console.warn('Error deleting user payment history (non-critical):', paymentHistoryError);
+      }
+      
+      // Delete user's 2FA settings (if any)
+      const { error: twoFAError } = await supabase
+        .from('user_2fa')
+        .delete()
+        .eq('user_id', userId);
+      
+      if (twoFAError) {
+        console.warn('Error deleting user 2FA settings (non-critical):', twoFAError);
+      }
+      
+      // Finally, delete the user's profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+      
+      if (profileError) {
+        console.warn('Error deleting user profile (this might be expected if CASCADE worked):', profileError);
+      }
+      
+      console.log('User deletion process completed successfully');
       
       // Remove deleted user from state if setUsers is provided
       if (setUsers && users.length > 0) {
@@ -61,7 +108,7 @@ export const useIndividualUserActions = () => {
       
       toast({
         title: 'User Deleted',
-        description: 'The user has been deleted successfully from the database.',
+        description: 'The user has been permanently deleted from the system.',
       });
       
     } catch (error: any) {
