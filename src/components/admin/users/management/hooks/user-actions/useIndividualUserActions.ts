@@ -2,11 +2,9 @@ import { useCallback, useState } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
 export const useIndividualUserActions = () => {
   const { toast } = useToast();
-  const { adminUser } = useAdminAuth();
   const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Delete a single user
@@ -15,7 +13,7 @@ export const useIndividualUserActions = () => {
     users: User[] = [],
     setUsers: ((users: User[]) => void) | null = null
   ) => {
-    if (!userId || !adminUser) return;
+    if (!userId) return;
     
     setIsActionLoading(true);
     
@@ -34,12 +32,8 @@ export const useIndividualUserActions = () => {
       }
       
       // Then delete the user from auth.users using the admin function
-      // Pass both the user ID to delete and the admin user ID for verification
       const { data, error: deleteError } = await supabase.functions.invoke('admin-delete-user', {
-        body: { 
-          userId,
-          adminUserId: adminUser.id 
-        }
+        body: { userId }
       });
       
       if (deleteError) {
@@ -74,7 +68,7 @@ export const useIndividualUserActions = () => {
     } finally {
       setIsActionLoading(false);
     }
-  }, [toast, adminUser]);
+  }, [toast]);
 
   // Toggle user active status
   const handleToggleUserStatus = useCallback(async (
