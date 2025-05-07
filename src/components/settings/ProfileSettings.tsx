@@ -1,8 +1,8 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { User } from 'lucide-react';
+import { User, MapPin } from 'lucide-react';
 import PersonalInfoForm from './profile/PersonalInfoForm';
 import AddressForm from './profile/AddressForm';
 import ProfileFormSkeleton from './profile/ProfileFormSkeleton';
@@ -29,47 +29,51 @@ const ProfileSettings = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center">
-            <User className="h-5 w-5 mr-2 text-pink-600" />
-            Personal Information
-          </CardTitle>
-          <CardDescription>
-            Update your personal information and contact details
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <PersonalInfoForm 
-                form={form}
-                formattedPhone={formattedPhone}
-                selectedDialCode={selectedDialCode}
-                handlePhoneChange={handlePhoneChange}
-                handleCountryCodeChange={handleCountryCodeChange}
-                originalEmail={originalEmail}
-              />
+      <div>
+        <h3 className="font-medium text-gray-900 mb-4 flex items-center">
+          <User className="h-4 w-4 text-pink-600 mr-2" />
+          Personal Information
+        </h3>
+        <p className="text-sm text-gray-500 mb-6">
+          Update your personal information and contact details
+        </p>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <PersonalInfoForm 
+              form={form}
+              formattedPhone={formattedPhone}
+              selectedDialCode={selectedDialCode}
+              handlePhoneChange={handlePhoneChange}
+              handleCountryCodeChange={handleCountryCodeChange}
+              originalEmail={originalEmail}
+            />
+            
+            <div className="mt-8">
+              <h3 className="font-medium text-gray-900 mb-4 flex items-center">
+                <MapPin className="h-4 w-4 text-pink-600 mr-2" />
+                Address Information
+              </h3>
               
               <AddressForm 
                 form={form}
                 availableStates={availableStates}
                 handleCountryChange={handleCountryChange}
               />
-              
-              <div className="flex justify-end">
-                <Button 
-                  type="submit" 
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white" 
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            </div>
+            
+            <div className="flex justify-end pt-4">
+              <Button 
+                type="submit" 
+                className="bg-purple-600 hover:bg-purple-700 text-white" 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 };
