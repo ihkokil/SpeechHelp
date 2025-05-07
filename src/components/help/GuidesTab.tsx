@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ButtonCustom } from '@/components/ui/button-custom';
+import { Button } from '@/components/ui/button';
 import { BookOpen, FileText, Video } from 'lucide-react';
 
 const GuidesTab = () => {
@@ -19,10 +19,10 @@ const GuidesTab = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 mb-4">Learn the basics of creating your first speech</p>
-              <ButtonCustom variant="premium" className="w-full flex items-center gap-2">
+              <Button variant="magenta" className="w-full flex items-center gap-2">
                 <BookOpen className="h-4 w-4" />
                 Read Guide
-              </ButtonCustom>
+              </Button>
             </CardContent>
           </Card>
           
@@ -32,10 +32,10 @@ const GuidesTab = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 mb-4">Professional tips to enhance your speech writing</p>
-              <ButtonCustom variant="premium" className="w-full flex items-center gap-2">
+              <Button variant="magenta" className="w-full flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 View Tips
-              </ButtonCustom>
+              </Button>
             </CardContent>
           </Card>
           
@@ -45,10 +45,10 @@ const GuidesTab = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 mb-4">Watch helpful videos explaining our features</p>
-              <ButtonCustom variant="premium" className="w-full flex items-center gap-2">
+              <Button variant="magenta" className="w-full flex items-center gap-2">
                 <Video className="h-4 w-4" />
                 Watch Videos
-              </ButtonCustom>
+              </Button>
             </CardContent>
           </Card>
           
@@ -58,10 +58,10 @@ const GuidesTab = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 mb-4">Learn how to manage your account settings</p>
-              <ButtonCustom variant="premium" className="w-full flex items-center gap-2">
+              <Button variant="magenta" className="w-full flex items-center gap-2">
                 <BookOpen className="h-4 w-4" />
                 Read Guide
-              </ButtonCustom>
+              </Button>
             </CardContent>
           </Card>
         </div>

@@ -8,7 +8,7 @@ import FAQsTab from '@/components/help/FAQsTab';
 import GuidesTab from '@/components/help/GuidesTab';
 import ContactTab from '@/components/help/ContactTab';
 import ResourcesTab from '@/components/help/ResourcesTab';
-import { ButtonCustom } from '@/components/ui/button-custom';
+import { Button } from '@/components/ui/button';
 import SearchBar from '@/components/help/SearchBar';
 
 const HelpSupport = () => {
