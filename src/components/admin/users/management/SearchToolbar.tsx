@@ -19,7 +19,7 @@ interface SearchToolbarProps {
   setSearchTerm: (term: string) => void;
   isLoading: boolean;
   fetchUsers: () => void;
-  selectedUsers: User[];  // Updated from string[] to User[]
+  selectedUsers: User[];
   isActionLoading: boolean;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
   setIsAddUserDialogOpen: (isOpen: boolean) => void;
@@ -40,6 +40,15 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
     e.stopPropagation();
     console.log("Add User button clicked, opening dialog");
     setIsAddUserDialogOpen(true);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Delete button clicked, selected users:", selectedUsers.length);
+    if (selectedUsers.length > 0) {
+      setIsDeleteDialogOpen(true);
+    }
   };
 
   return (
@@ -76,11 +85,11 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => setIsDeleteDialogOpen(true)} 
+              onClick={handleDeleteClick}
               disabled={isActionLoading}
             >
               <UserMinus className="mr-2 h-4 w-4" />
-              Delete
+              Delete ({selectedUsers.length})
             </Button>
             <Button 
               variant="outline" 
@@ -92,14 +101,6 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
             </Button>
           </>
         )}
-        {/* <Button variant="outline" size="sm">
-          <Download className="mr-2 h-4 w-4" />
-          Export
-        </Button>
-        <Button variant="outline" size="sm">
-          <FileUp className="mr-2 h-4 w-4" />
-          Import
-        </Button> */}
         <Button onClick={handleAddUserClick} type="button">
           <UserPlus className="mr-2 h-4 w-4" />
           Add User
