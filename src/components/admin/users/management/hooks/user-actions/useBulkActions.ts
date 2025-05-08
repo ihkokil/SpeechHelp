@@ -2,10 +2,12 @@
 import { useCallback, useState } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
+import { useIndividualUserActions } from './useIndividualUserActions';
 
 export const useBulkActions = () => {
   const { toast } = useToast();
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const { handleDeleteUser } = useIndividualUserActions();
 
   // Bulk delete multiple users
   const handleBulkDelete = useCallback(async (
@@ -20,11 +22,10 @@ export const useBulkActions = () => {
     try {
       console.log('Bulk deleting users:', selectedUsers.map(user => user.id));
       
-      // Simulate API call - In a real app, this would be an actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Remove deleted users from state
-      setUsers(users.filter(user => !selectedUsers.some(selectedUser => selectedUser.id === user.id)));
+      // Delete each user individually using the working individual delete function
+      for (const user of selectedUsers) {
+        await handleDeleteUser(user.id, users, setUsers);
+      }
       
       toast({
         title: 'Users Deleted',
@@ -38,10 +39,11 @@ export const useBulkActions = () => {
         description: 'Failed to delete users.',
         variant: 'destructive',
       });
+      throw error; // Re-throw to allow parent component to handle
     } finally {
       setIsActionLoading(false);
     }
-  }, [toast]);
+  }, [toast, handleDeleteUser]);
 
   // Bulk activate multiple users
   const handleBulkActivate = useCallback(async (
