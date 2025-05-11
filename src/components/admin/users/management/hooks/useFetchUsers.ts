@@ -12,20 +12,30 @@ export const useFetchUsers = () => {
   const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
+  const isFetchingRef = useRef(false);
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (forceRefresh = false) => {
     const now = Date.now();
-    if (now - lastFetchTime < 1000) {
-      console.log('Debouncing fetch request');
-      return []; // Debounce fetch requests
+    
+    // Prevent concurrent fetches and implement smarter debouncing
+    if (isFetchingRef.current) {
+      console.log('Fetch already in progress, skipping');
+      return users;
     }
     
+    // Only debounce if not a forced refresh and recent fetch occurred
+    if (!forceRefresh && now - lastFetchTime < 1000) {
+      console.log('Debouncing fetch request');
+      return users;
+    }
+    
+    isFetchingRef.current = true;
     setLastFetchTime(now);
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log('Fetching users from Supabase auth');
+      console.log('Fetching users from Supabase auth', forceRefresh ? '(forced refresh)' : '');
       
       // Fetch users from auth.users via a Supabase function
       const { data: authUsersData, error: authUsersError } = await supabase.functions.invoke('fetch-users', {
@@ -40,8 +50,7 @@ export const useFetchUsers = () => {
           description: 'Failed to load users. Please try again.',
           variant: 'destructive',
         });
-        setIsLoading(false);
-        return [];
+        return users;
       }
       
       console.log('Raw edge function response:', authUsersData);
@@ -151,6 +160,14 @@ export const useFetchUsers = () => {
       console.log('Final mapped users count:', mappedUsers.length);
       console.log('Sample user with subscription data:', mappedUsers.find(u => u.stripe_customer_id));
       setUsers(mappedUsers);
+      
+      if (forceRefresh) {
+        toast({
+          title: 'Data Refreshed',
+          description: 'User data has been updated successfully.',
+        });
+      }
+      
       return mappedUsers;
     } catch (err) {
       console.error('Exception fetching users:', err);
@@ -161,17 +178,25 @@ export const useFetchUsers = () => {
         description: 'Failed to load users. Please check console for details.',
         variant: 'destructive',
       });
-      return [];
+      return users;
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
-  }, [adminUser, toast, lastFetchTime]);
+  }, [adminUser, toast, lastFetchTime, users]);
+
+  // Force refresh function for immediate updates
+  const forceRefresh = useCallback(() => {
+    return fetchUsers(true);
+  }, [fetchUsers]);
 
   return {
     users,
     setUsers,
     isLoading,
     fetchUsers,
-    error
+    forceRefresh,
+    error,
+    lastFetchTime
   };
 };
