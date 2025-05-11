@@ -22,18 +22,37 @@ export const useBulkActions = () => {
     try {
       console.log('Bulk deleting users:', selectedUsers.map(user => user.id));
       
+      let deletedCount = 0;
+      const errors = [];
+      
       // Delete each user individually using the working individual delete function
       for (const user of selectedUsers) {
-        await handleDeleteUser(user.id, users, setUsers);
+        try {
+          await handleDeleteUser(user.id, users, setUsers);
+          deletedCount++;
+        } catch (error) {
+          console.error(`Failed to delete user ${user.id}:`, error);
+          errors.push(`${user.username || user.id}: ${error.message}`);
+        }
       }
       
-      toast({
-        title: 'Users Deleted',
-        description: `${selectedUsers.length} user(s) have been deleted.`,
-      });
+      if (deletedCount > 0) {
+        toast({
+          title: 'Users Deleted',
+          description: `${deletedCount} user(s) have been deleted successfully.`,
+        });
+      }
+      
+      if (errors.length > 0) {
+        toast({
+          title: 'Partial Success',
+          description: `${errors.length} user(s) could not be deleted. Check console for details.`,
+          variant: 'destructive',
+        });
+      }
       
     } catch (error) {
-      console.error('Error deleting users:', error);
+      console.error('Error during bulk deletion:', error);
       toast({
         title: 'Error',
         description: 'Failed to delete users.',

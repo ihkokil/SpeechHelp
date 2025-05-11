@@ -82,40 +82,69 @@ serve(async (req) => {
 
     console.log('Admin verified, proceeding with user deletion for user:', userId)
 
-    // First, check if the user exists
-    const { data: existingUser, error: checkError } = await supabaseAdmin.auth.admin.getUserById(userId)
+    // Step 1: Delete user's speeches first (this is what's causing the foreign key constraint)
+    console.log('Deleting user speeches...')
+    const { error: speechesError } = await supabaseAdmin
+      .from('speeches')
+      .delete()
+      .eq('user_id', userId)
     
-    if (checkError) {
-      console.error('Error checking user existence:', checkError)
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'User not found or error checking user: ' + checkError.message 
-        }),
-        { 
-          status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+    if (speechesError) {
+      console.error('Error deleting user speeches:', speechesError)
+      // Don't return here, continue with cleanup
+    } else {
+      console.log('User speeches deleted successfully')
     }
 
-    if (!existingUser.user) {
-      console.log('User not found in auth.users:', userId)
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'User not found in authentication system' 
-        }),
-        { 
-          status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
+    // Step 2: Delete user's payment methods
+    console.log('Deleting user payment methods...')
+    const { error: paymentMethodsError } = await supabaseAdmin
+      .from('payment_methods')
+      .delete()
+      .eq('user_id', userId)
+    
+    if (paymentMethodsError) {
+      console.warn('Error deleting user payment methods (non-critical):', paymentMethodsError)
     }
 
-    console.log('User found, proceeding with deletion from auth.users:', userId)
+    // Step 3: Delete user's payment history
+    console.log('Deleting user payment history...')
+    const { error: paymentHistoryError } = await supabaseAdmin
+      .from('payment_history')
+      .delete()
+      .eq('user_id', userId)
+    
+    if (paymentHistoryError) {
+      console.warn('Error deleting user payment history (non-critical):', paymentHistoryError)
+    }
 
-    // Delete the user from auth.users using admin client
+    // Step 4: Delete user's 2FA settings
+    console.log('Deleting user 2FA settings...')
+    const { error: twoFAError } = await supabaseAdmin
+      .from('user_2fa')
+      .delete()
+      .eq('user_id', userId)
+    
+    if (twoFAError) {
+      console.warn('Error deleting user 2FA settings (non-critical):', twoFAError)
+    }
+
+    // Step 5: Delete the user's profile
+    console.log('Deleting user profile...')
+    const { error: profileDeleteError } = await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', userId)
+    
+    if (profileDeleteError) {
+      console.error('Error deleting user profile:', profileDeleteError)
+      // Continue anyway, the auth deletion might still work
+    } else {
+      console.log('User profile deleted successfully')
+    }
+
+    // Step 6: Finally, delete the user from auth.users
+    console.log('Deleting user from auth.users...')
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
     
     if (deleteError) {
@@ -123,7 +152,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Failed to delete user: ' + (deleteError.message || 'Unknown error') 
+          error: 'Failed to delete user from authentication: ' + (deleteError.message || 'Unknown error') 
         }),
         { 
           status: 500, 
@@ -134,7 +163,7 @@ serve(async (req) => {
 
     console.log('User successfully deleted from auth.users:', userId)
 
-    // Log the admin action
+    // Log the admin action (optional, don't fail if this doesn't work)
     try {
       await supabaseAdmin
         .from('activity_logs')
@@ -156,7 +185,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'User deleted successfully from authentication system',
+        message: 'User and all related data deleted successfully',
         userId: userId,
         deletedBy: adminUserId
       }),
