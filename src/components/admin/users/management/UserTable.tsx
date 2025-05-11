@@ -1,11 +1,12 @@
-
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Table, TableBody } from '@/components/ui/table';
 import { User } from '../types';
 import { useUserSearch } from './hooks/useUserSearch';
+import { useUserTablePagination } from './hooks/useUserTablePagination';
 import UserTableHeader from './components/UserTableHeader';
 import UserTableRow from './components/UserTableRow';
 import { LoadingState, EmptyState } from './components/UserTableStates';
+import { PaginationControls } from './components/PaginationControls';
 import { cn } from '@/lib/utils';
 
 interface UserTableProps {
@@ -50,14 +51,51 @@ export const UserTable: React.FC<UserTableProps> = ({
   console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
   const { filterUsers } = useUserSearch(users);
-  const filteredUsers = useMemo(() => filterUsers(users, searchTerm), [users, searchTerm, filterUsers]);
+  
+  const {
+    paginatedUsers,
+    filteredUsers,
+    currentPage,
+    totalPages,
+    itemsPerPage,
+    hasNextPage,
+    hasPreviousPage,
+    goToPage,
+    handleItemsPerPageChange,
+    handleSearchChange,
+    totalFilteredItems,
+    totalItems
+  } = useUserTablePagination({
+    users,
+    searchTerm,
+    filterUsers
+  });
 
-  const isAllSelected = filteredUsers.length > 0 && 
+  // Reset pagination when search term changes
+  useEffect(() => {
+    handleSearchChange();
+  }, [searchTerm]);
+
+  const isAllSelected = paginatedUsers.length > 0 && 
     selectedUsers.length === filteredUsers.length &&
     filteredUsers.every(user => selectedUsers.some(selectedUser => selectedUser.id === user.id));
 
+  const isPageAllSelected = paginatedUsers.length > 0 &&
+    paginatedUsers.every(user => selectedUsers.some(selectedUser => selectedUser.id === user.id));
+
   const handleToggleAll = () => {
-    toggleAllUsers();
+    if (isPageAllSelected) {
+      // Deselect all users on current page
+      const userIdsOnPage = paginatedUsers.map(user => user.id);
+      const remainingSelected = selectedUsers.filter(user => !userIdsOnPage.includes(user.id));
+      setSelectedUsers(remainingSelected);
+    } else {
+      // Select all users on current page (keep existing selections from other pages)
+      const newSelections = paginatedUsers.filter(user => 
+        !selectedUsers.some(selectedUser => selectedUser.id === user.id)
+      );
+      setSelectedUsers([...selectedUsers, ...newSelections]);
+    }
   };
 
   return (
@@ -69,17 +107,17 @@ export const UserTable: React.FC<UserTableProps> = ({
             <Table>
               <UserTableHeader 
                 onToggleAll={handleToggleAll}
-                isAllSelected={isAllSelected}
-                disabled={isLoading || filteredUsers.length === 0}
+                isAllSelected={isPageAllSelected}
+                disabled={isLoading || paginatedUsers.length === 0}
                 selectedCount={selectedUsers.length}
               />
               <TableBody>
                 {isLoading ? (
                   <LoadingState />
-                ) : filteredUsers.length === 0 ? (
+                ) : paginatedUsers.length === 0 ? (
                   <EmptyState />
                 ) : (
-                  filteredUsers.map((user) => (
+                  paginatedUsers.map((user) => (
                     <UserTableRow
                       key={user.id}
                       user={user}
@@ -102,8 +140,13 @@ export const UserTable: React.FC<UserTableProps> = ({
       
       <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm text-gray-500 px-2")}>
         <div>
-          Showing <span className="font-medium">{filteredUsers.length}</span> of{' '}
-          <span className="font-medium">{users.length}</span> users
+          Showing <span className="font-medium">{totalFilteredItems}</span> of{' '}
+          <span className="font-medium">{totalItems}</span> users
+          {searchTerm && (
+            <span className="ml-1">
+              (filtered by "{searchTerm}")
+            </span>
+          )}
         </div>
         <div>
           {selectedUsers.length > 0 && (
@@ -113,6 +156,18 @@ export const UserTable: React.FC<UserTableProps> = ({
           )}
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        itemsPerPage={itemsPerPage}
+        totalItems={totalFilteredItems}
+        onPageChange={goToPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+        hasNextPage={hasNextPage}
+        hasPreviousPage={hasPreviousPage}
+      />
     </div>
   );
 };
