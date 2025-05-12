@@ -3,6 +3,7 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { User } from '../types';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface UserHeaderProps {
   user: User;
@@ -64,7 +65,16 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ user }) => {
         <h3 className="text-xl font-semibold">
           {getUserFullName(user)}
         </h3>
-        <p className="text-sm text-muted-foreground">{user.email}</p>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{user.email}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <div className="mt-2">
           <Badge variant={user.is_active !== false ? 'default' : 'secondary'}>
             {user.is_active !== false ? 'Active' : 'Inactive'}
