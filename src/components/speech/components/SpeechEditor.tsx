@@ -123,7 +123,7 @@ const SpeechEditor: React.FC<SpeechEditorProps> = ({
           isProcessing={isModifying}
         />
         
-        <div className={`mt-4 ${isModifying ? 'opacity-70 pointer-events-none' : ''}`}>
+        <div className={`${isModifying ? 'opacity-70 pointer-events-none' : ''}`}>
           <SpeechContentEditor 
             content={content} 
             onContentChange={onContentChange}

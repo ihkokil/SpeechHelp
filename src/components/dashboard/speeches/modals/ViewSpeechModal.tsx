@@ -1,3 +1,4 @@
+
 import { 
   Dialog, 
   DialogContent, 
@@ -17,6 +18,10 @@ import SpeechPreview from '@/components/speech/components/SpeechPreview';
 import SpeechExportButtons from '../components/SpeechExportButtons';
 import { CalendarClock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import QuickSpeechModifiers from '@/components/speech/components/QuickSpeechModifiers';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ViewSpeechModalProps {
   isOpen: boolean;
@@ -28,6 +33,9 @@ interface ViewSpeechModalProps {
 const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpeechModalProps) => {
   const { currentLanguage } = useLanguage();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [content, setContent] = useState(speech?.content || '');
+  const [isModifying, setIsModifying] = useState(false);
 
   const formatDate = (dateString: string) => {
     if (!dateString || dateString.trim() === '') {
@@ -78,6 +86,79 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
     onOpenChange(false);
   };
 
+  const modifySpeech = async (modifierType: string) => {
+    if (!content.trim()) {
+      toast({
+        title: "No Content",
+        description: "There is no speech content to modify.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsModifying(true);
+    
+    try {
+      let instruction = "";
+      
+      switch (modifierType) {
+        case 'longer':
+          instruction = "Make this speech longer with more details and examples, but keep the same tone and purpose.";
+          break;
+        case 'shorter':
+          instruction = "Make this speech shorter and more concise, while keeping the key points and purpose.";
+          break;
+        case 'formal':
+          instruction = "Rewrite this speech in a more formal and professional tone, using more sophisticated language.";
+          break;
+        case 'humor':
+          instruction = "Add more humor throughout this speech with appropriate jokes and light-hearted comments.";
+          break;
+        default:
+          instruction = "Improve this speech.";
+      }
+      
+      // Try to modify the speech using Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('openai-gen', {
+        body: {
+          existingSpeech: content,
+          instruction: instruction,
+          isModification: true
+        }
+      });
+      
+      if (error) {
+        console.error('Error from Supabase function:', error);
+        throw error;
+      }
+      
+      if (!data || !data.speech) {
+        console.error('Invalid response format:', data);
+        throw new Error('Invalid response from modification service');
+      }
+      
+      setContent(data.speech);
+      
+      toast({
+        title: "Speech Modified",
+        description: `The speech has been successfully ${modifierType === 'humor' ? 'made more humorous' : 
+          modifierType === 'longer' ? 'lengthened' : 
+          modifierType === 'shorter' ? 'shortened' : 
+          'made more formal'}.`,
+      });
+      
+    } catch (error) {
+      console.error('Error modifying speech:', error);
+      toast({
+        title: "Modification Failed",
+        description: "Could not modify the speech. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsModifying(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
@@ -106,9 +187,26 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
             </div>
           </div>
         )}
+
+        {!speech.isUpcoming && (
+          <QuickSpeechModifiers 
+            onModify={modifySpeech} 
+            isProcessing={isModifying}
+            className="mb-2"
+          />
+        )}
         
         <div className="overflow-auto max-h-[60vh] my-4">
-          <SpeechPreview content={speech.content} />
+          {isModifying ? (
+            <div className="flex justify-center items-center p-8">
+              <div className="flex flex-col items-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700"></div>
+                <p className="mt-2 text-sm text-purple-700">Modifying your speech...</p>
+              </div>
+            </div>
+          ) : (
+            <SpeechPreview content={content || speech.content} />
+          )}
         </div>
         
         {!speech.isUpcoming && (
@@ -126,7 +224,7 @@ const ViewSpeechModal = ({ isOpen, onOpenChange, speech, onEditClick }: ViewSpee
         <SpeechExportButtons 
           speech={speech}
           title={speech.title}
-          content={speech.content}
+          content={content || speech.content}
         />
         
         <DialogFooter className="mt-4">
