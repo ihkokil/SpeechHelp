@@ -46,4 +46,6 @@ export const speechLab = {
   'speechLab.makeShorter': 'Make it shorter',
   'speechLab.makeFormal': 'Make it formal',
   'speechLab.addHumor': 'Add more humor',
+  'speechLab.customInstruction': 'Custom Instruction',
+  'speechLab.customInstructionPlaceholder': 'How would you like to modify your speech?',
 };

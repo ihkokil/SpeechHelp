@@ -27,7 +27,7 @@ const SpeechEditor: React.FC<SpeechEditorProps> = ({
   const { toast } = useToast();
   const [isModifying, setIsModifying] = useState(false);
 
-  const modifySpeech = async (modifierType: string) => {
+  const modifySpeech = async (modifierType: string, customInstruction?: string) => {
     if (!content.trim()) {
       toast({
         title: "No Content",
@@ -54,6 +54,9 @@ const SpeechEditor: React.FC<SpeechEditorProps> = ({
           break;
         case 'humor':
           instruction = "Add more humor throughout this speech with appropriate jokes and light-hearted comments.";
+          break;
+        case 'custom':
+          instruction = customInstruction || "Improve this speech based on the custom instruction.";
           break;
         default:
           instruction = "Improve this speech.";
@@ -92,10 +95,7 @@ const SpeechEditor: React.FC<SpeechEditorProps> = ({
       
       toast({
         title: "Speech Modified",
-        description: `The speech has been successfully ${modifierType === 'humor' ? 'made more humorous' : 
-          modifierType === 'longer' ? 'lengthened' : 
-          modifierType === 'shorter' ? 'shortened' : 
-          'made more formal'}.`,
+        description: getModificationMessage(modifierType),
       });
       
     } catch (error) {
@@ -107,6 +107,23 @@ const SpeechEditor: React.FC<SpeechEditorProps> = ({
       });
     } finally {
       setIsModifying(false);
+    }
+  };
+
+  const getModificationMessage = (modifierType: string): string => {
+    switch (modifierType) {
+      case 'longer':
+        return "The speech has been successfully lengthened.";
+      case 'shorter':
+        return "The speech has been successfully shortened.";
+      case 'formal':
+        return "The speech has been successfully made more formal.";
+      case 'humor':
+        return "The speech has been successfully made more humorous.";
+      case 'custom':
+        return "The speech has been successfully modified according to your instructions.";
+      default:
+        return "The speech has been successfully modified.";
     }
   };
 
