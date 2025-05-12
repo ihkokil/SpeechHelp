@@ -19,14 +19,27 @@ export const useUserManagementData = () => {
     lastFetchTime
   } = useFetchUsers();
   
-  // Update users when fetchedUsers changes
+  // Update users and loading state when fetchedUsers changes
   useEffect(() => {
+    console.log('useUserManagementData: fetchedUsers changed', {
+      fetchedUsersLength: fetchedUsers?.length || 0,
+      isFetchLoading,
+      fetchError
+    });
+    
     if (fetchedUsers && fetchedUsers.length > 0) {
+      console.log('useUserManagementData: Setting users and clearing loading');
       setUsers(fetchedUsers);
+      setIsLoading(false);
+    } else if (!isFetchLoading && !fetchError && (!fetchedUsers || fetchedUsers.length === 0)) {
+      // Handle case where fetch completed but no users returned
+      console.log('useUserManagementData: No users returned, clearing loading');
+      setUsers([]);
       setIsLoading(false);
     }
     
     if (fetchError) {
+      console.log('useUserManagementData: Fetch error occurred', fetchError);
       toast({
         title: "Error",
         description: "Failed to fetch users. Please try again.",
@@ -34,16 +47,16 @@ export const useUserManagementData = () => {
       });
       setIsLoading(false);
     }
-  }, [fetchedUsers, fetchError, toast]);
+  }, [fetchedUsers, isFetchLoading, fetchError, toast]);
   
   // Fetch users
   const fetchUsers = useCallback(async () => {
-    console.log("Fetching users...");
+    console.log("useUserManagementData: Fetching users...");
     setIsLoading(true);
     try {
       await apiFetchUsers();
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("useUserManagementData: Error fetching users:", error);
       toast({
         title: "Error",
         description: "Failed to fetch users. Please try again.",
@@ -55,7 +68,7 @@ export const useUserManagementData = () => {
 
   // Force refresh function
   const refreshUsers = useCallback(async () => {
-    console.log("Force refreshing users...");
+    console.log("useUserManagementData: Force refreshing users...");
     setIsLoading(true);
     try {
       const refreshedUsers = await forceRefresh();
@@ -63,7 +76,7 @@ export const useUserManagementData = () => {
         setUsers(refreshedUsers);
       }
     } catch (error) {
-      console.error("Error refreshing users:", error);
+      console.error("useUserManagementData: Error refreshing users:", error);
       toast({
         title: "Error",
         description: "Failed to refresh users. Please try again.",
