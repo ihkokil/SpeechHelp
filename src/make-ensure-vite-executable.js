@@ -1,5 +1,5 @@
 
-#!/usr/bin/env node
+// #!/usr/bin/env node
 const { chmod } = require('fs');
 const path = require('path');
 
