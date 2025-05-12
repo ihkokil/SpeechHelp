@@ -12,30 +12,20 @@ export const useFetchUsers = () => {
   const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
-  const isFetchingRef = useRef(false);
 
-  const fetchUsers = useCallback(async (forceRefresh = false) => {
+  const fetchUsers = useCallback(async () => {
     const now = Date.now();
-    
-    // Prevent concurrent fetches and implement smarter debouncing
-    if (isFetchingRef.current) {
-      console.log('useFetchUsers: Fetch already in progress, skipping');
-      return users;
+    if (now - lastFetchTime < 1000) {
+      console.log('Debouncing fetch request');
+      return []; // Debounce fetch requests
     }
     
-    // Only debounce if not a forced refresh and recent fetch occurred
-    if (!forceRefresh && now - lastFetchTime < 1000) {
-      console.log('useFetchUsers: Debouncing fetch request');
-      return users;
-    }
-    
-    isFetchingRef.current = true;
     setLastFetchTime(now);
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log('useFetchUsers: Fetching users from Supabase auth', forceRefresh ? '(forced refresh)' : '');
+      console.log('Fetching users from Supabase auth');
       
       // Fetch users from auth.users via a Supabase function
       const { data: authUsersData, error: authUsersError } = await supabase.functions.invoke('fetch-users', {
@@ -43,24 +33,24 @@ export const useFetchUsers = () => {
       });
       
       if (authUsersError) {
-        console.error('useFetchUsers: Error fetching auth users:', authUsersError);
-        const errorObj = new Error(authUsersError.message || 'Failed to load users');
-        setError(errorObj);
+        console.error('Error fetching auth users:', authUsersError);
+        setError(new Error(authUsersError.message || 'Failed to load users'));
         toast({
           title: 'Error',
           description: 'Failed to load users. Please try again.',
           variant: 'destructive',
         });
-        return users;
+        setIsLoading(false);
+        return [];
       }
       
-      console.log('useFetchUsers: Raw edge function response:', authUsersData);
-      console.log('useFetchUsers: First user raw data from edge function:', authUsersData?.users?.[0]);
+      console.log('Raw edge function response:', authUsersData);
+      console.log('First user raw data from edge function:', authUsersData?.users?.[0]);
       
       // Map users with their profiles, ensuring all subscription fields are properly retrieved
       const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
-        console.log('useFetchUsers: Processing user:', authUser.id);
-        console.log('useFetchUsers: User subscription fields from edge function:', {
+        console.log('Processing user:', authUser.id);
+        console.log('User subscription fields from edge function:', {
           subscription_plan: authUser.subscription_plan,
           subscription_period: authUser.subscription_period,
           subscription_amount: authUser.subscription_amount,
@@ -73,7 +63,7 @@ export const useFetchUsers = () => {
         
         // Get the profile data from our enhanced structure
         const profile = authUser.profile || {};
-        console.log('useFetchUsers: Profile data:', profile);
+        console.log('Profile data:', profile);
         
         const user: User = {
           id: authUser.id,
@@ -123,7 +113,7 @@ export const useFetchUsers = () => {
           stripe_subscription_id: authUser.stripe_subscription_id || null,
         };
         
-        console.log('useFetchUsers: Final mapped user subscription fields:', {
+        console.log('Final mapped user subscription fields:', {
           id: user.id,
           subscription_plan: user.subscription_plan,
           subscription_period: user.subscription_period,
@@ -158,22 +148,12 @@ export const useFetchUsers = () => {
         });
       }
       
-      console.log('useFetchUsers: Final mapped users count:', mappedUsers.length);
-      console.log('useFetchUsers: Sample user with subscription data:', mappedUsers.find(u => u.stripe_customer_id));
-      
-      // Ensure we set the users state before clearing loading
+      console.log('Final mapped users count:', mappedUsers.length);
+      console.log('Sample user with subscription data:', mappedUsers.find(u => u.stripe_customer_id));
       setUsers(mappedUsers);
-      
-      if (forceRefresh) {
-        toast({
-          title: 'Data Refreshed',
-          description: 'User data has been updated successfully.',
-        });
-      }
-      
       return mappedUsers;
     } catch (err) {
-      console.error('useFetchUsers: Exception fetching users:', err);
+      console.error('Exception fetching users:', err);
       const error = err instanceof Error ? err : new Error('Failed to load users');
       setError(error);
       toast({
@@ -181,26 +161,17 @@ export const useFetchUsers = () => {
         description: 'Failed to load users. Please check console for details.',
         variant: 'destructive',
       });
-      return users;
+      return [];
     } finally {
-      console.log('useFetchUsers: Clearing loading state');
       setIsLoading(false);
-      isFetchingRef.current = false;
     }
-  }, [adminUser, toast, lastFetchTime, users]);
-
-  // Force refresh function for immediate updates
-  const forceRefresh = useCallback(() => {
-    return fetchUsers(true);
-  }, [fetchUsers]);
+  }, [adminUser, toast, lastFetchTime]);
 
   return {
     users,
     setUsers,
     isLoading,
     fetchUsers,
-    forceRefresh,
-    error,
-    lastFetchTime
+    error
   };
 };

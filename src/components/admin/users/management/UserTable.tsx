@@ -27,7 +27,6 @@ interface UserTableProps {
   handleDeleteUser: (userId: string) => void;
   handleSendEmail?: (user: User) => void;
   handleUpdateSubscription?: (user: User) => void;
-  lastFetchTime?: number;
 }
 
 export const UserTable: React.FC<UserTableProps> = ({
@@ -47,8 +46,7 @@ export const UserTable: React.FC<UserTableProps> = ({
   handleBulkDeactivate,
   handleDeleteUser,
   handleSendEmail,
-  handleUpdateSubscription,
-  lastFetchTime
+  handleUpdateSubscription
 }) => {
   console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
@@ -64,6 +62,7 @@ export const UserTable: React.FC<UserTableProps> = ({
     hasPreviousPage,
     goToPage,
     handleItemsPerPageChange,
+    handleSearchChange,
     totalFilteredItems,
     totalItems
   } = useUserTablePagination({
@@ -74,7 +73,7 @@ export const UserTable: React.FC<UserTableProps> = ({
 
   // Reset pagination when search term changes
   useEffect(() => {
-    // This is now handled in the useUserTablePagination hook
+    handleSearchChange();
   }, [searchTerm]);
 
   const isAllSelected = paginatedUsers.length > 0 && 
@@ -97,17 +96,6 @@ export const UserTable: React.FC<UserTableProps> = ({
       );
       setSelectedUsers([...selectedUsers, ...newSelections]);
     }
-  };
-
-  // Format last update time for display
-  const formatLastUpdateTime = () => {
-    if (!lastFetchTime) return '';
-    const now = Date.now();
-    const diffSeconds = Math.floor((now - lastFetchTime) / 1000);
-    
-    if (diffSeconds < 60) return `Data updated ${diffSeconds}s ago`;
-    if (diffSeconds < 3600) return `Data updated ${Math.floor(diffSeconds / 60)}m ago`;
-    return `Data updated ${Math.floor(diffSeconds / 3600)}h ago`;
   };
 
   return (
@@ -151,20 +139,13 @@ export const UserTable: React.FC<UserTableProps> = ({
       </div>
       
       <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm text-gray-500 px-2")}>
-        <div className="flex flex-col gap-1">
-          <div>
-            Showing <span className="font-medium">{totalFilteredItems}</span> of{' '}
-            <span className="font-medium">{totalItems}</span> users
-            {searchTerm && (
-              <span className="ml-1">
-                (filtered by "{searchTerm}")
-              </span>
-            )}
-          </div>
-          {lastFetchTime && (
-            <div className="text-xs text-gray-400">
-              {formatLastUpdateTime()}
-            </div>
+        <div>
+          Showing <span className="font-medium">{totalFilteredItems}</span> of{' '}
+          <span className="font-medium">{totalItems}</span> users
+          {searchTerm && (
+            <span className="ml-1">
+              (filtered by "{searchTerm}")
+            </span>
           )}
         </div>
         <div>

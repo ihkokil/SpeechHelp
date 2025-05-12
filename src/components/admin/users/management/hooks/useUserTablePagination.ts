@@ -1,5 +1,5 @@
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { User } from '../../types';
 import { usePagination } from './usePagination';
 
@@ -49,10 +49,10 @@ export const useUserTablePagination = ({
     resetPagination(); // Reset to first page when changing items per page
   };
 
-  // Reset pagination when search term changes or user data changes significantly
-  useEffect(() => {
+  // Reset pagination when search term changes
+  const handleSearchChange = () => {
     resetPagination();
-  }, [searchTerm, users.length, resetPagination]);
+  };
 
   return {
     // Paginated data
@@ -69,6 +69,7 @@ export const useUserTablePagination = ({
     // Pagination controls
     goToPage,
     handleItemsPerPageChange,
+    handleSearchChange,
     
     // Stats
     totalFilteredItems: filteredUsers.length,
