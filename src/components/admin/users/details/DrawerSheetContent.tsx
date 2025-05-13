@@ -30,6 +30,7 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
   userJoinedDays,
   totalActivityTime
 }) => {
+  // Handler that takes and passes the event properly
   const handleCloseClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
