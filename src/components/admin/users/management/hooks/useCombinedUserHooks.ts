@@ -57,11 +57,11 @@ export const useCombinedUserHooks = () => {
   const {
     handleEditUser,
     handleSendEmail,
-    handleDeleteUsers,
+    handleDeleteUsers: baseHandleDeleteUsers,
     handleDeleteUser,
-    handleBulkDelete,
-    handleBulkActivate,
-    handleBulkDeactivate,
+    handleBulkDelete: baseHandleBulkDelete,
+    handleBulkActivate: baseHandleBulkActivate,
+    handleBulkDeactivate: baseHandleBulkDeactivate,
     handleToggleUserStatus,
     handleToggleUserSubscription,
     handleViewUserDetails: baseHandleViewUserDetails,
@@ -71,7 +71,7 @@ export const useCombinedUserHooks = () => {
     isActionLoading
   } = useUserActions(users, setUsers);
   
-  // Wrap functions to include necessary state
+  // Wrap functions to include necessary state and make them parameterless
   const handleViewUserDetails = useCallback((user: User) => {
     console.log("useCombinedUserHooks: View details called for user:", user.id);
     baseHandleViewUserDetails(user);
@@ -100,6 +100,32 @@ export const useCombinedUserHooks = () => {
     baseHandlePermissionsUpdated(updatedUser, users, setUsers);
     setIsPermissionsDialogOpen(false);
   }, [baseHandlePermissionsUpdated, users, setUsers, setIsPermissionsDialogOpen]);
+
+  // Create parameterless versions of bulk action functions
+  const handleBulkDelete = useCallback(() => {
+    console.log("useCombinedUserHooks: Bulk delete called for users:", selectedUsers);
+    return baseHandleBulkDelete(selectedUsers, users, setUsers);
+  }, [baseHandleBulkDelete, selectedUsers, users, setUsers]);
+  
+  const handleBulkActivate = useCallback(() => {
+    console.log("useCombinedUserHooks: Bulk activate called for users:", selectedUsers);
+    return baseHandleBulkActivate(selectedUsers, users, setUsers);
+  }, [baseHandleBulkActivate, selectedUsers, users, setUsers]);
+  
+  const handleBulkDeactivate = useCallback(() => {
+    console.log("useCombinedUserHooks: Bulk deactivate called for users:", selectedUsers);
+    return baseHandleBulkDeactivate(selectedUsers, users, setUsers);
+  }, [baseHandleBulkDeactivate, selectedUsers, users, setUsers]);
+  
+  // Create a parameterless version of the delete users function
+  const handleDeleteUsers = useCallback(() => {
+    console.log("useCombinedUserHooks: Delete users called for users:", selectedUsers);
+    if (selectedUsers.length === 1) {
+      return handleDeleteUser(selectedUsers[0].id, users, setUsers);
+    } else {
+      return baseHandleDeleteUsers(selectedUsers, users, setUsers);
+    }
+  }, [baseHandleDeleteUsers, handleDeleteUser, selectedUsers, users, setUsers]);
   
   // Cleanup function
   const cleanup = useCallback(() => {
