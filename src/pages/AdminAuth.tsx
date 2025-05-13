@@ -183,7 +183,7 @@ const AdminAuth = () => {
         <img 
           src="/Speech Help - Logo.svg" 
           alt="Speech Help Logo" 
-          className="h-10" 
+          className="h-10 w-auto" 
         />
         <div className="text-2xl font-bold text-pink-600">Admin Portal</div>
       </div>
@@ -218,7 +218,7 @@ const AdminAuth = () => {
         </Alert>
       )}
       
-      <Card className="w-full max-w-md shadow-lg">
+      <Card className="w-full max-w-md shadow-xl border border-gray-200">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Admin Access</CardTitle>
           <CardDescription className="text-center">
@@ -261,7 +261,7 @@ const AdminAuth = () => {
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600" 
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Verifying..." : "Verify"}
@@ -269,13 +269,17 @@ const AdminAuth = () => {
               </form>
             </Form>
           ) : (
-            <Tabs value={formTab} onValueChange={(value) => setFormTab(value as 'login' | 'forgot-password')}>
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="login">Sign In</TabsTrigger>
-                <TabsTrigger value="forgot-password">Forgot Password</TabsTrigger>
+            <Tabs 
+              value={formTab} 
+              onValueChange={(value) => setFormTab(value as 'login' | 'forgot-password')}
+              className="w-full"
+            >
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="login" className="rounded-md text-sm">Sign In</TabsTrigger>
+                <TabsTrigger value="forgot-password" className="rounded-md text-sm">Forgot Password</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="login">
+              <TabsContent value="login" className="mt-0">
                 <Form {...loginForm}>
                   <form onSubmit={loginForm.handleSubmit(onSubmitLogin)} className="space-y-4">
                     {loginError && (
@@ -294,7 +298,11 @@ const AdminAuth = () => {
                         <FormItem>
                           <FormLabel>Username</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your username" {...field} />
+                            <Input 
+                              placeholder="Enter your username" 
+                              {...field}
+                              className="h-10" 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -308,7 +316,12 @@ const AdminAuth = () => {
                         <FormItem>
                           <FormLabel>Password</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Enter your password" {...field} />
+                            <Input 
+                              type="password" 
+                              placeholder="Enter your password" 
+                              {...field} 
+                              className="h-10"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -317,7 +330,7 @@ const AdminAuth = () => {
                     
                     <Button 
                       type="submit" 
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600" 
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? "Signing in..." : "Sign In"}
@@ -326,10 +339,10 @@ const AdminAuth = () => {
                 </Form>
               </TabsContent>
               
-              <TabsContent value="forgot-password">
+              <TabsContent value="forgot-password" className="mt-0">
                 <Form {...forgotPasswordForm}>
                   <form onSubmit={forgotPasswordForm.handleSubmit(onSubmitForgotPassword)} className="space-y-4">
-                    <div className="flex justify-center my-2">
+                    <div className="flex justify-center my-4">
                       <LockKeyhole className="h-8 w-8 text-pink-600" />
                     </div>
                     
@@ -340,7 +353,12 @@ const AdminAuth = () => {
                         <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="Enter your admin email" {...field} />
+                            <Input 
+                              type="email" 
+                              placeholder="Enter your admin email" 
+                              {...field} 
+                              className="h-10"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -349,7 +367,7 @@ const AdminAuth = () => {
                     
                     <Button 
                       type="submit" 
-                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600" 
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? "Sending..." : "Reset Password"}
@@ -361,7 +379,7 @@ const AdminAuth = () => {
           )}
         </CardContent>
         
-        <CardFooter className="justify-center text-sm text-gray-500">
+        <CardFooter className="justify-center text-sm text-gray-500 pt-0">
           <p>Secure access for authorized personnel only</p>
         </CardFooter>
       </Card>
