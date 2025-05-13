@@ -4,16 +4,13 @@ import { User } from '../../types';
 import { useBulkActions } from './user-actions/useBulkActions';
 import { useIndividualUserActions } from './user-actions/useIndividualUserActions';
 import { useToast } from '@/hooks/use-toast';
+import { usePermissionActions } from './user-actions/usePermissionActions';
+import { useUserDetails } from './user-actions/useUserDetails';
 
 export const useUserActions = () => {
   const { toast } = useToast();
   // Create internal state for tracking action loading
   const [isActionLoading, setIsActionLoading] = useState(false);
-  
-  // Create local states for user details and permissions dialogs
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   
   // Initialize hooks with necessary parameters
   const { 
@@ -28,50 +25,29 @@ export const useUserActions = () => {
     handleDeleteUser
   } = useIndividualUserActions();
   
-  // View user details handler
-  const handleViewUserDetails = useCallback((user: User) => {
-    console.log("useUserActions: View details called for user:", user.id);
-    setSelectedUser(user);
-    setIsDetailsOpen(true);
+  // Import user details and permission actions
+  const { 
+    handleViewUserDetails,
+    handleCloseUserDetails,
+    handleManagePermissions
+  } = useUserDetails();
+  
+  const { 
+    handlePermissionsUpdated 
+  } = usePermissionActions();
+  
+  // Handle editing user
+  const handleEditUser = useCallback((user: User) => {
+    console.log('useUserActions: Edit user called for user:', user.id);
   }, []);
   
-  // Close user details handler
-  const handleCloseUserDetails = useCallback(() => {
-    console.log("useUserActions: Close details called");
-    setIsDetailsOpen(false);
-    setTimeout(() => {
-      setSelectedUser(null);
-    }, 300);
-  }, []);
-  
-  // Manage user permissions handler
-  const handleManagePermissions = useCallback((user: User) => {
-    console.log("useUserActions: Manage permissions called for user:", user.id);
-    setSelectedUser(user);
-    setIsPermissionsDialogOpen(true);
-  }, []);
-  
-  // Handle permissions updated
-  const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[] = [], setUsers: ((users: User[]) => void) | null = null) => {
-    console.log('Permissions updated for user:', updatedUser.id);
-    
-    // Update the user in the users array if setUsers is provided
-    if (setUsers && users.length > 0) {
-      setUsers(
-        users.map(user => 
-          user.id === updatedUser.id ? updatedUser : user
-        )
-      );
-    }
-    
-    // Show a success toast
+  // Handle sending email
+  const handleSendEmail = useCallback((user: User) => {
+    console.log('useUserActions: Send email called for user:', user.id);
     toast({
-      title: 'Permissions Updated',
-      description: `${updatedUser.email}'s admin permissions have been updated.`,
+      title: 'Email Function',
+      description: `Email dialog for ${user.email} would open here.`,
     });
-    
-    // Close the dialog
-    setIsPermissionsDialogOpen(false);
   }, [toast]);
   
   // Handle deleting users (plural for backward compatibility)
@@ -111,30 +87,22 @@ export const useUserActions = () => {
   
   // Return all actions and state
   return {
-    // User CRUD operations
+    // Actions
+    handleEditUser,
+    handleSendEmail,
     handleDeleteUsers,
     handleDeleteUser,
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
-    
-    // User subscription and status operations
     handleToggleUserStatus,
     handleToggleUserSubscription,
-    
-    // User details operations
     handleViewUserDetails,
     handleCloseUserDetails,
     handleManagePermissions,
-    
-    // Permission operations
     handlePermissionsUpdated,
     
     // States
-    isActionLoading,
-    selectedUser,
-    isDetailsOpen,
-    isPermissionsDialogOpen,
-    setIsPermissionsDialogOpen
+    isActionLoading
   };
 };
