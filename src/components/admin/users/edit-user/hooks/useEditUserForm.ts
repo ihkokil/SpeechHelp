@@ -11,6 +11,7 @@ const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
   role: z.string().default('user'),
   isActive: z.boolean().default(true),
+  phone: z.string().optional(),
 });
 
 export type FormValues = z.infer<typeof formSchema>;
@@ -32,6 +33,7 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       name: initialUser?.user_metadata?.name || '',
       role: initialUser?.is_admin ? (initialUser.admin_role || 'admin') : 'user',
       isActive: initialUser?.is_active !== false,
+      phone: initialUser?.user_metadata?.phone || '',
     },
   });
 
@@ -64,6 +66,7 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         user_metadata: {
           ...initialUser.user_metadata,
           name: values.name,
+          phone: values.phone,
         }
       };
       
@@ -92,6 +95,32 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
     }
   };
 
+  // Handle sending password reset
+  const handleSendPasswordReset = async (email: string) => {
+    setIsSubmitting(true);
+    
+    try {
+      console.log('Sending password reset to:', email);
+      
+      // Mock the API call for now
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      toast({
+        title: 'Password Reset Sent',
+        description: `A password reset link has been sent to ${email}.`,
+      });
+    } catch (error) {
+      console.error('Exception sending password reset:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send password reset link. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Handle dialog close
   const handleDialogClose = (open: boolean) => {
     console.log("Dialog open state changing to:", open);
@@ -110,6 +139,7 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
     isSubmitting,
     handleSubmit,
     handleDialogClose,
-    resetForm
+    resetForm,
+    handleSendPasswordReset
   };
 };
