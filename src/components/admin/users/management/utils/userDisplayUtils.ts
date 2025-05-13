@@ -49,20 +49,25 @@ export const getUserPhone = (user: User) => {
   const phone = user.user_metadata?.phone;
   if (!phone) return '—';
   
-  const countryCode = user.user_metadata?.country_code || 'US';
-  
-  let dialCode = '1';
-  
-  const formattedNumber = formatPhoneNumber(phone, countryCode);
-  
-  if (countryCode && countryCode !== 'US') {
-    const country = countries.find((c: any) => c.code === countryCode);
-    if (country) {
-      dialCode = country.dialCode;
+  try {
+    const countryCode = user.user_metadata?.country_code || 'US';
+    
+    let dialCode = '1';
+    
+    const formattedNumber = formatPhoneNumber(phone, countryCode);
+    
+    if (countryCode && countryCode !== 'US') {
+      const country = countries.find((c: any) => c.code === countryCode);
+      if (country) {
+        dialCode = country.dialCode;
+      }
     }
+    
+    return `+${dialCode} ${formattedNumber}`;
+  } catch (error) {
+    console.error('Error formatting phone number:', error);
+    return phone; // Return the raw phone number as fallback
   }
-  
-  return `+${dialCode} ${formattedNumber}`;
 };
 
 export const getCountryFlagUrl = (countryCode: string | undefined) => {

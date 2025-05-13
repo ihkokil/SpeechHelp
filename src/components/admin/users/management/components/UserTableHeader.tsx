@@ -35,8 +35,8 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
             aria-label="Select all users"
           />
         </TableHead>
-        <TableHead className="w-[250px]">User</TableHead>
-        <TableHead className="hidden md:table-cell">Email</TableHead>
+        <TableHead className="w-[200px]">User</TableHead>
+        <TableHead>Email</TableHead>
         <TableHead className="hidden md:table-cell">Phone</TableHead>
         <TableHead className="hidden md:table-cell">Plan</TableHead>
         <TableHead className="hidden md:table-cell">Joined</TableHead>
@@ -52,7 +52,7 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
                 onClick={onBulkDelete}
               >
                 <UserMinus className="h-4 w-4" />
-                <span>Delete</span>
+                <span className="hidden sm:inline">Delete</span>
               </Button>
               <Button 
                 variant="outline" 
@@ -61,7 +61,7 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
                 onClick={onBulkDeactivate}
               >
                 <Ban className="h-4 w-4" />
-                <span>Deactivate</span>
+                <span className="hidden sm:inline">Deactivate</span>
               </Button>
               <Button 
                 variant="outline" 
@@ -70,7 +70,7 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
                 onClick={onBulkActivate}
               >
                 <CheckCircle className="h-4 w-4" />
-                <span>Activate</span>
+                <span className="hidden sm:inline">Activate</span>
               </Button>
             </div>
           )}
