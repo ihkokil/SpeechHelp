@@ -5,9 +5,7 @@ import { User } from '../types';
 import { useUserSearch } from './hooks/useUserSearch';
 import UserTableHeader from './components/UserTableHeader';
 import UserTableRow from './components/UserTableRow';
-import UserTablePagination from './components/UserTablePagination';
 import { LoadingState, EmptyState } from './components/UserTableStates';
-import { usePagination } from './hooks/usePagination';
 
 interface UserTableProps {
   users: User[];
@@ -44,33 +42,23 @@ export const UserTable: React.FC<UserTableProps> = ({
   setIsDeleteDialogOpen,
   searchTerm,
   handleBulkDelete,
+  handleBulkActivate,
+  handleBulkDeactivate,
   handleDeleteUser,
   handleEditUser,
-  handleSendEmail,
-  handleBulkActivate,
-  handleBulkDeactivate
+  handleSendEmail
 }) => {
   console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
   const { filterUsers } = useUserSearch(users);
   const filteredUsers = useMemo(() => filterUsers(users, searchTerm), [users, searchTerm, filterUsers]);
-  
-  // Use pagination hook
-  const {
-    currentItems: paginatedUsers,
-    currentPage,
-    pageSize,
-    totalPages,
-    handlePageChange,
-    handlePageSizeChange
-  } = usePagination(filteredUsers, 10);
 
-  const isAllSelected = paginatedUsers.length > 0 && 
-    selectedUsers.length >= paginatedUsers.length &&
-    paginatedUsers.every(user => selectedUsers.some(selectedUser => selectedUser.id === user.id));
+  const isAllSelected = filteredUsers.length > 0 && 
+    selectedUsers.length === filteredUsers.length &&
+    filteredUsers.every(user => selectedUsers.some(selectedUser => selectedUser.id === user.id));
 
   const handleToggleAll = () => {
-    toggleAllUsers(paginatedUsers);
+    toggleAllUsers(filteredUsers);
   };
 
   return (
@@ -79,9 +67,11 @@ export const UserTable: React.FC<UserTableProps> = ({
         <UserTableHeader 
           onToggleAll={handleToggleAll}
           isAllSelected={isAllSelected}
-          disabled={isLoading || paginatedUsers.length === 0}
+          disabled={isLoading || filteredUsers.length === 0}
           selectedCount={selectedUsers.length}
           onBulkDelete={handleBulkDelete}
+          onBulkActivate={handleBulkActivate}
+          onBulkDeactivate={handleBulkDeactivate}
         />
         <TableBody>
           {isLoading ? (
@@ -89,7 +79,7 @@ export const UserTable: React.FC<UserTableProps> = ({
           ) : filteredUsers.length === 0 ? (
             <EmptyState />
           ) : (
-            paginatedUsers.map((user) => (
+            filteredUsers.map((user) => (
               <UserTableRow
                 key={user.id}
                 user={user}
@@ -107,15 +97,14 @@ export const UserTable: React.FC<UserTableProps> = ({
           )}
         </TableBody>
       </Table>
-      
-      <UserTablePagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        pageSize={pageSize}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-        totalItems={filteredUsers.length}
-      />
+      <div className="mt-4 flex justify-between text-sm text-gray-500 p-4">
+        <div>Showing {filteredUsers.length} of {users.length} users</div>
+        <div>
+          {selectedUsers.length > 0 && (
+            <span>{selectedUsers.length} users selected</span>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
