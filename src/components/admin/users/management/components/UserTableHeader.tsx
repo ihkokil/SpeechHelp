@@ -28,7 +28,7 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
         <TableHead className="w-12 px-2">
           <Checkbox
             checked={isAllSelected}
-            onChange={handleCheckboxChange}
+            onCheckedChange={handleCheckboxChange}
             disabled={disabled}
             aria-label="Select all users"
           />
