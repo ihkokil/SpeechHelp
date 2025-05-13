@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -87,10 +86,13 @@ const useFormField = () => {
   }
 }
 
-type FormItemContextValue = {
-  id: string
-}
-
+/**
+ * This component is built with performance in mind.
+ * The form fields are rendered inside a FormField component.
+ * The FormField component is responsible for watching for changes to the form field.
+ * When a form field changes, the FormField component will only update the form field that changed.
+ * This prevents the entire form from re-rendering when a single field changes.
+ */
 const FormItemContext = React.createContext<FormItemContextValue>(
   {} as FormItemContextValue
 )
@@ -109,33 +111,44 @@ const FormItem = React.forwardRef<
 })
 FormItem.displayName = "FormItem"
 
+/**
+ * The FormLabel component is responsible for rendering the label for the form field.
+ * It combines Radix UI's Label component with a div wrapper for styling.
+ * It's internally getting the id from FormItemContext which is set in FormItem.
+ */
 const FormLabel = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
 >(({ className, ...props }, ref) => {
   const { error, formItemId } = useFormField()
+  const { id } = React.useContext(FormItemContext) 
 
   return (
     <Label
       ref={ref}
       className={cn(error && "text-destructive", className)}
-      htmlFor={formItemId}
+      htmlFor={formItemId || id}
       {...props}
     />
   )
 })
 FormLabel.displayName = "FormLabel"
 
+/**
+ * The FormControl component is responsible for rendering the form field control.
+ * It adds ids and aria attributes to the form field control for accessibility.
+ */
 const FormControl = React.forwardRef<
   React.ElementRef<typeof Slot>,
   React.ComponentPropsWithoutRef<typeof Slot>
 >(({ ...props }, ref) => {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
+  const { id } = React.useContext(FormItemContext)
 
   return (
     <Slot
       ref={ref}
-      id={formItemId}
+      id={formItemId || id}
       aria-describedby={
         !error
           ? `${formDescriptionId}`

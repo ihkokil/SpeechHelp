@@ -50,23 +50,39 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({
     };
   }, [isSubmitting]);
   
+  // Debug open/close lifecycle
+  useEffect(() => {
+    console.log("AddUserDialog open state changed to:", open);
+  }, [open]);
+  
   return (
     <Dialog 
       open={open} 
       onOpenChange={(newOpen) => {
+        console.log("AddUserDialog onOpenChange called with:", newOpen);
         // Only allow dialog to close if we're not submitting
         if (isSubmitting && !newOpen) {
+          console.log("Preventing dialog close during submission");
           return;
         }
         handleDialogClose(newOpen);
       }}
     >
-      <DialogContent className="sm:max-w-[525px]" onInteractOutside={(e) => {
-        // Prevent close when clicking outside while submitting
-        if (isSubmitting) {
-          e.preventDefault();
-        }
-      }}>
+      <DialogContent 
+        className="sm:max-w-[525px]"
+        onPointerDownOutside={(e) => {
+          // Prevent closure when clicking outside if submitting
+          if (isSubmitting) {
+            e.preventDefault();
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          // Prevent closure when pressing escape if submitting
+          if (isSubmitting) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>
           <DialogDescription>
