@@ -7,6 +7,7 @@ import { UserTable } from '@/components/admin/users/management/UserTable';
 import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
+import EditUserDialog from '@/components/admin/users/edit-user/EditUserDialog';
 import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/components/admin/users/types';
@@ -29,6 +30,8 @@ const UserManagement = () => {
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
+    isEditUserDialogOpen,
+    setIsEditUserDialogOpen,
     filteredUsers,
     fetchUsers,
     toggleUserSelection,
@@ -45,6 +48,7 @@ const UserManagement = () => {
     handleBulkActivate,
     handleBulkDeactivate,
     handleEditUser,
+    handleUserUpdated,
     handleSendEmail,
     cleanup,
     addUser
@@ -70,8 +74,6 @@ const UserManagement = () => {
       });
     }
   };
-
-  console.log("UserManagement rendering, isAddUserDialogOpen:", isAddUserDialogOpen);
 
   return (
     <div className="space-y-6">
@@ -140,6 +142,15 @@ const UserManagement = () => {
         onOpenChange={setIsAddUserDialogOpen} 
         onUserAdded={handleUserAdded}
       />
+
+      {selectedUser && (
+        <EditUserDialog
+          user={selectedUser}
+          open={isEditUserDialogOpen}
+          onOpenChange={setIsEditUserDialogOpen}
+          onUserUpdated={handleUserUpdated}
+        />
+      )}
 
       {isPermissionsDialogOpen && selectedUser && (
         <AdminPermissionsDialog
