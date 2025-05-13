@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -85,11 +84,6 @@ const useFormField = () => {
     formMessageId: `${id}-form-item-message`,
     ...fieldState,
   }
-}
-
-// Define the FormItemContextValue type that was missing
-type FormItemContextValue = {
-  id: string
 }
 
 /**
