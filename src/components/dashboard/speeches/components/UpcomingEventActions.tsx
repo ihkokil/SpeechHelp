@@ -42,6 +42,10 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
   const [newDate, setNewDate] = useState<Date>(new Date(event.date));
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
+  // Get today's date at the start of the day (midnight) for disabling past dates
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
   const handleDateChange = (date: Date | undefined) => {
     if (!date) return;
     
@@ -130,6 +134,7 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
               onSelect={handleDateChange}
               initialFocus
               className="p-3 pointer-events-auto"
+              disabled={(date) => date < today}
             />
           </PopoverContent>
         </Popover>
