@@ -7,6 +7,7 @@ import { UserTable } from '@/components/admin/users/management/UserTable';
 import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
+import EditUserDialog from '@/components/admin/users/edit-user/EditUserDialog';
 import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/components/admin/users/types';
@@ -47,7 +48,9 @@ const UserManagement = () => {
     handleEditUser,
     handleSendEmail,
     cleanup,
-    addUser
+    addUser,
+    isEditUserDialogOpen,
+    setIsEditUserDialogOpen,
   } = useUserManagement();
   
   const { toast } = useToast();
@@ -71,7 +74,17 @@ const UserManagement = () => {
     }
   };
 
-  console.log("UserManagement rendering, isAddUserDialogOpen:", isAddUserDialogOpen);
+  // Handler for when a user is updated via the EditUserDialog
+  const handleUserUpdated = (updatedUser: User) => {
+    console.log("User updated:", updatedUser);
+    setUsers(prevUsers => 
+      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
+    );
+    toast({
+      title: "User updated",
+      description: `${updatedUser.email} has been updated successfully.`
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -140,6 +153,15 @@ const UserManagement = () => {
         onOpenChange={setIsAddUserDialogOpen} 
         onUserAdded={handleUserAdded}
       />
+
+      {isEditUserDialogOpen && selectedUser && (
+        <EditUserDialog
+          user={selectedUser}
+          open={isEditUserDialogOpen}
+          onOpenChange={setIsEditUserDialogOpen}
+          onUserUpdated={handleUserUpdated}
+        />
+      )}
 
       {isPermissionsDialogOpen && selectedUser && (
         <AdminPermissionsDialog
