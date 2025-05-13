@@ -12,6 +12,7 @@ import {
   UserCheck,
   Shield,
   Clock,
+  Edit,
 } from 'lucide-react';
 
 interface UserActionMenuProps {
@@ -21,6 +22,8 @@ interface UserActionMenuProps {
   onToggleUserActive: (userId: string, isActive: boolean) => void;
   onExtendSubscription: (userId: string) => void;
   onDeleteUser: (userId: string) => void;
+  onEditUser?: (user: User) => void;
+  onSendEmail?: (user: User) => void;
 }
 
 const UserActionMenu: React.FC<UserActionMenuProps> = ({
@@ -29,7 +32,9 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onManagePermissions,
   onToggleUserActive,
   onExtendSubscription,
-  onDeleteUser
+  onDeleteUser,
+  onEditUser,
+  onSendEmail
 }) => {
   // Handle menu item actions - now these are explicit functions
   const handleViewDetails = (e: React.MouseEvent) => {
@@ -61,6 +66,26 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     e.stopPropagation();
     onDeleteUser(user.id);
   };
+  
+  const handleEditUser = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onEditUser) {
+      onEditUser(user);
+    } else {
+      console.log('Edit User clicked - handler not implemented yet');
+    }
+  };
+  
+  const handleSendEmail = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onSendEmail) {
+      onSendEmail(user);
+    } else {
+      console.log('Send Email clicked - handler not implemented yet');
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -75,12 +100,8 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
           <Eye className="mr-2 h-4 w-4" />
           <span>View Details</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log('Edit User clicked');
-        }}>
-          <UserCog className="mr-2 h-4 w-4" />
+        <DropdownMenuItem onClick={handleEditUser}>
+          <Edit className="mr-2 h-4 w-4" />
           <span>Edit User</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleManagePermissions}>
@@ -91,11 +112,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
           <Clock className="mr-2 h-4 w-4" />
           <span>Extend Subscription</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log('Send Email clicked');
-        }}>
+        <DropdownMenuItem onClick={handleSendEmail}>
           <Mail className="mr-2 h-4 w-4" />
           <span>Send Email</span>
         </DropdownMenuItem>

@@ -8,6 +8,8 @@ export const useUserManagementUIState = () => {
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   
   // Selected user for dialogs or detailed view
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -18,6 +20,8 @@ export const useUserManagementUIState = () => {
     setIsAddUserDialogOpen(false);
     setIsPermissionsDialogOpen(false);
     setIsDetailsOpen(false);
+    setIsEditUserDialogOpen(false);
+    setIsEmailDialogOpen(false);
     setSelectedUser(null);
   };
 
@@ -33,6 +37,10 @@ export const useUserManagementUIState = () => {
     setIsPermissionsDialogOpen,
     isDetailsOpen,
     setIsDetailsOpen,
+    isEditUserDialogOpen,
+    setIsEditUserDialogOpen,
+    isEmailDialogOpen,
+    setIsEmailDialogOpen,
     
     // Selected user state
     selectedUser,

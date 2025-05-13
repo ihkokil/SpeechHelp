@@ -6,10 +6,12 @@ import { useUserSelection } from './hooks/useUserSelection';
 import { useUserActions } from './hooks/useUserActions';
 import { useUserManagementUIState } from './hooks/useUserManagementUIState';
 import { User } from '../types';
+import { useToast } from '@/hooks/use-toast';
 
 export const useUserManagement = () => {
   console.log("Initializing useUserManagement");
   const isMounted = useRef(true);
+  const { toast } = useToast();
 
   // Get user data operations
   const {
@@ -32,7 +34,11 @@ export const useUserManagement = () => {
     setIsDetailsOpen,
     selectedUser,
     setSelectedUser,
-    resetUIState
+    resetUIState,
+    isEditUserDialogOpen,
+    setIsEditUserDialogOpen,
+    isEmailDialogOpen,
+    setIsEmailDialogOpen
   } = useUserManagementUIState();
   
   // User search functionality
@@ -89,6 +95,26 @@ export const useUserManagement = () => {
     );
     setIsPermissionsDialogOpen(false);
   }, [setUsers, setIsPermissionsDialogOpen]);
+  
+  // Handle Edit User
+  const handleEditUser = useCallback((user: User) => {
+    console.log("useUserManagement: Edit user called for user:", user.id);
+    setSelectedUser(user);
+    setIsEditUserDialogOpen(true);
+  }, [setSelectedUser, setIsEditUserDialogOpen]);
+  
+  // Handle Send Email
+  const handleSendEmail = useCallback((user: User) => {
+    console.log("useUserManagement: Send email called for user:", user.id);
+    setSelectedUser(user);
+    setIsEmailDialogOpen(true);
+    
+    // For now, just show a toast notification since email dialog is not implemented
+    toast({
+      title: 'Email Function',
+      description: `Email dialog for ${user.email} would open here.`,
+    });
+  }, [setSelectedUser, setIsEmailDialogOpen, toast]);
   
   // Wrapper functions to include users and setUsers
   const handleToggleUserStatus = useCallback((userId: string, isActive: boolean) => {
@@ -164,6 +190,10 @@ export const useUserManagement = () => {
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
+    isEditUserDialogOpen,
+    setIsEditUserDialogOpen,
+    isEmailDialogOpen,
+    setIsEmailDialogOpen,
     filteredUsers,
     
     // Functions
@@ -181,6 +211,8 @@ export const useUserManagement = () => {
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
+    handleEditUser,
+    handleSendEmail,
     cleanup,
     addUser
   };
