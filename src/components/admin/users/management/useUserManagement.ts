@@ -103,21 +103,6 @@ export const useUserManagement = () => {
     setIsEditUserDialogOpen(true);
   }, [setSelectedUser, setIsEditUserDialogOpen]);
   
-  // Handle user update from edit user dialog
-  const handleUserUpdated = useCallback((updatedUser: User) => {
-    console.log("useUserManagement: User updated:", updatedUser.id);
-    setUsers(prevUsers => 
-      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
-    );
-    setIsEditUserDialogOpen(false);
-    
-    // Show success toast
-    toast({
-      title: "User updated",
-      description: `${updatedUser.email} has been updated successfully.`,
-    });
-  }, [setUsers, setIsEditUserDialogOpen, toast]);
-  
   // Handle Send Email
   const handleSendEmail = useCallback((user: User) => {
     console.log("useUserManagement: Send email called for user:", user.id);
@@ -227,7 +212,6 @@ export const useUserManagement = () => {
     handleBulkActivate,
     handleBulkDeactivate,
     handleEditUser,
-    handleUserUpdated,
     handleSendEmail,
     cleanup,
     addUser
