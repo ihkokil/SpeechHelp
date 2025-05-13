@@ -138,7 +138,7 @@ export const UserTable: React.FC<UserTableProps> = ({
         </div>
       </div>
       
-      <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm text-gray-500 px-2")}>
+      {/* <div className={cn("flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm text-gray-500 px-2")}>
         <div>
           Showing <span className="font-medium">{totalFilteredItems}</span> of{' '}
           <span className="font-medium">{totalItems}</span> users
@@ -155,7 +155,7 @@ export const UserTable: React.FC<UserTableProps> = ({
             </span>
           )}
         </div>
-      </div>
+      </div> */}
 
       {/* Pagination Controls */}
       <PaginationControls
