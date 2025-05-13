@@ -32,8 +32,6 @@ export type User = {
   subscription_status?: string;
   subscription_end_date?: string;
   subscription_tier?: string;
-  // Added property for phone directly on the user object for easier access
-  phone?: string;
 };
 
 export type Speech = {
