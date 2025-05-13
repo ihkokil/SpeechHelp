@@ -49,6 +49,9 @@ export const useUserManagementUIState = () => {
     }
   }, []);
 
+  console.log("useUserManagementUIState - isAddUserDialogOpen:", isAddUserDialogOpen);
+  console.log("useUserManagementUIState - isDetailsOpen:", isDetailsOpen);
+
   return {
     // Dialog and drawer states
     isDeleteDialogOpen,
