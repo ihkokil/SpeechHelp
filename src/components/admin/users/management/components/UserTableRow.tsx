@@ -57,21 +57,13 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
         {formatUserDisplayName(user)}
       </TableCell>
       <TableCell>{user.email}</TableCell>
-      <TableCell>
-        {user.is_active !== false ? (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
-        ) : (
-          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Inactive</Badge>
-        )}
+      <TableCell className="hidden md:table-cell">
+        {user.user_metadata?.phone || '—'}
       </TableCell>
-      <TableCell>
-        {user.is_admin ? (
-          <Badge className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200">
-            Admin
-          </Badge>
-        ) : user.subscription_tier === 'premium' ? (
+      <TableCell className="hidden md:table-cell">
+        {user.subscription_tier ? (
           <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">
-            Premium
+            {user.subscription_tier}
           </Badge>
         ) : (
           <Badge variant="outline" className="text-gray-600">
@@ -79,7 +71,15 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
           </Badge>
         )}
       </TableCell>
-      <TableCell>{formatDateRelative(user.created_at || '')}</TableCell>
+      <TableCell className="hidden lg:table-cell">{formatDateRelative(user.created_at || '')}</TableCell>
+      <TableCell className="hidden lg:table-cell">{formatDateRelative(user.last_sign_in_at || '')}</TableCell>
+      <TableCell className="hidden md:table-cell">
+        {user.is_active !== false ? (
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
+        ) : (
+          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Inactive</Badge>
+        )}
+      </TableCell>
       <TableCell className="text-right">
         <UserActionMenu
           user={user}
