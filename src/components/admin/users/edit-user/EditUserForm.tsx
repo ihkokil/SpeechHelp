@@ -6,8 +6,8 @@ import { User } from '@/components/admin/users/types';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { EmailField } from '@/components/settings/profile/components/EmailField';
-import { NameFields } from '@/components/settings/profile/components/NameFields';
+import EmailField from '@/components/settings/profile/components/EmailField';
+import NameFields from '@/components/settings/profile/components/NameFields';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -26,9 +26,15 @@ interface EditUserFormProps {
   user: User;
   onSubmit: (values: FormValues) => void;
   isLoading?: boolean;
+  onCancel?: () => void;
 }
 
-const EditUserForm: React.FC<EditUserFormProps> = ({ user, onSubmit, isLoading = false }) => {
+const EditUserForm: React.FC<EditUserFormProps> = ({ 
+  user, 
+  onSubmit, 
+  isLoading = false,
+  onCancel 
+}) => {
   const { toast } = useToast();
   
   const form = useForm<FormValues>({
@@ -77,6 +83,11 @@ const EditUserForm: React.FC<EditUserFormProps> = ({ user, onSubmit, isLoading =
         </div>
         
         <div className="flex justify-end gap-2 pt-4">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+              Cancel
+            </Button>
+          )}
           <Button type="submit" disabled={isLoading}>
             {isLoading ? 'Updating...' : 'Update User'}
           </Button>
