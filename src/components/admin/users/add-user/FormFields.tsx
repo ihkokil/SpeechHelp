@@ -17,9 +17,9 @@ export const NameField: React.FC<NameFieldProps> = ({ form }) => (
     name="name"
     render={({ field }) => (
       <FormItem>
-        <FormLabel>Full Name</FormLabel>
+        <FormLabel htmlFor="user-name">Full Name</FormLabel>
         <FormControl>
-          <Input placeholder="John Doe" {...field} />
+          <Input id="user-name" placeholder="John Doe" {...field} />
         </FormControl>
         <FormMessage />
       </FormItem>
@@ -33,9 +33,9 @@ export const EmailField: React.FC<NameFieldProps> = ({ form }) => (
     name="email"
     render={({ field }) => (
       <FormItem>
-        <FormLabel>Email</FormLabel>
+        <FormLabel htmlFor="user-email">Email</FormLabel>
         <FormControl>
-          <Input type="email" placeholder="john.doe@example.com" {...field} />
+          <Input id="user-email" type="email" placeholder="john.doe@example.com" {...field} />
         </FormControl>
         <FormMessage />
       </FormItem>
@@ -49,9 +49,9 @@ export const PasswordField: React.FC<NameFieldProps> = ({ form }) => (
     name="password"
     render={({ field }) => (
       <FormItem>
-        <FormLabel>Password</FormLabel>
+        <FormLabel htmlFor="user-password">Password</FormLabel>
         <FormControl>
-          <Input type="password" placeholder="••••••••" {...field} />
+          <Input id="user-password" type="password" placeholder="••••••••" {...field} />
         </FormControl>
         <FormDescription>
           Password must be at least 8 characters and include uppercase, lowercase, and numbers.
@@ -68,10 +68,10 @@ export const RoleField: React.FC<NameFieldProps> = ({ form }) => (
     name="role"
     render={({ field }) => (
       <FormItem>
-        <FormLabel>Role</FormLabel>
-        <Select onValueChange={field.onChange} defaultValue={field.value}>
+        <FormLabel htmlFor="user-role">Role</FormLabel>
+        <Select onValueChange={field.onChange} defaultValue={field.value} name="role">
           <FormControl>
-            <SelectTrigger>
+            <SelectTrigger id="user-role">
               <SelectValue placeholder="Select a role" />
             </SelectTrigger>
           </FormControl>
@@ -94,15 +94,17 @@ export const ActiveStatusField: React.FC<NameFieldProps> = ({ form }) => (
     render={({ field }) => (
       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
         <div className="space-y-0.5">
-          <FormLabel>Active Status</FormLabel>
+          <FormLabel htmlFor="user-active-status">Active Status</FormLabel>
           <FormDescription>
             User will be able to sign in immediately if active.
           </FormDescription>
         </div>
         <FormControl>
           <Switch
+            id="user-active-status"
             checked={field.value}
             onCheckedChange={field.onChange}
+            name="isActive"
           />
         </FormControl>
       </FormItem>
