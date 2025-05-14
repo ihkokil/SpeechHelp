@@ -71,13 +71,16 @@ export const useSpeechSave = ({
 					// Extract the speech ID correctly from the response
 					const speechResponse = await speechService.saveSpeech(user.id, title, contentToSave, speechType);
 					
-					// Fix: Properly handle different response formats
+					// Fix: Properly handle different response formats with type checking
 					if (Array.isArray(speechResponse) && speechResponse.length > 0) {
 						// If the response is an array, get the first item's ID
-						setSpeechId(speechResponse[0].id);
+						const firstItem = speechResponse[0];
+						if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
+							setSpeechId(firstItem.id as string);
+						}
 					} else if (speechResponse && typeof speechResponse === 'object' && 'id' in speechResponse) {
 						// If it's a single object with an ID property
-						setSpeechId(speechResponse.id);
+						setSpeechId(speechResponse.id as string);
 					}
 					
 					toast({
