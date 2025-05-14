@@ -35,7 +35,7 @@ const PricingTiers: React.FC<PricingTiersProps> = ({ pricingPeriod }) => {
 			description: 'Perfect for individuals starting their speaking journey',
 			features: [
 				{
-					text: 'One-Time Wonder: Craft a Single Speech for Any Occasion',
+					text: 'One Speech: Create a single speech for any occasion',
 					description: 'Perfect for those special moments that need the perfect words.',
 					icon: <Sparkle className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
 				},
@@ -67,18 +67,18 @@ const PricingTiers: React.FC<PricingTiersProps> = ({ pricingPeriod }) => {
 			description: 'For serious speakers who need more power',
 			features: [
 				{
-					text: 'Craft Up to 3 Speeches per Month: Speak with Confidence',
+					text: 'Craft Up to 3 Speeches per Month',
 					description: 'Enjoy the freedom to create up to 3 speeches for any occasion each month.',
 					icon: <Star className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
 				},
 				{
-					text: 'Advanced Speech Writing Insights: Elevate Your Skills',
+					text: 'Advanced Speech Writing Insights',
 					description: 'Dive deeper with advanced tips and techniques to enhance your speech-writing prowess.',
 					icon: <Edit className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
 				},
 				{
 					text: 'Continuous Access: Manage and Modify Speeches Anytime',
-					description: 'Keep your speeches handy with ongoing access, allowing you to update and refine whenever needed (as long as your subscription is active).',
+					description: 'Keep your speeches handy with ongoing access, allowing you to update and refine whenever needed.',
 					icon: <Clock className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
 				},
 				{
@@ -87,7 +87,7 @@ const PricingTiers: React.FC<PricingTiersProps> = ({ pricingPeriod }) => {
 					icon: <MessageCircle className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
 				},
 				{
-					text: 'Priority Email Support: Get Help When You Need It',
+					text: 'Priority Email Support',
 					description: 'Access our dedicated support team for quick assistance and guidance.',
 					icon: <Mail className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
 				}
@@ -109,12 +109,12 @@ const PricingTiers: React.FC<PricingTiersProps> = ({ pricingPeriod }) => {
 			description: 'Full-featured plan for professional speakers',
 			features: [
 				{
-					text: 'Unlimited Speech Creations: Master Every Occasion',
+					text: 'Unlimited Speech Creations',
 					description: 'Create an unlimited number of speeches for any event, ensuring you\'re always prepared.',
 					icon: <Star className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
 				},
 				{
-					text: 'Comprehensive Speech Toolkit: Elevate Your Craft',
+					text: 'Comprehensive Speech Toolkit',
 					description: 'Access an extensive library of resources and templates tailored for various speech types.',
 					icon: <Edit className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
 				},
@@ -124,7 +124,7 @@ const PricingTiers: React.FC<PricingTiersProps> = ({ pricingPeriod }) => {
 					icon: <Clock className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
 				},
 				{
-					text: 'Enhanced Personalized Feedback: Expert Guidance at Your Fingertips',
+					text: 'Enhanced Personalized Feedback',
 					description: 'Benefit from advanced, tailored feedback from our AI to maximize the impact of your speeches.',
 					icon: <MessageCircle className="h-5 w-5 text-pink-500 mr-2 mt-0.5 flex-shrink-0" />
 				},

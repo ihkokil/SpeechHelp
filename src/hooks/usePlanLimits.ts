@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -80,10 +81,13 @@ export function usePlanLimits(): UserPlanLimits {
 
 	// Fetch user profile and subscription data from database
 	useEffect(() => {
-		setLoadingPlanLimits(true);
 		const fetchUserSubscriptionData = async () => {
-			if (!user) return;
-
+			if (!user) {
+				setLoadingPlanLimits(false);
+				return;
+			}
+			
+			setLoadingPlanLimits(true);
 			try {
 				// Get the user's profile from the database
 				const { data: profileData, error: profileError } = await supabase
@@ -250,4 +254,4 @@ export function usePlanLimits(): UserPlanLimits {
 		hasReachedLimit,
 		shouldShowUpgradePrompt,
 	};
-} 
+}
