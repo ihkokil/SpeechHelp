@@ -1,6 +1,6 @@
 
 import { X, Menu } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useSidebarState } from './sidebar/hooks/useSidebarState';
 import { UserProfile } from './sidebar/components/UserProfile';
@@ -9,7 +9,9 @@ import { LogoutButton } from './sidebar/components/LogoutButton';
 
 const DashboardSidebar = () => {
   const { isOpen, setIsOpen, toggleSidebar, isMobile } = useSidebarState();
+  // Add fallback to local logo if Supabase storage is unavailable
   const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
+  const localLogoFallback = "/Speech Help - Logo.svg";
 
   return (
     <>
@@ -33,7 +35,16 @@ const DashboardSidebar = () => {
       )}>
         <div className="p-4 border-b border-gray-100 flex items-center justify-between">
           <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src={logoPath} alt="Speech Help" className="h-8 w-auto" />
+            <img 
+              src={logoPath}
+              alt="Speech Help" 
+              className="h-8 w-auto"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.onerror = null; // Prevent infinite loop
+                target.src = localLogoFallback;
+              }}
+            />
           </Link>
           {isMobile && isOpen && (
             <button onClick={toggleSidebar} className="p-1">

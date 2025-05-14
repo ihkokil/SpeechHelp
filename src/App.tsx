@@ -8,6 +8,10 @@ import Auth from '@/pages/Auth';
 import Pricing from '@/pages/Pricing';
 import { Toaster } from "sonner";
 import { CheckoutSuccess } from '@/components/pricing/CheckoutSuccess';
+import Index from '@/pages/Index';
+import MySpeeches from '@/pages/MySpeeches';
+import SpeechLab from '@/pages/SpeechLab';
+import NotFound from '@/pages/NotFound';
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -31,12 +35,15 @@ function App() {
     <Router>
       <AuthProvider>
       <Routes>
-        <Route path="/" element={<Auth />} />
+        <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/account" element={<Account />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
+        <Route path="/my-speeches" element={<MySpeeches />} />
+        <Route path="/speech-lab" element={<SpeechLab />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       </AuthProvider>
       <Toaster position="bottom-right" richColors />
