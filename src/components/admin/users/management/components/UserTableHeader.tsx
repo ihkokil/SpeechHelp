@@ -3,7 +3,7 @@ import React from 'react';
 import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { UserMinus, Ban, CheckCircle } from 'lucide-react';
+import { UserMinus } from 'lucide-react';
 
 interface UserTableHeaderProps {
   onToggleAll: () => void;
@@ -20,9 +20,7 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
   isAllSelected,
   disabled,
   selectedCount,
-  onBulkDelete,
-  onBulkActivate,
-  onBulkDeactivate
+  onBulkDelete
 }) => {
   return (
     <TableHeader>
@@ -53,24 +51,6 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
               >
                 <UserMinus className="h-4 w-4" />
                 <span className="hidden sm:inline">Delete</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="flex items-center space-x-1"
-                onClick={onBulkDeactivate}
-              >
-                <Ban className="h-4 w-4" />
-                <span className="hidden sm:inline">Deactivate</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="flex items-center space-x-1"
-                onClick={onBulkActivate}
-              >
-                <CheckCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">Activate</span>
               </Button>
             </div>
           )}
