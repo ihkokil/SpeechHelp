@@ -13,11 +13,12 @@ export const useFetchUsers = () => {
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (forceRefresh = false) => {
     const now = Date.now();
-    if (now - lastFetchTime < 1000) {
+    // Remove debouncing when force refresh is requested
+    if (!forceRefresh && now - lastFetchTime < 1000) {
       console.log('Debouncing fetch request');
-      return []; // Debounce fetch requests
+      return users; // Return current users instead of empty array
     }
     
     setLastFetchTime(now);
@@ -25,11 +26,14 @@ export const useFetchUsers = () => {
     setError(null);
     
     try {
-      console.log('Fetching users from Supabase auth');
+      console.log('Fetching users from Supabase auth with force refresh:', forceRefresh);
       
       // Fetch users from auth.users via a Supabase function
       const { data: authUsersData, error: authUsersError } = await supabase.functions.invoke('fetch-users', {
-        method: 'GET'
+        method: 'GET',
+        headers: {
+          'Cache-Control': forceRefresh ? 'no-cache' : 'max-age=60'
+        }
       });
       
       if (authUsersError) {
@@ -41,7 +45,7 @@ export const useFetchUsers = () => {
           variant: 'destructive',
         });
         setIsLoading(false);
-        return [];
+        return users;
       }
       
       console.log('Raw edge function response:', authUsersData);
@@ -161,17 +165,24 @@ export const useFetchUsers = () => {
         description: 'Failed to load users. Please check console for details.',
         variant: 'destructive',
       });
-      return [];
+      return users;
     } finally {
       setIsLoading(false);
     }
-  }, [adminUser, toast, lastFetchTime]);
+  }, [adminUser, toast, lastFetchTime, users]);
+
+  // Add a force refresh function
+  const forceRefresh = useCallback(async () => {
+    console.log('Force refreshing users data...');
+    return await fetchUsers(true);
+  }, [fetchUsers]);
 
   return {
     users,
     setUsers,
     isLoading,
     fetchUsers,
+    forceRefresh,
     error
   };
 };

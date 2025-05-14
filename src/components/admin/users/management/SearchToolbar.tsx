@@ -8,8 +8,6 @@ import {
   Loader2, 
   UserMinus, 
   Mail, 
-  Download, 
-  FileUp,
   UserPlus 
 } from 'lucide-react';
 import { User } from '../types';
@@ -19,6 +17,7 @@ interface SearchToolbarProps {
   setSearchTerm: (term: string) => void;
   isLoading: boolean;
   fetchUsers: () => void;
+  forceRefresh?: () => void;
   selectedUsers: User[];
   isActionLoading: boolean;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
@@ -30,6 +29,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
   setSearchTerm,
   isLoading,
   fetchUsers,
+  forceRefresh,
   selectedUsers,
   isActionLoading,
   setIsDeleteDialogOpen,
@@ -51,6 +51,17 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
     }
   };
 
+  const handleRefreshClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Refresh button clicked");
+    if (forceRefresh) {
+      forceRefresh();
+    } else {
+      fetchUsers();
+    }
+  };
+
   return (
     <div className="mb-4 flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
       <div className="flex w-full items-center space-x-2 sm:w-auto">
@@ -67,8 +78,9 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
         <Button 
           variant="outline" 
           size="icon" 
-          onClick={fetchUsers}
+          onClick={handleRefreshClick}
           disabled={isLoading}
+          title={forceRefresh ? "Force refresh user data" : "Refresh users"}
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />

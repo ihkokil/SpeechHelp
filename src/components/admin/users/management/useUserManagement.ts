@@ -20,6 +20,7 @@ export const useUserManagement = () => {
     setUsers,
     isLoading,
     fetchUsers,
+    forceRefresh,
     addUser
   } = useUserManagementData();
   
@@ -97,7 +98,9 @@ export const useUserManagement = () => {
       prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
     );
     setIsPermissionsDialogOpen(false);
-  }, [setUsers, setIsPermissionsDialogOpen]);
+    // Force refresh after permissions update
+    setTimeout(() => forceRefresh(), 500);
+  }, [setUsers, setIsPermissionsDialogOpen, forceRefresh]);
   
   // Handle Send Email
   const handleSendEmail = useCallback((user: User) => {
@@ -115,19 +118,27 @@ export const useUserManagement = () => {
   // Wrapper functions to include users and setUsers
   const handleToggleUserStatus = useCallback((userId: string, isActive: boolean) => {
     console.log("useUserManagement: Toggle user status called for user:", userId, isActive);
-    return baseHandleToggleUserStatus(userId, isActive, users, setUsers);
-  }, [baseHandleToggleUserStatus, users, setUsers]);
+    const result = baseHandleToggleUserStatus(userId, isActive, users, setUsers);
+    // Force refresh after status change
+    setTimeout(() => forceRefresh(), 500);
+    return result;
+  }, [baseHandleToggleUserStatus, users, setUsers, forceRefresh]);
 
   // Handle update subscription
   const handleUpdateSubscription = useCallback((userId: string, subscriptionTier: string, subscriptionEndDate: Date, users: User[], setUsers: (users: User[]) => void) => {
     console.log("useUserManagement: Update subscription called for user:", userId);
-    return baseHandleUpdateSubscription(userId, subscriptionTier, subscriptionEndDate, users, setUsers);
-  }, [baseHandleUpdateSubscription]);
+    const result = baseHandleUpdateSubscription(userId, subscriptionTier, subscriptionEndDate, users, setUsers);
+    // Force refresh after subscription update
+    setTimeout(() => forceRefresh(), 500);
+    return result;
+  }, [baseHandleUpdateSubscription, forceRefresh]);
   
   const handleDeleteUsers = useCallback(() => {
     baseHandleDeleteUsers(selectedUsers, users, setUsers);
     setIsDeleteDialogOpen(false);
-  }, [baseHandleDeleteUsers, selectedUsers, users, setUsers, setIsDeleteDialogOpen]);
+    // Force refresh after deletion
+    setTimeout(() => forceRefresh(), 500);
+  }, [baseHandleDeleteUsers, selectedUsers, users, setUsers, setIsDeleteDialogOpen, forceRefresh]);
   
   const handleDeleteUser = useCallback((userId: string) => {
     const userToDelete = users.find(user => user.id === userId);
@@ -139,16 +150,25 @@ export const useUserManagement = () => {
   
   // Bulk actions
   const handleBulkDelete = useCallback(() => {
-    baseHandleBulkDelete(selectedUsers, users, setUsers);
-  }, [baseHandleBulkDelete, selectedUsers, users, setUsers]);
+    const result = baseHandleBulkDelete(selectedUsers, users, setUsers);
+    // Force refresh after bulk delete
+    setTimeout(() => forceRefresh(), 500);
+    return result;
+  }, [baseHandleBulkDelete, selectedUsers, users, setUsers, forceRefresh]);
   
   const handleBulkActivate = useCallback(() => {
-    baseHandleBulkActivate(selectedUsers, users, setUsers);
-  }, [baseHandleBulkActivate, selectedUsers, users, setUsers]);
+    const result = baseHandleBulkActivate(selectedUsers, users, setUsers);
+    // Force refresh after bulk activate
+    setTimeout(() => forceRefresh(), 500);
+    return result;
+  }, [baseHandleBulkActivate, selectedUsers, users, setUsers, forceRefresh]);
   
   const handleBulkDeactivate = useCallback(() => {
-    baseHandleBulkDeactivate(selectedUsers, users, setUsers);
-  }, [baseHandleBulkDeactivate, selectedUsers, users, setUsers]);
+    const result = baseHandleBulkDeactivate(selectedUsers, users, setUsers);
+    // Force refresh after bulk deactivate
+    setTimeout(() => forceRefresh(), 500);
+    return result;
+  }, [baseHandleBulkDeactivate, selectedUsers, users, setUsers, forceRefresh]);
   
   // Cleanup function for component unmount
   const cleanup = useCallback(() => {
@@ -194,6 +214,7 @@ export const useUserManagement = () => {
     
     // Functions
     fetchUsers,
+    forceRefresh,
     toggleUserSelection,
     toggleAllUsers,
     handleDeleteUsers,

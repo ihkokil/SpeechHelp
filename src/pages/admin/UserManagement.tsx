@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -30,6 +31,7 @@ const UserManagement = () => {
     isDetailsOpen,
     filteredUsers,
     fetchUsers,
+    forceRefresh,
     toggleUserSelection,
     toggleAllUsers: baseToggleAllUsers,
     handleDeleteUsers: baseHandleDeleteUsers,
@@ -71,6 +73,10 @@ const UserManagement = () => {
         description: `${newUser.email} has been added successfully.`
       });
     }
+    // Refresh the data to ensure we have the latest
+    if (forceRefresh) {
+      setTimeout(() => forceRefresh(), 500);
+    }
   };
 
   // Handler for opening the subscription dialog
@@ -86,11 +92,19 @@ const UserManagement = () => {
       handleUpdateSubscription(userId, tier, endDate, users, setUsers);
     }
     setIsSubscriptionDialogOpen(false);
+    // Refresh data after subscription update
+    if (forceRefresh) {
+      setTimeout(() => forceRefresh(), 500);
+    }
   };
 
   // Handler for admin toggle
   const handleToggleAdmin = (user: User) => {
     baseHandleToggleAdmin(user, users, setUsers);
+    // Refresh data after admin toggle
+    if (forceRefresh) {
+      setTimeout(() => forceRefresh(), 500);
+    }
   };
 
   // Create a wrapped toggle all users function that handles filtered users
@@ -115,6 +129,11 @@ const UserManagement = () => {
         title: "Users Deleted",
         description: `${selectedUsers.length} user(s) have been deleted successfully.`,
       });
+      
+      // Refresh data after deletion
+      if (forceRefresh) {
+        setTimeout(() => forceRefresh(), 500);
+      }
     } catch (error) {
       console.error("Error during deletion:", error);
       toast({
@@ -143,6 +162,7 @@ const UserManagement = () => {
             setSearchTerm={setSearchTerm}
             isLoading={isLoading}
             fetchUsers={fetchUsers}
+            forceRefresh={forceRefresh}
             selectedUsers={selectedUsers}
             isActionLoading={isActionLoading}
             setIsDeleteDialogOpen={setIsDeleteDialogOpen}
