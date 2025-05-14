@@ -1,12 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { Dashboard } from '@/pages/Dashboard';
-import { Account } from '@/pages/Account';
+import Dashboard from '@/pages/Dashboard';
+import Account from '@/pages/Account';
 import Auth from '@/pages/Auth';
 import Pricing from '@/pages/Pricing';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from "sonner";
 import { CheckoutSuccess } from '@/components/pricing/CheckoutSuccess';
 
 function App() {
@@ -39,7 +39,7 @@ function App() {
         <Route path="/checkout/success" element={<CheckoutSuccess />} />
       </Routes>
       </AuthProvider>
-      <ToastContainer position="bottom-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+      <Toaster position="bottom-right" richColors />
     </Router>
   );
 }
