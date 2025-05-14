@@ -42,8 +42,6 @@ export const UserTable: React.FC<UserTableProps> = ({
   setIsDeleteDialogOpen,
   searchTerm,
   handleBulkDelete,
-  handleBulkActivate,
-  handleBulkDeactivate,
   handleDeleteUser,
   handleEditUser,
   handleSendEmail
@@ -70,8 +68,6 @@ export const UserTable: React.FC<UserTableProps> = ({
           disabled={isLoading || filteredUsers.length === 0}
           selectedCount={selectedUsers.length}
           onBulkDelete={handleBulkDelete}
-          onBulkActivate={handleBulkActivate}
-          onBulkDeactivate={handleBulkDeactivate}
         />
         <TableBody>
           {isLoading ? (
