@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { usePlanLimits } from '@/hooks/usePlanLimits';
 import { LimitType } from '@/lib/plan_rules';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface SpeechCreationProps {
 	/** Optional callback to run after successful speech creation */
@@ -19,6 +21,7 @@ export function useSpeechCreation({ onSuccess, onUpgradeNeeded }: SpeechCreation
 	const { user, fetchSpeeches } = useAuth();
 	const { toast } = useToast();
 	const planLimits = usePlanLimits();
+	const navigate = useNavigate();
 
 	const [isCreating, setIsCreating] = useState(false);
 	const [speechError, setSpeechError] = useState<string | null>(null);
@@ -33,6 +36,7 @@ export function useSpeechCreation({ onSuccess, onUpgradeNeeded }: SpeechCreation
 				description: "You must be logged in to create a speech.",
 				variant: "destructive",
 			});
+			navigate('/auth');
 			return null;
 		}
 
@@ -53,6 +57,9 @@ export function useSpeechCreation({ onSuccess, onUpgradeNeeded }: SpeechCreation
 			// Trigger upgrade redirect if provided
 			if (onUpgradeNeeded) {
 				onUpgradeNeeded();
+			} else {
+				// Default redirect to pricing page
+				navigate('/pricing');
 			}
 
 			return null;
@@ -123,4 +130,4 @@ export function useSpeechCreation({ onSuccess, onUpgradeNeeded }: SpeechCreation
 		speechesRemaining: planLimits.speechesRemaining,
 		reasonCannotCreate: planLimits.reasonCannotCreate
 	};
-} 
+}
