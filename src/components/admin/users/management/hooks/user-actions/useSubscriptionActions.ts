@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { SubscriptionPlan } from '@/lib/plan_rules';
 
 export const useSubscriptionActions = (
   setActionLoading?: (isLoading: boolean) => void
@@ -62,7 +63,7 @@ export const useSubscriptionActions = (
     }
   }, [toast]);
 
-  // Toggle user subscription status
+  // Toggle user subscription status with days
   const handleToggleUserSubscription = useCallback(async (
     userId: string, 
     days: number = 30, 
@@ -141,8 +142,72 @@ export const useSubscriptionActions = (
     }
   }, [toast]);
 
+  // Update user subscription with custom plan and end date
+  const handleUpdateUserSubscription = useCallback(async (
+    userId: string,
+    planType: SubscriptionPlan,
+    endDate: Date,
+    users: User[],
+    setUsers: (users: User[]) => void
+  ) => {
+    if (!userId) return;
+    
+    if (setActionLoading) setActionLoading(true);
+    
+    try {
+      console.log(`Updating user subscription: ${userId} to plan ${planType} until ${endDate.toISOString()}`);
+      
+      // Update subscription status in the database
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ 
+          subscription_plan: planType,
+          subscription_tier: planType,
+          subscription_end_date: endDate.toISOString() 
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Update local state
+      setUsers(
+        users.map(user => 
+          user.id === userId 
+            ? { 
+                ...user, 
+                subscription_plan: planType,
+                subscription_tier: planType,
+                subscription_end_date: endDate.toISOString() 
+              } 
+            : user
+        )
+      );
+      
+      toast({
+        title: 'Subscription Updated',
+        description: `User's subscription has been updated to ${planType} ending on ${endDate.toLocaleDateString()}.`,
+      });
+      
+      return data;
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update subscription. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      if (setActionLoading) setActionLoading(false);
+    }
+  }, [toast]);
+
   return {
     handleToggleUserStatus,
-    handleToggleUserSubscription
+    handleToggleUserSubscription,
+    handleUpdateUserSubscription
   };
 };
