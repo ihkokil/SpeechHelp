@@ -166,7 +166,7 @@ const UserTable: React.FC<UserTableProps> = ({
         <div className="flex items-center">
           <Checkbox
             checked={selectedUsers.length === users.length && users.length > 0}
-            onCheckedChange={(checked) => toggleAllUsers(checked!)}
+            onCheckedChange={(checked) => toggleAllUsers(!!checked)}
             aria-label="Select all users"
             disabled={isLoading || users.length === 0}
           />

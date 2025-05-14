@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useRef } from 'react';
 import { useUserManagementData } from './hooks/useUserManagementData';
 import { useUserSearch } from './hooks/useUserSearch';
@@ -153,8 +154,8 @@ export const useUserManagement = () => {
     baseHandleBulkDeactivate(selectedUsers, users, setUsers);
   }, [baseHandleBulkDeactivate, selectedUsers, users, setUsers]);
   
-  // Add the handleUpdateSubscription function
-  const handleUpdateSubscription = useCallback(async (userId: string, plan: string, endDate: Date) => {
+  // Add the handleUpdateSubscription function with fixed return type
+  const handleUpdateSubscription = useCallback(async (userId: string, plan: string, endDate: Date): Promise<void> => {
     console.log("useUserManagement: Update subscription called for user:", userId, plan, endDate);
     
     if (!userId) return;
@@ -197,7 +198,6 @@ export const useUserManagement = () => {
         description: `User's subscription has been updated to ${plan}.`,
       });
       
-      return data;
     } catch (error) {
       console.error('Error updating subscription:', error);
       toast({
