@@ -1,4 +1,3 @@
-
 export type User = {
   id: string;
   email: string;
@@ -32,6 +31,9 @@ export type User = {
   subscription_status?: string;
   subscription_end_date?: string;
   subscription_tier?: string;
+  // Stripe related fields
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
 };
 
 export type Speech = {
