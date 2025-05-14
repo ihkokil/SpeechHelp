@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCountryCodeFromPhoneNumber } from '../utils/phoneUtils';
@@ -16,13 +16,16 @@ export const useUserProfileData = (
   setAvailableStates: (states: any[]) => void,
   setOriginalEmail: (email: string) => void
 ) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      if (!user || dataLoaded) return;
+  // Load user data into form
+  const loadUserData = useCallback(async () => {
+    if (!user || dataLoaded) return;
 
+    try {
+      console.log('Loading user data for:', user.id);
       const metadata = user.user_metadata || {};
       
       if (user.email) {
@@ -90,12 +93,21 @@ export const useUserProfileData = (
       }
       
       setDataLoaded(true);
-    };
-
-    if (user && !isLoading) {
-      loadUserData();
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      setIsLoading(false);
     }
-  }, [user, isLoading, form, setFormattedPhone, setSelectedDialCode, setAvailableStates, setOriginalEmail, dataLoaded]);
+  }, [user, dataLoaded, form, setFormattedPhone, setSelectedDialCode, setAvailableStates, setOriginalEmail]);
 
-  return { isLoading: isLoading || !dataLoaded };
+  // Load user data when component mounts or user changes
+  useEffect(() => {
+    if (!isAuthLoading && user) {
+      loadUserData();
+    } else if (!isAuthLoading) {
+      setIsLoading(false);
+    }
+  }, [user, isAuthLoading, loadUserData]);
+
+  return { isLoading: isLoading || isAuthLoading };
 };
