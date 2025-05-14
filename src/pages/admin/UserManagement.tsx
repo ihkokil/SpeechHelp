@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
 import { SearchToolbar } from '@/components/admin/users/management/SearchToolbar';
-import UserTable from '@/components/admin/users/management/UserTable';
+import { UserTable } from '@/components/admin/users/management/UserTable';
 import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
@@ -47,7 +47,6 @@ const UserManagement = () => {
     handleBulkDeactivate,
     handleEditUser,
     handleSendEmail,
-    handleUpdateSubscription,
     cleanup,
     addUser,
     isEditUserDialogOpen,
@@ -129,7 +128,6 @@ const UserManagement = () => {
             handleDeleteUser={handleDeleteUser}
             handleEditUser={handleEditUser}
             handleSendEmail={handleSendEmail}
-            handleUpdateSubscription={handleUpdateSubscription}
           />
         </CardContent>
       </Card>

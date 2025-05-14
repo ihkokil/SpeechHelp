@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { User } from '../../types';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,6 @@ import {
   Clock,
   Edit,
 } from 'lucide-react';
-import SubscriptionDialog from '../SubscriptionDialog';
 
 interface UserActionMenuProps {
   user: User;
@@ -25,7 +24,6 @@ interface UserActionMenuProps {
   onDeleteUser: (userId: string) => void;
   onEditUser?: (user: User) => void;
   onSendEmail?: (user: User) => void;
-  onUpdateSubscription?: (userId: string, plan: string, endDate: Date) => Promise<void>;
 }
 
 const UserActionMenu: React.FC<UserActionMenuProps> = ({
@@ -36,11 +34,8 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onExtendSubscription,
   onDeleteUser,
   onEditUser,
-  onSendEmail,
-  onUpdateSubscription
+  onSendEmail
 }) => {
-  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
-  
   // Handle menu item actions - now these are explicit functions
   const handleViewDetails = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -64,12 +59,6 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     e.preventDefault();
     e.stopPropagation();
     onExtendSubscription(user.id);
-  };
-  
-  const handleUpdateSubscription = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsSubscriptionDialogOpen(true);
   };
   
   const handleDeleteUser = (e: React.MouseEvent) => {
@@ -99,72 +88,57 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   };
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-          <Button variant="ghost" size="icon" className="h-8 w-8 p-0" aria-label="User actions">
-            <MoreVertical className="h-4 w-4" />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
-          <DropdownMenuItem onClick={handleViewDetails} id={`view-details-${user.id}`}>
-            <Eye className="mr-2 h-4 w-4" />
-            <span>View Details</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleEditUser} id={`edit-user-${user.id}`}>
-            <Edit className="mr-2 h-4 w-4" />
-            <span>Edit User</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleManagePermissions} id={`manage-permissions-${user.id}`}>
-            <Shield className="mr-2 h-4 w-4" />
-            <span>Manage Permissions</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleExtendSubscription} id={`extend-subscription-${user.id}`}>
-            <Clock className="mr-2 h-4 w-4" />
-            <span>Extend Subscription</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleUpdateSubscription} id={`update-subscription-${user.id}`}>
-            <UserCog className="mr-2 h-4 w-4" />
-            <span>Update Subscription</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleSendEmail} id={`send-email-${user.id}`}>
-            <Mail className="mr-2 h-4 w-4" />
-            <span>Send Email</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          {user.is_active !== false ? (
-            <DropdownMenuItem onClick={handleToggleUserActive} id={`deactivate-user-${user.id}`}>
-              <UserMinus className="mr-2 h-4 w-4" />
-              <span>Deactivate User</span>
-            </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem onClick={handleToggleUserActive} id={`activate-user-${user.id}`}>
-              <UserCheck className="mr-2 h-4 w-4" />
-              <span>Activate User</span>
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem 
-            className="text-red-600 focus:text-red-700 focus:bg-red-50"
-            onClick={handleDeleteUser}
-            id={`delete-user-${user.id}`}
-          >
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 p-0" aria-label="User actions">
+          <MoreVertical className="h-4 w-4" />
+          <span className="sr-only">Open menu</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
+        <DropdownMenuItem onClick={handleViewDetails} id={`view-details-${user.id}`}>
+          <Eye className="mr-2 h-4 w-4" />
+          <span>View Details</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleEditUser} id={`edit-user-${user.id}`}>
+          <Edit className="mr-2 h-4 w-4" />
+          <span>Edit User</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleManagePermissions} id={`manage-permissions-${user.id}`}>
+          <Shield className="mr-2 h-4 w-4" />
+          <span>Manage Permissions</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleExtendSubscription} id={`extend-subscription-${user.id}`}>
+          <Clock className="mr-2 h-4 w-4" />
+          <span>Extend Subscription</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSendEmail} id={`send-email-${user.id}`}>
+          <Mail className="mr-2 h-4 w-4" />
+          <span>Send Email</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        {user.is_active !== false ? (
+          <DropdownMenuItem onClick={handleToggleUserActive} id={`deactivate-user-${user.id}`}>
             <UserMinus className="mr-2 h-4 w-4" />
-            <span>Delete User</span>
+            <span>Deactivate User</span>
           </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      
-      {onUpdateSubscription && (
-        <SubscriptionDialog
-          user={user}
-          open={isSubscriptionDialogOpen}
-          onOpenChange={setIsSubscriptionDialogOpen}
-          onSubscriptionUpdate={onUpdateSubscription}
-        />
-      )}
-    </>
+        ) : (
+          <DropdownMenuItem onClick={handleToggleUserActive} id={`activate-user-${user.id}`}>
+            <UserCheck className="mr-2 h-4 w-4" />
+            <span>Activate User</span>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          className="text-red-600 focus:text-red-700 focus:bg-red-50"
+          onClick={handleDeleteUser}
+          id={`delete-user-${user.id}`}
+        >
+          <UserMinus className="mr-2 h-4 w-4" />
+          <span>Delete User</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

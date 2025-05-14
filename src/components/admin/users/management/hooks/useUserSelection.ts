@@ -1,32 +1,30 @@
-
 import { useState, useCallback } from 'react';
 import { User } from '../../types';
 
 export const useUserSelection = () => {
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
-  const toggleUserSelection = useCallback((userId: string) => {
-    console.log('Toggling user selection:', userId);
-    setSelectedUsers(prev => {
-      const isSelected = prev.some(user => user.id === userId);
-      if (isSelected) {
-        return prev.filter(user => user.id !== userId);
-      } else {
-        const userToAdd = { id: userId } as User; // Minimal User object with just the ID
-        return [...prev, userToAdd];
-      }
-    });
+  const toggleUserSelection = useCallback((user: User) => {
+    console.log('Toggling user selection:', user.id);
+    setSelectedUsers(prev => 
+      prev.some(selectedUser => selectedUser.id === user.id) 
+        ? prev.filter(selectedUser => selectedUser.id !== user.id) 
+        : [...prev, user]
+    );
   }, []);
 
-  const toggleAllUsers = useCallback((checked: boolean) => {
-    console.log('Toggling all users selection, checked:', checked);
-    if (checked) {
-      // Select all users in the filtered list
-      // This would need users from outside, so we'll make it a proper function that takes the filtered users
-    } else {
-      // Deselect all
-      setSelectedUsers([]);
-    }
+  const toggleAllUsers = useCallback((filteredUsers: User[]) => {
+    console.log('Toggling all users selection');
+    setSelectedUsers(prev => {
+      // If all filtered users are currently selected, deselect all
+      if (prev.length === filteredUsers.length && 
+          filteredUsers.every(user => prev.some(selectedUser => selectedUser.id === user.id))) {
+        return [];
+      } else {
+        // Otherwise, select all filtered users
+        return filteredUsers;
+      }
+    });
   }, []);
 
   const selectMultipleUsers = useCallback((users: User[]) => {

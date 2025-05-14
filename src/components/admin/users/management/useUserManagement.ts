@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef } from 'react';
 import { useUserManagementData } from './hooks/useUserManagementData';
 import { useUserSearch } from './hooks/useUserSearch';
@@ -7,7 +6,6 @@ import { useUserActions } from './hooks/useUserActions';
 import { useUserManagementUIState } from './hooks/useUserManagementUIState';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 export const useUserManagement = () => {
   console.log("Initializing useUserManagement");
@@ -154,60 +152,6 @@ export const useUserManagement = () => {
     baseHandleBulkDeactivate(selectedUsers, users, setUsers);
   }, [baseHandleBulkDeactivate, selectedUsers, users, setUsers]);
   
-  // Add the handleUpdateSubscription function with fixed return type
-  const handleUpdateSubscription = useCallback(async (userId: string, plan: string, endDate: Date): Promise<void> => {
-    console.log("useUserManagement: Update subscription called for user:", userId, plan, endDate);
-    
-    if (!userId) return;
-    
-    try {
-      // Format the date to ISO string for database storage
-      const formattedEndDate = endDate.toISOString();
-      
-      // Update the user's subscription in the database
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ 
-          subscription_plan: plan, 
-          subscription_end_date: formattedEndDate 
-        })
-        .eq('id', userId)
-        .select()
-        .single();
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Update local state
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId 
-            ? { 
-                ...user, 
-                subscription_status: 'active',
-                subscription_tier: plan,
-                subscription_end_date: formattedEndDate 
-              } 
-            : user
-        )
-      );
-      
-      toast({
-        title: 'Subscription Updated',
-        description: `User's subscription has been updated to ${plan}.`,
-      });
-      
-    } catch (error) {
-      console.error('Error updating subscription:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update subscription. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  }, [setUsers, toast]);
-  
   // Cleanup function for component unmount
   const cleanup = useCallback(() => {
     setSelectedUsers([]);
@@ -269,7 +213,6 @@ export const useUserManagement = () => {
     handleEditUser,
     handleSendEmail,
     cleanup,
-    addUser,
-    handleUpdateSubscription
+    addUser
   };
 };
