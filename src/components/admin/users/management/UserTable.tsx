@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { User } from '../../types';
+import { User } from '../types';
 import {
   Table,
   TableHeader,
@@ -10,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { DotsHorizontalIcon } from '@radix-ui/react-icons';
+import { DotsHorizontalIcon } from './components/Icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
