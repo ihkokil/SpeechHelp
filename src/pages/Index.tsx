@@ -110,9 +110,12 @@ const Index = () => {
       <Navbar />
       <main className="flex-1 w-full">
         <Hero />
+        {/* Features section */}
         <Features />
+        {/* How it Works section */}
         <HowItWorks />
         <SpeechGallery />
+        {/* Contact section - removing id from here as it's now in the component */}
         <div className="w-full pt-2">
           <ContactForm />
         </div>
