@@ -19,8 +19,8 @@ const Navbar = () => {
   // If current route uses sidebar, don't render the navbar
   if (usesSidebar) return null;
   
-  // Using the SVG logo file for better visibility and sharpness
-  const logoPath = "/speech-help-new-logo.svg";
+  // Using the correct SVG logo file for better visibility and sharpness
+  const logoPath = "/Speech Help - Logo.svg";
 
   return (
     <nav
