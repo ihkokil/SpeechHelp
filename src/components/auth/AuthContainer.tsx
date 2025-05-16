@@ -10,8 +10,8 @@ const AuthContainer = ({ children }: AuthContainerProps) => {
   const isMobile = useIsMobile();
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600 py-8 px-4">
-      <div className={`bg-white rounded-lg shadow-xl ${isMobile ? 'w-full max-w-sm mx-auto' : 'max-w-md mx-auto'} p-8`}>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
+      <div className={`bg-white rounded-lg shadow-xl ${isMobile ? 'w-full max-w-sm mx-4' : 'max-w-md mx-8'} p-8`}>
         {children}
       </div>
     </div>
