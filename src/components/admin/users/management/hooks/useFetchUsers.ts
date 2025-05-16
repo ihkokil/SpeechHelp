@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useRef } from 'react';
 import { User } from '../../types';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +16,7 @@ interface ProfileData {
   is_active?: boolean;
   is_admin?: boolean;
   admin_role?: string;
-  permissions?: string[];
+  permissions?: any; // Changed from string[] to any to match Json type from database
   subscription_status?: string;
   subscription_plan?: string;
   subscription_period?: string;
@@ -64,6 +65,13 @@ export const useFetchUsers = () => {
         // Find the profile and provide a fallback with proper typing
         const profile: ProfileData = profiles?.find((p: any) => p.id === authUser.id) || {};
         
+        // Helper function to safely extract permissions
+        const extractPermissions = (permissions: any): string[] => {
+          if (Array.isArray(permissions)) return permissions;
+          if (permissions && typeof permissions === 'object' && Array.isArray(permissions.value)) return permissions.value;
+          return [];
+        };
+        
         const user: User = {
           id: authUser.id,
           email: authUser.email || 'No email',
@@ -86,7 +94,7 @@ export const useFetchUsers = () => {
           is_active: profile.is_active !== false,
           is_admin: profile.is_admin === true,
           admin_role: profile.admin_role || null,
-          permissions: profile.permissions || [],
+          permissions: extractPermissions(profile.permissions),
           subscription_status: profile.subscription_status || 'inactive',
           subscription_plan: profile.subscription_plan || 'free_trial',
           subscription_period: profile.subscription_period || null,
@@ -155,6 +163,13 @@ export const useFetchUsers = () => {
       
       console.log('Edge function successful, processing data...');
       
+      // Helper function to safely extract permissions
+      const extractPermissions = (permissions: any): string[] => {
+        if (Array.isArray(permissions)) return permissions;
+        if (permissions && typeof permissions === 'object' && Array.isArray(permissions.value)) return permissions.value;
+        return [];
+      };
+      
       // Map users from edge function response
       const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
         const profile = authUser.profile || {};
@@ -181,7 +196,7 @@ export const useFetchUsers = () => {
           is_active: authUser.is_active !== false,
           is_admin: authUser.is_admin === true,
           admin_role: authUser.admin_role || null,
-          permissions: authUser.permissions || [],
+          permissions: extractPermissions(authUser.permissions),
           subscription_status: authUser.subscription_status || 'inactive',
           subscription_plan: authUser.subscription_plan || 'free_trial',
           subscription_period: authUser.subscription_period || null,
