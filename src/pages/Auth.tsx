@@ -54,24 +54,26 @@ const Auth = () => {
   const handleBackToLogin = () => setIsForgotPassword(false);
 
   return (
-    <AuthContainer>
-      {isResetPassword ? (
-        <ResetPasswordForm />
-      ) : isForgotPassword ? (
-        <ForgotPasswordForm onBackToLogin={handleBackToLogin} />
-      ) : isSignUp ? (
-        <SignUpForm 
-          onSwitchToSignIn={handleSwitchToSignIn} 
-          onSwitchToForgotPassword={handleSwitchToForgotPassword}
-          autoFocus={autoFocusFirstName}
-        />
-      ) : (
-        <SignInForm 
-          onSwitchToSignUp={handleSwitchToSignUp} 
-          onSwitchToForgotPassword={handleSwitchToForgotPassword} 
-        />
-      )}
-    </AuthContainer>
+    <div className="min-h-screen">
+      <AuthContainer>
+        {isResetPassword ? (
+          <ResetPasswordForm />
+        ) : isForgotPassword ? (
+          <ForgotPasswordForm onBackToLogin={handleBackToLogin} />
+        ) : isSignUp ? (
+          <SignUpForm 
+            onSwitchToSignIn={handleSwitchToSignIn} 
+            onSwitchToForgotPassword={handleSwitchToForgotPassword}
+            autoFocus={autoFocusFirstName}
+          />
+        ) : (
+          <SignInForm 
+            onSwitchToSignUp={handleSwitchToSignUp} 
+            onSwitchToForgotPassword={handleSwitchToForgotPassword} 
+          />
+        )}
+      </AuthContainer>
+    </div>
   );
 };
 
