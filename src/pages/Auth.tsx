@@ -15,6 +15,7 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
+  const [justSignedUp, setJustSignedUp] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,6 +30,13 @@ const Auth = () => {
       setAutoFocusFirstName(true);
     } else if (params.get('signin') === 'true') {
       setIsSignUp(false);
+    } else if (params.get('just_signed_up') === 'true') {
+      setJustSignedUp(true);
+      setIsSignUp(false);
+      toast({
+        title: "Sign up successful",
+        description: "Please log in with your new credentials",
+      });
     }
 
     // Check for password reset flow
@@ -38,20 +46,25 @@ const Auth = () => {
         setIsResetPassword(true);
       }
     }
-  }, [location]);
+  }, [location, toast]);
 
   // Redirect if already logged in (except for reset password flow)
   useEffect(() => {
-    if (user && !isResetPassword) {
+    if (user && !isResetPassword && !justSignedUp) {
       navigate('/dashboard');
     }
-  }, [user, navigate, isResetPassword]);
+  }, [user, navigate, isResetPassword, justSignedUp]);
 
   // Handle form transitions
   const handleSwitchToSignUp = () => setIsSignUp(true);
   const handleSwitchToSignIn = () => setIsSignUp(false);
   const handleSwitchToForgotPassword = () => setIsForgotPassword(true);
   const handleBackToLogin = () => setIsForgotPassword(false);
+
+  // Handle successful signup
+  const handleSuccessfulSignUp = () => {
+    navigate('/auth?just_signed_up=true');
+  };
 
   return (
     <AuthContainer>
@@ -64,6 +77,7 @@ const Auth = () => {
           onSwitchToSignIn={handleSwitchToSignIn} 
           onSwitchToForgotPassword={handleSwitchToForgotPassword}
           autoFocus={autoFocusFirstName}
+          onSuccessfulSignUp={handleSuccessfulSignUp}
         />
       ) : (
         <SignInForm 
