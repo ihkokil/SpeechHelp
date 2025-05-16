@@ -4,7 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, cache-control',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
 };
 
@@ -32,7 +32,7 @@ serve(async (req) => {
     
     console.log('Fetching users from auth and profiles...');
     
-    // Get all users from auth.users
+    // Get all users from auth.users using service role
     const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
     
     if (authError) {
@@ -150,7 +150,7 @@ serve(async (req) => {
           subscription_end_date: profile.subscription_end_date || null,
           subscription_price_id: safeString(profile.subscription_price_id) || null,
           subscription_currency: safeString(profile.subscription_currency) || 'usd',
-          stripe_customer_id: safeString(profile.stripe_customer_id) || null,
+          subscription_customer_id: safeString(profile.stripe_customer_id) || null,
           stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
           created_at: profile.created_at,
           updated_at: profile.updated_at
