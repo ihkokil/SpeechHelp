@@ -10,7 +10,8 @@ import {
   Mail, 
   Download, 
   FileUp,
-  UserPlus 
+  UserPlus,
+  RotateCcw
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -19,6 +20,7 @@ interface SearchToolbarProps {
   setSearchTerm: (term: string) => void;
   isLoading: boolean;
   fetchUsers: () => void;
+  forceRefresh?: () => void;
   selectedUsers: User[];
   isActionLoading: boolean;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
@@ -30,6 +32,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
   setSearchTerm,
   isLoading,
   fetchUsers,
+  forceRefresh,
   selectedUsers,
   isActionLoading,
   setIsDeleteDialogOpen,
@@ -51,6 +54,15 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
     }
   };
 
+  const handleForceRefresh = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Force refresh button clicked");
+    if (forceRefresh) {
+      forceRefresh();
+    }
+  };
+
   return (
     <div className="mb-4 flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
       <div className="flex w-full items-center space-x-2 sm:w-auto">
@@ -69,6 +81,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
           size="icon" 
           onClick={fetchUsers}
           disabled={isLoading}
+          title="Refresh users"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -77,6 +90,18 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
           )}
           <span className="sr-only">Refresh</span>
         </Button>
+        {forceRefresh && (
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={handleForceRefresh}
+            disabled={isLoading}
+            title="Force refresh (clear cache)"
+          >
+            <RotateCcw className="h-4 w-4" />
+            <span className="sr-only">Force Refresh</span>
+          </Button>
+        )}
       </div>
       
       <div className="flex items-center space-x-2">
