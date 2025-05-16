@@ -27,8 +27,7 @@ const SignInForm = ({
 
     try {
       await signIn(email, password);
-      // After successful login, redirect to dashboard
-      navigate('/dashboard');
+      navigate('/');
     } catch (error: any) {
       console.error('Authentication error:', error);
       toast({

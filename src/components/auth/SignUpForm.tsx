@@ -8,14 +8,12 @@ interface SignUpFormProps {
   onSwitchToSignIn: () => void;
   onSwitchToForgotPassword: () => void;
   autoFocus?: boolean;
-  onSuccessfulSignUp?: () => void;
 }
 
 const SignUpForm = ({ 
   onSwitchToSignIn, 
   onSwitchToForgotPassword,
-  autoFocus = false,
-  onSuccessfulSignUp
+  autoFocus = false
 }: SignUpFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -55,14 +53,6 @@ const SignUpForm = ({
 
     try {
       await signUp(email, password, firstName, lastName);
-      
-      // After successful signup, call the onSuccessfulSignUp callback instead of redirecting
-      if (onSuccessfulSignUp) {
-        onSuccessfulSignUp();
-      } else {
-        onSwitchToSignIn(); // Fallback to switch to sign in
-      }
-      
     } catch (error: any) {
       console.error('Authentication error:', error);
       toast({

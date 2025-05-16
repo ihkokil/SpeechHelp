@@ -85,34 +85,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     try {
       await signOut(toast);
-      setUser(null);
-      setSession(null);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    // First set up auth state listener
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      console.log(`Auth state changed: ${event}`);
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
-      
-      if (newSession?.user) {
-        // Use setTimeout to prevent potential auth state deadlocks
-        setTimeout(async () => {
-          await fetchSpeeches();
-        }, 0);
-      } else {
-        setSpeeches([]);
-      }
-      
-      setIsLoading(false);
-    });
-
-    // Then check for existing session
-    const getInitialSession = async () => {
+    // Check for existing session
+    const getSession = async () => {
       setIsLoading(true);
       const { data, error } = await supabase.auth.getSession();
       
@@ -121,20 +101,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else if (data?.session) {
         setSession(data.session);
         setUser(data.session.user);
-        
-        // Use setTimeout to prevent potential auth state deadlocks
-        setTimeout(async () => {
-          await fetchSpeeches();
-        }, 0);
+        await fetchSpeeches();
       }
       
       setIsLoading(false);
     };
 
-    getInitialSession();
+    getSession();
+
+    // Listen for auth state changes
+    const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      console.log(`Auth state changed: ${event}`);
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+      
+      if (newSession?.user) {
+        await fetchSpeeches();
+      } else {
+        setSpeeches([]);
+      }
+      
+      setIsLoading(false);
+    });
 
     return () => {
-      authListener.subscription.unsubscribe();
+      data.subscription.unsubscribe();
     };
   }, []);
 
