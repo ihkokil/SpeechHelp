@@ -11,57 +11,67 @@ export const useFetchUsers = () => {
   const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchUsers = useCallback(async (forceRefresh = false) => {
+    // Cancel any ongoing fetch
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
+    
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log('Fetching users from Supabase auth with force refresh:', forceRefresh);
+      console.log('Fetching users with force refresh:', forceRefresh);
       
-      // Add cache busting parameter
-      const cacheKey = forceRefresh ? `?_t=${Date.now()}` : '';
-      
-      // Fetch users from auth.users via a Supabase function
-      const { data: authUsersData, error: authUsersError } = await supabase.functions.invoke('fetch-users', {
+      // Call the edge function with cache busting headers
+      const { data: response, error: fetchError } = await supabase.functions.invoke('fetch-users', {
         method: 'GET',
-        headers: forceRefresh ? { 'Cache-Control': 'no-cache' } : {}
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          ...(forceRefresh ? { 'X-Force-Refresh': 'true' } : {})
+        }
       });
       
-      if (authUsersError) {
-        console.error('Error fetching auth users:', authUsersError);
-        setError(new Error(authUsersError.message || 'Failed to load users'));
-        toast({
-          title: 'Error',
-          description: 'Failed to load users. Please try again.',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return [];
+      if (fetchError) {
+        console.error('Edge function error:', fetchError);
+        throw new Error(fetchError.message || 'Failed to fetch users from server');
       }
       
-      console.log('Raw edge function response:', authUsersData);
-      console.log('First user raw data from edge function:', authUsersData?.users?.[0]);
+      if (!response) {
+        throw new Error('No response received from server');
+      }
       
-      // Map users with their profiles, prioritizing profile data over auth metadata
-      const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
-        console.log('Processing user:', authUser.id);
+      if (response.error) {
+        console.error('Server error:', response.error);
+        throw new Error(response.error);
+      }
+      
+      if (!response.users || !Array.isArray(response.users)) {
+        console.error('Invalid response format:', response);
+        throw new Error('Invalid response format from server');
+      }
+      
+      console.log(`Successfully fetched ${response.users.length} users`);
+      
+      // Map users to ensure proper structure
+      const mappedUsers: User[] = response.users.map((authUser: any) => {
+        // Extract prioritized profile data
+        const firstName = authUser.first_name || '';
+        const lastName = authUser.last_name || '';
+        const phone = authUser.phone || '';
+        const countryCode = authUser.country_code || 'US';
         
-        // Get the profile data from our enhanced structure
-        const profile = authUser.profile || {};
-        console.log('Profile data:', profile);
-        
-        // Prioritize profile data over auth metadata
-        const firstName = profile.first_name || authUser.first_name || authUser.raw_user_meta_data?.first_name || '';
-        const lastName = profile.last_name || authUser.last_name || authUser.raw_user_meta_data?.last_name || '';
-        const phone = profile.phone || authUser.phone || authUser.raw_user_meta_data?.phone || '';
-        const countryCode = profile.country_code || authUser.country_code || authUser.raw_user_meta_data?.country_code || 'US';
-        
-        // Construct full name from profile or auth data
+        // Construct full name from profile data
         const fullName = firstName && lastName ? `${firstName} ${lastName}` : 
-                         profile.username || 
-                         authUser.raw_user_meta_data?.full_name || 
-                         authUser.raw_user_meta_data?.name || 
+                         authUser.profile?.username || 
+                         authUser.user_metadata?.full_name || 
                          authUser.email?.split('@')[0] || 'User';
         
         const user: User = {
@@ -82,11 +92,6 @@ export const useFetchUsers = () => {
             email: authUser.email,
             phone: phone,
             country_code: countryCode,
-            street_address: authUser.raw_user_meta_data?.street_address || '',
-            city: authUser.raw_user_meta_data?.city || '',
-            state: authUser.raw_user_meta_data?.state || '',
-            zip_code: authUser.raw_user_meta_data?.zip_code || '',
-            country: authUser.raw_user_meta_data?.country || '',
           },
           is_active: authUser.is_active !== false,
           is_admin: authUser.is_admin === true,
@@ -109,16 +114,8 @@ export const useFetchUsers = () => {
           stripe_subscription_id: authUser.stripe_subscription_id || null,
         };
         
-        console.log('Final mapped user with prioritized profile data:', {
-          id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          phone: user.phone,
-          country_code: user.country_code
-        });
-        
         return user;
-      }) || [];
+      });
       
       // Add admin user if it doesn't exist and current user is admin
       const adminExists = mappedUsers.some(user => user.is_admin);
@@ -143,17 +140,24 @@ export const useFetchUsers = () => {
         });
       }
       
-      console.log('Final mapped users count:', mappedUsers.length);
-      console.log('Sample user with updated profile data:', mappedUsers.find(u => u.phone || u.first_name));
+      console.log(`Final processed users count: ${mappedUsers.length}`);
       setUsers(mappedUsers);
       return mappedUsers;
+      
     } catch (err) {
+      // Check if the error is due to abort
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.log('Fetch aborted');
+        return [];
+      }
+      
       console.error('Exception fetching users:', err);
       const error = err instanceof Error ? err : new Error('Failed to load users');
       setError(error);
+      
       toast({
         title: 'Error',
-        description: 'Failed to load users. Please check console for details.',
+        description: error.message || 'Failed to load users. Please try again.',
         variant: 'destructive',
       });
       return [];
@@ -162,11 +166,19 @@ export const useFetchUsers = () => {
     }
   }, [adminUser, toast]);
 
+  // Cleanup function to abort ongoing requests
+  const cleanup = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  }, []);
+
   return {
     users,
     setUsers,
     isLoading,
     fetchUsers,
-    error
+    error,
+    cleanup
   };
 };
