@@ -8,7 +8,10 @@ import {
   Loader2, 
   UserMinus, 
   Mail, 
-  UserPlus 
+  Download, 
+  FileUp,
+  UserPlus,
+  RotateCcw
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -51,14 +54,12 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
     }
   };
 
-  const handleRefreshClick = (e: React.MouseEvent) => {
+  const handleForceRefresh = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Refresh button clicked");
+    console.log("Force refresh button clicked");
     if (forceRefresh) {
       forceRefresh();
-    } else {
-      fetchUsers();
     }
   };
 
@@ -78,9 +79,9 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
         <Button 
           variant="outline" 
           size="icon" 
-          onClick={handleRefreshClick}
+          onClick={fetchUsers}
           disabled={isLoading}
-          title={forceRefresh ? "Force refresh user data" : "Refresh users"}
+          title="Refresh users"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -89,6 +90,18 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
           )}
           <span className="sr-only">Refresh</span>
         </Button>
+        {forceRefresh && (
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={handleForceRefresh}
+            disabled={isLoading}
+            title="Force refresh (clear cache)"
+          >
+            <RotateCcw className="h-4 w-4" />
+            <span className="sr-only">Force Refresh</span>
+          </Button>
+        )}
       </div>
       
       <div className="flex items-center space-x-2">
