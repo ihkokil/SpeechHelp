@@ -449,7 +449,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          admin_role: string | null
           avatar_url: string | null
           country_code: string | null
           created_at: string
@@ -458,7 +457,6 @@ export type Database = {
           is_active: boolean | null
           is_admin: boolean | null
           last_name: string | null
-          permissions: Json | null
           phone: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -474,7 +472,6 @@ export type Database = {
           username: string | null
         }
         Insert: {
-          admin_role?: string | null
           avatar_url?: string | null
           country_code?: string | null
           created_at?: string
@@ -483,7 +480,6 @@ export type Database = {
           is_active?: boolean | null
           is_admin?: boolean | null
           last_name?: string | null
-          permissions?: Json | null
           phone?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -499,7 +495,6 @@ export type Database = {
           username?: string | null
         }
         Update: {
-          admin_role?: string | null
           avatar_url?: string | null
           country_code?: string | null
           created_at?: string
@@ -508,7 +503,6 @@ export type Database = {
           is_active?: boolean | null
           is_admin?: boolean | null
           last_name?: string | null
-          permissions?: Json | null
           phone?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null

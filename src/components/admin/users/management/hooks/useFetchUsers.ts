@@ -92,8 +92,6 @@ export const useFetchUsers = () => {
           is_active: authUser.is_active !== false,
           // Ensure admin status comes from the profile
           is_admin: authUser.is_admin === true,
-          admin_role: authUser.admin_role || null,
-          permissions: authUser.permissions || [],
           // Map all subscription fields with extensive debugging
           subscription_status: authUser.subscription_status || 'inactive',
           subscription_plan: authUser.subscription_plan || 'free_trial',
@@ -107,7 +105,7 @@ export const useFetchUsers = () => {
           first_name: authUser.first_name || authUser.raw_user_meta_data?.first_name || '',
           last_name: authUser.last_name || authUser.raw_user_meta_data?.last_name || '',
           phone: authUser.phone || authUser.raw_user_meta_data?.phone || '',
-          country_code: authUser.country_code || authUser.raw_user_meta_data?.country_code || 'US',
+          country_code: authUser.country_code || authUser.raw_user_meta_data?.country_code || null,
           // Stripe related fields
           stripe_customer_id: authUser.stripe_customer_id || null,
           stripe_subscription_id: authUser.stripe_subscription_id || null,
@@ -143,8 +141,6 @@ export const useFetchUsers = () => {
           },
           is_active: true,
           is_admin: true,
-          admin_role: 'Super Admin',
-          permissions: ['view_users', 'manage_users', 'view_speeches', 'manage_speeches', 'system_settings'],
         });
       }
       

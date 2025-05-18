@@ -112,8 +112,6 @@ serve(async (req) => {
         last_name: lastName,
         is_active: profile.is_active !== false,
         is_admin: profile.is_admin || false,
-        admin_role: safeString(profile.admin_role) || null,
-        permissions: profile.permissions || [],
         // Complete subscription fields
         subscription_plan: safeString(profile.subscription_plan) || null,
         subscription_period: safeString(profile.subscription_period) || null,
@@ -139,8 +137,6 @@ serve(async (req) => {
           phone: safeString(profile.phone) || safeString(metadata.phone),
           is_active: profile.is_active !== false,
           is_admin: profile.is_admin || false,
-          admin_role: safeString(profile.admin_role) || null,
-          permissions: profile.permissions || [],
           // Complete subscription data in profile object
           subscription_plan: safeString(profile.subscription_plan) || null,
           subscription_period: safeString(profile.subscription_period) || null,
