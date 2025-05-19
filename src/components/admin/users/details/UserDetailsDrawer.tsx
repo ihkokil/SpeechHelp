@@ -4,6 +4,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { User } from '../types';
 import { DrawerContent } from './DrawerContent';
 import { useUserDetails } from './hooks/useUserDetails';
+import { Loader2 } from 'lucide-react';
 
 interface UserDetailsDrawerProps {
   user: User | null;
@@ -23,6 +24,16 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
     totalActivityTime,
     resetState
   } = useUserDetails(user, open);
+  
+  // Debug logging
+  console.log("UserDetailsDrawer rendering:", { 
+    userId: user?.id,
+    open,
+    speechesCount: speeches?.length,
+    isLoadingSpeeches,
+    userJoinedDays,
+    totalActivityTime
+  });
   
   // Handle cleanup when drawer closes
   useEffect(() => {

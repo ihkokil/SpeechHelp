@@ -35,7 +35,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
       if (error) {
         console.error('Error fetching user speeches:', error);
       } else {
-        console.log('Fetched speeches:', data?.length || 0);
+        console.log('Fetched speeches:', data?.length || 0, data);
         setSpeeches(data || []);
         calculateTotalActivityTime(data || []);
       }
