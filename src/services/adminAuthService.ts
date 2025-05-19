@@ -171,7 +171,7 @@ export const adminAuthService = {
       // Check if this is a regular user who has been granted admin access
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, is_admin, first_name, last_name, username')
+        .select('id, is_admin, first_name, last_name')
         .eq('is_admin', true)
         .eq('id', (await supabase.auth.getUser()).data.user?.id || 'unknown')
         .single();
@@ -186,9 +186,9 @@ export const adminAuthService = {
         if (!credentials.username.includes('@')) {
           const { data: userProfiles } = await supabase
             .from('profiles')
-            .select('id, first_name, last_name, username')
+            .select('id, first_name, last_name')
             .eq('is_admin', true)
-            .or(`first_name.ilike.${credentials.username},last_name.ilike.${credentials.username},username.ilike.${credentials.username}`);
+            .or(`first_name.ilike.${credentials.username},last_name.ilike.${credentials.username}`);
           
           if (userProfiles && userProfiles.length > 0) {
             const matchedProfile = userProfiles[0];
@@ -202,7 +202,7 @@ export const adminAuthService = {
               
             if (userWithEmail) {
               // For now, we'll use the username as email if no email is available
-              userEmail = credentials.username.includes('@') ? credentials.username : `${matchedProfile.username || 'admin'}@speechhelp.com`;
+              userEmail = credentials.username.includes('@') ? credentials.username : `${matchedProfile.first_name || 'admin'}@speechhelp.com`;
             }
           } else {
             console.log('No admin profile found for username:', credentials.username);
@@ -230,7 +230,7 @@ export const adminAuthService = {
         // Get the profile for this authenticated user
         const { data: userProfile } = await supabase
           .from('profiles')
-          .select('id, is_admin, first_name, last_name, username')
+          .select('id, is_admin, first_name, last_name')
           .eq('id', authData.user.id)
           .eq('is_admin', true)
           .single();
@@ -249,7 +249,7 @@ export const adminAuthService = {
         // Create admin user object from profile data
         const adminUser: AdminUser = {
           id: userProfile.id,
-          username: userProfile.username || `${userProfile.first_name} ${userProfile.last_name}`,
+          username: `${userProfile.first_name} ${userProfile.last_name}`,
           email: authData.user.email || '',
           is_active: true,
           is_super_admin: false,
@@ -274,7 +274,7 @@ export const adminAuthService = {
 
       // Try to authenticate the user with their regular account using email
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: credentials.username.includes('@') ? credentials.username : `${profileData.username || 'admin'}@speechhelp.com`,
+        email: credentials.username.includes('@') ? credentials.username : `${profileData.first_name || 'admin'}@speechhelp.com`,
         password: credentials.password,
       });
 
@@ -292,7 +292,7 @@ export const adminAuthService = {
       // Create admin user object from profile data
       const adminUser: AdminUser = {
         id: profileData.id,
-        username: profileData.username || `${profileData.first_name} ${profileData.last_name}`,
+        username: `${profileData.first_name} ${profileData.last_name}`,
         email: authData.user.email || '',
         is_active: true,
         is_super_admin: false,
