@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   email: string;
@@ -56,16 +57,4 @@ export interface Speech {
 export interface SpeechTypeStats {
   type: string;
   count: number;
-}
-
-export interface AdminRole {
-  id: string;
-  name: string;
-  description: string;
-}
-
-export interface AdminPermission {
-  id: string;
-  name: string;
-  description: string;
 }
