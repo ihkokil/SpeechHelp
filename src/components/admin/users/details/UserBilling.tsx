@@ -53,6 +53,7 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
       setSelectedPlan(
         (user.subscription_tier as SubscriptionPlan) || SubscriptionPlan.FREE_TRIAL
       );
+      // Set default date to 30 days from now if no existing end date
       setSelectedDate(
         user.subscription_end_date ? new Date(user.subscription_end_date) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       );
@@ -97,6 +98,13 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
       // Ensure the date is in the future
       if (selectedDate <= new Date()) {
         setErrorMessage("Please select a date in the future.");
+        setIsActionLoading(false);
+        return;
+      }
+      
+      // Make sure we have a valid subscription plan
+      if (!Object.values(SubscriptionPlan).includes(selectedPlan)) {
+        setErrorMessage(`Invalid plan type: ${selectedPlan}`);
         setIsActionLoading(false);
         return;
       }

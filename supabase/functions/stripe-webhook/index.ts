@@ -1,8 +1,8 @@
 
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
-import Stripe from 'https://esm.sh/stripe@13.2.0?target=deno';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8?target=deno';
+import Stripe from "https://esm.sh/stripe@13.2.0?target=deno";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.8?target=deno";
 
 // Helper function to log with timestamps
 const log = (message: string, data?: any) => {

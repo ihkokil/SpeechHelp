@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
@@ -236,8 +235,7 @@ export const useSubscriptionActions = (
       toast({
         title: 'Subscription Updated',
         description: `User's subscription has been updated to ${planType} ending on ${endDate.toLocaleDateString()}.`,
-        // Fix: Remove 'success' variant as it's not supported
-        // variant: 'success', 
+        // Remove the 'success' variant as it's not supported
       });
       
       return data[0];
