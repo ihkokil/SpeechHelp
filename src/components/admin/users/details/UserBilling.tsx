@@ -27,6 +27,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useUserManagementData } from '../management/hooks/useUserManagementData';
+import { AlertCircle } from 'lucide-react';
 
 interface UserBillingProps {
   user: User;
@@ -41,6 +42,7 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     user.subscription_end_date ? new Date(user.subscription_end_date) : undefined
   );
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const { users, setUsers } = useUserManagementData();
   const { handleUpdateUserSubscription } = useSubscriptionActions(setIsActionLoading);
@@ -66,10 +68,23 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
 
   // Handle subscription update
   const handleUpdateSubscription = async () => {
-    if (!selectedDate) return;
+    if (!selectedDate) {
+      setErrorMessage("Please select an end date for the subscription.");
+      return;
+    }
     
+    setErrorMessage(null);
     setIsActionLoading(true);
+    
     try {
+      console.log(`Attempting to update subscription to ${selectedPlan} until ${selectedDate.toISOString()}`);
+      
+      // Ensure the date is in the future
+      if (selectedDate <= new Date()) {
+        setErrorMessage("Please select a date in the future.");
+        return;
+      }
+      
       const result = await handleUpdateUserSubscription(
         user.id, 
         selectedPlan, 
@@ -79,10 +94,14 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
       );
       
       if (result) {
+        console.log('Subscription update successful:', result);
         setIsOpen(false);
+      } else {
+        setErrorMessage("Failed to update subscription. Please try again.");
       }
     } catch (error) {
       console.error('Error in handleUpdateSubscription:', error);
+      setErrorMessage(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setIsActionLoading(false);
     }
@@ -178,6 +197,13 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
                     </Popover>
                   </div>
                 </div>
+                
+                {errorMessage && (
+                  <div className="bg-red-50 p-3 rounded-md flex items-start gap-2 text-red-700 text-sm">
+                    <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <Button 
