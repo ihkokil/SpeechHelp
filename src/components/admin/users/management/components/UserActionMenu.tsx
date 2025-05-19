@@ -35,7 +35,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onUpdateSubscription
 }) => {
   // Check if user is the original admin that cannot be removed
-  const isProtectedAdmin = user.email === 'speechhelpmaster@example.com' || user.username === 'speechhelpmaster';
+  const isProtectedAdmin = user.email === 'speechhelpmaster@example.com';
   const isCurrentlyAdmin = user.is_admin === true;
 
   // Prevent default event behavior and propagation for all handlers

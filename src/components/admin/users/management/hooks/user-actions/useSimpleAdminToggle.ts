@@ -23,7 +23,7 @@ export const useSimpleAdminToggle = () => {
     console.log('Toggling admin status for user:', user.id, 'Current admin status:', user.is_admin);
     
     // Check if user is protected admin
-    const isProtectedAdmin = user.email === 'speechhelpmaster@example.com' || user.username === 'speechhelpmaster';
+    const isProtectedAdmin = user.email === 'speechhelpmaster@example.com';
     
     if (isProtectedAdmin && user.is_admin) {
       toast({
