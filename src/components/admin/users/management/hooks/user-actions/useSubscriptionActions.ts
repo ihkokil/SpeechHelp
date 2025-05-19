@@ -236,7 +236,8 @@ export const useSubscriptionActions = (
       toast({
         title: 'Subscription Updated',
         description: `User's subscription has been updated to ${planType} ending on ${endDate.toLocaleDateString()}.`,
-        variant: 'success',
+        // Fix: Remove 'success' variant as it's not supported
+        // variant: 'success', 
       });
       
       return data[0];
