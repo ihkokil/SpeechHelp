@@ -40,10 +40,6 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ user }) => {
     return btoa(email).replace(/[/+=]/g, '');
   };
 
-  const getUserDisplayName = (user: User) => {
-    return formatUserDisplayName(user);
-  };
-
   return (
     <div className="flex items-center space-x-4">
       <Avatar className="h-16 w-16">
@@ -52,7 +48,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ user }) => {
       </Avatar>
       <div>
         <h3 className="text-xl font-semibold">
-          {getUserDisplayName(user)}
+          {formatUserDisplayName(user)}
         </h3>
         <TooltipProvider>
           <Tooltip>
