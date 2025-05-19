@@ -27,12 +27,14 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useUserManagementData } from '../management/hooks/useUserManagementData';
+import { useToast } from '@/hooks/use-toast';
 
 interface UserBillingProps {
   user: User;
 }
 
 export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>(
     (user.subscription_tier as SubscriptionPlan) || SubscriptionPlan.FREE_TRIAL
@@ -66,18 +68,45 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
 
   // Handle subscription update
   const handleUpdateSubscription = async () => {
-    if (!selectedDate) return;
+    if (!selectedDate) {
+      toast({
+        title: "Error",
+        description: "Please select an end date for the subscription",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsActionLoading(true);
     try {
-      await handleUpdateUserSubscription(
+      console.log("Updating subscription for user:", user.id);
+      console.log("Selected plan:", selectedPlan);
+      console.log("Selected end date:", selectedDate);
+      
+      const result = await handleUpdateUserSubscription(
         user.id, 
         selectedPlan, 
         selectedDate, 
         users, 
         setUsers
       );
-      setIsOpen(false);
+      
+      if (result) {
+        setIsOpen(false);
+        toast({
+          title: "Subscription Updated",
+          description: `User's subscription has been updated to ${PLAN_RULES[selectedPlan].displayName}`,
+        });
+      } else {
+        throw new Error("Failed to update subscription");
+      }
+    } catch (error) {
+      console.error("Error updating subscription:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update subscription. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsActionLoading(false);
     }
@@ -176,7 +205,7 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
               </div>
               <DialogFooter>
                 <Button 
-                  type="submit" 
+                  type="button" 
                   onClick={handleUpdateSubscription}
                   disabled={!selectedDate || isActionLoading}
                 >
