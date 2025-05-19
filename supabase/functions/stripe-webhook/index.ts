@@ -41,6 +41,58 @@ const stripe = new Stripe(stripeSecretKey, {
 log('Initializing Supabase client');
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+// Helper function to determine plan type from Stripe product metadata or price
+const determinePlanType = async (subscription: any): Promise<string> => {
+	try {
+		// Default to premium if we can't determine
+		let planType = 'premium';
+		
+		if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
+			// First try to get it from product metadata
+			const productId = subscription.items.data[0].price.product as string;
+			const product = await stripe.products.retrieve(productId);
+			
+			if (product.metadata && product.metadata.plan_type) {
+				planType = product.metadata.plan_type.toLowerCase();
+				log(`Found plan type from product metadata: ${planType}`);
+				return planType;
+			}
+			
+			// If not in metadata, try to determine from the price or product name
+			if (product.name) {
+				const name = product.name.toLowerCase();
+				if (name.includes('pro')) {
+					return 'pro';
+				} else if (name.includes('premium')) {
+					return 'premium';
+				} else if (name.includes('free') || name.includes('trial')) {
+					return 'free_trial';
+				}
+			}
+			
+			// Try to determine from price
+			const price = await stripe.prices.retrieve(subscription.items.data[0].price.id);
+			const amount = price.unit_amount || 0;
+			
+			// Determine plan type based on price
+			if (amount <= 0) {
+				planType = 'free_trial';
+			} else if (amount <= 1500) {
+				planType = 'premium';
+			} else {
+				planType = 'pro';
+			}
+			
+			log(`Determined plan type from price: ${planType} (amount: ${amount})`);
+		}
+		
+		return planType;
+	} catch (error) {
+		log('Error determining plan type:', error);
+		return 'premium'; // Default fallback
+	}
+};
+
 serve(async (req) => {
 	// Log incoming request
 	log(`Received ${req.method} request to ${req.url}`);
@@ -118,11 +170,17 @@ serve(async (req) => {
 
 					// Get subscription details to get proper end date
 					let subscriptionEndDate = null;
+					let determinedPlanType = planType;
+					
 					if (subscriptionId) {
 						try {
 							const subscriptionDetails = await stripe.subscriptions.retrieve(subscriptionId);
 							subscriptionEndDate = new Date(subscriptionDetails.current_period_end * 1000).toISOString();
 							log('Retrieved subscription end date:', subscriptionEndDate);
+							
+							// Get plan type from subscription
+							determinedPlanType = await determinePlanType(subscriptionDetails);
+							log('Determined plan type:', determinedPlanType);
 						} catch (subError) {
 							log('Error retrieving subscription details:', subError);
 						}
@@ -131,8 +189,8 @@ serve(async (req) => {
 					const updateData = {
 						stripe_customer_id: customerId,
 						stripe_subscription_id: subscriptionId,
-						subscription_plan: planType,
-						subscription_tier: planType,
+						subscription_plan: determinedPlanType,
+						subscription_tier: determinedPlanType,
 						subscription_status: 'active',
 						subscription_start_date: new Date().toISOString(),
 						subscription_end_date: subscriptionEndDate,
@@ -194,19 +252,9 @@ serve(async (req) => {
 				const userId = users[0].id;
 				log(`Found user ${userId} with customer ID ${customerId}`);
 
-				// Get subscription items to determine plan type
-				let planType = 'premium'; // default
-				try {
-					if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
-						const product = await stripe.products.retrieve(subscription.items.data[0].price.product as string);
-						if (product.metadata && product.metadata.plan_type) {
-							planType = product.metadata.plan_type;
-							log(`Found plan type from product metadata: ${planType}`);
-						}
-					}
-				} catch (prodError) {
-					log('Error retrieving product details:', prodError);
-				}
+				// Determine plan type from subscription
+				const planType = await determinePlanType(subscription);
+				log(`Plan type determined for subscription update: ${planType}`);
 
 				// Update subscription status based on the Stripe status
 				log(`Updating subscription status to '${subscription.status}' and plan to '${planType}' for user ${userId}`);
