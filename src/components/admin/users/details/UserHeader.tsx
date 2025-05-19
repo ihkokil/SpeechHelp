@@ -4,29 +4,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { User } from '../types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
 
 interface UserHeaderProps {
   user: User;
 }
 
 export const UserHeader: React.FC<UserHeaderProps> = ({ user }) => {
-  // Get user's full name from metadata
-  const getFullName = () => {
-    if (user.user_metadata?.full_name) {
-      return user.user_metadata.full_name;
-    }
-    
-    if (user.user_metadata?.first_name && user.user_metadata?.last_name) {
-      return `${user.user_metadata.first_name} ${user.user_metadata.last_name}`;
-    }
-    
-    if (user.user_metadata?.name) {
-      return user.user_metadata.name;
-    }
-    
-    return user.email.split('@')[0]; // Fallback to email username
-  };
-
   const getUserInitials = (user: User) => {
     if (user.user_metadata?.full_name) {
       return user.user_metadata.full_name
@@ -64,7 +48,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ user }) => {
       </Avatar>
       <div>
         <h3 className="text-xl font-semibold">
-          {getFullName()}
+          {formatUserDisplayName(user)}
         </h3>
         <TooltipProvider>
           <Tooltip>
