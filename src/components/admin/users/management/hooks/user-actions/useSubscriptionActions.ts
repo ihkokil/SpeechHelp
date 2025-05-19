@@ -157,23 +157,26 @@ export const useSubscriptionActions = (
     try {
       console.log(`Updating user subscription: ${userId} to plan ${planType} until ${endDate.toISOString()}`);
       
-      // Update subscription status in the database
+      // Update subscription status in the database with all required fields
       const { data, error } = await supabase
         .from('profiles')
         .update({ 
           subscription_plan: planType,
-          subscription_tier: planType,
-          subscription_end_date: endDate.toISOString() 
+          subscription_tier: planType, // Ensure subscription_tier is also set
+          subscription_status: 'active', // Set status explicitly
+          subscription_end_date: endDate.toISOString(),
+          updated_at: new Date().toISOString() // Update the timestamp
         })
         .eq('id', userId)
         .select()
         .single();
       
       if (error) {
+        console.error('Database error updating subscription:', error);
         throw error;
       }
       
-      // Update local state
+      // Update local state with all updated fields
       setUsers(
         users.map(user => 
           user.id === userId 
@@ -181,6 +184,7 @@ export const useSubscriptionActions = (
                 ...user, 
                 subscription_plan: planType,
                 subscription_tier: planType,
+                subscription_status: 'active',
                 subscription_end_date: endDate.toISOString() 
               } 
             : user
@@ -200,6 +204,7 @@ export const useSubscriptionActions = (
         description: 'Failed to update subscription. Please try again.',
         variant: 'destructive',
       });
+      return null;
     } finally {
       if (setActionLoading) setActionLoading(false);
     }
