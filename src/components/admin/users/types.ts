@@ -36,17 +36,15 @@ export type User = {
   stripe_subscription_id?: string;
 };
 
-export type Speech = {
+export interface Speech {
   id: string;
+  user_id: string;
   title: string;
+  content: string;
   speech_type: string;
   created_at: string;
-  updated_at?: string;
-  content: string;
-  user_id: string;
-  word_count?: number;
-  duration_minutes?: number;
-};
+  updated_at: string | null;
+}
 
 export type SpeechTypeStats = {
   type: string;

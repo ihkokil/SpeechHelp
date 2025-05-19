@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { User, Speech, SpeechTypeStats } from '../types';
@@ -11,51 +11,29 @@ interface UserStatisticsProps {
 }
 
 export const UserStatistics: React.FC<UserStatisticsProps> = ({ user, speeches, isLoadingSpeeches }) => {
-  const [speechTypeStats, setSpeechTypeStats] = useState<SpeechTypeStats[]>([]);
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
-  const [userJoinedDays, setUserJoinedDays] = useState<number>(0);
-
-  useEffect(() => {
-    if (user) {
-      calculateUserStats(user);
-      calculateSpeechTypeStats(speeches);
-    }
-  }, [user, speeches]);
-
-  const calculateSpeechTypeStats = (speeches: Speech[]) => {
-    setIsLoadingStats(true);
+  // Group speeches by type
+  const speechTypeStats: SpeechTypeStats[] = React.useMemo(() => {
+    const typeCount: Record<string, number> = {};
     
-    try {
-      // Count speeches by type
-      const typeCount: Record<string, number> = {};
-      
-      speeches.forEach(speech => {
-        const type = speech.speech_type || 'unknown';
-        typeCount[type] = (typeCount[type] || 0) + 1;
-      });
-      
-      // Convert to array for display
-      const stats: SpeechTypeStats[] = Object.entries(typeCount).map(([type, count]) => ({
-        type,
-        count
-      }));
-      
-      setSpeechTypeStats(stats.sort((a, b) => b.count - a.count));
-    } catch (error) {
-      console.error('Error calculating speech stats:', error);
-    } finally {
-      setIsLoadingStats(false);
-    }
-  };
+    speeches.forEach(speech => {
+      const type = speech.speech_type || 'unknown';
+      typeCount[type] = (typeCount[type] || 0) + 1;
+    });
+    
+    return Object.entries(typeCount)
+      .map(([type, count]) => ({ type, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [speeches]);
 
-  const calculateUserStats = (user: User) => {
-    // Calculate days since user joined
+  // Calculate days since user joined
+  const userJoinedDays = React.useMemo(() => {
+    if (!user.created_at) return 0;
+    
     const createdDate = new Date(user.created_at);
     const today = new Date();
     const diffTime = Math.abs(today.getTime() - createdDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    setUserJoinedDays(diffDays);
-  };
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }, [user.created_at]);
 
   return (
     <Card>
@@ -66,7 +44,7 @@ export const UserStatistics: React.FC<UserStatisticsProps> = ({ user, speeches, 
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoadingStats || isLoadingSpeeches ? (
+        {isLoadingSpeeches ? (
           <div className="flex flex-col items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="mt-2 text-sm text-muted-foreground">Loading statistics...</p>
