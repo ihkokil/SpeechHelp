@@ -52,8 +52,17 @@ export const useUserActions = () => {
   }, []);
   
   // Handle permissions updated
-  const handlePermissionsUpdated = useCallback((updatedUser: User) => {
+  const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[] = [], setUsers: ((users: User[]) => void) | null = null) => {
     console.log('Permissions updated for user:', updatedUser.id);
+    
+    // Update the user in the users array if setUsers is provided
+    if (setUsers && users.length > 0) {
+      setUsers(
+        users.map(user => 
+          user.id === updatedUser.id ? updatedUser : user
+        )
+      );
+    }
     
     // Show a success toast
     toast({
@@ -66,15 +75,27 @@ export const useUserActions = () => {
   }, [toast]);
   
   // Handle deleting users (plural for backward compatibility)
-  const handleDeleteUsers = useCallback(async (selectedUsers: User[]) => {
+  const handleDeleteUsers = useCallback(async (
+    selectedUsers: User[], 
+    users: User[] = [], 
+    setUsers: ((users: User[]) => void) | null = null
+  ) => {
     console.log('Deleting users:', selectedUsers.map(user => user.id));
     setIsActionLoading(true);
     try {
       // If only one user, use the single user delete method
       if (selectedUsers.length === 1) {
-        await handleDeleteUser(selectedUsers[0].id);
+        if (setUsers && users.length > 0) {
+          await handleDeleteUser(selectedUsers[0].id, users, setUsers);
+        } else {
+          await handleDeleteUser(selectedUsers[0].id, [], null);
+        }
       } else {
-        await handleBulkDelete(selectedUsers, [], null);
+        if (setUsers && users.length > 0) {
+          await handleBulkDelete(selectedUsers, users, setUsers);
+        } else {
+          await handleBulkDelete(selectedUsers, [], null);
+        }
       }
     } catch (error) {
       console.error('Error deleting users:', error);

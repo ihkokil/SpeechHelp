@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { User, AdminRole, AdminPermission } from './types';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ShieldAlert, ShieldCheck } from 'lucide-react';
 
@@ -24,7 +24,6 @@ const AdminPermissionsDialog: React.FC<AdminPermissionsDialogProps> = ({
   onOpenChange,
   onPermissionsUpdated
 }) => {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [roles, setRoles] = useState<AdminRole[]>([]);
   const [permissions, setPermissions] = useState<AdminPermission[]>([]);
