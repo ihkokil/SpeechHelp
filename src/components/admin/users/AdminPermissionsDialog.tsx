@@ -24,6 +24,7 @@ const AdminPermissionsDialog: React.FC<AdminPermissionsDialogProps> = ({
   onOpenChange,
   onPermissionsUpdated
 }) => {
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [roles, setRoles] = useState<AdminRole[]>([]);
   const [permissions, setPermissions] = useState<AdminPermission[]>([]);
