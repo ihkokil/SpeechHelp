@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
@@ -291,21 +292,21 @@ export const useSubscriptionActions = (
         throw new Error('No data returned after update');
       }
       
-      // Update local state if the user is in the current list
-      const usersCopy = [...users];
-      setUsers(
-        usersCopy.map(user => 
-          user.id === userId 
-            ? { 
-                ...user, 
-                subscription_plan: SubscriptionPlan.PRO,
-                subscription_tier: SubscriptionPlan.PRO,
-                subscription_status: 'active',
-                subscription_end_date: endDate.toISOString()
-              } 
-            : user
-        )
+      // Create a new array to avoid type recursion issues
+      const updatedUsers = users.map(user => 
+        user.id === userId 
+          ? { 
+              ...user, 
+              subscription_plan: SubscriptionPlan.PRO,
+              subscription_tier: SubscriptionPlan.PRO,
+              subscription_status: 'active',
+              subscription_end_date: endDate.toISOString()
+            } 
+          : user
       );
+      
+      // Update local state with the new array
+      setUsers(updatedUsers);
       
       toast({
         title: 'User Set to Pro Plan',
