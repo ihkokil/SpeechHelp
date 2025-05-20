@@ -5,11 +5,15 @@ import { useBulkActions } from './user-actions/useBulkActions';
 import { useIndividualUserActions } from './user-actions/useIndividualUserActions';
 import { useSubscriptionActions } from './user-actions/useSubscriptionActions';
 import { useToast } from '@/hooks/use-toast';
+import { useUserManagementData } from './useUserManagementData';
 
 export const useUserActions = () => {
   const { toast } = useToast();
   // Create internal state for tracking action loading
   const [isActionLoading, setIsActionLoading] = useState(false);
+  
+  // Get access to users data
+  const { users } = useUserManagementData();
   
   // Create local states for user details and permissions dialogs
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
