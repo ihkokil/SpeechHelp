@@ -95,6 +95,7 @@ export const useSubscriptionActions = (
       const { data, error } = await supabase
         .from('profiles')
         .update({ 
+          subscription_plan: SubscriptionPlan.PREMIUM, 
           subscription_tier: SubscriptionPlan.PREMIUM,
           subscription_status: 'active',
           subscription_end_date: endDate.toISOString(),
@@ -109,19 +110,19 @@ export const useSubscriptionActions = (
       }
       
       // Update local state
-      const updatedUsers = users.map(user => {
-        if (user.id === userId) {
-          return { 
-            ...user, 
-            subscription_status: 'active',
-            subscription_tier: SubscriptionPlan.PREMIUM,
-            subscription_end_date: endDate.toISOString() 
-          };
-        }
-        return user;
-      });
-      
-      setUsers(updatedUsers);
+      setUsers(
+        users.map(user => 
+          user.id === userId 
+            ? { 
+                ...user, 
+                subscription_status: 'active',
+                subscription_plan: SubscriptionPlan.PREMIUM,
+                subscription_tier: SubscriptionPlan.PREMIUM,
+                subscription_end_date: endDate.toISOString() 
+              } 
+            : user
+        )
+      );
       
       toast({
         title: 'Subscription Updated',
@@ -175,6 +176,7 @@ export const useSubscriptionActions = (
       
       // Create update payload
       const updatePayload = {
+        subscription_plan: planType,
         subscription_tier: planType,
         subscription_status: planType === SubscriptionPlan.FREE_TRIAL ? 'trial' : 'active',
         subscription_end_date: formattedEndDate,
@@ -202,21 +204,20 @@ export const useSubscriptionActions = (
       
       console.log('Update successful, data:', data);
       
-      // Create a clean array of updated users with explicit typing
-      const updatedUsers = users.map(user => {
-        if (user.id === userId) {
-          return {
-            ...user,
-            subscription_tier: planType,
-            subscription_status: planType === SubscriptionPlan.FREE_TRIAL ? 'trial' : 'active',
-            subscription_end_date: formattedEndDate
-          };
-        }
-        return user;
-      });
-      
-      // Update state with the new array
-      setUsers(updatedUsers);
+      // Update local state
+      setUsers(
+        users.map(user => 
+          user.id === userId 
+            ? { 
+                ...user, 
+                subscription_plan: planType,
+                subscription_tier: planType,
+                subscription_status: planType === SubscriptionPlan.FREE_TRIAL ? 'trial' : 'active',
+                subscription_end_date: formattedEndDate
+              } 
+            : user
+        )
+      );
       
       toast({
         title: 'Subscription Updated',
@@ -243,98 +244,9 @@ export const useSubscriptionActions = (
     }
   }, [toast]);
 
-  // Set a specific user to PRO plan for testing purposes
-  const setUserToPro = useCallback(async (
-    email: string,
-    users: User[],
-    setUsers: (users: User[]) => void
-  ) => {
-    if (setActionLoading) setActionLoading(true);
-    
-    try {
-      // Find user by email
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
-        .single();
-      
-      if (userError) {
-        throw new Error(`User not found: ${email}`);
-      }
-      
-      const userId = userData.id;
-      
-      // Set end date to 1 year from now
-      const endDate = new Date();
-      endDate.setFullYear(endDate.getFullYear() + 1);
-      
-      // Update subscription in the database
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({
-          subscription_tier: SubscriptionPlan.PRO,
-          subscription_status: 'active',
-          subscription_end_date: endDate.toISOString(),
-          subscription_start_date: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId)
-        .select();
-      
-      if (error) {
-        throw error;
-      }
-      
-      if (!data || data.length === 0) {
-        throw new Error('No data returned after update');
-      }
-      
-      // Create a copy of users array to avoid reference issues
-      const updatedUsers = users.map(user => {
-        if (user.id === userId) {
-          return {
-            ...user,
-            subscription_tier: SubscriptionPlan.PRO,
-            subscription_status: 'active',
-            subscription_end_date: endDate.toISOString()
-          };
-        }
-        return user;
-      });
-      
-      // Update state with the new array
-      setUsers(updatedUsers);
-      
-      toast({
-        title: 'User Set to Pro Plan',
-        description: `User ${email} has been upgraded to the PRO plan for one year.`,
-      });
-      
-      return data[0];
-    } catch (error) {
-      console.error('Error setting user to Pro:', error);
-      
-      let errorMessage = 'Failed to set user to Pro plan. Please try again.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      return null;
-    } finally {
-      if (setActionLoading) setActionLoading(false);
-    }
-  }, [toast]);
-
   return {
     handleToggleUserStatus,
     handleToggleUserSubscription,
-    handleUpdateUserSubscription,
-    setUserToPro
+    handleUpdateUserSubscription
   };
 };

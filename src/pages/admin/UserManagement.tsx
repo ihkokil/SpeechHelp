@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -11,7 +12,6 @@ import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDia
 import SubscriptionDialog from '@/components/admin/users/management/components/SubscriptionDialog';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/components/admin/users/types';
-import { SetTestUserToPro } from '@/components/admin/users/management/utils/SetTestUserToPro';
 
 const UserManagement = () => {
   const {
@@ -94,7 +94,6 @@ const UserManagement = () => {
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
         <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
-        <SetTestUserToPro />
       </div>
       
       <Card>
