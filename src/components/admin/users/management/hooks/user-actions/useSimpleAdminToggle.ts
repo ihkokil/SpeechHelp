@@ -70,11 +70,10 @@ export const useSimpleAdminToggle = () => {
 
       console.log('Successfully updated admin access via database function:', response);
 
-      // Update the user in the local state
+      // Update the user in the local state - only update is_admin, remove admin_role
       const updatedUser = {
         ...user,
-        is_admin: newAdminStatus,
-        admin_role: newAdminStatus ? 'admin' : null
+        is_admin: newAdminStatus
       };
 
       setUsers(users.map(u => u.id === user.id ? updatedUser : u));
