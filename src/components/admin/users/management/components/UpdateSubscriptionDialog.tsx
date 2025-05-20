@@ -65,13 +65,16 @@ const UpdateSubscriptionDialog: React.FC<UpdateSubscriptionDialogProps> = ({
     );
   };
 
+  // Use email instead of username for display since username might not exist
+  const userDisplay = user.email || "User";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Update Subscription</DialogTitle>
           <DialogDescription>
-            Update subscription details for {user.email || user.username}
+            Update subscription details for {userDisplay}
           </DialogDescription>
         </DialogHeader>
         

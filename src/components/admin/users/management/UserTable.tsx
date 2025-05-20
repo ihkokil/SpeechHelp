@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Table, TableBody } from '@/components/ui/table';
 import { User } from '../types';
@@ -5,6 +6,7 @@ import { useUserSearch } from './hooks/useUserSearch';
 import UserTableHeader from './components/UserTableHeader';
 import UserTableRow from './components/UserTableRow';
 import { LoadingState, EmptyState } from './components/UserTableStates';
+import { cn } from '@/lib/utils'; // Added the import for cn
 
 interface UserTableProps {
   users: User[];
@@ -56,38 +58,12 @@ export const UserTable: React.FC<UserTableProps> = ({
     selectedUsers.length === filteredUsers.length &&
     filteredUsers.every(user => selectedUsers.some(selectedUser => selectedUser.id === user.id));
 
+  // Fixed to not pass arguments when calling toggleAllUsers
   const handleToggleAll = () => {
-    toggleAllUsers(filteredUsers);
+    toggleAllUsers();
   };
 
-  const renderUserRow = (user: User, isSelected: boolean) => {
-    return (
-      <tr
-        key={user.id}
-        className={cn(
-          "cursor-pointer hover:bg-muted/50",
-          isSelected && "bg-muted/50"
-        )}
-        onClick={() => toggleUserSelection(user)}
-      >
-        <td className="p-2">{user.name}</td>
-        <td className="p-2">{user.email}</td>
-        <td className="p-2 text-right">
-          <UserActionMenu
-            user={user}
-            onViewDetails={handleViewUserDetails}
-            onManagePermissions={handleManagePermissions}
-            onToggleUserActive={handleToggleUserStatus}
-            onDeleteUser={handleDeleteUser}
-            onEditUser={handleEditUser}
-            onSendEmail={handleSendEmail}
-            onUpdateSubscription={handleUpdateSubscription}
-          />
-        </td>
-      </tr>
-    );
-  };
-
+  // Use UserTableRow component instead of inline render function
   return (
     <div className="rounded-md border">
       <Table>
@@ -104,7 +80,19 @@ export const UserTable: React.FC<UserTableProps> = ({
             <EmptyState />
           ) : (
             filteredUsers.map((user) => (
-              renderUserRow(user, selectedUsers.some(selectedUser => selectedUser.id === user.id))
+              <UserTableRow
+                key={user.id}
+                user={user}
+                isSelected={selectedUsers.some(selectedUser => selectedUser.id === user.id)}
+                onToggleSelection={toggleUserSelection}
+                onViewDetails={handleViewUserDetails}
+                onManagePermissions={handleManagePermissions}
+                onToggleUserActive={handleToggleUserStatus}
+                onDeleteUser={handleDeleteUser}
+                onEditUser={handleEditUser}
+                onSendEmail={handleSendEmail}
+                onUpdateSubscription={handleUpdateSubscription}
+              />
             ))
           )}
         </TableBody>
