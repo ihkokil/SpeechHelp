@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
@@ -63,10 +62,11 @@ export const useSubscriptionActions = (
     }
   }, [toast]);
 
-  // Toggle user subscription status with days
+  // Toggle user subscription status with days and plan type
   const handleToggleUserSubscription = useCallback(async (
     userId: string, 
-    days: number = 30, 
+    days: number = 30,
+    planType: SubscriptionPlan = SubscriptionPlan.PREMIUM,
     users: User[],
     setUsers: (users: User[]) => void
   ) => {
@@ -75,7 +75,7 @@ export const useSubscriptionActions = (
     if (setActionLoading) setActionLoading(true);
     
     try {
-      console.log(`Toggling user subscription: ${userId} for ${days} days`);
+      console.log(`Updating user subscription: ${userId} for ${days} days with plan ${planType}`);
       
       // Get current user
       const user = users.find(u => u.id === userId);
@@ -99,7 +99,7 @@ export const useSubscriptionActions = (
       const { data, error } = await supabase
         .from('profiles')
         .update({ 
-          subscription_plan: 'premium', 
+          subscription_plan: planType, 
           subscription_end_date: endDate.toISOString() 
         })
         .eq('id', userId)
@@ -117,7 +117,8 @@ export const useSubscriptionActions = (
             ? { 
                 ...user, 
                 subscription_status: 'active',
-                subscription_tier: 'premium',
+                subscription_tier: planType,
+                subscription_plan: planType,
                 subscription_end_date: endDate.toISOString() 
               } 
             : user
@@ -126,7 +127,7 @@ export const useSubscriptionActions = (
       
       toast({
         title: 'Subscription Updated',
-        description: `User's subscription has been extended by ${days} days.`,
+        description: `User's subscription has been updated to ${planType} for ${days} days.`,
       });
       
       return data;

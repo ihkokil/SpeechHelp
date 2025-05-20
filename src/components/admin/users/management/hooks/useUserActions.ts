@@ -4,6 +4,7 @@ import { User } from '../../types';
 import { useBulkActions } from './user-actions/useBulkActions';
 import { useIndividualUserActions } from './user-actions/useIndividualUserActions';
 import { useToast } from '@/hooks/use-toast';
+import { SubscriptionPlan } from '@/lib/plan_rules';
 
 export const useUserActions = () => {
   const { toast } = useToast();
@@ -14,6 +15,7 @@ export const useUserActions = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
+  const [isExtendSubscriptionDialogOpen, setIsExtendSubscriptionDialogOpen] = useState(false);
   
   // Initialize hooks with necessary parameters
   const { 
@@ -50,6 +52,30 @@ export const useUserActions = () => {
     setSelectedUser(user);
     setIsPermissionsDialogOpen(true);
   }, []);
+  
+  // Manage subscription handler - opens the dialog
+  const handleManageSubscription = useCallback((user: User) => {
+    console.log("useUserActions: Manage subscription called for user:", user.id);
+    setSelectedUser(user);
+    setIsExtendSubscriptionDialogOpen(true);
+  }, []);
+  
+  // Handle extending subscription with custom days and plan
+  const handleExtendSubscription = useCallback((userId: string, days: number, plan: SubscriptionPlan, users: User[] = [], setUsers: ((users: User[]) => void) | null = null) => {
+    console.log(`Extending subscription for user ${userId} by ${days} days with plan ${plan}`);
+    setIsActionLoading(true);
+    
+    try {
+      if (setUsers && users.length > 0) {
+        return handleToggleUserSubscription(userId, days, plan, users, setUsers);
+      } else {
+        return handleToggleUserSubscription(userId, days, plan, [], () => {});
+      }
+    } finally {
+      setIsActionLoading(false);
+      setIsExtendSubscriptionDialogOpen(false);
+    }
+  }, [handleToggleUserSubscription]);
   
   // Handle permissions updated
   const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[] = [], setUsers: ((users: User[]) => void) | null = null) => {
@@ -121,6 +147,10 @@ export const useUserActions = () => {
     // User subscription and status operations
     handleToggleUserStatus,
     handleToggleUserSubscription,
+    handleManageSubscription,
+    handleExtendSubscription,
+    isExtendSubscriptionDialogOpen,
+    setIsExtendSubscriptionDialogOpen,
     
     // User details operations
     handleViewUserDetails,

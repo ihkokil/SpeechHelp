@@ -11,13 +11,15 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User } from '../../types';
+import { SubscriptionPlan } from '@/lib/plan_rules';
 
 interface ExtendSubscriptionDialogProps {
   user: User;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (userId: string, days: number) => void;
+  onConfirm: (userId: string, days: number, plan: SubscriptionPlan) => void;
   isLoading?: boolean;
 }
 
@@ -28,16 +30,17 @@ export function ExtendSubscriptionDialog({
   onConfirm,
   isLoading = false,
 }: ExtendSubscriptionDialogProps) {
-  const [selectedOption, setSelectedOption] = useState<string>("30");
+  const [selectedDuration, setSelectedDuration] = useState<string>("30");
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>(SubscriptionPlan.PREMIUM);
   
   const handleConfirm = () => {
-    const days = parseInt(selectedOption);
+    const days = parseInt(selectedDuration);
     if (!isNaN(days)) {
-      onConfirm(user.id, days);
+      onConfirm(user.id, days, selectedPlan);
     }
   };
   
-  const options = [
+  const durationOptions = [
     { value: "7", label: "1 week (7 days)" },
     { value: "30", label: "1 month (30 days)" },
     { value: "90", label: "3 months (90 days)" },
@@ -51,19 +54,39 @@ export function ExtendSubscriptionDialog({
         <DialogHeader>
           <DialogTitle>Extend Subscription</DialogTitle>
           <DialogDescription>
-            Extend {user.email}'s subscription by selecting a duration below.
+            Update {user.email}'s subscription by selecting a plan and duration below.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="py-4">
-          <RadioGroup value={selectedOption} onValueChange={setSelectedOption}>
-            {options.map((option) => (
-              <div key={option.value} className="flex items-center space-x-2">
-                <RadioGroupItem value={option.value} id={`option-${option.value}`} />
-                <Label htmlFor={`option-${option.value}`}>{option.label}</Label>
-              </div>
-            ))}
-          </RadioGroup>
+        <div className="py-4 space-y-6">
+          <div className="space-y-2">
+            <Label>Subscription Plan</Label>
+            <Select 
+              value={selectedPlan} 
+              onValueChange={(value) => setSelectedPlan(value as SubscriptionPlan)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a plan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={SubscriptionPlan.FREE_TRIAL}>Free Trial</SelectItem>
+                <SelectItem value={SubscriptionPlan.PREMIUM}>Premium</SelectItem>
+                <SelectItem value={SubscriptionPlan.PRO}>Pro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Duration</Label>
+            <RadioGroup value={selectedDuration} onValueChange={setSelectedDuration}>
+              {durationOptions.map((option) => (
+                <div key={option.value} className="flex items-center space-x-2">
+                  <RadioGroupItem value={option.value} id={`option-${option.value}`} />
+                  <Label htmlFor={`option-${option.value}`}>{option.label}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
         </div>
         
         <DialogFooter>
@@ -75,7 +98,7 @@ export function ExtendSubscriptionDialog({
             Cancel
           </Button>
           <Button onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? "Processing..." : "Extend Subscription"}
+            {isLoading ? "Processing..." : "Update Subscription"}
           </Button>
         </DialogFooter>
       </DialogContent>

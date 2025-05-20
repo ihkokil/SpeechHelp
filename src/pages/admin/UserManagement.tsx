@@ -9,8 +9,9 @@ import SearchToolbar from '@/components/admin/users/management/SearchToolbar';
 import DeleteUserDialog from '@/components/admin/users/management/DeleteUserDialog';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
-import { AdminPermissionsDialog } from '@/components/admin/users/AdminPermissionsDialog';
+import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
 import EditUserDialog from '@/components/admin/users/edit-user/EditUserDialog';
+import ExtendSubscriptionDialog from '@/components/admin/users/management/components/ExtendSubscriptionDialog';
 
 const UserManagement: React.FC = () => {
   // Import the custom hook to handle User Management functionality
@@ -36,6 +37,8 @@ const UserManagement: React.FC = () => {
     setIsPermissionsDialogOpen,
     isEditUserDialogOpen,
     setIsEditUserDialogOpen,
+    isExtendSubscriptionDialogOpen,
+    setIsExtendSubscriptionDialogOpen,
     
     // User selection actions
     toggleUserSelection,
@@ -55,6 +58,8 @@ const UserManagement: React.FC = () => {
     handlePermissionsUpdated,
     handleEditUser,
     handleSendEmail,
+    handleManageSubscription,
+    handleExtendSubscription,
     
     // Bulk actions
     handleBulkDelete,
@@ -120,7 +125,7 @@ const UserManagement: React.FC = () => {
             handleViewUserDetails={handleViewUserDetails}
             handleManagePermissions={handleManagePermissions}
             handleToggleUserStatus={handleToggleUserStatus}
-            handleToggleUserSubscription={handleToggleUserSubscription}
+            handleToggleUserSubscription={handleManageSubscription}
             setSelectedUsers={toggleAllUsers}
             setIsDeleteDialogOpen={setIsDeleteDialogOpen}
             handleBulkDelete={handleBulkDelete}
@@ -160,13 +165,22 @@ const UserManagement: React.FC = () => {
             user={selectedUser}
             open={isPermissionsDialogOpen}
             onOpenChange={setIsPermissionsDialogOpen}
-            onSave={handlePermissionsUpdated}
+            onSave={(updatedUser) => handlePermissionsUpdated(updatedUser)}
           />
 
           <EditUserDialog 
             user={selectedUser}
             open={isEditUserDialogOpen}
             onOpenChange={setIsEditUserDialogOpen}
+            onUserUpdated={(user) => fetchUsers()}
+          />
+          
+          <ExtendSubscriptionDialog
+            user={selectedUser}
+            open={isExtendSubscriptionDialogOpen}
+            onOpenChange={setIsExtendSubscriptionDialogOpen}
+            onConfirm={(userId, days, plan) => handleExtendSubscription(userId, days, plan, users, setUsers)}
+            isLoading={isActionLoading}
           />
         </>
       )}
