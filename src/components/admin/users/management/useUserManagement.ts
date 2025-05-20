@@ -54,8 +54,8 @@ export const useUserManagement = () => {
     clearSelection
   } = useUserSelection();
   
-  // Get permission actions
-  const { handlePermissionsUpdated: baseHandlePermissionsUpdated } = usePermissionActions();
+  // Get permission actions with the dialog setter
+  const { handlePermissionsUpdated: baseHandlePermissionsUpdated } = usePermissionActions(setIsPermissionsDialogOpen);
   
   // Get all user actions and their states from the useUserActions hook
   const {
@@ -92,12 +92,16 @@ export const useUserManagement = () => {
     setIsPermissionsDialogOpen(true);
   }, [setSelectedUser, setIsPermissionsDialogOpen]);
   
-  // Fix the parameter signature to match how it's used in AdminPermissionsDialog.tsx
+  // Fix the implementation to match AdminPermissionsDialog.tsx expectations
   const handlePermissionsUpdated = useCallback((updatedUser: User) => {
     console.log("useUserManagement: Permissions updated for user:", updatedUser.id);
-    baseHandlePermissionsUpdated(updatedUser, users, setUsers);
-    setIsPermissionsDialogOpen(false);
-  }, [baseHandlePermissionsUpdated, users, setUsers, setIsPermissionsDialogOpen]);
+    // Update the users array directly
+    setUsers(prevUsers => 
+      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
+    );
+    // Also notify the base implementation
+    baseHandlePermissionsUpdated(updatedUser);
+  }, [baseHandlePermissionsUpdated, setUsers]);
   
   // Handle Edit User
   const handleEditUser = useCallback((user: User) => {
