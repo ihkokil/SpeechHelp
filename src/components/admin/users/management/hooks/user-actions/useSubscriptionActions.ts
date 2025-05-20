@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
@@ -293,21 +292,20 @@ export const useSubscriptionActions = (
       }
       
       // Update local state if the user is in the current list
-      if (users && setUsers) {
-        setUsers(
-          users.map(user => 
-            user.id === userId 
-              ? { 
-                  ...user, 
-                  subscription_plan: SubscriptionPlan.PRO,
-                  subscription_tier: SubscriptionPlan.PRO,
-                  subscription_status: 'active',
-                  subscription_end_date: endDate.toISOString()
-                } 
-              : user
-          )
-        );
-      }
+      const usersCopy = [...users];
+      setUsers(
+        usersCopy.map(user => 
+          user.id === userId 
+            ? { 
+                ...user, 
+                subscription_plan: SubscriptionPlan.PRO,
+                subscription_tier: SubscriptionPlan.PRO,
+                subscription_status: 'active',
+                subscription_end_date: endDate.toISOString()
+              } 
+            : user
+        )
+      );
       
       toast({
         title: 'User Set to Pro Plan',
