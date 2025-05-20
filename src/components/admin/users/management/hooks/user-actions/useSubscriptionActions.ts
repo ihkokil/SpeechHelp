@@ -244,9 +244,100 @@ export const useSubscriptionActions = (
     }
   }, [toast]);
 
+  // Set a specific user to PRO plan for testing purposes
+  const setUserToPro = useCallback(async (
+    email: string,
+    users: User[],
+    setUsers: (users: User[]) => void
+  ) => {
+    if (setActionLoading) setActionLoading(true);
+    
+    try {
+      // Find user by email
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .single();
+      
+      if (userError) {
+        throw new Error(`User not found: ${email}`);
+      }
+      
+      const userId = userData.id;
+      
+      // Set end date to 1 year from now
+      const endDate = new Date();
+      endDate.setFullYear(endDate.getFullYear() + 1);
+      
+      // Update subscription in the database
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          subscription_plan: SubscriptionPlan.PRO,
+          subscription_tier: SubscriptionPlan.PRO,
+          subscription_status: 'active',
+          subscription_end_date: endDate.toISOString(),
+          subscription_start_date: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select();
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (!data || data.length === 0) {
+        throw new Error('No data returned after update');
+      }
+      
+      // Update local state if the user is in the current list
+      if (users && setUsers) {
+        setUsers(
+          users.map(user => 
+            user.id === userId 
+              ? { 
+                  ...user, 
+                  subscription_plan: SubscriptionPlan.PRO,
+                  subscription_tier: SubscriptionPlan.PRO,
+                  subscription_status: 'active',
+                  subscription_end_date: endDate.toISOString()
+                } 
+              : user
+          )
+        );
+      }
+      
+      toast({
+        title: 'User Set to Pro Plan',
+        description: `User ${email} has been upgraded to the PRO plan for one year.`,
+      });
+      
+      return data[0];
+    } catch (error) {
+      console.error('Error setting user to Pro:', error);
+      
+      let errorMessage = 'Failed to set user to Pro plan. Please try again.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      return null;
+    } finally {
+      if (setActionLoading) setActionLoading(false);
+    }
+  }, [toast]);
+
   return {
     handleToggleUserStatus,
     handleToggleUserSubscription,
-    handleUpdateUserSubscription
+    handleUpdateUserSubscription,
+    setUserToPro
   };
 };
