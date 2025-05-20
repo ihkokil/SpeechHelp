@@ -4,7 +4,6 @@ import { User } from '../../types';
 import { useBulkActions } from './user-actions/useBulkActions';
 import { useIndividualUserActions } from './user-actions/useIndividualUserActions';
 import { useToast } from '@/hooks/use-toast';
-import { SubscriptionPlan } from '@/lib/plan_rules';
 
 export const useUserActions = () => {
   const { toast } = useToast();
@@ -15,7 +14,6 @@ export const useUserActions = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
-  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   
   // Initialize hooks with necessary parameters
   const { 
@@ -27,8 +25,7 @@ export const useUserActions = () => {
   const {
     handleToggleUserStatus,
     handleToggleUserSubscription,
-    handleDeleteUser,
-    handleUpdateUserSubscription
+    handleDeleteUser
   } = useIndividualUserActions();
   
   // View user details handler
@@ -54,13 +51,6 @@ export const useUserActions = () => {
     setIsPermissionsDialogOpen(true);
   }, []);
   
-  // Open subscription dialog handler
-  const handleOpenSubscriptionDialog = useCallback((user: User) => {
-    console.log("useUserActions: Open subscription dialog for user:", user.id);
-    setSelectedUser(user);
-    setIsSubscriptionDialogOpen(true);
-  }, []);
-  
   // Handle permissions updated
   const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[] = [], setUsers: ((users: User[]) => void) | null = null) => {
     console.log('Permissions updated for user:', updatedUser.id);
@@ -83,38 +73,6 @@ export const useUserActions = () => {
     // Close the dialog
     setIsPermissionsDialogOpen(false);
   }, [toast]);
-  
-  // Handle subscription updated
-  const handleSubscriptionUpdated = useCallback((
-    userId: string,
-    planType: SubscriptionPlan,
-    endDate: Date,
-    users: User[] = [],
-    setUsers: ((users: User[]) => void) | null = null
-  ) => {
-    console.log('Subscription updated for user:', userId);
-    setIsActionLoading(true);
-    
-    handleUpdateUserSubscription(userId, planType, endDate, users, setUsers)
-      .then(() => {
-        setIsSubscriptionDialogOpen(false);
-        toast({
-          title: 'Subscription Updated',
-          description: `User's subscription has been updated successfully.`,
-        });
-      })
-      .catch((error) => {
-        console.error('Error updating subscription:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to update subscription. Please try again.',
-          variant: 'destructive',
-        });
-      })
-      .finally(() => {
-        setIsActionLoading(false);
-      });
-  }, [handleUpdateUserSubscription, toast]);
   
   // Handle deleting users (plural for backward compatibility)
   const handleDeleteUsers = useCallback(async (
@@ -163,8 +121,6 @@ export const useUserActions = () => {
     // User subscription and status operations
     handleToggleUserStatus,
     handleToggleUserSubscription,
-    handleOpenSubscriptionDialog,
-    handleSubscriptionUpdated,
     
     // User details operations
     handleViewUserDetails,
@@ -179,8 +135,6 @@ export const useUserActions = () => {
     selectedUser,
     isDetailsOpen,
     isPermissionsDialogOpen,
-    setIsPermissionsDialogOpen,
-    isSubscriptionDialogOpen,
-    setIsSubscriptionDialogOpen
+    setIsPermissionsDialogOpen
   };
 };

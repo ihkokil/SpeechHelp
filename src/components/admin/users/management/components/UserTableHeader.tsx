@@ -4,14 +4,14 @@ import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface UserTableHeaderProps {
-  onToggleSelectAll: () => void;
+  onToggleAll: () => void;
   isAllSelected: boolean;
   disabled: boolean;
   selectedCount: number;
 }
 
 const UserTableHeader: React.FC<UserTableHeaderProps> = ({ 
-  onToggleSelectAll, 
+  onToggleAll, 
   isAllSelected,
   disabled,
   selectedCount
@@ -22,7 +22,7 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
         <TableHead className="w-[40px]">
           <Checkbox 
             checked={isAllSelected}
-            onCheckedChange={onToggleSelectAll}
+            onCheckedChange={onToggleAll}
             disabled={disabled}
             aria-label="Select all users"
           />

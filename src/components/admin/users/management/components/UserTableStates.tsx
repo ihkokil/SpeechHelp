@@ -23,11 +23,3 @@ export const EmptyState: React.FC = () => (
     </TableCell>
   </TableRow>
 );
-
-export const ErrorState: React.FC<{ error: Error | null }> = ({ error }) => (
-  <TableRow>
-    <TableCell colSpan={9} className="h-24 text-center text-red-500">
-      Error loading users: {error?.message || 'Unknown error'}
-    </TableCell>
-  </TableRow>
-);

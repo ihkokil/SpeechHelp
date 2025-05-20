@@ -10,7 +10,6 @@ export const useUserManagementUIState = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
-  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   
   // Selected user for dialogs or detailed view
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -40,7 +39,6 @@ export const useUserManagementUIState = () => {
       setIsDetailsOpen(false);
       setIsEditUserDialogOpen(false);
       setIsEmailDialogOpen(false);
-      setIsSubscriptionDialogOpen(false);
       setSelectedUser(null);
     };
     
@@ -65,8 +63,6 @@ export const useUserManagementUIState = () => {
     setIsEditUserDialogOpen,
     isEmailDialogOpen,
     setIsEmailDialogOpen,
-    isSubscriptionDialogOpen,
-    setIsSubscriptionDialogOpen,
     
     // Selected user state
     selectedUser,
