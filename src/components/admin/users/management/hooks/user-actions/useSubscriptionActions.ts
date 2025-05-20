@@ -28,8 +28,7 @@ export const useSubscriptionActions = (
         .from('profiles')
         .update({ is_active: !isActive })
         .eq('id', userId)
-        .select()
-        .single();
+        .select();
       
       if (error) {
         throw error;
@@ -70,7 +69,10 @@ export const useSubscriptionActions = (
     users: User[],
     setUsers: (users: User[]) => void
   ) => {
-    if (!userId) return;
+    if (!userId) {
+      console.error('No user ID provided for subscription update');
+      return;
+    }
     
     if (setActionLoading) setActionLoading(true);
     
@@ -85,12 +87,13 @@ export const useSubscriptionActions = (
           subscription_end_date: subscriptionEndDate.toISOString()
         })
         .eq('id', userId)
-        .select()
-        .single();
+        .select();
       
       if (error) {
         throw error;
       }
+      
+      console.log('Subscription updated successfully in database:', data);
       
       // Update local state
       setUsers(
