@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { Table, TableBody } from '@/components/ui/table';
 import { User } from '../types';
@@ -12,7 +11,7 @@ interface UserTableProps {
   isLoading: boolean;
   selectedUsers: User[];
   toggleUserSelection: (user: User) => void;
-  toggleAllUsers: (filteredUsers: User[]) => void;
+  toggleAllUsers: () => void;
   handleViewUserDetails: (user: User) => void;
   handleManagePermissions: (user: User) => void;
   handleToggleUserStatus: (userId: string, isActive: boolean) => void;
@@ -25,24 +24,28 @@ interface UserTableProps {
   handleDeleteUser: (userId: string) => void;
   handleEditUser?: (user: User) => void;
   handleSendEmail?: (user: User) => void;
+  handleUpdateSubscription?: (user: User) => void;
 }
 
-export const UserTable: React.FC<UserTableProps> = ({ 
-  users, 
-  isLoading, 
-  selectedUsers, 
-  toggleUserSelection, 
-  toggleAllUsers, 
-  handleViewUserDetails, 
-  handleManagePermissions, 
-  handleToggleUserStatus, 
-  setSelectedUsers, 
+export const UserTable: React.FC<UserTableProps> = ({
+  users,
+  isLoading,
+  selectedUsers,
+  toggleUserSelection,
+  toggleAllUsers,
+  handleViewUserDetails,
+  handleManagePermissions,
+  handleToggleUserStatus,
+  setSelectedUsers,
   setIsDeleteDialogOpen,
   searchTerm,
   handleBulkDelete,
+  handleBulkActivate,
+  handleBulkDeactivate,
   handleDeleteUser,
   handleEditUser,
-  handleSendEmail
+  handleSendEmail,
+  handleUpdateSubscription
 }) => {
   console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
@@ -55,6 +58,34 @@ export const UserTable: React.FC<UserTableProps> = ({
 
   const handleToggleAll = () => {
     toggleAllUsers(filteredUsers);
+  };
+
+  const renderUserRow = (user: User, isSelected: boolean) => {
+    return (
+      <tr
+        key={user.id}
+        className={cn(
+          "cursor-pointer hover:bg-muted/50",
+          isSelected && "bg-muted/50"
+        )}
+        onClick={() => toggleUserSelection(user)}
+      >
+        <td className="p-2">{user.name}</td>
+        <td className="p-2">{user.email}</td>
+        <td className="p-2 text-right">
+          <UserActionMenu
+            user={user}
+            onViewDetails={handleViewUserDetails}
+            onManagePermissions={handleManagePermissions}
+            onToggleUserActive={handleToggleUserStatus}
+            onDeleteUser={handleDeleteUser}
+            onEditUser={handleEditUser}
+            onSendEmail={handleSendEmail}
+            onUpdateSubscription={handleUpdateSubscription}
+          />
+        </td>
+      </tr>
+    );
   };
 
   return (
@@ -73,18 +104,7 @@ export const UserTable: React.FC<UserTableProps> = ({
             <EmptyState />
           ) : (
             filteredUsers.map((user) => (
-              <UserTableRow
-                key={user.id}
-                user={user}
-                isSelected={selectedUsers.some(selectedUser => selectedUser.id === user.id)}
-                onToggleSelection={toggleUserSelection}
-                onViewDetails={handleViewUserDetails}
-                onManagePermissions={handleManagePermissions}
-                onToggleUserActive={handleToggleUserStatus}
-                onDeleteUser={handleDeleteUser}
-                onEditUser={handleEditUser}
-                onSendEmail={handleSendEmail}
-              />
+              renderUserRow(user, selectedUsers.some(selectedUser => selectedUser.id === user.id))
             ))
           )}
         </TableBody>

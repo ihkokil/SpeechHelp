@@ -62,7 +62,69 @@ export const useSubscriptionActions = (
     }
   }, [toast]);
 
+  // Update user subscription
+  const handleUpdateSubscription = useCallback(async (
+    userId: string,
+    subscriptionTier: string,
+    subscriptionEndDate: Date,
+    users: User[],
+    setUsers: (users: User[]) => void
+  ) => {
+    if (!userId) return;
+    
+    if (setActionLoading) setActionLoading(true);
+    
+    try {
+      console.log(`Updating user subscription: ${userId} to ${subscriptionTier} until ${subscriptionEndDate}`);
+      
+      // Update the user's subscription details in the database
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ 
+          subscription_tier: subscriptionTier,
+          subscription_end_date: subscriptionEndDate.toISOString()
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Update local state
+      setUsers(
+        users.map(user => 
+          user.id === userId 
+            ? { 
+                ...user, 
+                subscription_tier: subscriptionTier,
+                subscription_end_date: subscriptionEndDate.toISOString()
+              } 
+            : user
+        )
+      );
+      
+      toast({
+        title: 'Subscription Updated',
+        description: `User's subscription has been updated to ${subscriptionTier}.`,
+      });
+      
+      return data;
+    } catch (error) {
+      console.error('Error updating user subscription:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update user subscription. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      if (setActionLoading) setActionLoading(false);
+    }
+  }, [toast]);
+
   return {
-    handleToggleUserStatus
+    handleToggleUserStatus,
+    handleUpdateSubscription
   };
 };

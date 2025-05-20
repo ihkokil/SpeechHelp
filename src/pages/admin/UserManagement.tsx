@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
 import { SearchToolbar } from '@/components/admin/users/management/SearchToolbar';
@@ -9,6 +9,7 @@ import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawe
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
 import EditUserDialog from '@/components/admin/users/edit-user/EditUserDialog';
 import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
+import UpdateSubscriptionDialog from '@/components/admin/users/management/components/UpdateSubscriptionDialog';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/components/admin/users/types';
 
@@ -50,7 +51,11 @@ const UserManagement = () => {
     addUser,
     isEditUserDialogOpen,
     setIsEditUserDialogOpen,
+    handleUpdateSubscription, // New function from useUserManagement
   } = useUserManagement();
+  
+  // New state for subscription dialog
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   
   const { toast } = useToast();
   
@@ -83,6 +88,21 @@ const UserManagement = () => {
       title: "User updated",
       description: `${updatedUser.email} has been updated successfully.`
     });
+  };
+
+  // Handler for opening the subscription dialog
+  const handleOpenSubscriptionDialog = (user: User) => {
+    console.log("Opening subscription dialog for user:", user.id);
+    setSelectedUser(user);
+    setIsSubscriptionDialogOpen(true);
+  };
+
+  // Handler for when a subscription is updated
+  const handleSubscriptionUpdated = (userId: string, tier: string, endDate: Date) => {
+    if (handleUpdateSubscription) {
+      handleUpdateSubscription(userId, tier, endDate, users, setUsers);
+    }
+    setIsSubscriptionDialogOpen(false);
   };
 
   return (
@@ -126,6 +146,7 @@ const UserManagement = () => {
             handleDeleteUser={handleDeleteUser}
             handleEditUser={handleEditUser}
             handleSendEmail={handleSendEmail}
+            handleUpdateSubscription={handleOpenSubscriptionDialog}
           />
         </CardContent>
       </Card>
@@ -167,6 +188,16 @@ const UserManagement = () => {
           open={isPermissionsDialogOpen}
           onOpenChange={setIsPermissionsDialogOpen}
           onPermissionsUpdated={(updatedUser) => handlePermissionsUpdated(updatedUser)}
+        />
+      )}
+
+      {/* Add the new subscription dialog */}
+      {isSubscriptionDialogOpen && selectedUser && (
+        <UpdateSubscriptionDialog
+          user={selectedUser}
+          open={isSubscriptionDialogOpen}
+          onOpenChange={setIsSubscriptionDialogOpen}
+          onSubscriptionUpdated={handleSubscriptionUpdated}
         />
       )}
     </div>
