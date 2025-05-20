@@ -6,7 +6,7 @@ import { useUserSearch } from './hooks/useUserSearch';
 import UserTableHeader from './components/UserTableHeader';
 import UserTableRow from './components/UserTableRow';
 import { LoadingState, EmptyState } from './components/UserTableStates';
-import { cn } from '@/lib/utils'; // Added the import for cn
+import { cn } from '@/lib/utils';
 
 interface UserTableProps {
   users: User[];
@@ -87,7 +87,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                 onToggleSelection={toggleUserSelection}
                 onViewDetails={handleViewUserDetails}
                 onManagePermissions={handleManagePermissions}
-                onToggleUserActive={handleToggleUserStatus}
+                onToggleActive={handleToggleUserStatus}
                 onDeleteUser={handleDeleteUser}
                 onEditUser={handleEditUser}
                 onSendEmail={handleSendEmail}
@@ -97,7 +97,7 @@ export const UserTable: React.FC<UserTableProps> = ({
           )}
         </TableBody>
       </Table>
-      <div className="mt-4 flex justify-between text-sm text-gray-500 p-4">
+      <div className={cn("mt-4 flex justify-between text-sm text-gray-500 p-4")}>
         <div>Showing {filteredUsers.length} of {users.length} users</div>
         <div>
           {selectedUsers.length > 0 && (

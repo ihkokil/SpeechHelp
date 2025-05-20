@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -28,14 +27,14 @@ const UserManagement = () => {
     isLoading,
     isActionLoading,
     selectedUser,
-    setSelectedUser, // Make sure this is destructured from useUserManagement
+    setSelectedUser,
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
     filteredUsers,
     fetchUsers,
     toggleUserSelection,
-    toggleAllUsers,
+    toggleAllUsers: baseToggleAllUsers,
     handleDeleteUsers,
     handleDeleteUser,
     handleToggleUserStatus,
@@ -52,7 +51,7 @@ const UserManagement = () => {
     addUser,
     isEditUserDialogOpen,
     setIsEditUserDialogOpen,
-    handleUpdateSubscription, // From useUserManagement
+    handleUpdateSubscription,
   } = useUserManagement();
   
   // New state for subscription dialog
@@ -106,6 +105,17 @@ const UserManagement = () => {
     setIsSubscriptionDialogOpen(false);
   };
 
+  // Create a wrapped toggle all users function that handles filtered users
+  const toggleAllUsersWithFilter = () => {
+    if (selectedUsers.length === filteredUsers.length) {
+      // If all filtered users are selected, deselect them all
+      setSelectedUsers([]);
+    } else {
+      // Otherwise, select all filtered users
+      setSelectedUsers([...filteredUsers]);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
@@ -134,7 +144,7 @@ const UserManagement = () => {
             isLoading={isLoading}
             selectedUsers={selectedUsers}
             toggleUserSelection={toggleUserSelection}
-            toggleAllUsers={toggleAllUsers} // Passing the function without args
+            toggleAllUsers={toggleAllUsersWithFilter}
             handleViewUserDetails={handleViewUserDetails}
             handleManagePermissions={handleManagePermissions}
             handleToggleUserStatus={handleToggleUserStatus}

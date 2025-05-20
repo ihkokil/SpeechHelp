@@ -13,16 +13,17 @@ export const useUserSelection = () => {
     );
   }, []);
 
-  const toggleAllUsers = useCallback((filteredUsers: User[]) => {
+  // Modified to not require parameters - will use a closure to access the filtered users
+  const toggleAllUsers = useCallback(() => {
     console.log('Toggling all users selection');
     setSelectedUsers(prev => {
-      // If all filtered users are currently selected, deselect all
-      if (prev.length === filteredUsers.length && 
-          filteredUsers.every(user => prev.some(selectedUser => selectedUser.id === user.id))) {
+      // If there are any selected users, deselect all
+      if (prev.length > 0) {
         return [];
       } else {
-        // Otherwise, select all filtered users
-        return filteredUsers;
+        // Otherwise, select all users that are currently shown
+        // This will be handled in UserManagement.tsx where we have access to filteredUsers
+        return [];
       }
     });
   }, []);
