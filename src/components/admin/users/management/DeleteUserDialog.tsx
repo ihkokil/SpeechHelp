@@ -3,42 +3,49 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
+import { User } from '../types';
 
 interface DeleteUserDialogProps {
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
+  open: boolean;
+  onClose: () => void;
   onConfirm: () => void;
+  users: User[];
   isLoading: boolean;
-  selectedCount: number;
 }
 
 export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
-  isOpen,
-  onOpenChange,
+  open,
+  onClose,
   onConfirm,
-  isLoading,
-  selectedCount
+  users,
+  isLoading
 }) => {
+  const userCount = users.length;
+  const isSingleUser = userCount === 1;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete Users</DialogTitle>
+          <DialogTitle>{isSingleUser ? 'Delete User' : 'Delete Users'}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete {selectedCount} selected users? This action cannot be undone.
+            {isSingleUser
+              ? `Are you sure you want to delete ${users[0]?.email || 'this user'}? This action cannot be undone.`
+              : `Are you sure you want to delete ${userCount} selected users? This action cannot be undone.`
+            }
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button 
             variant="outline" 
-            onClick={() => onOpenChange(false)}
+            onClick={onClose}
             disabled={isLoading}
           >
             Cancel
           </Button>
           <Button 
             variant="destructive" 
-            onClick={() => onConfirm()}
+            onClick={onConfirm}
             disabled={isLoading}
           >
             {isLoading ? (

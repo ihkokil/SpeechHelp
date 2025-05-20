@@ -7,24 +7,24 @@ import { useFetchUsers } from './hooks/useFetchUsers';
 import { useUserActions } from './hooks/useUserActions';
 import { useUserManagementUIState } from './hooks/useUserManagementUIState';
 import { Table, TableBody } from '@/components/ui/table';
-import SearchToolbar from './SearchToolbar';
+import { SearchToolbar } from './SearchToolbar';
 import UserTableHeader from './components/UserTableHeader';
 import UserTableRow from './components/UserTableRow';
-import UserTableStates from './components/UserTableStates';
+import { LoadingState, EmptyState } from './components/UserTableStates';
 import UserDetailsDrawer from '../details/UserDetailsDrawer';
-import DeleteUserDialog from './DeleteUserDialog';
-import { AdminPermissionsDialog } from '../AdminPermissionsDialog';
+import { DeleteUserDialog } from './DeleteUserDialog';
+import AdminPermissionsDialog from '../AdminPermissionsDialog';
 import ExtendSubscriptionDialog from './components/ExtendSubscriptionDialog';
 
 const UserTable = () => {
   // Fetch and manage users data
-  const { users, setUsers, isLoading, error, refetch } = useFetchUsers();
-  const { filteredUsers, searchQuery, setSearchQuery } = useUserSearch(users);
+  const { users, setUsers, isLoading, error, fetchUsers } = useFetchUsers();
+  const { filteredUsers, searchTerm, setSearchTerm } = useUserSearch(users);
   const { 
     selectedUsers, 
     toggleUserSelection, 
     toggleAllUsers, 
-    areAllUsersSelected 
+    isAllSelected 
   } = useUserSelection(filteredUsers);
   
   // Custom hook for UI state management
@@ -35,8 +35,6 @@ const UserTable = () => {
     setIsDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
-    isSubscriptionDialogOpen,
-    setIsSubscriptionDialogOpen,
     selectedUser,
     setSelectedUser
   } = useUserManagementUIState();
@@ -52,7 +50,9 @@ const UserTable = () => {
     handleToggleUserStatus,
     handleOpenSubscriptionDialog,
     handleSubscriptionUpdated,
-    isActionLoading
+    isActionLoading,
+    isSubscriptionDialogOpen,
+    setIsSubscriptionDialogOpen
   } = useUserActions();
 
   // Global user context
@@ -93,30 +93,34 @@ const UserTable = () => {
   //   return <div className="flex justify-center p-4">Error loading users: {error.message}</div>;
   // }
 
+  // Create a function to render table states (loading, empty, error)
+  const renderTableStates = () => {
+    if (isLoading) return <LoadingState />;
+    if (filteredUsers.length === 0) return <EmptyState />;
+    return null;
+  };
+
   return (
     <div className="space-y-4">
       <SearchToolbar 
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        searchQuery={searchTerm}
+        onSearchChange={setSearchTerm}
         selectedCount={selectedUsers.length}
         onDeleteSelected={() => setIsDeleteDialogOpen(true)}
-        onRefresh={refetch}
+        onRefresh={fetchUsers}
         isLoading={isLoading}
       />
       
       <div className="rounded-md border">
         <Table>
           <UserTableHeader 
-            isAllSelected={areAllUsersSelected}
-            onToggleSelectAll={() => toggleAllUsers(!areAllUsersSelected)}
+            isAllSelected={isAllSelected}
+            onToggleSelectAll={() => toggleAllUsers()}
+            disabled={isLoading || filteredUsers.length === 0}
+            selectedCount={selectedUsers.length}
           />
           <TableBody>
-            <UserTableStates 
-              isLoading={isLoading} 
-              isEmpty={filteredUsers.length === 0} 
-              error={error}
-              searchQuery={searchQuery}
-            />
+            {renderTableStates()}
             {!isLoading && filteredUsers.map(user => (
               <UserTableRow
                 key={user.id}

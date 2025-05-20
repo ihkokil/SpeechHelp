@@ -12,36 +12,24 @@ import {
   FileUp,
   UserPlus 
 } from 'lucide-react';
-import { User } from '../types';
 
 interface SearchToolbarProps {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  selectedCount: number;
+  onDeleteSelected: () => void;
+  onRefresh: () => void;
   isLoading: boolean;
-  fetchUsers: () => void;
-  selectedUsers: User[];  // Updated from string[] to User[]
-  isActionLoading: boolean;
-  setIsDeleteDialogOpen: (isOpen: boolean) => void;
-  setIsAddUserDialogOpen: (isOpen: boolean) => void;
 }
 
 export const SearchToolbar: React.FC<SearchToolbarProps> = ({
-  searchTerm,
-  setSearchTerm,
-  isLoading,
-  fetchUsers,
-  selectedUsers,
-  isActionLoading,
-  setIsDeleteDialogOpen,
-  setIsAddUserDialogOpen
+  searchQuery,
+  onSearchChange,
+  selectedCount,
+  onDeleteSelected,
+  onRefresh,
+  isLoading
 }) => {
-  const handleAddUserClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("Add User button clicked, opening dialog");
-    setIsAddUserDialogOpen(true);
-  };
-
   return (
     <div className="mb-4 flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
       <div className="flex w-full items-center space-x-2 sm:w-auto">
@@ -51,14 +39,14 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
             type="search"
             placeholder="Search users..."
             className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
         <Button 
           variant="outline" 
           size="icon" 
-          onClick={fetchUsers}
+          onClick={onRefresh}
           disabled={isLoading}
         >
           {isLoading ? (
@@ -71,13 +59,12 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
       </div>
       
       <div className="flex items-center space-x-2">
-        {selectedUsers.length > 0 && (
+        {selectedCount > 0 && (
           <>
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => setIsDeleteDialogOpen(true)} 
-              disabled={isActionLoading}
+              onClick={onDeleteSelected}
             >
               <UserMinus className="mr-2 h-4 w-4" />
               Delete
@@ -85,7 +72,6 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
             <Button 
               variant="outline" 
               size="sm"
-              disabled={isActionLoading}
             >
               <Mail className="mr-2 h-4 w-4" />
               Email
@@ -100,7 +86,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
           <FileUp className="mr-2 h-4 w-4" />
           Import
         </Button>
-        <Button onClick={handleAddUserClick} type="button">
+        <Button>
           <UserPlus className="mr-2 h-4 w-4" />
           Add User
         </Button>
