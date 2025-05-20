@@ -39,7 +39,6 @@ const UserManagement = () => {
     handleToggleUserStatus,
     handleViewUserDetails,
     handleCloseUserDetails,
-    handleToggleUserSubscription,
     handleManagePermissions,
     handlePermissionsUpdated,
     handleBulkDelete,
@@ -118,7 +117,6 @@ const UserManagement = () => {
             handleViewUserDetails={handleViewUserDetails}
             handleManagePermissions={handleManagePermissions}
             handleToggleUserStatus={handleToggleUserStatus}
-            handleToggleUserSubscription={handleToggleUserSubscription}
             setSelectedUsers={setSelectedUsers}
             setIsDeleteDialogOpen={setIsDeleteDialogOpen}
             searchTerm={searchTerm}

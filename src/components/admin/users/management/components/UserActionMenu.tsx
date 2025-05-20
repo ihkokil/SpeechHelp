@@ -11,7 +11,6 @@ import {
   Eye,
   UserCheck,
   Shield,
-  Clock,
   Edit,
 } from 'lucide-react';
 
@@ -20,7 +19,7 @@ interface UserActionMenuProps {
   onViewDetails: (user: User) => void;
   onManagePermissions: (user: User) => void;
   onToggleUserActive: (userId: string, isActive: boolean) => void;
-  onExtendSubscription: (userId: string) => void;
+  onExtendSubscription?: (userId: string) => void;
   onDeleteUser: (userId: string) => void;
   onEditUser?: (user: User) => void;
   onSendEmail?: (user: User) => void;
@@ -31,7 +30,6 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onViewDetails,
   onManagePermissions,
   onToggleUserActive,
-  onExtendSubscription,
   onDeleteUser,
   onEditUser,
   onSendEmail
@@ -53,12 +51,6 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     e.preventDefault();
     e.stopPropagation();
     onToggleUserActive(user.id, user.is_active !== false);
-  };
-  
-  const handleExtendSubscription = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onExtendSubscription(user.id);
   };
   
   const handleDeleteUser = (e: React.MouseEvent) => {
@@ -107,10 +99,6 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         <DropdownMenuItem onClick={handleManagePermissions} id={`manage-permissions-${user.id}`}>
           <Shield className="mr-2 h-4 w-4" />
           <span>Manage Permissions</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleExtendSubscription} id={`extend-subscription-${user.id}`}>
-          <Clock className="mr-2 h-4 w-4" />
-          <span>Manage Subscription</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSendEmail} id={`send-email-${user.id}`}>
           <Mail className="mr-2 h-4 w-4" />

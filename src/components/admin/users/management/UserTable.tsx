@@ -16,7 +16,6 @@ interface UserTableProps {
   handleViewUserDetails: (user: User) => void;
   handleManagePermissions: (user: User) => void;
   handleToggleUserStatus: (userId: string, isActive: boolean) => void;
-  handleToggleUserSubscription: (userId: string) => void;
   setSelectedUsers: (users: User[]) => void;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
   searchTerm: string;
@@ -37,7 +36,6 @@ export const UserTable: React.FC<UserTableProps> = ({
   handleViewUserDetails, 
   handleManagePermissions, 
   handleToggleUserStatus, 
-  handleToggleUserSubscription, 
   setSelectedUsers, 
   setIsDeleteDialogOpen,
   searchTerm,
@@ -83,7 +81,6 @@ export const UserTable: React.FC<UserTableProps> = ({
                 onViewDetails={handleViewUserDetails}
                 onManagePermissions={handleManagePermissions}
                 onToggleUserActive={handleToggleUserStatus}
-                onExtendSubscription={handleToggleUserSubscription}
                 onDeleteUser={handleDeleteUser}
                 onEditUser={handleEditUser}
                 onSendEmail={handleSendEmail}
