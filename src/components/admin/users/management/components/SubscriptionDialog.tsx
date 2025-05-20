@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon, AlertCircle } from 'lucide-react';
 import { User } from '../../types';
-import { SubscriptionPlan } from '@/lib/plan_rules';
+import { SubscriptionPlan, PLAN_RULES } from '@/lib/plan_rules';
 import { useSubscriptionActions } from '../hooks/user-actions/useSubscriptionActions';
 import { useUserManagementData } from '../hooks/useUserManagementData';
 
@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 
 import {
@@ -31,6 +32,7 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 interface SubscriptionDialogProps {
   user: User;
@@ -73,6 +75,20 @@ const SubscriptionDialog: React.FC<SubscriptionDialogProps> = ({
   
   // Get all available plan types
   const planOptions = Object.values(SubscriptionPlan);
+
+  // Get plan badge color
+  const getPlanBadgeColor = (planType: SubscriptionPlan) => {
+    switch(planType) {
+      case SubscriptionPlan.FREE_TRIAL:
+        return 'bg-gray-200 text-gray-800';
+      case SubscriptionPlan.PREMIUM:
+        return 'bg-blue-100 text-blue-800';
+      case SubscriptionPlan.PRO:
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-200 text-gray-800';
+    }
+  };
 
   // Handle subscription update
   const handleUpdateSubscription = async () => {
@@ -125,37 +141,48 @@ const SubscriptionDialog: React.FC<SubscriptionDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <DialogTitle>Update User Subscription</DialogTitle>
+          <DialogDescription>
+            Change the user's subscription plan and end date
+          </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="plan" className="text-right text-sm">
-              Plan
-            </label>
-            <Select 
-              value={selectedPlan} 
-              onValueChange={(value) => setSelectedPlan(value as SubscriptionPlan)}
-            >
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select plan" />
-              </SelectTrigger>
-              <SelectContent>
-                {planOptions.map((plan) => (
-                  <SelectItem key={plan} value={plan}>
-                    {plan === SubscriptionPlan.FREE_TRIAL 
-                      ? 'Free Trial' 
-                      : plan === SubscriptionPlan.PREMIUM 
-                        ? 'Premium' 
-                        : 'Pro'}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="grid gap-6 py-4">
+          <div className="space-y-4">
+            <div className="text-sm font-medium">Select a plan:</div>
+            <div className="grid grid-cols-1 gap-3">
+              {planOptions.map((plan) => (
+                <div 
+                  key={plan}
+                  className={cn(
+                    "flex items-center justify-between p-3 border rounded-md cursor-pointer transition-colors",
+                    selectedPlan === plan 
+                      ? "border-blue-500 bg-blue-50" 
+                      : "hover:bg-slate-50"
+                  )}
+                  onClick={() => setSelectedPlan(plan)}
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium">{PLAN_RULES[plan].displayName}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {plan === SubscriptionPlan.FREE_TRIAL 
+                        ? 'Limited features, 7-day free trial' 
+                        : plan === SubscriptionPlan.PREMIUM 
+                          ? 'Standard features, unlimited access' 
+                          : 'All features, priority support'}
+                    </span>
+                  </div>
+                  <Badge className={getPlanBadgeColor(plan)}>
+                    {PLAN_RULES[plan].displayName}
+                  </Badge>
+                </div>
+              ))}
+            </div>
           </div>
+          
           <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="endDate" className="text-right text-sm">
+            <label htmlFor="endDate" className="text-sm">
               End Date
             </label>
             <div className="col-span-3">

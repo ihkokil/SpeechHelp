@@ -95,8 +95,8 @@ export const useSubscriptionActions = (
       const { data, error } = await supabase
         .from('profiles')
         .update({ 
-          subscription_plan: 'premium', 
-          subscription_tier: 'premium',
+          subscription_plan: SubscriptionPlan.PREMIUM, 
+          subscription_tier: SubscriptionPlan.PREMIUM,
           subscription_status: 'active',
           subscription_end_date: endDate.toISOString(),
           updated_at: new Date().toISOString()
@@ -116,8 +116,8 @@ export const useSubscriptionActions = (
             ? { 
                 ...user, 
                 subscription_status: 'active',
-                subscription_plan: 'premium',
-                subscription_tier: 'premium',
+                subscription_plan: SubscriptionPlan.PREMIUM,
+                subscription_tier: SubscriptionPlan.PREMIUM,
                 subscription_end_date: endDate.toISOString() 
               } 
             : user
@@ -178,8 +178,9 @@ export const useSubscriptionActions = (
       const updatePayload = {
         subscription_plan: planType,
         subscription_tier: planType,
-        subscription_status: 'active',
+        subscription_status: planType === SubscriptionPlan.FREE_TRIAL ? 'trial' : 'active',
         subscription_end_date: formattedEndDate,
+        subscription_start_date: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
       
@@ -211,7 +212,7 @@ export const useSubscriptionActions = (
                 ...user, 
                 subscription_plan: planType,
                 subscription_tier: planType,
-                subscription_status: 'active',
+                subscription_status: planType === SubscriptionPlan.FREE_TRIAL ? 'trial' : 'active',
                 subscription_end_date: formattedEndDate
               } 
             : user

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon, AlertCircle } from 'lucide-react';
+import { CalendarIcon, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -26,6 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useUserManagementData } from '../management/hooks/useUserManagementData';
+import { Badge } from '@/components/ui/badge';
 
 interface UserBillingProps {
   user: User;
@@ -78,6 +79,20 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     return plan ? PLAN_RULES[plan].displayName : planType || 'Free Plan';
   };
 
+  // Get plan badge color
+  const getPlanBadgeColor = (planType: string) => {
+    switch(planType) {
+      case SubscriptionPlan.FREE_TRIAL:
+        return 'bg-gray-200 text-gray-800';
+      case SubscriptionPlan.PREMIUM:
+        return 'bg-blue-100 text-blue-800';
+      case SubscriptionPlan.PRO:
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-200 text-gray-800';
+    }
+  };
+
   // Handle subscription update
   const handleUpdateSubscription = async () => {
     if (!selectedDate) {
@@ -127,20 +142,28 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Subscription Information</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            <span>Subscription Information</span>
+            <Badge 
+              className={cn("ml-2", getPlanBadgeColor(user.subscription_tier || ''))}
+            >
+              {getPlanDisplayName(user.subscription_tier || '')}
+            </Badge>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Current Plan</p>
-              <p className="text-sm">
-                {getPlanDisplayName(user.subscription_tier || '')}
-              </p>
-            </div>
-            <div>
               <p className="text-sm font-medium text-muted-foreground">Status</p>
-              <p className="text-sm">
-                {subscriptionStatus}
+              <p className="text-sm flex items-center">
+                {subscriptionStatus === 'Active' ? (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-1" />
+                    <span className="text-green-600">Active</span>
+                  </>
+                ) : (
+                  <span className="text-gray-500">Inactive</span>
+                )}
               </p>
             </div>
             <div>
@@ -237,11 +260,32 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Billing History</CardTitle>
+          <CardTitle>Subscription Plans</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md bg-muted/50 p-6 text-center">
-            <p className="text-muted-foreground">No billing records available.</p>
+          <div className="space-y-4">
+            {Object.values(SubscriptionPlan).map((plan) => (
+              <div key={plan} className={cn(
+                "p-4 border rounded-lg",
+                user.subscription_tier === plan ? "border-blue-500 bg-blue-50" : ""
+              )}>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-semibold">{PLAN_RULES[plan].displayName}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {plan === SubscriptionPlan.FREE_TRIAL 
+                        ? 'Limited features, 7-day access' 
+                        : plan === SubscriptionPlan.PREMIUM 
+                          ? 'Standard features, unlimited access' 
+                          : 'All features, priority support'}
+                    </p>
+                  </div>
+                  <Badge className={getPlanBadgeColor(plan)}>
+                    {user.subscription_tier === plan ? 'Current Plan' : ''}
+                  </Badge>
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>

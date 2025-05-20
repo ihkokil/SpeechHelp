@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 import Stripe from "https://esm.sh/stripe@13.2.0?target=deno";
@@ -43,54 +42,54 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Helper function to determine plan type from Stripe product metadata or price
 const determinePlanType = async (subscription: any): Promise<string> => {
-	try {
-		// Default to free_trial if we can't determine
-		let planType = 'free_trial';
-		
-		if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
-			// First try to get it from product metadata
-			const productId = subscription.items.data[0].price.product as string;
-			const product = await stripe.products.retrieve(productId);
-			
-			if (product.metadata && product.metadata.plan_type) {
-				planType = product.metadata.plan_type.toLowerCase();
-				log(`Found plan type from product metadata: ${planType}`);
-				return planType;
-			}
-			
-			// If not in metadata, try to determine from the price or product name
-			if (product.name) {
-				const name = product.name.toLowerCase();
-				if (name.includes('pro')) {
-					return 'pro';
-				} else if (name.includes('premium')) {
-					return 'premium';
-				} else if (name.includes('free') || name.includes('trial')) {
-					return 'free_trial';
-				}
-			}
-			
-			// Try to determine from price
-			const price = await stripe.prices.retrieve(subscription.items.data[0].price.id);
-			const amount = price.unit_amount || 0;
-			
-			// Determine plan type based on price
-			if (amount <= 0) {
-				planType = 'free_trial';
-			} else if (amount <= 1500) {
-				planType = 'premium';
-			} else {
-				planType = 'pro';
-			}
-			
-			log(`Determined plan type from price: ${planType} (amount: ${amount})`);
-		}
-		
-		return planType;
-	} catch (error) {
-		log('Error determining plan type:', error);
-		return 'free_trial'; // Default fallback
-	}
+  try {
+    // Default to free_trial if we can't determine
+    let planType = 'free_trial';
+    
+    if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
+      // First try to get it from product metadata
+      const productId = subscription.items.data[0].price.product as string;
+      const product = await stripe.products.retrieve(productId);
+      
+      if (product.metadata && product.metadata.plan_type) {
+        planType = product.metadata.plan_type.toLowerCase();
+        log(`Found plan type from product metadata: ${planType}`);
+        return planType;
+      }
+      
+      // If not in metadata, try to determine from the price or product name
+      if (product.name) {
+        const name = product.name.toLowerCase();
+        if (name.includes('pro')) {
+          return 'pro';
+        } else if (name.includes('premium')) {
+          return 'premium';
+        } else if (name.includes('free') || name.includes('trial')) {
+          return 'free_trial';
+        }
+      }
+      
+      // Try to determine from price
+      const price = await stripe.prices.retrieve(subscription.items.data[0].price.id);
+      const amount = price.unit_amount || 0;
+      
+      // Determine plan type based on price
+      if (amount <= 0) {
+        planType = 'free_trial';
+      } else if (amount <= 1500) {
+        planType = 'premium';
+      } else {
+        planType = 'pro';
+      }
+      
+      log(`Determined plan type from price: ${planType} (amount: ${amount})`);
+    }
+    
+    return planType;
+  } catch (error) {
+    log('Error determining plan type:', error);
+    return 'free_trial'; // Default fallback
+  }
 };
 
 serve(async (req) => {
