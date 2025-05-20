@@ -1,133 +1,127 @@
 
 import React, { useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import UserTable from '@/components/admin/users/management/UserTable';
-import SearchToolbar from '@/components/admin/users/management/SearchToolbar';
-import DeleteUserDialog from '@/components/admin/users/management/DeleteUserDialog';
-import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
+import { SearchToolbar } from '@/components/admin/users/management/SearchToolbar';
+import { UserTable } from '@/components/admin/users/management/UserTable';
+import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
-import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
+import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
 import EditUserDialog from '@/components/admin/users/edit-user/EditUserDialog';
-import ExtendSubscriptionDialog from '@/components/admin/users/management/components/ExtendSubscriptionDialog';
+import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
+import { useToast } from '@/hooks/use-toast';
+import { User } from '@/components/admin/users/types';
 
-const UserManagement: React.FC = () => {
-  // Import the custom hook to handle User Management functionality
+const UserManagement = () => {
   const {
-    // Data states
-    users,
-    setUsers,
-    filteredUsers,
-    selectedUsers,
     searchTerm,
     setSearchTerm,
-    isLoading,
-    isActionLoading,
-    
-    // UI states
+    selectedUsers,
+    setSelectedUsers,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
     isAddUserDialogOpen,
     setIsAddUserDialogOpen,
-    isDetailsOpen,
+    users,
+    setUsers,
+    isLoading,
+    isActionLoading,
     selectedUser,
+    isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
-    isEditUserDialogOpen,
-    setIsEditUserDialogOpen,
-    isExtendSubscriptionDialogOpen,
-    setIsExtendSubscriptionDialogOpen,
-    
-    // User selection actions
+    filteredUsers,
+    fetchUsers,
     toggleUserSelection,
     toggleAllUsers,
-    
-    // CRUD operations
-    fetchUsers,
     handleDeleteUsers,
     handleDeleteUser,
-    
-    // User actions
+    handleToggleUserStatus,
     handleViewUserDetails,
     handleCloseUserDetails,
-    handleToggleUserStatus,
     handleToggleUserSubscription,
     handleManagePermissions,
     handlePermissionsUpdated,
-    handleEditUser,
-    handleSendEmail,
-    handleManageSubscription,
-    handleExtendSubscription,
-    
-    // Bulk actions
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
-    
-    // User creation
+    handleEditUser,
+    handleSendEmail,
+    cleanup,
     addUser,
-    
-    // Cleanup
-    cleanup
+    isEditUserDialogOpen,
+    setIsEditUserDialogOpen,
   } = useUserManagement();
   
-  // Fetch users on initial load
+  const { toast } = useToast();
+  
+  // Clean up all state when component unmounts
   useEffect(() => {
-    fetchUsers();
-    
-    // Clean up when component unmounts
-    return cleanup;
-  }, [fetchUsers, cleanup]);
+    return () => {
+      cleanup();
+    };
+  }, [cleanup]);
+
+  // Handler for when a user is added via the AddUserDialog
+  const handleUserAdded = (newUser: User) => {
+    console.log("New user added:", newUser);
+    if (addUser) {
+      addUser(newUser);
+      toast({
+        title: "User added",
+        description: `${newUser.email} has been added successfully.`
+      });
+    }
+  };
+
+  // Handler for when a user is updated via the EditUserDialog
+  const handleUserUpdated = (updatedUser: User) => {
+    console.log("User updated:", updatedUser);
+    setUsers(prevUsers => 
+      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
+    );
+    toast({
+      title: "User updated",
+      description: `${updatedUser.email} has been updated successfully.`
+    });
+  };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">View and manage all platform users</p>
-        </div>
-        <div className="hidden md:block">
-          <Button onClick={() => setIsAddUserDialogOpen(true)}>Add New User</Button>
-        </div>
+    <div className="space-y-6">
+      <div className="flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
+        <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
       </div>
       
-      <Separator className="mb-6" />
-      
-      {/* Search and Actions Toolbar */}
-      <SearchToolbar 
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        isLoading={isLoading}
-        isActionLoading={isActionLoading}
-        selectedCount={selectedUsers.length}
-        onRefresh={fetchUsers}
-        onAddUser={() => setIsAddUserDialogOpen(true)}
-        onDeleteSelected={() => selectedUsers.length > 0 && setIsDeleteDialogOpen(true)}
-        onActivateSelected={handleBulkActivate}
-        onDeactivateSelected={handleBulkDeactivate}
-      />
-      
-      {/* User Listing Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Platform Users ({users.length})</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle>Users</CardTitle>
+          <CardDescription>Manage your application users, their roles, and permissions.</CardDescription>
         </CardHeader>
         <CardContent>
-          <UserTable
-            users={users}
+          <SearchToolbar 
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            isLoading={isLoading}
+            fetchUsers={fetchUsers}
+            selectedUsers={selectedUsers}
+            isActionLoading={isActionLoading}
+            setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+            setIsAddUserDialogOpen={setIsAddUserDialogOpen}
+          />
+          
+          <UserTable 
+            users={filteredUsers}
             isLoading={isLoading}
             selectedUsers={selectedUsers}
-            searchTerm={searchTerm}
             toggleUserSelection={toggleUserSelection}
             toggleAllUsers={toggleAllUsers}
             handleViewUserDetails={handleViewUserDetails}
             handleManagePermissions={handleManagePermissions}
             handleToggleUserStatus={handleToggleUserStatus}
-            handleToggleUserSubscription={handleManageSubscription}
-            setSelectedUsers={toggleAllUsers}
+            handleToggleUserSubscription={handleToggleUserSubscription}
+            setSelectedUsers={setSelectedUsers}
             setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+            searchTerm={searchTerm}
             handleBulkDelete={handleBulkDelete}
             handleBulkActivate={handleBulkActivate}
             handleBulkDeactivate={handleBulkDeactivate}
@@ -138,51 +132,44 @@ const UserManagement: React.FC = () => {
         </CardContent>
       </Card>
       
-      {/* Dialogs and Modals */}
-      <DeleteUserDialog
-        open={isDeleteDialogOpen}
+      <DeleteUserDialog 
+        isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDeleteUsers}
         isLoading={isActionLoading}
         selectedCount={selectedUsers.length}
       />
-      
-      <AddUserDialog
-        open={isAddUserDialogOpen}
-        onOpenChange={setIsAddUserDialogOpen}
-        onUserAdded={addUser}
-      />
-      
-      {selectedUser && (
-        <>
-          <UserDetailsDrawer
-            user={selectedUser}
-            open={isDetailsOpen}
-            onClose={handleCloseUserDetails}
-          />
-          
-          <AdminPermissionsDialog
-            user={selectedUser}
-            open={isPermissionsDialogOpen}
-            onOpenChange={setIsPermissionsDialogOpen}
-            onSave={(updatedUser) => handlePermissionsUpdated(updatedUser)}
-          />
 
-          <EditUserDialog 
-            user={selectedUser}
-            open={isEditUserDialogOpen}
-            onOpenChange={setIsEditUserDialogOpen}
-            onUserUpdated={(user) => fetchUsers()}
-          />
-          
-          <ExtendSubscriptionDialog
-            user={selectedUser}
-            open={isExtendSubscriptionDialogOpen}
-            onOpenChange={setIsExtendSubscriptionDialogOpen}
-            onConfirm={(userId, days, plan) => handleExtendSubscription(userId, days, plan, users, setUsers)}
-            isLoading={isActionLoading}
-          />
-        </>
+      {selectedUser && (
+        <UserDetailsDrawer 
+          user={selectedUser} 
+          open={isDetailsOpen} 
+          onClose={handleCloseUserDetails} 
+        />
+      )}
+      
+      <AddUserDialog 
+        open={isAddUserDialogOpen} 
+        onOpenChange={setIsAddUserDialogOpen} 
+        onUserAdded={handleUserAdded}
+      />
+
+      {isEditUserDialogOpen && selectedUser && (
+        <EditUserDialog
+          user={selectedUser}
+          open={isEditUserDialogOpen}
+          onOpenChange={setIsEditUserDialogOpen}
+          onUserUpdated={handleUserUpdated}
+        />
+      )}
+
+      {isPermissionsDialogOpen && selectedUser && (
+        <AdminPermissionsDialog
+          user={selectedUser}
+          open={isPermissionsDialogOpen}
+          onOpenChange={setIsPermissionsDialogOpen}
+          onPermissionsUpdated={(updatedUser) => handlePermissionsUpdated(updatedUser)}
+        />
       )}
     </div>
   );
