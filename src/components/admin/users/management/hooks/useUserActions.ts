@@ -15,6 +15,7 @@ export const useUserActions = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   
   // Initialize hooks with necessary parameters
   const { 
@@ -52,6 +53,17 @@ export const useUserActions = () => {
     setSelectedUser(user);
     setIsPermissionsDialogOpen(true);
   }, []);
+  
+  // Manage user subscription handler
+  const handleManageSubscription = useCallback((userId: string) => {
+    const user = users.find(u => u.id === userId);
+    if (user) {
+      setSelectedUser(user);
+      setIsSubscriptionDialogOpen(true);
+    } else {
+      console.error(`User with ID ${userId} not found`);
+    }
+  }, [users]);
   
   // Handle permissions updated
   const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[] = [], setUsers: ((users: User[]) => void) | null = null) => {
@@ -121,6 +133,7 @@ export const useUserActions = () => {
     handleToggleUserStatus,
     handleToggleUserSubscription,
     handleUpdateUserSubscription,
+    handleManageSubscription,
     
     // User details operations
     handleViewUserDetails,
@@ -135,6 +148,8 @@ export const useUserActions = () => {
     selectedUser,
     isDetailsOpen,
     isPermissionsDialogOpen,
-    setIsPermissionsDialogOpen
+    setIsPermissionsDialogOpen,
+    isSubscriptionDialogOpen,
+    setIsSubscriptionDialogOpen
   };
 };

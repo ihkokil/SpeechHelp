@@ -156,13 +156,18 @@ export const useSubscriptionActions = (
     if (setActionLoading) setActionLoading(true);
     
     try {
+      console.log('Updating subscription with:', { userId, planType, endDate });
+      
       // Validate inputs
       if (!endDate || isNaN(endDate.getTime())) {
         throw new Error('Please select a valid end date');
       }
 
-      // Ensure the end date is in the future
-      if (endDate <= new Date()) {
+      // Ensure the end date is in the future (only the date part matters)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (endDate < today) {
         throw new Error('End date must be in the future');
       }
       
@@ -178,6 +183,8 @@ export const useSubscriptionActions = (
         updated_at: new Date().toISOString()
       };
       
+      console.log('Update payload:', updatePayload);
+      
       // Update subscription in the database
       const { data, error } = await supabase
         .from('profiles')
@@ -186,12 +193,15 @@ export const useSubscriptionActions = (
         .select();
       
       if (error) {
+        console.error('Supabase error:', error);
         throw error;
       }
       
       if (!data || data.length === 0) {
         throw new Error('No data returned after update');
       }
+      
+      console.log('Update successful, data:', data);
       
       // Update local state
       setUsers(
