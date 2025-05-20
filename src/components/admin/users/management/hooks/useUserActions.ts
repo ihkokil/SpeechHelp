@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { User } from '../../types';
 import { useBulkActions } from './user-actions/useBulkActions';
 import { useIndividualUserActions } from './user-actions/useIndividualUserActions';
+import { useSubscriptionActions } from './user-actions/useSubscriptionActions';
 import { useToast } from '@/hooks/use-toast';
 
 export const useUserActions = () => {
@@ -24,20 +25,22 @@ export const useUserActions = () => {
   
   const {
     handleToggleUserStatus,
-    handleToggleUserSubscription,
     handleDeleteUser
   } = useIndividualUserActions();
   
+  const {
+    handleToggleUserSubscription,
+    handleUpdateUserSubscription
+  } = useSubscriptionActions();
+  
   // View user details handler
   const handleViewUserDetails = useCallback((user: User) => {
-    console.log("useUserActions: View details called for user:", user.id);
     setSelectedUser(user);
     setIsDetailsOpen(true);
   }, []);
   
   // Close user details handler
   const handleCloseUserDetails = useCallback(() => {
-    console.log("useUserActions: Close details called");
     setIsDetailsOpen(false);
     setTimeout(() => {
       setSelectedUser(null);
@@ -46,15 +49,12 @@ export const useUserActions = () => {
   
   // Manage user permissions handler
   const handleManagePermissions = useCallback((user: User) => {
-    console.log("useUserActions: Manage permissions called for user:", user.id);
     setSelectedUser(user);
     setIsPermissionsDialogOpen(true);
   }, []);
   
   // Handle permissions updated
   const handlePermissionsUpdated = useCallback((updatedUser: User, users: User[] = [], setUsers: ((users: User[]) => void) | null = null) => {
-    console.log('Permissions updated for user:', updatedUser.id);
-    
     // Update the user in the users array if setUsers is provided
     if (setUsers && users.length > 0) {
       setUsers(
@@ -80,7 +80,6 @@ export const useUserActions = () => {
     users: User[] = [], 
     setUsers: ((users: User[]) => void) | null = null
   ) => {
-    console.log('Deleting users:', selectedUsers.map(user => user.id));
     setIsActionLoading(true);
     try {
       // If only one user, use the single user delete method
@@ -121,6 +120,7 @@ export const useUserActions = () => {
     // User subscription and status operations
     handleToggleUserStatus,
     handleToggleUserSubscription,
+    handleUpdateUserSubscription,
     
     // User details operations
     handleViewUserDetails,

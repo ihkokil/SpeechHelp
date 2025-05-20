@@ -44,8 +44,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // Helper function to determine plan type from Stripe product metadata or price
 const determinePlanType = async (subscription: any): Promise<string> => {
 	try {
-		// Default to premium if we can't determine
-		let planType = 'premium';
+		// Default to free_trial if we can't determine
+		let planType = 'free_trial';
 		
 		if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
 			// First try to get it from product metadata
@@ -89,7 +89,7 @@ const determinePlanType = async (subscription: any): Promise<string> => {
 		return planType;
 	} catch (error) {
 		log('Error determining plan type:', error);
-		return 'premium'; // Default fallback
+		return 'free_trial'; // Default fallback
 	}
 };
 

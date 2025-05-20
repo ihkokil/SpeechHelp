@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, AlertCircle } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -25,9 +25,7 @@ import { SubscriptionPlan, PLAN_RULES } from '@/lib/plan_rules';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { useState, useEffect } from 'react';
 import { useUserManagementData } from '../management/hooks/useUserManagementData';
-import { AlertCircle } from 'lucide-react';
 
 interface UserBillingProps {
   user: User;
@@ -91,10 +89,6 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     setIsActionLoading(true);
     
     try {
-      console.log(`Attempting to update subscription for user ${user.id} to ${selectedPlan} until ${selectedDate.toISOString()}`);
-      console.log('Current user data:', user);
-      console.log('Available users in state:', users.length);
-      
       // Ensure the date is in the future
       if (selectedDate <= new Date()) {
         setErrorMessage("Please select a date in the future.");
@@ -118,13 +112,11 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
       );
       
       if (result) {
-        console.log('Subscription update successful:', result);
         setIsOpen(false);
       } else {
         setErrorMessage("Failed to update subscription. Please try again.");
       }
     } catch (error) {
-      console.error('Error in handleUpdateSubscription:', error);
       setErrorMessage(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setIsActionLoading(false);

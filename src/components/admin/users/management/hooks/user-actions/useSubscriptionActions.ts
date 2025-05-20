@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
@@ -21,8 +22,6 @@ export const useSubscriptionActions = (
     if (setActionLoading) setActionLoading(true);
     
     try {
-      console.log(`Toggling user status: ${userId} to ${!isActive}`);
-      
       // Update the user's active status in the database
       const { data, error } = await supabase
         .from('profiles')
@@ -62,20 +61,18 @@ export const useSubscriptionActions = (
     }
   }, [toast]);
 
-  // Toggle user subscription status with days
+  // Extend user subscription by specified number of days
   const handleToggleUserSubscription = useCallback(async (
     userId: string, 
     days: number = 30, 
     users: User[],
     setUsers: (users: User[]) => void
   ) => {
-    if (!userId) return;
+    if (!userId) return null;
     
     if (setActionLoading) setActionLoading(true);
     
     try {
-      console.log(`Toggling user subscription: ${userId} for ${days} days`);
-      
       // Get current user
       const user = users.find(u => u.id === userId);
       if (!user) throw new Error('User not found');
@@ -109,7 +106,6 @@ export const useSubscriptionActions = (
         .single();
       
       if (error) {
-        console.error('Error updating subscription:', error);
         throw error;
       }
       
@@ -155,39 +151,25 @@ export const useSubscriptionActions = (
     users: User[],
     setUsers: (users: User[]) => void
   ) => {
-    if (!userId) {
-      console.error('No userId provided to handleUpdateUserSubscription');
-      return null;
-    }
+    if (!userId) return null;
     
     if (setActionLoading) setActionLoading(true);
     
     try {
-      // Validate inputs to avoid errors
-      if (!Object.values(SubscriptionPlan).includes(planType)) {
-        console.error(`Invalid plan type: ${planType}`);
-        throw new Error(`Invalid plan type: ${planType}`);
-      }
-
+      // Validate inputs
       if (!endDate || isNaN(endDate.getTime())) {
-        console.error('Invalid end date provided:', endDate);
         throw new Error('Please select a valid end date');
       }
 
-      // Make sure the date is in the future
-      const now = new Date();
-      if (endDate <= now) {
-        console.error('End date must be in the future:', endDate);
+      // Ensure the end date is in the future
+      if (endDate <= new Date()) {
         throw new Error('End date must be in the future');
       }
       
-      console.log(`Updating user subscription: ${userId} to plan ${planType} until ${endDate.toISOString()}`);
-      
-      // Format the end date correctly to avoid timezone issues
+      // Format end date to ISO string to avoid timezone issues
       const formattedEndDate = endDate.toISOString();
-      console.log(`Formatted end date: ${formattedEndDate}`);
       
-      // Create update payload with all required fields
+      // Create update payload
       const updatePayload = {
         subscription_plan: planType,
         subscription_tier: planType,
@@ -195,8 +177,6 @@ export const useSubscriptionActions = (
         subscription_end_date: formattedEndDate,
         updated_at: new Date().toISOString()
       };
-      
-      console.log('Update payload:', updatePayload);
       
       // Update subscription in the database
       const { data, error } = await supabase
@@ -206,18 +186,14 @@ export const useSubscriptionActions = (
         .select();
       
       if (error) {
-        console.error('Database error updating subscription:', error);
         throw error;
       }
       
       if (!data || data.length === 0) {
-        console.error('No data returned after update');
         throw new Error('No data returned after update');
       }
       
-      console.log('Update successful, returned data:', data);
-      
-      // Update local state with all updated fields
+      // Update local state
       setUsers(
         users.map(user => 
           user.id === userId 
@@ -235,17 +211,15 @@ export const useSubscriptionActions = (
       toast({
         title: 'Subscription Updated',
         description: `User's subscription has been updated to ${planType} ending on ${endDate.toLocaleDateString()}.`,
-        // Remove the 'success' variant as it's not supported
       });
       
       return data[0];
     } catch (error) {
       console.error('Error updating subscription:', error);
       
-      // More specific error message based on the error
       let errorMessage = 'Failed to update subscription. Please try again.';
       if (error instanceof Error) {
-        errorMessage = `Error: ${error.message}`;
+        errorMessage = error.message;
       }
       
       toast({
