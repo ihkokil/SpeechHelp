@@ -154,7 +154,7 @@ export const useIndividualUserActions = () => {
               ? { 
                   ...user, 
                   subscription_status: 'active',
-                  subscription_tier: 'premium',
+                  subscription_plan: 'premium',
                   subscription_end_date: endDate.toISOString() 
                 } 
               : user

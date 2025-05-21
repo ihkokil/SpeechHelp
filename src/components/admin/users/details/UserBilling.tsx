@@ -21,10 +21,10 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     ? 'Active'
     : 'Inactive';
   
-  // Get plan display name - check both subscription_tier and subscription_plan
+  // Get plan display name - check both subscription_plan and subscription_plan
   const getPlanDisplayName = (user: User) => {
-    // Use subscription_tier if available, otherwise use subscription_plan
-    const planType = user.subscription_tier || user.subscription_plan || '';
+    // Use subscription_plan if available, otherwise use subscription_plan
+    const planType = user.subscription_plan || user.subscription_plan || '';
     
     if (!planType) return 'Free Plan';
     

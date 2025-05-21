@@ -36,9 +36,9 @@ const UpdateSubscriptionDialog: React.FC<UpdateSubscriptionDialogProps> = ({
   onOpenChange,
   onSubscriptionUpdated
 }) => {
-  // Initialize with either subscription_tier or subscription_plan
+  // Initialize with either subscription_plan or subscription_plan
   const [selectedPlan, setSelectedPlan] = useState<string>(
-    user.subscription_tier || user.subscription_plan || SubscriptionPlan.FREE_TRIAL
+    user.subscription_plan || user.subscription_plan || SubscriptionPlan.FREE_TRIAL
   );
   
   const [endDate, setEndDate] = useState<Date | undefined>(

@@ -75,7 +75,7 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
         },
         subscription_status: 'none',
         subscription_end_date: null,
-        subscription_tier: null
+        subscription_plan: null
       };
       
       toast({
