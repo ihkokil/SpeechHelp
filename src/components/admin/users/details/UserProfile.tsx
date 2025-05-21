@@ -57,7 +57,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <h3 className="text-sm font-medium text-muted-foreground">Full Name</h3>
-            <p>{getFullName()}</p>
+            <p className="font-medium">{getFullName()}</p>
           </div>
           
           <div className="space-y-1">
