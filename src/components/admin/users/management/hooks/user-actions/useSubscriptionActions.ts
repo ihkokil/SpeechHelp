@@ -22,25 +22,45 @@ export const useSubscriptionActions = () => {
     try {
       console.log(`Toggling user status: ${userId} to ${!isActive}`);
       
-      // Get current user data to preserve metadata
-      const { data: userData, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-        
-      if (fetchError) {
-        console.error('Error fetching user data:', fetchError);
-      }
+      // Since we can't directly access user_metadata from profiles table,
+      // we'll use any name data from our users array if available
+      let displayName = '';
+      let phoneNumber = '';
       
-      const currentMetadata = userData?.user_metadata || {};
-      const displayName = currentMetadata.name || currentMetadata.full_name || '';
-      const phoneNumber = currentMetadata.phone || '';
+      // Check if we have this user in our local state
+      const currentUser = users.find(user => user.id === userId);
+      if (currentUser) {
+        // Get display name and phone from the user object
+        displayName = currentUser.user_metadata?.name || 
+                      currentUser.user_metadata?.full_name || 
+                      currentUser.email.split('@')[0] || '';
+        phoneNumber = currentUser.user_metadata?.phone || '';
+      } else {
+        // If user not in local state, get profile data from auth users via function
+        try {
+          const { data: userData, error: funcError } = await supabase.functions.invoke('fetch-users', {
+            method: 'GET'
+          });
+          
+          if (!funcError && userData?.users) {
+            const authUser = userData.users.find((u: any) => u.id === userId);
+            if (authUser) {
+              displayName = authUser.profile?.username || 
+                           authUser.user_metadata?.name || 
+                           authUser.user_metadata?.full_name || 
+                           authUser.email?.split('@')[0] || '';
+              phoneNumber = authUser.profile?.phone || authUser.user_metadata?.phone || '';
+            }
+          }
+        } catch (funcError) {
+          console.error('Error fetching user data from function:', funcError);
+        }
+      }
       
       // Update the user's active status in the database
       const { data, error } = await supabase.rpc('admin_update_user_profile', {
         user_id_param: userId,
-        display_name: displayName,  
+        display_name: displayName,
         user_email: '', // Not changing email
         phone_number: phoneNumber,
         is_active_status: !isActive
