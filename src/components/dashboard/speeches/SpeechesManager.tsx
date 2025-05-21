@@ -26,6 +26,7 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
   // Apply initial filter when component mounts or initialFilter changes
   useEffect(() => {
     if (initialFilter) {
+      console.log('Setting initial filter to:', initialFilter);
       setFilterType(initialFilter as FilterOption);
     }
   }, [initialFilter]);
@@ -46,6 +47,12 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     setSelectedSpeech(speech);
     setIsDeleteAlertOpen(true);
   };
+
+  // Debug logging
+  useEffect(() => {
+    console.log(`SpeechesManager - Current filter: ${filterType}`);
+    console.log(`SpeechesManager - Displaying ${filteredSpeeches.length} speeches after filtering`);
+  }, [filterType, filteredSpeeches.length]);
   
   return (
     <div>

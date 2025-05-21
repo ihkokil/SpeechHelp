@@ -19,11 +19,18 @@ const MySpeeches = () => {
     const filterParam = params.get('filter');
 
     if (filterParam === 'upcoming') {
+      console.log('URL parameter detected: Setting filter to upcoming');
       setInitialFilter('upcoming');
     } else {
+      console.log('No URL parameter or different value: Setting filter to all');
       setInitialFilter('all');
     }
   }, [location]);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('MySpeeches - Initial filter set to:', initialFilter);
+  }, [initialFilter]);
 
   // Fetch speeches when component mounts
   useEffect(() => {
@@ -43,22 +50,25 @@ const MySpeeches = () => {
       id: s.id,
       title: s.title,
       type: s.speech_type,
-      isUpcoming: s.isUpcoming || false // Ensure isUpcoming is explicitly set
+      isUpcoming: s.isUpcoming || false
     })));
 
-    // Check for localStorage upcoming events
-    try {
-      const upcomingEventsJSON = localStorage.getItem('upcomingEvents');
-      if (upcomingEventsJSON) {
-        const parsedEvents = JSON.parse(upcomingEventsJSON);
-        console.log(`Found ${parsedEvents.length} upcoming events in localStorage`, parsedEvents);
-      } else {
-        console.log('No upcoming events found in localStorage');
+    // Check for localStorage upcoming events for the current user
+    if (user?.id) {
+      try {
+        const storageKey = `upcomingEvents_${user.id}`;
+        const upcomingEventsJSON = localStorage.getItem(storageKey);
+        if (upcomingEventsJSON) {
+          const parsedEvents = JSON.parse(upcomingEventsJSON);
+          console.log(`Found ${parsedEvents.length} upcoming events in localStorage for user ${user.id}`, parsedEvents);
+        } else {
+          console.log(`No upcoming events found in localStorage for user ${user.id}`);
+        }
+      } catch (error) {
+        console.error('Error checking localStorage events:', error);
       }
-    } catch (error) {
-      console.error('Error checking localStorage events:', error);
     }
-  }, [speeches]);
+  }, [speeches, user]);
 
   if (isLoading) {
     return (
