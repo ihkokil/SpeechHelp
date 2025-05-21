@@ -54,56 +54,50 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         throw new Error('No user to update');
       }
       
-      // Instead of using admin.updateUserById, we'll use our custom RPC function
-      // to update user metadata and profile information
-      
-      // First update the user's metadata through profiles table
-      const { error: profileError } = await supabase.rpc('update_user_admin_status', {
+      // First update the user's admin status through RPC function
+      const { data: adminStatusData, error: adminStatusError } = await supabase.rpc('update_user_admin_status', {
         user_id: initialUser.id,
         is_admin_status: values.role !== 'user',
         admin_role_value: values.role !== 'user' ? values.role : null,
         permissions_value: initialUser.permissions || []
       });
       
-      if (profileError) {
-        throw profileError;
+      if (adminStatusError) {
+        console.error('Error updating admin status:', adminStatusError);
+        throw adminStatusError;
       }
       
-      // Also update is_active status in profiles table 
-      const { error: activeStatusError } = await supabase
+      // Update the user's profile data
+      const updatedMetadata = {
+        ...initialUser.user_metadata,
+        name: values.name,
+        full_name: values.name,
+        phone: values.phone,
+      };
+      
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
           is_active: values.isActive,
-          // Also update the user's name and phone in the profiles metadata
           updated_at: new Date().toISOString(),
-          user_metadata: {
-            ...initialUser.user_metadata,
-            name: values.name,
-            full_name: values.name,
-            phone: values.phone,
-          }
+          user_metadata: updatedMetadata
         })
         .eq('id', initialUser.id);
       
-      if (activeStatusError) {
-        console.error('Error updating profile:', activeStatusError);
-        throw activeStatusError;
+      if (profileError) {
+        console.error('Error updating profile:', profileError);
+        throw profileError;
       }
       
       // Create an updated user object to reflect the changes in the UI
       const updatedUser: User = {
         ...initialUser,
-        email: initialUser.email, // Keep the original email since we can't update it without admin role
+        email: initialUser.email,
         is_active: values.isActive,
         is_admin: values.role !== 'user',
         admin_role: values.role !== 'user' ? values.role : undefined,
         updated_at: new Date().toISOString(),
-        user_metadata: {
-          ...initialUser.user_metadata,
-          name: values.name,
-          full_name: values.name,
-          phone: values.phone,
-        }
+        user_metadata: updatedMetadata
       };
       
       toast({
