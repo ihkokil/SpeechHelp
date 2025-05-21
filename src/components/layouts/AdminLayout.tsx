@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -7,6 +7,10 @@ import AdminHeader from '../admin/layout/AdminHeader';
 import AdminSidebar from '../admin/layout/AdminSidebar';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import { adminNavItems } from '@/config/admin-nav';
+
+// Memoize components to prevent unnecessary re-renders
+const MemoizedAdminSidebar = memo(AdminSidebar);
+const MemoizedAdminHeader = memo(AdminHeader);
 
 const AdminLayout = () => {
   const { isAuthenticated, isLoading, signOut } = useAdminAuth();
@@ -30,14 +34,14 @@ const AdminLayout = () => {
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-gray-50">
         <div className="fixed md:relative z-30">
-          <AdminSidebar 
+          <MemoizedAdminSidebar 
             navItems={adminNavItems}
             onSignOut={handleSignOut}
           />
         </div>
 
         <div className="flex flex-1 flex-col w-full ml-0 md:ml-64">
-          <AdminHeader
+          <MemoizedAdminHeader
             navItems={adminNavItems}
             mobileMenuOpen={mobileMenuOpen}
             setMobileMenuOpen={setMobileMenuOpen}
