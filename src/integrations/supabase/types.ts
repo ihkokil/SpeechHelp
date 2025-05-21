@@ -378,6 +378,17 @@ export type Database = {
         Args: { permission_name: string }
         Returns: boolean
       }
+      admin_update_user_profile: {
+        Args: {
+          user_id_param: string
+          display_name: string
+          user_email: string
+          phone_number: string
+          is_active_status: boolean
+          user_metadata?: Json
+        }
+        Returns: Json
+      }
       authenticate_admin: {
         Args: { email_input: string; password_input: string }
         Returns: {
