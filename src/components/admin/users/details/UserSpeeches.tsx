@@ -10,6 +10,7 @@ import { User, Speech } from '@/components/admin/users/types';
 import { Button } from '@/components/ui/button';
 import { useState, useMemo } from 'react';
 import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface UserSpeechesProps {
   user: User;
@@ -23,10 +24,11 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
   isLoadingSpeeches = false 
 }) => {
   const [filter, setFilter] = useState<'all' | 'recent'>('all');
+  const isMobile = useIsMobile();
   
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+      return format(new Date(dateString), isMobile ? 'MMM dd, yyyy' : 'MMM dd, yyyy HH:mm');
     } catch (e) {
       console.error("Error formatting date:", dateString, e);
       return "Invalid date";
@@ -46,26 +48,17 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
     );
   }, [speeches, filter]);
 
-  // Debug logging
-  console.log("UserSpeeches rendering with:", { 
-    userId: user.id,
-    speechesCount: speeches?.length,
-    filteredCount: filteredSpeeches.length,
-    isLoading: isLoadingSpeeches,
-    speeches: speeches
-  });
-
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <div>
             <CardTitle>User Speeches</CardTitle>
             <CardDescription>
               All speeches created by {formatUserDisplayName(user)}
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mt-2 sm:mt-0">
             <Button 
               variant={filter === 'all' ? 'secondary' : 'outline'} 
               size="sm"
@@ -112,30 +105,48 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
               </div>
             </div>
 
-            <ScrollArea className="h-[350px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Modified</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSpeeches.map((speech) => (
-                    <TableRow key={speech.id}>
-                      <TableCell className="font-medium">{speech.title}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{speech.speech_type}</Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(speech.created_at)}</TableCell>
-                      <TableCell>{speech.updated_at ? formatDate(speech.updated_at) : '-'}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+            {isMobile ? (
+              <div className="space-y-4">
+                {filteredSpeeches.map((speech) => (
+                  <div key={speech.id} className="border rounded-md p-3 space-y-2">
+                    <div className="font-medium">{speech.title}</div>
+                    <div className="flex justify-between items-center">
+                      <Badge variant="outline">{speech.speech_type}</Badge>
+                      <span className="text-xs text-gray-500">
+                        {formatDate(speech.created_at)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <ScrollArea className="h-[350px]">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead className="hidden sm:table-cell">Created</TableHead>
+                        <TableHead className="hidden md:table-cell">Modified</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredSpeeches.map((speech) => (
+                        <TableRow key={speech.id}>
+                          <TableCell className="font-medium max-w-[200px] break-words">{speech.title}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{speech.speech_type}</Badge>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell">{formatDate(speech.created_at)}</TableCell>
+                          <TableCell className="hidden md:table-cell">{speech.updated_at ? formatDate(speech.updated_at) : '-'}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </ScrollArea>
+            )}
           </>
         )}
       </CardContent>

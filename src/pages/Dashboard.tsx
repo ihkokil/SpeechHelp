@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -113,7 +114,7 @@ const Dashboard = () => {
       <DashboardSidebar />
       
       <div className={`flex-1 overflow-x-hidden ${isMobile ? "pt-16" : "ml-64"}`}>
-        <header className="flex justify-between items-center p-4 sm:p-6 sticky top-0 bg-gray-50 z-10">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-6 sticky top-0 bg-gray-50 z-10 gap-2">
           <div className="flex items-center">
             <div className="bg-purple-600 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-md flex items-center text-sm sm:text-base">
               <CalendarIcon className="mr-2 h-4 w-4" />

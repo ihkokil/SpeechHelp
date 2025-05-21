@@ -36,21 +36,14 @@ const AdminLayout = () => {
           />
         </div>
 
-        {/* <div className="flex flex-1 flex-col w-full ml-0 md:ml-[calc(var(--sidebar-width)_-_1px)]">
+        <div className="flex flex-1 flex-col w-full ml-0 md:ml-64">
           <AdminHeader
             navItems={adminNavItems}
             mobileMenuOpen={mobileMenuOpen}
             setMobileMenuOpen={setMobileMenuOpen}
-          /> */}
-          <div className="flex flex-1 flex-col w-full ml-0 md:ml-0">
-  <AdminHeader
-    navItems={adminNavItems}
-    mobileMenuOpen={mobileMenuOpen}
-    setMobileMenuOpen={setMobileMenuOpen}
-  />
-
+          />
           
-          <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+          <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8 pt-20 md:pt-6">
             <Outlet />
           </main>
         </div>
