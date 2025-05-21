@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { User } from '../../types';
 import UserActionMenu from './UserActionMenu';
 import { formatDateRelative, formatUserDisplayName, getUserPhone } from '../utils/userDisplayUtils';
+import { Crown } from 'lucide-react';
 
 interface UserTableRowProps {
   user: User;
@@ -69,8 +70,12 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       </TableCell>
       <TableCell className="hidden md:table-cell">
         {user.is_admin ? (
-          <Badge className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200">
-            Admin
+          <Badge className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200 flex items-center gap-1">
+            <Crown size={12} /> Admin
+          </Badge>
+        ) : user.subscription_plan === 'pro' ? (
+          <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200 hover:bg-indigo-200">
+            Pro
           </Badge>
         ) : user.subscription_plan === 'premium' ? (
           <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">
