@@ -29,12 +29,14 @@ const AdminLayout = () => {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-gray-50">
-        <AdminSidebar 
-          navItems={adminNavItems}
-          onSignOut={handleSignOut}
-        />
+        <div className="fixed md:relative z-30">
+          <AdminSidebar 
+            navItems={adminNavItems}
+            onSignOut={handleSignOut}
+          />
+        </div>
 
-        <div className="flex w-full flex-col">
+        <div className="flex flex-1 flex-col w-full ml-0 md:ml-[calc(var(--sidebar-width)_-_1px)]">
           <AdminHeader
             navItems={adminNavItems}
             mobileMenuOpen={mobileMenuOpen}
