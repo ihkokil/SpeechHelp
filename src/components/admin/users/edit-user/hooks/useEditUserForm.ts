@@ -54,34 +54,21 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         throw new Error('No user to update');
       }
       
-      // Parse phone number to ensure proper format and remove country code if needed
-      const formattedPhone = values.phone || '';
-      
-      // Create custom metadata with properly formatted values
-      const userMetadata = {
-        name: values.name,
-        full_name: values.name,
-        phone: formattedPhone
-      };
-      
-      console.log("Using metadata for update:", userMetadata);
-      
       // Use the admin_update_user_profile RPC function to update user profile
-      const { data: profileData, error: profileError } = await supabase.rpc('admin_update_user_profile', {
+      const { data, error } = await supabase.rpc('admin_update_user_profile', {
         user_id_param: initialUser.id,
         display_name: values.name,
         user_email: initialUser.email, // We're not changing the email
-        phone_number: formattedPhone,
+        phone_number: values.phone || '',
         is_active_status: values.isActive,
-        user_metadata: userMetadata
       });
       
-      if (profileError) {
-        console.error('Error updating user profile:', profileError);
-        throw profileError;
+      if (error) {
+        console.error('Error updating user profile:', error);
+        throw error;
       }
       
-      console.log('User profile updated successfully:', profileData);
+      console.log('User profile updated successfully:', data);
       
       // Also update the admin status if needed
       if ((initialUser.is_admin && values.role === 'user') || (!initialUser.is_admin && values.role !== 'user') || 
@@ -102,22 +89,24 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         console.log('Admin status updated successfully:', adminData);
       }
       
-      // Extract user metadata from response or create updated metadata
-      let updatedMetadata = { ...initialUser.user_metadata };
+      // Create an updated user object to reflect the changes in the UI
+      // Extract the user metadata from the response if available
+      // We need to properly handle the response data which is of type Json
+      let updatedMetadata = initialUser.user_metadata || {};
       
-      // Apply our updates to the metadata regardless of what came back
-      updatedMetadata = {
-        ...updatedMetadata,
-        name: values.name,
-        full_name: values.name,
-        phone: formattedPhone
-      };
-      
-      // If we got response data with user_metadata, use it
-      if (profileData && typeof profileData === 'object') {
-        const responseData = profileData as Record<string, any>;
-        if (responseData.user_metadata && typeof responseData.user_metadata === 'object') {
+      // Check if data exists and if it has user_metadata property
+      if (data && typeof data === 'object') {
+        const responseData = data as Record<string, any>;
+        if (responseData.user_metadata) {
           updatedMetadata = responseData.user_metadata;
+        } else {
+          // Fallback: Construct metadata if not provided in response
+          updatedMetadata = {
+            ...initialUser.user_metadata,
+            name: values.name,
+            full_name: values.name,
+            phone: values.phone,
+          };
         }
       }
       
@@ -144,12 +133,6 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       
       // Close the dialog after successful submission
       onOpenChange(false);
-      
-      // Force refresh the page to ensure we get the latest data
-      setTimeout(() => {
-        // This can be removed if you implement a better state refresh mechanism
-        window.location.reload();
-      }, 1000);
     } catch (error) {
       console.error('Exception updating user:', error);
       toast({
