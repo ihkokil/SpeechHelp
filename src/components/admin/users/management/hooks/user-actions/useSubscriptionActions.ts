@@ -78,10 +78,11 @@ export const useSubscriptionActions = (
       console.log(`Updating user subscription: ${userId} to ${subscriptionTier} until ${subscriptionEndDate}`);
       
       // Update the user's subscription details in the database
+      // Changed 'subscription_tier' to 'subscription_plan' to match the database schema
       const { data, error } = await supabase
         .from('profiles')
         .update({ 
-          subscription_tier: subscriptionTier,
+          subscription_plan: subscriptionTier,
           subscription_end_date: subscriptionEndDate.toISOString()
         })
         .eq('id', userId)
@@ -92,13 +93,14 @@ export const useSubscriptionActions = (
         throw error;
       }
       
-      // Update local state
+      // Update local state - also update the field name in the local state update
       setUsers(
         users.map(user => 
           user.id === userId 
             ? { 
                 ...user, 
-                subscription_tier: subscriptionTier,
+                subscription_tier: subscriptionTier, // Keep this as is for UI consistency
+                subscription_plan: subscriptionTier, // Add this to ensure both properties are updated
                 subscription_end_date: subscriptionEndDate.toISOString()
               } 
             : user
