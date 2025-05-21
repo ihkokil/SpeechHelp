@@ -60,26 +60,30 @@ export const useSpeechesFilter = (
     // Log what we found
     console.log(`Found ${upcomingSpeeches.length} upcoming speeches from localStorage`);
 
+    // Combine regular speeches and upcoming speeches
+    let combinedSpeeches = [...allSpeeches, ...upcomingSpeeches];
+    console.log(`Combined total: ${combinedSpeeches.length} speeches`);
+
     // Apply search filter if provided
-    let searchFiltered = [...allSpeeches, ...upcomingSpeeches];
     if (searchQuery) {
       const query = searchQuery.toLowerCase().trim();
-      searchFiltered = searchFiltered.filter(speech => 
+      combinedSpeeches = combinedSpeeches.filter(speech => 
         speech.title?.toLowerCase().includes(query) || 
         speech.content?.toLowerCase().includes(query)
       );
+      console.log(`After search query: ${combinedSpeeches.length} speeches`);
     }
     
     // Apply type filter
     let filtered: Speech[] = [];
     if (filterType === 'all') {
-      filtered = searchFiltered; // Show all speeches without filtering by type
+      filtered = combinedSpeeches; // Show ALL speeches without filtering by type
       console.log('Showing ALL speeches');
     } else if (filterType === 'upcoming') {
-      filtered = searchFiltered.filter(speech => speech.isUpcoming === true);
+      filtered = combinedSpeeches.filter(speech => speech.isUpcoming === true);
       console.log('Filtering for UPCOMING speeches only');
     } else {
-      filtered = searchFiltered.filter(speech => 
+      filtered = combinedSpeeches.filter(speech => 
         speech.speech_type === filterType && !speech.isUpcoming
       );
       console.log(`Filtering for type: ${filterType}`);

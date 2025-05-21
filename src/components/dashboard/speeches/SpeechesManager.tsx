@@ -48,11 +48,19 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     setIsDeleteAlertOpen(true);
   };
 
-  // Debug logging
+  // Enhanced debug logging
   useEffect(() => {
     console.log(`SpeechesManager - Current filter: ${filterType}`);
     console.log(`SpeechesManager - Displaying ${filteredSpeeches.length} speeches after filtering`);
-  }, [filterType, filteredSpeeches.length]);
+    
+    // Log number of upcoming and regular speeches
+    const upcomingCount = filteredSpeeches.filter(speech => speech.isUpcoming).length;
+    const regularCount = filteredSpeeches.filter(speech => !speech.isUpcoming).length;
+    console.log(`SpeechesManager - Breakdown: ${upcomingCount} upcoming, ${regularCount} saved speeches`);
+    
+    // Log source speeches count for comparison
+    console.log(`SpeechesManager - Source speeches count: ${speeches.length}`);
+  }, [filterType, filteredSpeeches, speeches]);
   
   return (
     <div>
