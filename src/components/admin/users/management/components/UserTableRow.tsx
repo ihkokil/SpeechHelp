@@ -74,11 +74,11 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
             <Crown size={12} /> Admin
           </Badge>
         ) : user.subscription_plan === 'pro' ? (
-          <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200 hover:bg-indigo-200">
+          <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">
             Pro
           </Badge>
         ) : user.subscription_plan === 'premium' ? (
-          <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">
+          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200">
             Premium
           </Badge>
         ) : (
