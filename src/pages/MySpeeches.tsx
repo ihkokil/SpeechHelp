@@ -5,6 +5,7 @@ import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from 'sonner';
 
 const MySpeeches = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
@@ -37,7 +38,10 @@ const MySpeeches = () => {
     if (user) {
       console.log('MySpeeches component mounted, fetching speeches for user:', user.id);
       // Always fetch fresh data when component mounts
-      fetchSpeeches();
+      fetchSpeeches().catch(error => {
+        console.error('Error fetching speeches:', error);
+        toast.error('Failed to load speeches. Please try again.');
+      });
     }
   }, [user, fetchSpeeches]);
 
@@ -46,12 +50,11 @@ const MySpeeches = () => {
     console.log(`MySpeeches has ${speeches.length} total speeches to display`);
     
     // Log regular speeches from the backend
-    console.log('Regular speeches from database:', speeches.map(s => ({
-      id: s.id,
-      title: s.title,
-      type: s.speech_type,
-      isUpcoming: s.isUpcoming || false
-    })));
+    const savedSpeeches = speeches.filter(s => !s.isUpcoming);
+    const upcomingSpeeches = speeches.filter(s => s.isUpcoming);
+    
+    console.log(`Regular speeches from database: ${savedSpeeches.length}`);
+    console.log(`Upcoming speeches: ${upcomingSpeeches.length}`);
 
     // Check for localStorage upcoming events for the current user
     if (user?.id) {
@@ -60,7 +63,7 @@ const MySpeeches = () => {
         const upcomingEventsJSON = localStorage.getItem(storageKey);
         if (upcomingEventsJSON) {
           const parsedEvents = JSON.parse(upcomingEventsJSON);
-          console.log(`Found ${parsedEvents.length} upcoming events in localStorage for user ${user.id}`, parsedEvents);
+          console.log(`Found ${parsedEvents.length} upcoming events in localStorage for user ${user.id}`);
         } else {
           console.log(`No upcoming events found in localStorage for user ${user.id}`);
         }

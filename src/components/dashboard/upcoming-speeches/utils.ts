@@ -14,12 +14,15 @@ export const loadEventsFromStorage = (userId?: string): SpeechEvent[] => {
     
     if (eventsJson) {
       const parsedEvents = JSON.parse(eventsJson);
+      console.log(`Successfully loaded ${parsedEvents.length} upcoming events for user ${userId}`);
       
       // Ensure we properly convert date strings to Date objects
       return parsedEvents.map((event: any) => ({
         ...event,
         date: event.date ? new Date(event.date) : new Date()
       }));
+    } else {
+      console.log(`No upcoming events found in storage for user ${userId}`);
     }
   } catch (error) {
     console.error('Error loading events from storage:', error);
@@ -43,6 +46,7 @@ export const saveEventsToStorage = (events: SpeechEvent[], userId?: string): voi
       date: event.date instanceof Date ? event.date.toISOString() : event.date
     }));
     localStorage.setItem(storageKey, JSON.stringify(serializedEvents));
+    console.log(`Saved ${events.length} events to storage for user ${userId}`);
   } catch (error) {
     console.error('Error saving events to storage:', error);
   }
@@ -54,6 +58,7 @@ export const clearUserEvents = (userId: string): void => {
   
   const storageKey = `upcomingEvents_${userId}`;
   localStorage.removeItem(storageKey);
+  console.log(`Cleared all events for user ${userId}`);
 };
 
 // Update the event list for a specific user

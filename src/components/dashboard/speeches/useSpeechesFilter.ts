@@ -37,6 +37,8 @@ export const useSpeechesFilter = (
         if (upcomingEventsJSON) {
           upcomingEvents = JSON.parse(upcomingEventsJSON);
           console.log(`Found ${upcomingEvents.length} upcoming events for user ${userId}`);
+        } else {
+          console.log(`No upcoming events found in localStorage for user ${userId}`);
         }
       }
     } catch (error) {

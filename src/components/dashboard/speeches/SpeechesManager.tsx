@@ -31,8 +31,6 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     }
   }, [initialFilter]);
   
-  const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
-  
   // Explicitly check speeches passed to component
   useEffect(() => {
     console.log('SpeechesManager received speeches array:', speeches.length);
@@ -40,6 +38,8 @@ const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerPro
     const upcomingSpeeches = speeches.filter(s => s.isUpcoming).length;
     console.log(`SpeechesManager input breakdown: ${savedSpeeches} saved, ${upcomingSpeeches} upcoming`);
   }, [speeches]);
+  
+  const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
   
   const handleViewSpeech = (speech: Speech) => {
     setSelectedSpeech(speech);
