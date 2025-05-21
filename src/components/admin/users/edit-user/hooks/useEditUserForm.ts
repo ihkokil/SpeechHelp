@@ -90,13 +90,25 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       }
       
       // Create an updated user object to reflect the changes in the UI
-      // Extract the user metadata from the response if available, otherwise use our constructed metadata
-      const updatedMetadata = data?.user_metadata || {
-        ...initialUser.user_metadata,
-        name: values.name,
-        full_name: values.name,
-        phone: values.phone,
-      };
+      // Extract the user metadata from the response if available
+      // We need to properly handle the response data which is of type Json
+      let updatedMetadata = initialUser.user_metadata || {};
+      
+      // Check if data exists and if it has user_metadata property
+      if (data && typeof data === 'object') {
+        const responseData = data as Record<string, any>;
+        if (responseData.user_metadata) {
+          updatedMetadata = responseData.user_metadata;
+        } else {
+          // Fallback: Construct metadata if not provided in response
+          updatedMetadata = {
+            ...initialUser.user_metadata,
+            name: values.name,
+            full_name: values.name,
+            phone: values.phone,
+          };
+        }
+      }
       
       const updatedUser: User = {
         ...initialUser,
