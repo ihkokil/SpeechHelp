@@ -17,9 +17,9 @@ import { Input } from '@/components/ui/input';
 
 // Define form schema
 const formSchema = z.object({
-  name: z.string().optional(),
+  name: z.string().min(1, 'Display name is required'),
   role: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z.string().email(),
   isActive: z.boolean().optional(),
   phone: z.string().optional(),
 });
@@ -46,7 +46,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: user.user_metadata?.name || '',
+      name: user.user_metadata?.name || user.user_metadata?.full_name || '',
       role: user.admin_role || '',
       email: user.email || '',
       isActive: user.is_active !== false,
