@@ -54,25 +54,10 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         throw new Error('No user to update');
       }
       
-      // Update user in Supabase
-      const { error: updateError } = await supabase.auth.admin.updateUserById(
-        initialUser.id,
-        { 
-          email: values.email,
-          user_metadata: {
-            ...initialUser.user_metadata,
-            name: values.name,
-            full_name: values.name, // Also update full_name for consistency
-            phone: values.phone,
-          }
-        }
-      );
+      // Instead of using admin.updateUserById, we'll use our custom RPC function
+      // to update user metadata and profile information
       
-      if (updateError) {
-        throw updateError;
-      }
-      
-      // Update profile table for admin role, active status, and display name
+      // First update the user's metadata through profiles table
       const { error: profileError } = await supabase.rpc('update_user_admin_status', {
         user_id: initialUser.id,
         is_admin_status: values.role !== 'user',
@@ -87,17 +72,28 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       // Also update is_active status in profiles table 
       const { error: activeStatusError } = await supabase
         .from('profiles')
-        .update({ is_active: values.isActive })
+        .update({ 
+          is_active: values.isActive,
+          // Also update the user's name and phone in the profiles metadata
+          updated_at: new Date().toISOString(),
+          user_metadata: {
+            ...initialUser.user_metadata,
+            name: values.name,
+            full_name: values.name,
+            phone: values.phone,
+          }
+        })
         .eq('id', initialUser.id);
       
       if (activeStatusError) {
-        console.error('Error updating active status:', activeStatusError);
+        console.error('Error updating profile:', activeStatusError);
+        throw activeStatusError;
       }
       
-      // Create an updated user object
+      // Create an updated user object to reflect the changes in the UI
       const updatedUser: User = {
         ...initialUser,
-        email: values.email,
+        email: initialUser.email, // Keep the original email since we can't update it without admin role
         is_active: values.isActive,
         is_admin: values.role !== 'user',
         admin_role: values.role !== 'user' ? values.role : undefined,
