@@ -5,32 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Mail, Phone, MapPin, Calendar } from 'lucide-react';
+import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
 
 interface UserProfileProps {
   user: User;
 }
 
 export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
-  // Get user's full name, prioritizing the most complete information
-  const getFullName = () => {
-    if (user.user_metadata?.full_name) {
-      return user.user_metadata.full_name;
-    }
-    
-    const firstName = user.user_metadata?.first_name || '';
-    const lastName = user.user_metadata?.last_name || '';
-    
-    if (firstName && lastName) {
-      return `${firstName} ${lastName}`;
-    }
-    
-    if (user.user_metadata?.name) {
-      return user.user_metadata.name;
-    }
-    
-    return 'Not provided';
-  };
-
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -57,7 +38,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <h3 className="text-sm font-medium text-muted-foreground">Full Name</h3>
-            <p className="font-medium">{getFullName()}</p>
+            <p className="font-medium">{formatUserDisplayName(user)}</p>
           </div>
           
           <div className="space-y-1">
@@ -110,3 +91,4 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
     </Card>
   );
 };
+
