@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Speech } from '@/types/speech';
-import { ButtonCustom } from '@/components/ui/button-custom';
+import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import SpeechesTable from './speeches/SpeechesTable';
 import SpeechModals from './speeches/SpeechModals';
@@ -42,24 +42,24 @@ const PreviousSpeeches = () => {
     <div className="bg-white rounded-lg shadow-sm border">
       <div className="p-4 flex justify-between items-center border-b">
         <h2 className="text-lg font-semibold text-gray-800"><Translate text="dashboard.previousSpeeches" /></h2>
-        <ButtonCustom 
-          variant="pink" 
-          size="sm" 
+        <Button 
           onClick={handleCreateNewSpeech}
+          className="h-10 px-4 py-2 bg-pink-500 text-white hover:bg-pink-600 transition-colors rounded-md"
         >
           <Translate text="dashboard.createNewSpeech" />
-        </ButtonCustom>
+        </Button>
       </div>
       
       {regularSpeeches.length === 0 ? (
         <div className="p-8 text-center">
           <p className="text-gray-500 mb-4"><Translate text="dashboard.noSpeeches" /></p>
-          <ButtonCustom 
-            variant="outline" 
-            onClick={handleCreateNewSpeech}
+          <Button 
+            variant="outline"
+            onClick={handleCreateNewSpeech} 
+            className="h-10 px-6 py-2 border border-pink-500 text-pink-500 hover:bg-pink-50 transition-colors rounded-md"
           >
             <Translate text="dashboard.createFirstSpeech" />
-          </ButtonCustom>
+          </Button>
         </div>
       ) : (
         <SpeechesTable 

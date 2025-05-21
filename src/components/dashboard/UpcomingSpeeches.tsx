@@ -51,7 +51,7 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
       <div className="border-t p-4 text-center">
         <Button 
           variant="link" 
-          className="text-pink-600 hover:text-pink-800 text-sm"
+          className="text-pink-600 hover:text-pink-800 font-medium transition-colors"
           onClick={viewAllEvents}
         >
           {t('dashboard.viewAll', currentLanguage.code)}
