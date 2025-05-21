@@ -40,7 +40,7 @@ const AdminLayout = () => {
           />
         </div>
 
-        <div className="flex flex-1 flex-col w-full ml-0 md:ml-64">
+        <div className="flex flex-1 flex-col w-full ml-0 md:ml-0">
           <MemoizedAdminHeader
             navItems={adminNavItems}
             mobileMenuOpen={mobileMenuOpen}
