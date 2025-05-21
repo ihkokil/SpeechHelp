@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Mail } from 'lucide-react';
 import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
 import { Input } from '@/components/ui/input';
+import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
 
 // Define form schema
 const formSchema = z.object({
@@ -46,7 +47,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: user.user_metadata?.name || user.user_metadata?.full_name || '',
+      name: formatUserDisplayName(user),
       role: user.admin_role || '',
       email: user.email || '',
       isActive: user.is_active !== false,
@@ -66,6 +67,7 @@ const EditUserForm: React.FC<EditUserFormProps> = ({
         <NameFields 
           form={form} 
           isNameSingle={true}
+          label="Display Name"
         />
         
         <FormField

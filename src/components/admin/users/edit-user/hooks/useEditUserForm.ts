@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { User } from '../../types';
 import { supabase } from '@/integrations/supabase/client';
+import { formatUserDisplayName } from '../../management/utils/userDisplayUtils';
 
 // Form validation schema
 const formSchema = z.object({
@@ -31,7 +32,7 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: initialUser?.email || '',
-      name: initialUser?.user_metadata?.name || initialUser?.user_metadata?.full_name || '',
+      name: initialUser ? formatUserDisplayName(initialUser) : '',
       role: initialUser?.is_admin ? (initialUser.admin_role || 'admin') : 'user',
       isActive: initialUser?.is_active !== false,
       phone: initialUser?.user_metadata?.phone || '',
@@ -71,7 +72,7 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         throw updateError;
       }
       
-      // Update profile table for admin role and active status
+      // Update profile table for admin role, active status, and display name
       const { error: profileError } = await supabase.rpc('update_user_admin_status', {
         user_id: initialUser.id,
         is_admin_status: values.role !== 'user',
@@ -81,6 +82,16 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       
       if (profileError) {
         throw profileError;
+      }
+      
+      // Also update is_active status in profiles table 
+      const { error: activeStatusError } = await supabase
+        .from('profiles')
+        .update({ is_active: values.isActive })
+        .eq('id', initialUser.id);
+      
+      if (activeStatusError) {
+        console.error('Error updating active status:', activeStatusError);
       }
       
       // Create an updated user object

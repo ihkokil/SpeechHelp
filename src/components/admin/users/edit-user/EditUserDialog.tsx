@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { User } from '../types';
 import EditUserForm from './EditUserForm';
 import { useEditUserForm } from './hooks/useEditUserForm';
+import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
 
 interface EditUserDialogProps {
   user: User | null;
@@ -75,7 +76,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Edit User: {user.email}</DialogTitle>
           <DialogDescription>
-            Update user account details.
+            Update user account details for {formatUserDisplayName(user)}.
           </DialogDescription>
         </DialogHeader>
         
