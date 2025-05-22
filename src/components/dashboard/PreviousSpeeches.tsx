@@ -16,6 +16,9 @@ const PreviousSpeeches = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const navigate = useNavigate();
 
+  // Debug info about speeches array
+  console.log('PreviousSpeeches - received speeches:', speeches?.length);
+
   const handleViewSpeech = (speech: Speech) => {
     setSelectedSpeech(speech);
     setIsViewModalOpen(true);
@@ -36,7 +39,8 @@ const PreviousSpeeches = () => {
   };
 
   // Filter out upcoming speeches for PreviousSpeeches component
-  const regularSpeeches = speeches.filter(speech => !speech.isUpcoming);
+  const regularSpeeches = speeches?.filter(speech => !speech.isUpcoming) || [];
+  console.log('PreviousSpeeches - filtered regular speeches:', regularSpeeches.length);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border">

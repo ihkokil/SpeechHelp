@@ -27,8 +27,16 @@ const Dashboard = () => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   
+  // Debug logging
+  useEffect(() => {
+    console.log('Dashboard - User authenticated:', !!user);
+    console.log('Dashboard - Speeches count:', speeches?.length || 0);
+  }, [user, speeches]);
+  
+  // Fetch speeches when component mounts
   useEffect(() => {
     if (user) {
+      console.log('Dashboard - Fetching speeches for user:', user.id);
       fetchSpeeches().catch(error => {
         console.error('Error fetching speeches:', error);
         toast.error(t('errors.fetchSpeeches', currentLanguage.code));
@@ -65,28 +73,32 @@ const Dashboard = () => {
   }, [user]);
 
   const dashboardMetrics = useMemo(() => {
-    const totalSpeeches = speeches.length;
+    const totalSpeeches = speeches?.length || 0;
     
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
     
-    const thisMonthSpeeches = speeches.filter(speech => {
+    const thisMonthSpeeches = speeches?.filter(speech => {
+      if (!speech?.created_at) return false;
       const speechDate = new Date(speech.created_at);
       return speechDate.getMonth() === currentMonth && 
              speechDate.getFullYear() === currentYear;
-    });
+    }) || [];
     
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
-    const last30DaysSpeeches = speeches.filter(speech => {
+    const last30DaysSpeeches = speeches?.filter(speech => {
+      if (!speech?.created_at) return false;
       const speechDate = new Date(speech.created_at);
       return speechDate >= thirtyDaysAgo;
-    });
+    }) || [];
     
-    const speechTypeDistribution = speeches.reduce((acc, speech) => {
-      acc[speech.speech_type] = (acc[speech.speech_type] || 0) + 1;
+    const speechTypeDistribution = (speeches || []).reduce((acc, speech) => {
+      if (speech?.speech_type) {
+        acc[speech.speech_type] = (acc[speech.speech_type] || 0) + 1;
+      }
       return acc;
     }, {} as Record<string, number>);
     
@@ -174,11 +186,11 @@ const Dashboard = () => {
             
             <div className="space-y-4 sm:space-y-6">
               <div className="overflow-hidden">
-                <UpcomingSpeeches speeches={speeches} />
+                <UpcomingSpeeches speeches={speeches || []} />
               </div>
               
               <div className="overflow-hidden">
-                <RecentActivities speeches={speeches} />
+                <RecentActivities speeches={speeches || []} />
               </div>
             </div>
           </div>

@@ -13,12 +13,12 @@ interface SpeechesTableProps {
   onDelete: (speech: Speech) => void;
 }
 
-const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProps) => {
+const SpeechesTable = ({ speeches = [], onView, onEdit, onDelete }: SpeechesTableProps) => {
   const isMobile = useIsMobile();
   
   // Debug information about speeches
   useEffect(() => {
-    console.log(`SpeechesTable rendering with ${speeches.length} speeches`);
+    console.log(`SpeechesTable rendering with ${speeches?.length || 0} speeches`);
     console.log('Speech types breakdown:', 
       speeches.reduce((acc, speech) => {
         const type = speech.isUpcoming ? 'upcoming' : speech.speech_type;
@@ -30,6 +30,16 @@ const SpeechesTable = ({ speeches, onView, onEdit, onDelete }: SpeechesTableProp
     // Log date fields on initial render
     logSpeechDates(speeches, 'SpeechesTable');
   }, [speeches]);
+
+  // Safety check for empty speeches array
+  if (!speeches || speeches.length === 0) {
+    console.log('SpeechesTable received empty or null speeches array');
+    return (
+      <div className="p-8 text-center">
+        <p className="text-gray-500 mb-4">No speeches found</p>
+      </div>
+    );
+  }
 
   // Render the appropriate table based on screen size
   if (isMobile) {
