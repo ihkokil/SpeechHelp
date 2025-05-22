@@ -70,19 +70,19 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       </TableCell>
       <TableCell className="hidden md:table-cell">
         {user.is_admin ? (
-          <Badge className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200 flex items-center gap-1">
+          <Badge className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200 flex items-center gap-1 w-24 justify-center">
             <Crown size={12} /> Admin
           </Badge>
         ) : user.subscription_plan === 'pro' ? (
-          <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200">
+          <Badge className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200 w-24 justify-center">
             Pro
           </Badge>
         ) : user.subscription_plan === 'premium' ? (
-          <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">
+          <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200 w-24 justify-center">
             Premium
           </Badge>
         ) : (
-          <Badge variant="outline" className="text-gray-600">
+          <Badge variant="outline" className="text-gray-600 w-24 justify-center">
             Free
           </Badge>
         )}
