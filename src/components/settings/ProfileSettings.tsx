@@ -1,6 +1,5 @@
 
 import { Form } from '@/components/ui/form';
-import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import PersonalInfoForm from './profile/PersonalInfoForm';
 import { useProfileForm } from './profile/useProfileForm';
@@ -15,6 +14,8 @@ export default function ProfileSettings() {
     form,
     isLoading,
     originalEmail,
+    avatarUrl,
+    setAvatarUrl,
     onSubmit
   } = useProfileForm();
 
@@ -37,6 +38,8 @@ export default function ProfileSettings() {
                 <PersonalInfoForm 
                   form={form}
                   originalEmail={originalEmail}
+                  avatarUrl={avatarUrl}
+                  onAvatarChange={setAvatarUrl}
                 />
               </div>
             </div>

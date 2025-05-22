@@ -5,7 +5,11 @@ import { useToast } from '@/hooks/use-toast';
 import { ProfileFormValues } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
+export const useProfileFormSubmit = (
+  refreshUserData?: () => Promise<void>,
+  avatarUrl?: string,
+  refetchProfile?: () => Promise<void>
+) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,7 +26,7 @@ export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
 
     setIsSubmitting(true);
     try {
-      console.log('Submitting profile data:', data);
+      console.log('Submitting profile data to profiles table:', data);
       
       // Check if email is being changed
       const isEmailChanged = data.email !== user.email;
@@ -58,7 +62,27 @@ export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
         });
       }
       
-      // Update user metadata
+      // Update profiles table with form data
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          phone: data.phone,
+          country_code: data.countryCode,
+          avatar_url: avatarUrl || null,
+          updated_at: new Date().toISOString()
+        });
+      
+      if (profileError) {
+        console.error('Error updating profiles table:', profileError);
+        throw profileError;
+      }
+      
+      console.log('Profile updated successfully in profiles table');
+      
+      // Also update user metadata for backward compatibility
       const metadata = {
         first_name: data.firstName,
         last_name: data.lastName,
@@ -68,17 +92,18 @@ export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
       
       console.log('Updating user metadata:', metadata);
       
-      // Update the user's metadata in Supabase
-      const { data: userData, error } = await supabase.auth.updateUser({
+      const { error: metadataError } = await supabase.auth.updateUser({
         data: metadata
       });
       
-      if (error) {
-        console.error('Error updating profile:', error);
-        throw error;
+      if (metadataError) {
+        console.warn('Error updating user metadata (non-critical):', metadataError);
       }
       
-      console.log('Profile update response:', userData);
+      // Refresh profile data
+      if (refetchProfile) {
+        await refetchProfile();
+      }
       
       // Refresh the user data in AuthContext
       if (refreshUserData) {
