@@ -94,30 +94,32 @@ export const useSpeechesFilter = (
     // Apply type filter
     let filtered: Speech[] = [];
     if (filterType === 'all') {
-      // Show ALL speeches without filtering by type
+      // Show ALL speeches - both saved and upcoming without filtering
       filtered = combinedSpeeches;
-      console.log('Showing ALL speeches, combined count:', combinedSpeeches.length);
+      console.log('Showing ALL speeches (both saved and upcoming), combined count:', combinedSpeeches.length);
     } else if (filterType === 'upcoming') {
       // Only show upcoming speeches
       filtered = combinedSpeeches.filter(speech => speech.isUpcoming === true);
-      console.log('Filtering for UPCOMING speeches only');
+      console.log('Filtering for UPCOMING speeches only, count:', filtered.length);
     } else {
-      // Filter for a specific speech type
+      // Filter for a specific speech type (only from saved speeches)
       filtered = combinedSpeeches.filter(speech => 
         speech.speech_type === filterType && !speech.isUpcoming
       );
-      console.log(`Filtering for type: ${filterType}`);
+      console.log(`Filtering for specific type: ${filterType}, count:`, filtered.length);
     }
     
     // Log filtering results for debugging
     console.log(`Filtered speeches (${filterType}):`, filtered.length);
-    console.log('Regular speeches:', filtered.filter(s => !s.isUpcoming).length);
-    console.log('Upcoming speeches:', filtered.filter(s => s.isUpcoming).length);
+    console.log('Regular speeches after filtering:', filtered.filter(s => !s.isUpcoming).length);
+    console.log('Upcoming speeches after filtering:', filtered.filter(s => s.isUpcoming).length);
     
     // Remove duplicates based on ID
     const uniqueSpeeches = Array.from(
       new Map(filtered.map(speech => [speech.id, speech])).values()
     );
+    
+    console.log('Final speech count after deduplication:', uniqueSpeeches.length);
     
     // Sort speeches
     return uniqueSpeeches.sort((a, b) => {
