@@ -23,13 +23,13 @@ export const useSpeechesFilter = (
     console.log('Original regular speeches count:', regularSpeechCount);
     console.log('Original upcoming speeches count:', upcomingSpeechCount);
     
-    // Ensure each regular speech has correct isUpcoming flag
+    // Ensure each speech has correct isUpcoming flag
     let allSpeeches = speeches.map(speech => ({
       ...speech,
       isUpcoming: speech.isUpcoming || false // Default to false for regular speeches
     }));
     
-    console.log('Regular speeches after mapping:', allSpeeches.length);
+    console.log('All speeches after mapping:', allSpeeches.length);
     
     // Get upcoming events from localStorage with user-specific key
     let upcomingEvents: any[] = [];
@@ -96,14 +96,16 @@ export const useSpeechesFilter = (
     if (filterType === 'all') {
       // Show ALL speeches without filtering by type
       filtered = combinedSpeeches;
-      console.log('Showing ALL speeches');
+      console.log('Showing ALL speeches, combined count:', combinedSpeeches.length);
     } else if (filterType === 'upcoming') {
       // Only show upcoming speeches
       filtered = combinedSpeeches.filter(speech => speech.isUpcoming === true);
       console.log('Filtering for UPCOMING speeches only');
     } else {
       // Filter for a specific speech type
-      filtered = combinedSpeeches.filter(speech => speech.speech_type === filterType);
+      filtered = combinedSpeeches.filter(speech => 
+        speech.speech_type === filterType && !speech.isUpcoming
+      );
       console.log(`Filtering for type: ${filterType}`);
     }
     
