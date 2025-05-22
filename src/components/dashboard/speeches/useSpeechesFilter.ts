@@ -18,10 +18,10 @@ export const useSpeechesFilter = (
     console.log('Filter type:', filterType);
     
     // Deep inspect the speeches array to see what we're actually getting
-    const regularSpeeches = speeches.filter(s => !s.isUpcoming);
-    const upcomingSpeeches = speeches.filter(s => s.isUpcoming);
-    console.log('Original regular speeches count:', regularSpeeches.length);
-    console.log('Original upcoming speeches count:', upcomingSpeeches.length);
+    const regularSpeechCount = speeches.filter(s => !s.isUpcoming).length;
+    const upcomingSpeechCount = speeches.filter(s => s.isUpcoming).length;
+    console.log('Original regular speeches count:', regularSpeechCount);
+    console.log('Original upcoming speeches count:', upcomingSpeechCount);
     
     // Ensure each regular speech has correct isUpcoming flag
     let allSpeeches = speeches.map(speech => ({
