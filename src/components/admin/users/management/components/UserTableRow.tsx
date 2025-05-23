@@ -68,22 +68,23 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     }
   };
 
-  // Get user phone and country flag from profiles table data
+  // Get user data using simplified functions
   const userPhone = getUserPhone(user);
   const countryFlag = getCountryFlag(user);
-
-  // Get display name from profiles table data
   const displayName = formatUserDisplayName(user);
 
-  console.log('UserTableRow - User data:', {
+  console.log('🔍 UserTableRow rendering user:', {
     id: user.id,
     email: user.email,
-    first_name: user.first_name,
-    last_name: user.last_name,
     displayName,
-    phone: user.phone,
-    country_code: user.country_code,
-    userPhone
+    userPhone,
+    countryFlag,
+    profileData: {
+      phone: user.phone,
+      country_code: user.country_code,
+      first_name: user.first_name,
+      last_name: user.last_name
+    }
   });
 
   return (
@@ -111,7 +112,11 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       
       <TableCell className="px-2">
         <div className="flex items-center text-sm text-gray-600">
-          {userPhone !== '—' && countryFlag && <span className="mr-1">{countryFlag}</span>}
+          {userPhone !== '—' && countryFlag && (
+            <span className="mr-1" title={`Country: ${user.country_code || 'Unknown'}`}>
+              {countryFlag}
+            </span>
+          )}
           {userPhone}
         </div>
       </TableCell>
