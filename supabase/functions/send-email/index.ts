@@ -63,28 +63,63 @@ serve(async (req) => {
 			);
 		}
 
-		// Create the email content
+		// Create the email content with better deliverability
 		const emailSubject = subject || 'Welcome to SpeechHelp!';
 		const emailBody = emailHtml || `
-			<html>
-			<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-				<div style="text-align: center; margin-bottom: 30px;">
-					<img src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/assets/Speech%20Help%20-%20Logo-New.png" 
-						 width="150" height="44" alt="SpeechHelp" style="display: block; margin: 0 auto;">
-				</div>
-				<h1 style="color: #be185d; text-align: center;">${emailSubject}</h1>
-				<p>Hi ${username || 'there'},</p>
-				<p>${message || "Welcome to SpeechHelp! We're excited to have you on board."}</p>
-				<p>Thank you for joining SpeechHelp! Your journey to creating impactful, memorable speeches starts now.</p>
-				<div style="text-align: center; margin: 30px 0;">
-					<a href="https://speechhelp.ai/dashboard" 
-					   style="background-color: #be185d; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-						Start Creating Speeches
-					</a>
-				</div>
-				<p style="color: #666; font-size: 14px; text-align: center;">
-					If you have any questions, contact us at hello@speechhelp.ai
-				</p>
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>Welcome to SpeechHelp</title>
+			</head>
+			<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+				<table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px;">
+					<tr>
+						<td style="text-align: center; padding-bottom: 30px;">
+							<h1 style="color: #be185d; font-size: 24px; margin: 0; font-weight: bold;">SpeechHelp</h1>
+							<p style="color: #666666; margin: 5px 0 0 0; font-size: 14px;">Your AI Speech Assistant</p>
+						</td>
+					</tr>
+					<tr>
+						<td style="background-color: #f8f9fa; padding: 30px; border-radius: 8px;">
+							<h2 style="color: #be185d; text-align: center; margin-top: 0; font-size: 28px;">${emailSubject}</h2>
+							<p style="font-size: 16px; margin-bottom: 20px;">Hi ${username || 'there'},</p>
+							<p style="font-size: 16px; margin-bottom: 20px;">${message || "Welcome to SpeechHelp! We're excited to have you on board."}</p>
+							<p style="font-size: 16px; margin-bottom: 30px;">Thank you for joining SpeechHelp! Your journey to creating impactful, memorable speeches starts now.</p>
+							
+							<table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+								<tr>
+									<td style="text-align: center;">
+										<a href="https://speechhelp.ai/dashboard" 
+										   style="background-color: #be185d; color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
+											Start Creating Speeches
+										</a>
+									</td>
+								</tr>
+							</table>
+							
+							<div style="background-color: #e8f4f8; padding: 20px; border-radius: 6px; margin: 25px 0;">
+								<h3 style="color: #be185d; margin-top: 0; font-size: 18px;">What you can do:</h3>
+								<ul style="margin: 0; padding-left: 20px;">
+									<li style="margin-bottom: 8px;">Generate professional speeches in minutes</li>
+									<li style="margin-bottom: 8px;">Customize with our intuitive editor</li>
+									<li style="margin-bottom: 8px;">Save speeches in your personal library</li>
+									<li style="margin-bottom: 8px;">Export in multiple formats</li>
+								</ul>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td style="text-align: center; padding-top: 30px; color: #666666; font-size: 14px;">
+							<p style="margin-bottom: 10px;">Need help? Contact us at <a href="mailto:hello@speechhelp.ai" style="color: #be185d; text-decoration: none;">hello@speechhelp.ai</a></p>
+							<p style="margin: 0; font-size: 12px; color: #999999;">
+								© 2024 SpeechHelp. All rights reserved.<br>
+								If you didn't request this email, you can safely ignore it.
+							</p>
+						</td>
+					</tr>
+				</table>
 			</body>
 			</html>
 		`;
@@ -138,19 +173,23 @@ serve(async (req) => {
 			// Send DATA
 			await sendCommand('DATA');
 
-			// Send email headers and body
-			const emailMessage = [
+			// Send email headers and body with proper formatting
+			const emailHeaders = [
 				`From: SpeechHelp <${SMTP_USER}>`,
 				`To: ${email}`,
 				`Subject: ${emailSubject}`,
 				'MIME-Version: 1.0',
 				'Content-Type: text/html; charset=UTF-8',
-				'',
-				emailBody,
-				'.'
+				'Content-Transfer-Encoding: 8bit',
+				'X-Mailer: SpeechHelp-Mailer',
+				'X-Priority: 3',
+				'Message-ID: <' + Date.now() + '@speechhelp.ai>',
+				''
 			].join('\r\n');
 
-			await conn.write(encoder.encode(emailMessage + '\r\n'));
+			const fullMessage = emailHeaders + emailBody + '\r\n.';
+			
+			await conn.write(encoder.encode(fullMessage + '\r\n'));
 			const dataResponse = await readResponse();
 			console.log('DATA response:', dataResponse.trim());
 
