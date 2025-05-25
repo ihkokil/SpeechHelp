@@ -19,15 +19,23 @@ serve(async (req) => {
 	try {
 		console.log('Send email function called');
 		
-		// Get Resend API key from environment variables
-		const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+		// Get SMTP credentials from environment variables
+		const SMTP_HOST = Deno.env.get('SMTP_HOST') || 'smtp.ionos.com';
+		const SMTP_PORT = Deno.env.get('SMTP_PORT') || '465';
+		const SMTP_USER = Deno.env.get('SMTP_USER');
+		const SMTP_PASSWORD = Deno.env.get('SMTP_PASSWORD');
 
-		console.log('Resend API Key:', RESEND_API_KEY ? 'SET' : 'NOT SET');
+		console.log('SMTP Config:', {
+			host: SMTP_HOST,
+			port: SMTP_PORT,
+			user: SMTP_USER ? `${SMTP_USER.substring(0, 5)}***` : 'NOT SET',
+			password: SMTP_PASSWORD ? '***SET***' : 'NOT SET'
+		});
 
-		if (!RESEND_API_KEY) {
-			console.error('Resend API key not found in environment variables');
+		if (!SMTP_USER || !SMTP_PASSWORD) {
+			console.error('SMTP credentials not found in environment variables');
 			return new Response(
-				JSON.stringify({ error: 'Email service not configured. Please set up Resend API key.' }),
+				JSON.stringify({ error: 'Email service not configured. Please set up SMTP credentials.' }),
 				{
 					status: 500,
 					headers: {
@@ -81,50 +89,85 @@ serve(async (req) => {
 			</html>
 		`;
 
-		// Send email using Resend API
-		console.log('Sending email via Resend API...');
+		// Send email using raw SMTP with SSL (port 465)
+		console.log('Attempting to send email via SMTP...');
 		
 		try {
-			const emailPayload = {
-				from: 'SpeechHelp <hello@speechhelp.ai>',
-				to: [email],
-				subject: emailSubject,
-				html: emailBody
+			const conn = await Deno.connectTls({
+				hostname: SMTP_HOST,
+				port: parseInt(SMTP_PORT)
+			});
+
+			const encoder = new TextEncoder();
+			const decoder = new TextDecoder();
+
+			// Helper function to read SMTP response
+			const readResponse = async () => {
+				const buffer = new Uint8Array(4096);
+				const bytesRead = await conn.read(buffer);
+				if (bytesRead === null) return '';
+				return decoder.decode(buffer.subarray(0, bytesRead));
 			};
 
-			console.log('Email payload:', {
-				from: emailPayload.from,
-				to: emailPayload.to,
-				subject: emailPayload.subject
-			});
+			// Helper function to send SMTP command
+			const sendCommand = async (command: string) => {
+				console.log(`Sending: ${command.replace(/AUTH PLAIN .+/, 'AUTH PLAIN [HIDDEN]')}`);
+				await conn.write(encoder.encode(command + '\r\n'));
+				const response = await readResponse();
+				console.log(`Response: ${response.trim()}`);
+				return response;
+			};
 
-			const resendResponse = await fetch('https://api.resend.com/emails', {
-				method: 'POST',
-				headers: {
-					'Authorization': `Bearer ${RESEND_API_KEY}`,
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(emailPayload),
-			});
+			// Read server greeting
+			const greeting = await readResponse();
+			console.log('Server greeting:', greeting.trim());
 
-			const resendData = await resendResponse.json();
-			console.log('Resend API response:', resendData);
+			// Send EHLO
+			await sendCommand(`EHLO ${SMTP_HOST}`);
 
-			if (!resendResponse.ok) {
-				console.error('Resend API error:', resendData);
-				throw new Error(`Resend API error: ${resendData.message || 'Unknown error'}`);
-			}
+			// Authenticate using AUTH PLAIN
+			const authString = btoa(`\0${SMTP_USER}\0${SMTP_PASSWORD}`);
+			await sendCommand(`AUTH PLAIN ${authString}`);
 
-			console.log('Email sent successfully via Resend');
+			// Send MAIL FROM
+			await sendCommand(`MAIL FROM:<${SMTP_USER}>`);
+
+			// Send RCPT TO
+			await sendCommand(`RCPT TO:<${email}>`);
+
+			// Send DATA
+			await sendCommand('DATA');
+
+			// Send email headers and body
+			const emailMessage = [
+				`From: SpeechHelp <${SMTP_USER}>`,
+				`To: ${email}`,
+				`Subject: ${emailSubject}`,
+				'MIME-Version: 1.0',
+				'Content-Type: text/html; charset=UTF-8',
+				'',
+				emailBody,
+				'.'
+			].join('\r\n');
+
+			await conn.write(encoder.encode(emailMessage + '\r\n'));
+			const dataResponse = await readResponse();
+			console.log('DATA response:', dataResponse.trim());
+
+			// Send QUIT
+			await sendCommand('QUIT');
+
+			conn.close();
+
+			console.log('Email sent successfully via SMTP');
 
 			return new Response(
 				JSON.stringify({
 					success: true,
-					message: 'Welcome email sent successfully via Resend',
+					message: 'Welcome email sent successfully via SMTP',
 					data: { 
 						recipient: email, 
-						subject: emailSubject,
-						messageId: resendData.id 
+						subject: emailSubject
 					}
 				}),
 				{
@@ -135,26 +178,28 @@ serve(async (req) => {
 				}
 			);
 
-		} catch (emailError) {
-			console.error('Email sending error:', {
-				message: emailError.message,
-				stack: emailError.stack
+		} catch (smtpError: any) {
+			console.error('SMTP error details:', {
+				message: smtpError.message,
+				stack: smtpError.stack,
+				host: SMTP_HOST,
+				port: SMTP_PORT
 			});
 			
 			return new Response(
 				JSON.stringify({
 					success: false,
-					error: 'Email sending failed',
-					details: emailError.message,
+					error: 'SMTP email sending failed',
+					details: smtpError.message,
 					troubleshooting: {
 						recipient: email,
 						subject: emailSubject,
 						suggestions: [
-							'Check if Resend API key is valid',
-							'Verify the sender domain is configured in Resend',
-							'Check if the recipient email is valid',
-							'Make sure you have added your domain to Resend',
-							'Check Resend dashboard for any delivery issues'
+							'Verify SMTP credentials are correct',
+							'Check if SMTP server allows connections from this IP',
+							'Try using port 465 with SSL or port 587 with STARTTLS',
+							'Check if your hosting provider has SMTP enabled',
+							'Verify the sender email domain is properly configured'
 						]
 					}
 				}),
@@ -168,7 +213,7 @@ serve(async (req) => {
 			);
 		}
 
-	} catch (error) {
+	} catch (error: any) {
 		console.error('General error in send-email function:', {
 			message: error.message,
 			stack: error.stack
