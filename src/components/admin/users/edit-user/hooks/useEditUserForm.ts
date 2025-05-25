@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { User } from '../../types';
 import { supabase } from '@/integrations/supabase/client';
-import { formatUserDisplayName } from '../../management/utils/userDisplayUtils';
 
 // Form validation schema
 const formSchema = z.object({
@@ -58,13 +57,13 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
     setIsSubmitting(true);
     
     try {
-      console.log('Updating user with values:', values);
-      
       if (!initialUser) {
         throw new Error('No user to update');
       }
       
-      // Update user profile information with admin_update_user_profile RPC function
+      console.log('Updating user profile for user ID:', initialUser.id);
+      
+      // Update user profile information using admin_update_user_profile RPC function
       const { data: profileData, error: profileError } = await supabase.rpc('admin_update_user_profile', {
         user_id_param: initialUser.id,
         display_name: `${values.firstName} ${values.lastName}`,
@@ -85,13 +84,14 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       
       if (profileError) {
         console.error('Error updating user profile:', profileError);
-        throw profileError;
+        throw new Error(profileError.message || 'Failed to update user profile');
       }
       
       console.log('User profile updated successfully:', profileData);
       
-      // Update user email if it changed
+      // Update user email in auth if it changed
       if (values.email !== initialUser.email) {
+        console.log('Updating user email in auth system');
         const { error: emailError } = await supabase.auth.admin.updateUserById(
           initialUser.id,
           { email: values.email }
@@ -99,7 +99,6 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         
         if (emailError) {
           console.error('Error updating user email:', emailError);
-          // Don't throw here as the profile update was successful
           toast({
             title: 'Partial Update',
             description: 'Profile updated but email change failed. User will need to verify new email.',
@@ -130,13 +129,15 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         user_metadata: updatedMetadata
       };
       
+      console.log('Constructed updated user object:', updatedUser);
+      
+      // Pass the updated user to the parent component
+      onUserUpdated(updatedUser);
+      
       toast({
         title: 'Success',
         description: 'User has been updated successfully.',
       });
-      
-      // Pass the updated user to the parent component
-      onUserUpdated(updatedUser);
       
       // Reset the form
       resetForm();
@@ -144,15 +145,11 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       // Close the dialog after successful submission
       onOpenChange(false);
       
-      // Refresh the page after a slight delay to ensure state is properly updated
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Exception updating user:', error);
       toast({
         title: 'Error',
-        description: 'An unexpected error occurred. Please try again.',
+        description: error.message || 'Failed to update user. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -179,11 +176,11 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         title: 'Password Reset Sent',
         description: `A password reset link has been sent to ${email}.`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Exception sending password reset:', error);
       toast({
         title: 'Error',
-        description: 'Failed to send password reset link. Please try again.',
+        description: error.message || 'Failed to send password reset link. Please try again.',
         variant: 'destructive',
       });
     } finally {
