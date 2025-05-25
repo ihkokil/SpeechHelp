@@ -35,7 +35,7 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      // Use direct first_name and last_name from profiles table, with fallbacks
+      // Prioritize direct fields from profiles table, then fallback to user_metadata
       firstName: initialUser?.first_name || initialUser?.user_metadata?.first_name || '',
       lastName: initialUser?.last_name || initialUser?.user_metadata?.last_name || '',
       email: initialUser?.email || '',
@@ -47,6 +47,15 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       country: initialUser?.user_metadata?.country || '',
       isActive: initialUser?.is_active !== false,
     },
+  });
+
+  // Log user data for debugging
+  console.log('useEditUserForm - Initial user data:', {
+    id: initialUser?.id,
+    email: initialUser?.email,
+    first_name: initialUser?.first_name,
+    last_name: initialUser?.last_name,
+    user_metadata: initialUser?.user_metadata
   });
 
   const resetForm = () => {
