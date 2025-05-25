@@ -30,14 +30,9 @@ serve(async (req) => {
       }
     });
     
-    const { email, password, name, role, isActive } = await req.json();
+    const { email, password, firstName, lastName, role, isActive } = await req.json();
     
-    console.log('Creating user with admin privileges:', { email, name, role, isActive });
-    
-    // Split name into first and last name
-    const nameParts = name.trim().split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
+    console.log('Creating user with admin privileges:', { email, firstName, lastName, role, isActive });
     
     // Create user in Supabase Auth - the trigger will handle profile creation
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
@@ -47,8 +42,8 @@ serve(async (req) => {
       user_metadata: {
         first_name: firstName,
         last_name: lastName,
-        full_name: name,
-        name: name,
+        full_name: `${firstName} ${lastName}`,
+        name: `${firstName} ${lastName}`,
         phone: ''
       }
     });

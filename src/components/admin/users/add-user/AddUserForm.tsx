@@ -7,7 +7,8 @@ import { Loader2 } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormValues } from './hooks/useAddUserForm';
 import { 
-  NameField, 
+  FirstNameField, 
+  LastNameField,
   EmailField, 
   PasswordField, 
   RoleField, 
@@ -30,7 +31,10 @@ const AddUserForm: React.FC<AddUserFormProps> = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <NameField form={form} />
+        <div className="grid grid-cols-2 gap-4">
+          <FirstNameField form={form} />
+          <LastNameField form={form} />
+        </div>
         <EmailField form={form} />
         <PasswordField form={form} />
         <RoleField form={form} />

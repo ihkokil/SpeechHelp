@@ -15,7 +15,8 @@ const formSchema = z.object({
     .regex(/[A-Z]/, { message: 'Password must contain at least one uppercase letter' })
     .regex(/[a-z]/, { message: 'Password must contain at least one lowercase letter' })
     .regex(/[0-9]/, { message: 'Password must contain at least one number' }),
-  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
+  firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),
+  lastName: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
   role: z.string().default('user'),
   isActive: z.boolean().default(true),
 });
@@ -36,7 +37,8 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
     defaultValues: {
       email: '',
       password: '',
-      name: '',
+      firstName: '',
+      lastName: '',
       role: 'user',
       isActive: true,
     },
@@ -58,7 +60,8 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
         body: {
           email: values.email,
           password: values.password,
-          name: values.name,
+          firstName: values.firstName,
+          lastName: values.lastName,
           role: values.role,
           isActive: values.isActive
         }
@@ -76,11 +79,6 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
       
       console.log('User created successfully:', functionData.user);
       
-      // Split name into first and last name for the UI
-      const nameParts = values.name.trim().split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-      
       // Create a user object to pass back that matches our User type
       const newUser: User = {
         id: functionData.user.id,
@@ -96,10 +94,10 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
           providers: ['email']
         },
         user_metadata: {
-          name: values.name,
-          full_name: values.name,
-          first_name: firstName,
-          last_name: lastName,
+          first_name: values.firstName,
+          last_name: values.lastName,
+          full_name: `${values.firstName} ${values.lastName}`,
+          name: `${values.firstName} ${values.lastName}`,
           email: values.email
         },
         subscription_status: 'none',

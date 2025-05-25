@@ -62,10 +62,10 @@ export const useFetchUsers = () => {
             providers: authUser.app_metadata?.providers || ['email'],
           },
           user_metadata: {
+            first_name: authUser.raw_user_meta_data?.first_name || profile.first_name || '',
+            last_name: authUser.raw_user_meta_data?.last_name || profile.last_name || '',
             name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || authUser.email?.split('@')[0] || 'User',
             full_name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || '',
-            first_name: authUser.raw_user_meta_data?.first_name || '',
-            last_name: authUser.raw_user_meta_data?.last_name || '',
             email: authUser.email,
             phone: authUser.raw_user_meta_data?.phone || profile.phone || '',
             street_address: authUser.raw_user_meta_data?.street_address || '',
