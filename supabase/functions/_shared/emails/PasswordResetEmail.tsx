@@ -1,7 +1,7 @@
 
 import * as React from 'npm:react@18.3.1';
 
-// Inline styles for the password reset email
+// Inline styles for the password reset email matching SpeechHelp brand
 const styles = {
   main: {
     backgroundColor: '#f6f9fc',
@@ -26,7 +26,7 @@ const styles = {
     margin: '0 auto',
   },
   h1: {
-    color: '#a94b9a',
+    color: '#be185d', // Using your actual pink-700 brand color
     fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
     fontSize: '32px',
     fontWeight: 'bold',
@@ -44,7 +44,7 @@ const styles = {
     textAlign: 'center' as const
   },
   button: {
-    backgroundColor: '#a94b9a',
+    backgroundColor: '#be185d', // Using your actual pink-700 brand color
     borderRadius: '8px',
     color: '#fff',
     display: 'inline-block',
@@ -55,7 +55,7 @@ const styles = {
     textTransform: 'uppercase' as const,
   },
   link: {
-    color: '#a94b9a',
+    color: '#be185d', // Using your actual pink-700 brand color
     fontWeight: '500',
     textDecoration: 'none',
   },
