@@ -23,7 +23,12 @@ serve(async (req) => {
       throw new Error('Missing environment variables for Supabase connection');
     }
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
     
     const { email, password, name, role, isActive } = await req.json();
     
@@ -34,7 +39,7 @@ serve(async (req) => {
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
     
-    // Create user in Supabase Auth
+    // Create user in Supabase Auth - the trigger will handle profile creation
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email,
       password: password,
@@ -43,7 +48,8 @@ serve(async (req) => {
         first_name: firstName,
         last_name: lastName,
         full_name: name,
-        name: name
+        name: name,
+        phone: ''
       }
     });
     
@@ -58,7 +64,10 @@ serve(async (req) => {
     
     console.log('User created in auth successfully:', authData.user.id);
     
-    // Update profile with admin status if needed
+    // Wait a moment for the trigger to complete
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Update admin status if needed
     if (role !== 'user') {
       console.log('Setting admin status for user:', authData.user.id);
       const { error: profileError } = await supabase.rpc('update_user_admin_status', {
@@ -74,6 +83,16 @@ serve(async (req) => {
         console.error('Error updating user admin status:', profileError);
         // Don't throw error here as user was created successfully
       }
+    }
+    
+    // Set user active status
+    const { error: statusError } = await supabase
+      .from('profiles')
+      .update({ is_active: isActive })
+      .eq('id', authData.user.id);
+    
+    if (statusError) {
+      console.error('Error updating user status:', statusError);
     }
     
     // Return the created user data
