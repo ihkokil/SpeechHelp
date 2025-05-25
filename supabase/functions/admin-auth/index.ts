@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.26.0";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
@@ -325,13 +326,51 @@ async function handleVerifyPassword(data) {
       .eq("admin_user_id", admin.id)
       .maybeSingle();
 
-    // Return user info
+    // Get user's full name from profiles table by matching email
+    let displayName = admin.username; // Default fallback
+    
+    try {
+      console.log(`Looking up profile for admin email: ${admin.email}`);
+      
+      // First, try to find the user in auth.users by email
+      const { data: authUsers, error: authError } = await supabaseClient
+        .from("auth.users")
+        .select("id")
+        .eq("email", admin.email)
+        .maybeSingle();
+      
+      if (!authError && authUsers) {
+        console.log(`Found auth user ID: ${authUsers.id}`);
+        
+        // Then get their profile information
+        const { data: profile, error: profileError } = await supabaseClient
+          .from("profiles")
+          .select("first_name, last_name")
+          .eq("id", authUsers.id)
+          .maybeSingle();
+        
+        if (!profileError && profile && profile.first_name && profile.last_name) {
+          displayName = `${profile.first_name} ${profile.last_name}`;
+          console.log(`Found full name in profiles: ${displayName}`);
+        } else {
+          console.log("No profile found or missing name fields, using username fallback");
+        }
+      } else {
+        console.log("No auth user found for email, using username fallback");
+      }
+    } catch (profileError) {
+      console.error("Error fetching profile data:", profileError);
+      // Continue with username fallback
+    }
+
+    // Return user info with display name
     return new Response(JSON.stringify({ 
       success: true,
       requires2FA: twoFactorData?.is_enabled || false,
       user: {
         id: admin.id,
         username: admin.username,
+        displayName: displayName, // Add the display name here
         email: admin.email,
         is_active: admin.is_active,
         is_super_admin: admin.is_super_admin,

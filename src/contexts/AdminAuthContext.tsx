@@ -6,6 +6,7 @@ import { toast } from '@/hooks/use-toast';
 interface AdminUser {
   id: string;
   username: string;
+  displayName?: string; // Add displayName property
   email: string;
   is_active: boolean;
   is_super_admin: boolean;
@@ -107,9 +108,12 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
         localStorage.setItem('adminSession', JSON.stringify(sessionData));
         
         setAdminUser(result.user || null);
+        
+        // Use displayName if available, otherwise fall back to username
+        const welcomeName = result.user?.displayName || result.user?.username;
         toast({
           title: "Login successful",
-          description: `Welcome back, ${result.user?.username}!`,
+          description: `Welcome back, ${welcomeName}!`,
         });
       } else if (result.success && result.requires2FA && result.user) {
         // Set pending user for 2FA verification
@@ -176,9 +180,11 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
         setAdminUser(user);
         setPendingUserId(null);
         
+        // Use displayName if available, otherwise fall back to username
+        const welcomeName = user?.displayName || user?.username;
         toast({
           title: "Verification successful",
-          description: `Welcome back, ${user?.username}!`,
+          description: `Welcome back, ${welcomeName}!`,
         });
       } else {
         toast({
