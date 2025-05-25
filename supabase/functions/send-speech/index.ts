@@ -46,7 +46,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending email to ${recipientEmail} with title: ${title}`);
 
     const emailResponse = await resend.emails.send({
-      from: "Speech Helper <onboarding@resend.dev>",
+      from: "SpeechHelp <hello@speechhelp.ai>",
       to: [recipientEmail],
       subject: `Your Speech: ${title}`,
       html: `
@@ -56,7 +56,7 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
         <hr />
         <p style="color: #777; font-size: 12px;">
-          This speech was generated using Speech Helper.
+          This speech was generated using SpeechHelp.
         </p>
       `
     });

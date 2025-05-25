@@ -1,29 +1,26 @@
 
 import * as React from 'react';
-import { Img, Heading, Section, Text } from '@react-email/components';
+import { Img, Section } from '@react-email/components';
 import * as styles from '../styles/welcome-email-styles';
 
 interface EmailHeaderProps {
-  username?: string;
+	username?: string;
 }
 
-export const EmailHeader = ({ username }: EmailHeaderProps) => {
-  return (
-    <>
-      <Section style={styles.logoSection}>
-        <Img
-          src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/emails/speech-help-new-logo.svg"
-          width="180"
-          height="65"
-          alt="SpeechHelp Logo"
-          style={styles.logo}
-        />
-      </Section>
-      
-      <Section style={styles.headerSection}>
-        <Heading style={styles.h1}>Welcome to SpeechHelp{username ? `, ${username}` : ''}!</Heading>
-        <Text style={styles.tagline}>Your personal AI speech assistant</Text>
-      </Section>
-    </>
-  );
+export const EmailHeader = ({ username = 'there' }: EmailHeaderProps) => {
+	return (
+		<Section style={styles.header}>
+			<Img
+				src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/assets/Speech%20Help%20-%20Logo-New.png"
+				width="150"
+				height="44"
+				alt="SpeechHelp"
+				style={styles.logo}
+			/>
+			<h1 style={styles.heading}>Welcome to SpeechHelp, {username}!</h1>
+			<p style={styles.subtitle}>
+				Your personal AI speech assistant is ready to help you create amazing speeches.
+			</p>
+		</Section>
+	);
 };
