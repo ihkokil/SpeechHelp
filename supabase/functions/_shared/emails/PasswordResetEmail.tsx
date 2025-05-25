@@ -26,7 +26,7 @@ const styles = {
     margin: '0 auto',
   },
   h1: {
-    color: '#be185d', // Using your actual pink-700 brand color
+    color: '#be185d',
     fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
     fontSize: '32px',
     fontWeight: 'bold',
@@ -44,7 +44,7 @@ const styles = {
     textAlign: 'center' as const
   },
   button: {
-    backgroundColor: '#be185d', // Using your actual pink-700 brand color
+    backgroundColor: '#be185d',
     borderRadius: '8px',
     color: '#fff',
     display: 'inline-block',
@@ -55,7 +55,7 @@ const styles = {
     textTransform: 'uppercase' as const,
   },
   link: {
-    color: '#be185d', // Using your actual pink-700 brand color
+    color: '#be185d',
     fontWeight: '500',
     textDecoration: 'none',
   },
@@ -101,32 +101,37 @@ interface PasswordResetEmailProps {
 const PasswordResetEmail = ({ resetUrl, userEmail }: PasswordResetEmailProps) => {
   return (
     <html>
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Reset Your SpeechHelp Password</title>
+      </head>
       <body style={styles.main}>
         <div style={styles.container}>
-          {/* Header with Logo */}
           <div style={styles.logoSection}>
-            <img
-              src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/assets/Speech%20Help%20-%20Logo-New.png"
-              width="150"
-              height="44"
-              alt="SpeechHelp"
-              style={styles.logo}
-            />
+            <div style={{ 
+              fontSize: '24px', 
+              fontWeight: 'bold', 
+              color: '#be185d',
+              fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif'
+            }}>
+              SpeechHelp
+            </div>
           </div>
 
-          {/* Main Content */}
           <div>
             <h1 style={styles.h1}>Reset Your Password</h1>
             
             <p style={styles.paragraph}>
-              We received a request to reset the password for your SpeechHelp account{userEmail ? ` (${userEmail})` : ''}.
+              We received a request to reset the password for your SpeechHelp account
+              {userEmail ? ` (${userEmail})` : ''}.
             </p>
 
             <p style={styles.paragraph}>
-              Click the button below to create a new password. This link will expire in 24 hours for security reasons.
+              Click the button below to create a new password. This link will expire in 
+              24 hours for security reasons.
             </p>
 
-            {/* CTA Button */}
             <div style={styles.ctaSection}>
               <a href={resetUrl} style={styles.button}>
                 Reset Your Password
@@ -146,12 +151,11 @@ const PasswordResetEmail = ({ resetUrl, userEmail }: PasswordResetEmailProps) =>
             <hr style={styles.divider} />
 
             <div style={styles.securityNote}>
-              <strong>Security Note:</strong> If you didn't request this password reset, you can safely ignore this email. 
-              Your password will remain unchanged.
+              <strong>Security Note:</strong> If you didn't request this password reset, 
+              you can safely ignore this email. Your password will remain unchanged.
             </div>
           </div>
 
-          {/* Footer */}
           <div style={styles.footerSection}>
             <p style={styles.footerText}>
               Need help? Contact our support team at{' '}
