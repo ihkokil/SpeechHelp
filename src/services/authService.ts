@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import WelcomeEmail from './welcome-email';
 import { renderToString } from 'react-dom/server';
@@ -83,6 +84,38 @@ export const signUp = async (
 		title: "Sign up successful",
 		description: "Welcome to SpeechHelp! Please check your email to confirm your account.",
 	});
+};
+
+export const resetPassword = async (email: string, showToast: ShowToastFunction) => {
+	try {
+		// Get the current URL to construct the redirect URL
+		const redirectUrl = `${window.location.origin}/auth?type=recovery`;
+		
+		// Call our custom password reset function
+		const { data, error } = await supabase.functions.invoke('send-password-reset', {
+			body: {
+				email: email,
+				resetUrl: `${window.location.origin}/auth?type=recovery`
+			}
+		});
+
+		if (error) {
+			throw error;
+		}
+
+		showToast({
+			title: "Password reset sent",
+			description: "Check your email for password reset instructions.",
+		});
+	} catch (error: any) {
+		console.error('Password reset error:', error);
+		showToast({
+			title: "Error sending reset email",
+			description: error.message || "Failed to send password reset email. Please try again.",
+			variant: "destructive"
+		});
+		throw error;
+	}
 };
 
 export const signOut = async (showToast: ShowToastFunction) => {
