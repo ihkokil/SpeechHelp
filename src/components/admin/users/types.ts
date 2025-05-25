@@ -35,6 +35,9 @@ export interface User {
   last_name?: string;
   username?: string;
   phone?: string;
+  // Stripe related fields
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
 }
 
 export interface Speech {
@@ -45,4 +48,21 @@ export interface Speech {
   created_at: string;
   updated_at: string;
   user_id: string;
+}
+
+export interface SpeechTypeStats {
+  type: string;
+  count: number;
+}
+
+export interface AdminRole {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface AdminPermission {
+  id: string;
+  name: string;
+  description: string;
 }
