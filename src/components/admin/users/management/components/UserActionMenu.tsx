@@ -11,7 +11,6 @@ import {
   Eye,
   UserCheck,
   Shield,
-  Edit,
   BadgePercent,
 } from 'lucide-react';
 
@@ -22,7 +21,6 @@ interface UserActionMenuProps {
   onToggleUserActive: (userId: string, isActive: boolean) => void;
   onExtendSubscription?: (userId: string) => void;
   onDeleteUser: (userId: string) => void;
-  onEditUser?: (user: User) => void;
   onSendEmail?: (user: User) => void;
   onUpdateSubscription?: (user: User) => void; 
 }
@@ -33,7 +31,6 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onManagePermissions,
   onToggleUserActive,
   onDeleteUser,
-  onEditUser,
   onSendEmail,
   onUpdateSubscription
 }) => {
@@ -75,16 +72,6 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
           <Eye className="mr-2 h-4 w-4" />
           <span>View Details</span>
         </DropdownMenuItem>
-        
-        {onEditUser && (
-          <DropdownMenuItem 
-            onClick={(e) => handleAction(e, onEditUser, user)} 
-            id={`edit-user-${user.id}`}
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            <span>Edit User</span>
-          </DropdownMenuItem>
-        )}
         
         <DropdownMenuItem 
           onClick={(e) => handleAction(e, onManagePermissions, user)} 
