@@ -59,6 +59,9 @@ verify_jwt = false
 [functions.openai-gen]
 verify_jwt = false
 
+[functions.send-confirmation]
+verify_jwt = false
+
 [functions.send-password-reset]
 verify_jwt = false
 
