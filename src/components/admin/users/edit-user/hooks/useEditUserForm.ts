@@ -35,7 +35,7 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      // Prioritize direct fields from profiles table, then fallback to user_metadata
+      // Extract values properly from both direct fields and user_metadata
       firstName: initialUser?.first_name || initialUser?.user_metadata?.first_name || '',
       lastName: initialUser?.last_name || initialUser?.user_metadata?.last_name || '',
       email: initialUser?.email || '',
@@ -84,12 +84,12 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         user_metadata: {
           first_name: values.firstName,
           last_name: values.lastName,
-          phone: values.phone,
-          street_address: values.streetAddress,
-          city: values.city,
-          state: values.state,
-          zip_code: values.zipCode,
-          country: values.country
+          phone: values.phone || '',
+          street_address: values.streetAddress || '',
+          city: values.city || '',
+          state: values.state || '',
+          zip_code: values.zipCode || '',
+          country: values.country || ''
         }
       });
       
@@ -105,7 +105,20 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         console.log('Updating user email in auth system');
         const { error: emailError } = await supabase.auth.admin.updateUserById(
           initialUser.id,
-          { email: values.email }
+          { 
+            email: values.email,
+            user_metadata: {
+              ...initialUser.user_metadata,
+              first_name: values.firstName,
+              last_name: values.lastName,
+              phone: values.phone || '',
+              street_address: values.streetAddress || '',
+              city: values.city || '',
+              state: values.state || '',
+              zip_code: values.zipCode || '',
+              country: values.country || ''
+            }
+          }
         );
         
         if (emailError) {
@@ -115,6 +128,30 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
             description: 'Profile updated but email change failed. User will need to verify new email.',
             variant: 'destructive',
           });
+        }
+      } else {
+        // Update user metadata even if email hasn't changed
+        const { error: metadataError } = await supabase.auth.admin.updateUserById(
+          initialUser.id,
+          { 
+            user_metadata: {
+              ...initialUser.user_metadata,
+              first_name: values.firstName,
+              last_name: values.lastName,
+              full_name: `${values.firstName} ${values.lastName}`,
+              name: `${values.firstName} ${values.lastName}`,
+              phone: values.phone || '',
+              street_address: values.streetAddress || '',
+              city: values.city || '',
+              state: values.state || '',
+              zip_code: values.zipCode || '',
+              country: values.country || ''
+            }
+          }
+        );
+        
+        if (metadataError) {
+          console.error('Error updating user metadata:', metadataError);
         }
       }
       
@@ -133,12 +170,12 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
           last_name: values.lastName,
           full_name: `${values.firstName} ${values.lastName}`,
           name: `${values.firstName} ${values.lastName}`,
-          phone: values.phone,
-          street_address: values.streetAddress,
-          city: values.city,
-          state: values.state,
-          zip_code: values.zipCode,
-          country: values.country,
+          phone: values.phone || '',
+          street_address: values.streetAddress || '',
+          city: values.city || '',
+          state: values.state || '',
+          zip_code: values.zipCode || '',
+          country: values.country || '',
         }
       };
       
