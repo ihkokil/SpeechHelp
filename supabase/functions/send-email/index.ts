@@ -19,23 +19,15 @@ serve(async (req) => {
 	try {
 		console.log('Send email function called');
 		
-		// Get SMTP credentials from environment variables
-		const SMTP_HOST = Deno.env.get('SMTP_HOST');
-		const SMTP_PORT = Deno.env.get('SMTP_PORT');
-		const SMTP_USER = Deno.env.get('SMTP_USER');
-		const SMTP_PASSWORD = Deno.env.get('SMTP_PASSWORD');
+		// Get Resend API key from environment variables
+		const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 
-		console.log('SMTP Config:', {
-			host: SMTP_HOST,
-			port: SMTP_PORT,
-			user: SMTP_USER ? SMTP_USER.substring(0, 5) + '***' : 'NOT SET',
-			password: SMTP_PASSWORD ? '***SET***' : 'NOT SET'
-		});
+		console.log('Resend API Key:', RESEND_API_KEY ? 'SET' : 'NOT SET');
 
-		if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD) {
-			console.error('SMTP credentials not found in environment variables');
+		if (!RESEND_API_KEY) {
+			console.error('Resend API key not found in environment variables');
 			return new Response(
-				JSON.stringify({ error: 'SMTP credentials not configured' }),
+				JSON.stringify({ error: 'Email service not configured. Please set up Resend API key.' }),
 				{
 					status: 500,
 					headers: {
@@ -89,134 +81,51 @@ serve(async (req) => {
 			</html>
 		`;
 
-		// Force use of port 587 for better compatibility
-		const smtpPort = '587';
-		console.log('Using SMTP port 587 for STARTTLS connection');
-
-		// Create email headers and body for SMTP
-		const boundary = 'boundary-' + Math.random().toString(36).substring(2);
-		const emailHeaders = [
-			`From: SpeechHelp <${SMTP_USER}>`,
-			`To: ${email}`,
-			`Subject: ${emailSubject}`,
-			`MIME-Version: 1.0`,
-			`Content-Type: multipart/alternative; boundary="${boundary}"`,
-			``,
-			`--${boundary}`,
-			`Content-Type: text/html; charset=UTF-8`,
-			`Content-Transfer-Encoding: 7bit`,
-			``,
-			emailBody,
-			``,
-			`--${boundary}--`
-		].join('\r\n');
-
-		// Send email using SMTP
-		console.log('Attempting to connect to SMTP server on port 587...');
+		// Send email using Resend API
+		console.log('Sending email via Resend API...');
 		
 		try {
-			const conn = await Deno.connect({
-				hostname: SMTP_HOST,
-				port: parseInt(smtpPort),
+			const emailPayload = {
+				from: 'SpeechHelp <hello@speechhelp.ai>',
+				to: [email],
+				subject: emailSubject,
+				html: emailBody
+			};
+
+			console.log('Email payload:', {
+				from: emailPayload.from,
+				to: emailPayload.to,
+				subject: emailPayload.subject
 			});
 
-			const encoder = new TextEncoder();
-			const decoder = new TextDecoder();
+			const resendResponse = await fetch('https://api.resend.com/emails', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${RESEND_API_KEY}`,
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(emailPayload),
+			});
 
-			// Helper function to read response with longer timeout for STARTTLS
-			const readResponse = async (timeout = 10000) => {
-				const buffer = new Uint8Array(2048);
-				const timeoutPromise = new Promise((_, reject) => {
-					setTimeout(() => reject(new Error('SMTP response timeout')), timeout);
-				});
-				
-				const readPromise = conn.read(buffer).then(n => {
-					if (n === null) throw new Error('Connection closed');
-					const response = decoder.decode(buffer.subarray(0, n));
-					console.log('SMTP raw response:', response.trim());
-					return response;
-				});
-				
-				return await Promise.race([readPromise, timeoutPromise]) as string;
-			};
+			const resendData = await resendResponse.json();
+			console.log('Resend API response:', resendData);
 
-			// Helper function to send command and get response
-			const sendCommand = async (command: string) => {
-				console.log('SMTP command:', command.split(' ')[0]); // Log command without sensitive data
-				await conn.write(encoder.encode(command + '\r\n'));
-				const response = await readResponse();
-				return response;
-			};
-
-			// SMTP conversation
-			let response = await readResponse(); // Initial greeting
-			if (!response.startsWith('220')) {
-				throw new Error(`SMTP server not ready: ${response}`);
+			if (!resendResponse.ok) {
+				console.error('Resend API error:', resendData);
+				throw new Error(`Resend API error: ${resendData.message || 'Unknown error'}`);
 			}
 
-			response = await sendCommand(`EHLO speechhelp.ai`);
-			if (!response.startsWith('250')) {
-				throw new Error(`EHLO failed: ${response}`);
-			}
-
-			// Always use STARTTLS on port 587
-			console.log('Initiating STARTTLS...');
-			response = await sendCommand('STARTTLS');
-			if (!response.startsWith('220')) {
-				throw new Error(`STARTTLS failed: ${response}`);
-			}
-
-			// After STARTTLS, we need to upgrade the connection to TLS
-			// Note: Deno doesn't have native STARTTLS support, so we'll try without encryption upgrade
-			// This might work with some SMTP servers that are lenient
-			console.log('STARTTLS initiated, continuing with authentication...');
-
-			// Re-send EHLO after STARTTLS
-			response = await sendCommand(`EHLO speechhelp.ai`);
-			if (!response.startsWith('250')) {
-				throw new Error(`EHLO after STARTTLS failed: ${response}`);
-			}
-
-			// Authenticate using AUTH PLAIN
-			const authString = btoa(`\0${SMTP_USER}\0${SMTP_PASSWORD}`);
-			response = await sendCommand(`AUTH PLAIN ${authString}`);
-			if (!response.startsWith('235')) {
-				throw new Error(`Authentication failed: ${response}`);
-			}
-
-			// Send email
-			response = await sendCommand(`MAIL FROM:<${SMTP_USER}>`);
-			if (!response.startsWith('250')) {
-				throw new Error(`MAIL FROM failed: ${response}`);
-			}
-
-			response = await sendCommand(`RCPT TO:<${email}>`);
-			if (!response.startsWith('250')) {
-				throw new Error(`RCPT TO failed: ${response}`);
-			}
-
-			response = await sendCommand('DATA');
-			if (!response.startsWith('354')) {
-				throw new Error(`DATA command failed: ${response}`);
-			}
-
-			// Send the email content
-			await conn.write(encoder.encode(emailHeaders + '\r\n.\r\n'));
-			response = await readResponse();
-			if (!response.startsWith('250')) {
-				throw new Error(`Email sending failed: ${response}`);
-			}
-
-			await sendCommand('QUIT');
-			conn.close();
-
-			console.log('Email sent successfully via SMTP on port 587');
+			console.log('Email sent successfully via Resend');
 
 			return new Response(
 				JSON.stringify({
 					success: true,
-					message: 'Welcome email sent successfully via SMTP',
-					data: { recipient: email, subject: emailSubject }
+					message: 'Welcome email sent successfully via Resend',
+					data: { 
+						recipient: email, 
+						subject: emailSubject,
+						messageId: resendData.id 
+					}
 				}),
 				{
 					headers: {
@@ -226,28 +135,26 @@ serve(async (req) => {
 				}
 			);
 
-		} catch (smtpError) {
-			console.error('SMTP error details:', {
-				message: smtpError.message,
-				stack: smtpError.stack,
-				host: SMTP_HOST,
-				port: smtpPort
+		} catch (emailError) {
+			console.error('Email sending error:', {
+				message: emailError.message,
+				stack: emailError.stack
 			});
 			
 			return new Response(
 				JSON.stringify({
 					success: false,
-					error: 'SMTP connection or sending failed',
-					details: smtpError.message,
+					error: 'Email sending failed',
+					details: emailError.message,
 					troubleshooting: {
 						recipient: email,
 						subject: emailSubject,
 						suggestions: [
-							'Try using port 587 instead of 465',
-							'Check if SMTP server supports STARTTLS',
-							'Verify SMTP credentials are correct',
-							'Check if email account has SMTP access enabled',
-							'Some SMTP servers require app-specific passwords'
+							'Check if Resend API key is valid',
+							'Verify the sender domain is configured in Resend',
+							'Check if the recipient email is valid',
+							'Make sure you have added your domain to Resend',
+							'Check Resend dashboard for any delivery issues'
 						]
 					}
 				}),
