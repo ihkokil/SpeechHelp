@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,19 +31,26 @@ interface UseEditUserFormProps {
 export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUser }: UseEditUserFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Helper function to safely extract string values
+  const extractStringValue = (value: any): string => {
+    if (typeof value === 'string') return value;
+    if (value && typeof value === 'object' && value.value) return String(value.value);
+    return '';
+  };
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      // Extract values properly from both direct fields and user_metadata
-      firstName: initialUser?.first_name || initialUser?.user_metadata?.first_name || '',
-      lastName: initialUser?.last_name || initialUser?.user_metadata?.last_name || '',
+      // Safely extract values from both direct fields and user_metadata
+      firstName: extractStringValue(initialUser?.first_name) || extractStringValue(initialUser?.user_metadata?.first_name) || '',
+      lastName: extractStringValue(initialUser?.last_name) || extractStringValue(initialUser?.user_metadata?.last_name) || '',
       email: initialUser?.email || '',
-      phone: initialUser?.user_metadata?.phone || '',
-      streetAddress: initialUser?.user_metadata?.street_address || '',
-      city: initialUser?.user_metadata?.city || '',
-      state: initialUser?.user_metadata?.state || '',
-      zipCode: initialUser?.user_metadata?.zip_code || '',
-      country: initialUser?.user_metadata?.country || '',
+      phone: extractStringValue(initialUser?.user_metadata?.phone) || '',
+      streetAddress: extractStringValue(initialUser?.user_metadata?.street_address) || '',
+      city: extractStringValue(initialUser?.user_metadata?.city) || '',
+      state: extractStringValue(initialUser?.user_metadata?.state) || '',
+      zipCode: extractStringValue(initialUser?.user_metadata?.zip_code) || '',
+      country: extractStringValue(initialUser?.user_metadata?.country) || '',
       isActive: initialUser?.is_active !== false,
     },
   });
@@ -100,62 +106,32 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
       
       console.log('User profile updated successfully:', profileData);
       
-      // Update user email in auth if it changed
-      if (values.email !== initialUser.email) {
-        console.log('Updating user email in auth system');
-        const { error: emailError } = await supabase.auth.admin.updateUserById(
-          initialUser.id,
-          { 
-            email: values.email,
-            user_metadata: {
-              ...initialUser.user_metadata,
-              first_name: values.firstName,
-              last_name: values.lastName,
-              phone: values.phone || '',
-              street_address: values.streetAddress || '',
-              city: values.city || '',
-              state: values.state || '',
-              zip_code: values.zipCode || '',
-              country: values.country || ''
-            }
+      // Update user metadata in auth system
+      const { error: metadataError } = await supabase.auth.admin.updateUserById(
+        initialUser.id,
+        { 
+          email: values.email,
+          user_metadata: {
+            ...initialUser.user_metadata,
+            first_name: values.firstName,
+            last_name: values.lastName,
+            full_name: `${values.firstName} ${values.lastName}`,
+            name: `${values.firstName} ${values.lastName}`,
+            phone: values.phone || '',
+            street_address: values.streetAddress || '',
+            city: values.city || '',
+            state: values.state || '',
+            zip_code: values.zipCode || '',
+            country: values.country || ''
           }
-        );
-        
-        if (emailError) {
-          console.error('Error updating user email:', emailError);
-          toast({
-            title: 'Partial Update',
-            description: 'Profile updated but email change failed. User will need to verify new email.',
-            variant: 'destructive',
-          });
         }
-      } else {
-        // Update user metadata even if email hasn't changed
-        const { error: metadataError } = await supabase.auth.admin.updateUserById(
-          initialUser.id,
-          { 
-            user_metadata: {
-              ...initialUser.user_metadata,
-              first_name: values.firstName,
-              last_name: values.lastName,
-              full_name: `${values.firstName} ${values.lastName}`,
-              name: `${values.firstName} ${values.lastName}`,
-              phone: values.phone || '',
-              street_address: values.streetAddress || '',
-              city: values.city || '',
-              state: values.state || '',
-              zip_code: values.zipCode || '',
-              country: values.country || ''
-            }
-          }
-        );
-        
-        if (metadataError) {
-          console.error('Error updating user metadata:', metadataError);
-        }
+      );
+      
+      if (metadataError) {
+        console.error('Error updating user metadata:', metadataError);
       }
       
-      // Construct the updated user object for UI updates with proper mapping
+      // Construct the updated user object for UI updates
       const updatedUser: User = {
         ...initialUser,
         email: values.email,
