@@ -52,6 +52,25 @@ serve(async (req) => {
     
     console.log(`Found ${authUsers.users.length} auth users and ${profiles?.length || 0} profiles`);
     
+    // Helper function to safely extract string values
+    const safeString = (value: any): string => {
+      if (typeof value === 'string') return value.trim();
+      if (value === null || value === undefined) return '';
+      return String(value).trim();
+    };
+
+    // Helper function to construct full name from first and last name
+    const constructFullName = (firstName: string, lastName: string): string => {
+      const first = safeString(firstName);
+      const last = safeString(lastName);
+      if (first && last) {
+        return `${first} ${last}`;
+      }
+      if (first) return first;
+      if (last) return last;
+      return '';
+    };
+    
     // Create a map of profiles for quick lookup
     const profileMap = new Map();
     profiles?.forEach(profile => {
@@ -65,45 +84,53 @@ serve(async (req) => {
       // Extract metadata safely
       const metadata = authUser.raw_user_meta_data || {};
       
+      // Get first and last names with priority: profile table > metadata > empty
+      const firstName = safeString(profile.first_name) || safeString(metadata.first_name);
+      const lastName = safeString(profile.last_name) || safeString(metadata.last_name);
+      
+      // Construct full name from first and last name components
+      const fullName = constructFullName(firstName, lastName);
+      const displayName = fullName || authUser.email?.split('@')[0] || 'User';
+      
       return {
         ...authUser,
         // Direct fields from profiles table as strings
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
+        first_name: firstName,
+        last_name: lastName,
         is_active: profile.is_active !== false,
         is_admin: profile.is_admin || false,
-        admin_role: profile.admin_role || null,
+        admin_role: safeString(profile.admin_role) || null,
         permissions: profile.permissions || [],
-        subscription_plan: profile.subscription_plan || null,
+        subscription_plan: safeString(profile.subscription_plan) || null,
         subscription_end_date: profile.subscription_end_date || null,
-        stripe_customer_id: profile.stripe_customer_id || null,
-        stripe_subscription_id: profile.stripe_subscription_id || null,
-        // Enhanced user_metadata with proper fallbacks
+        stripe_customer_id: safeString(profile.stripe_customer_id) || null,
+        stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
+        // Enhanced user_metadata with proper fallbacks - always construct full_name from first + last
         user_metadata: {
-          first_name: metadata.first_name || profile.first_name || '',
-          last_name: metadata.last_name || profile.last_name || '',
-          full_name: metadata.full_name || metadata.name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || '',
-          name: metadata.name || metadata.full_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || '',
-          email: authUser.email || '',
-          phone: metadata.phone || profile.phone || '',
-          street_address: metadata.street_address || '',
-          city: metadata.city || '',
-          state: metadata.state || '',
-          zip_code: metadata.zip_code || '',
-          country: metadata.country || '',
-          country_code: metadata.country_code || '',
+          first_name: firstName,
+          last_name: lastName,
+          full_name: fullName,
+          name: fullName,
+          email: safeString(authUser.email),
+          phone: safeString(metadata.phone) || safeString(profile.phone),
+          street_address: safeString(metadata.street_address),
+          city: safeString(metadata.city),
+          state: safeString(metadata.state),
+          zip_code: safeString(metadata.zip_code),
+          country: safeString(metadata.country),
+          country_code: safeString(metadata.country_code),
         },
         profile: {
-          username: profile.username || metadata.full_name || metadata.name || authUser.email?.split('@')[0] || '',
-          phone: profile.phone || metadata.phone || '',
+          username: safeString(profile.username) || fullName || authUser.email?.split('@')[0] || '',
+          phone: safeString(profile.phone) || safeString(metadata.phone),
           is_active: profile.is_active !== false,
           is_admin: profile.is_admin || false,
-          admin_role: profile.admin_role || null,
+          admin_role: safeString(profile.admin_role) || null,
           permissions: profile.permissions || [],
-          subscription_plan: profile.subscription_plan || null,
+          subscription_plan: safeString(profile.subscription_plan) || null,
           subscription_end_date: profile.subscription_end_date || null,
-          stripe_customer_id: profile.stripe_customer_id || null,
-          stripe_subscription_id: profile.stripe_subscription_id || null,
+          stripe_customer_id: safeString(profile.stripe_customer_id) || null,
+          stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
           created_at: profile.created_at,
           updated_at: profile.updated_at
         }
