@@ -38,29 +38,35 @@ const constructFullName = (firstName: string, lastName: string): string => {
 };
 
 export const getUserName = (user: User) => {
-  // Always try to construct from first and last name first
-  const firstName = safeString(user.first_name) || safeString(user.user_metadata?.first_name);
-  const lastName = safeString(user.last_name) || safeString(user.user_metadata?.last_name);
+  // Always prioritize first_name and last_name from the user object (profile data)
+  const firstName = safeString(user.first_name);
+  const lastName = safeString(user.last_name);
   
-  const fullName = constructFullName(firstName, lastName);
-  if (fullName) {
-    return fullName;
+  // Try to construct from profile first_name and last_name
+  let fullName = constructFullName(firstName, lastName);
+  
+  // If no profile data, try user_metadata
+  if (!fullName) {
+    const metaFirstName = safeString(user.user_metadata?.first_name);
+    const metaLastName = safeString(user.user_metadata?.last_name);
+    fullName = constructFullName(metaFirstName, metaLastName);
   }
   
-  // Fallback to existing full_name or name fields (but these should be deprecated)
-  if (user.user_metadata?.full_name) {
-    return safeString(user.user_metadata.full_name);
+  // If still no name, fallback to user_metadata full_name or name
+  if (!fullName && user.user_metadata?.full_name) {
+    fullName = safeString(user.user_metadata.full_name);
   }
   
-  if (user.user_metadata?.name) {
-    return safeString(user.user_metadata.name);
+  if (!fullName && user.user_metadata?.name) {
+    fullName = safeString(user.user_metadata.name);
   }
   
-  if (user.email) {
+  // Final fallback to email
+  if (!fullName && user.email) {
     return `${user.email.split('@')[0]} (No name provided)`;
   }
   
-  return 'No name provided';
+  return fullName || 'No name provided';
 };
 
 export const formatUserDisplayName = (user: User) => {

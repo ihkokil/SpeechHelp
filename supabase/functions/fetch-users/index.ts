@@ -79,6 +79,7 @@ serve(async (req) => {
     
     // Combine auth users with their profiles
     const usersWithProfiles = authUsers.users.map(authUser => {
+      // Get the profile data
       const profile = profileMap.get(authUser.id) || {};
       
       // Extract metadata safely
@@ -94,7 +95,7 @@ serve(async (req) => {
       
       return {
         ...authUser,
-        // Direct fields from profiles table as strings
+        // Direct fields from profiles table
         first_name: firstName,
         last_name: lastName,
         is_active: profile.is_active !== false,
@@ -105,7 +106,7 @@ serve(async (req) => {
         subscription_end_date: profile.subscription_end_date || null,
         stripe_customer_id: safeString(profile.stripe_customer_id) || null,
         stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
-        // Enhanced user_metadata with proper fallbacks - always construct full_name from first + last
+        // Enhanced user_metadata with proper fallbacks
         user_metadata: {
           first_name: firstName,
           last_name: lastName,
