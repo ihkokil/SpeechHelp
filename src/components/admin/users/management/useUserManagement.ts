@@ -34,7 +34,7 @@ export const useUserManagement = () => {
     isDetailsOpen,
     setIsDetailsOpen,
     selectedUser,
-    setSelectedUser,  // Make sure this is exposed
+    setSelectedUser,
     resetUIState,
     isEditUserDialogOpen,
     setIsEditUserDialogOpen,
@@ -193,7 +193,7 @@ export const useUserManagement = () => {
     isAddUserDialogOpen,
     setIsAddUserDialogOpen,
     selectedUser,
-    setSelectedUser,  // Make sure this is included in the return
+    setSelectedUser,
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,

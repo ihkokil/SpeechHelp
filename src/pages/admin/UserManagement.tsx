@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -50,6 +51,7 @@ const UserManagement = () => {
     addUser,
     isEditUserDialogOpen,
     setIsEditUserDialogOpen,
+    handleEditUser,
     handleUpdateSubscription,
   } = useUserManagement();
   
@@ -156,6 +158,7 @@ const UserManagement = () => {
             handleDeleteUser={handleDeleteUser}
             handleSendEmail={handleSendEmail}
             handleUpdateSubscription={handleOpenSubscriptionDialog}
+            handleEditUser={handleEditUser}
           />
         </CardContent>
       </Card>
@@ -200,7 +203,7 @@ const UserManagement = () => {
         />
       )}
 
-      {/* Add the new subscription dialog */}
+      {/* Add the subscription dialog */}
       {isSubscriptionDialogOpen && selectedUser && (
         <UpdateSubscriptionDialog
           user={selectedUser}
