@@ -107,26 +107,25 @@ export const useEditUserForm = ({ onOpenChange, onUserUpdated, toast, initialUse
         }
       }
       
-      // Construct the updated user object for UI updates
-      const updatedMetadata = {
-        ...(initialUser.user_metadata || {}),
-        first_name: values.firstName,
-        last_name: values.lastName,
-        full_name: `${values.firstName} ${values.lastName}`,
-        phone: values.phone,
-        street_address: values.streetAddress,
-        city: values.city,
-        state: values.state,
-        zip_code: values.zipCode,
-        country: values.country,
-      };
-      
+      // Construct the updated user object for UI updates with proper mapping
       const updatedUser: User = {
         ...initialUser,
         email: values.email,
         is_active: values.isActive,
         updated_at: new Date().toISOString(),
-        user_metadata: updatedMetadata
+        user_metadata: {
+          ...(initialUser.user_metadata || {}),
+          first_name: values.firstName,
+          last_name: values.lastName,
+          full_name: `${values.firstName} ${values.lastName}`,
+          name: `${values.firstName} ${values.lastName}`,
+          phone: values.phone,
+          street_address: values.streetAddress,
+          city: values.city,
+          state: values.state,
+          zip_code: values.zipCode,
+          country: values.country,
+        }
       };
       
       console.log('Constructed updated user object:', updatedUser);
