@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { adminAuthService } from '@/services/adminAuthService';
 import { toast } from '@/hooks/use-toast';
@@ -21,7 +20,7 @@ interface AdminAuthContextType {
     success: boolean;
     requires2FA?: boolean;
     error?: string;
-    user?: AdminUser;  // Add user to the return type
+    user?: AdminUser;  // This now includes displayName since it references the updated AdminUser interface
   }>;
   verify2FA: (code: string) => Promise<{
     success: boolean;
