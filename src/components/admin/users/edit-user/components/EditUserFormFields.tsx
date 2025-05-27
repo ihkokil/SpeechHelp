@@ -24,34 +24,76 @@ export const EditUserFormFields: React.FC<EditUserFormFieldsProps> = ({
 }) => {
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="firstName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>First Name</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="First name"
-                  disabled={isLoading}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      {/* Basic Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Basic Information</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>First Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="First name"
+                    disabled={isLoading}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Last Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Last name"
+                    disabled={isLoading}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         
         <FormField
           control={form.control}
-          name="lastName"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Last Name</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Last name"
+                  type="email"
+                  placeholder="Email address"
+                  disabled={isLoading}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Phone number"
                   disabled={isLoading}
                   {...field}
                 />
@@ -61,90 +103,20 @@ export const EditUserFormFields: React.FC<EditUserFormFieldsProps> = ({
           )}
         />
       </div>
-      
-      <FormField
-        control={form.control}
-        name="email"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Email</FormLabel>
-            <FormControl>
-              <Input
-                type="email"
-                placeholder="Email address"
-                disabled={isLoading}
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
 
-      <FormField
-        control={form.control}
-        name="phone"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Phone Number</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Phone number"
-                disabled={isLoading}
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="streetAddress"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Street Address</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Street address"
-                disabled={isLoading}
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="city"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>City</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="City"
-                  disabled={isLoading}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      {/* Address Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Address Information</h3>
         
         <FormField
           control={form.control}
-          name="state"
+          name="streetAddress"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>State/Province</FormLabel>
+              <FormLabel>Street Address</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="State or Province"
+                  placeholder="Street address"
                   disabled={isLoading}
                   {...field}
                 />
@@ -153,74 +125,123 @@ export const EditUserFormFields: React.FC<EditUserFormFieldsProps> = ({
             </FormItem>
           )}
         />
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="city"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>City</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="City"
+                    disabled={isLoading}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="state"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>State/Province</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="State or Province"
+                    disabled={isLoading}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="zipCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>ZIP/Postal Code</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="ZIP or Postal Code"
+                    disabled={isLoading}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="country"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Country</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Country"
+                    disabled={isLoading}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="zipCode"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>ZIP/Postal Code</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="ZIP or Postal Code"
-                  disabled={isLoading}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      {/* Account Status */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Account Status</h3>
         
-        <FormField
-          control={form.control}
-          name="country"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Country</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Country"
-                  disabled={isLoading}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      <div className="flex items-center space-x-2">
-        <FormField
-          control={form.control}
-          name="isActive"
-          render={({ field }) => (
-            <Switch 
-              checked={field.value}
-              onCheckedChange={field.onChange}
-              disabled={isLoading}
-              id="user-active-status"
-            />
-          )}
-        />
-        <Label htmlFor="user-active-status">User is active</Label>
+        <div className="flex items-center space-x-2">
+          <FormField
+            control={form.control}
+            name="isActive"
+            render={({ field }) => (
+              <Switch 
+                checked={field.value}
+                onCheckedChange={field.onChange}
+                disabled={isLoading}
+                id="user-active-status"
+              />
+            )}
+          />
+          <Label htmlFor="user-active-status">User is active</Label>
+        </div>
       </div>
 
-      <Button
-        type="button"
-        variant="outline"
-        onClick={onSendPasswordReset}
-        disabled={isLoading}
-        className="w-full flex items-center justify-center gap-2"
-      >
-        <Mail className="h-4 w-4" />
-        Send Password Reset Link
-      </Button>
+      {/* Password Reset */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Password Management</h3>
+        
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onSendPasswordReset}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2"
+        >
+          <Mail className="h-4 w-4" />
+          Send Password Reset Link
+        </Button>
+      </div>
       
-      <div className="flex justify-end gap-2 pt-4">
+      {/* Form Actions */}
+      <div className="flex justify-end gap-2 pt-4 border-t">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Cancel
         </Button>

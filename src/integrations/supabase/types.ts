@@ -415,7 +415,6 @@ export type Database = {
               zip_code_param?: string
               country_param?: string
               is_active_status?: boolean
-              user_metadata?: Json
             }
         Returns: Json
       }
