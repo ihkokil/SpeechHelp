@@ -12,7 +12,6 @@ interface UserTableRowProps {
   isSelected: boolean;
   onToggleSelection: (user: User) => void;
   onViewDetails: (user: User) => void;
-  onEditUser: (user: User) => void;
   onManagePermissions: (user: User) => void;
   onToggleActive: (userId: string, isActive: boolean) => void;
   onDeleteUser: (userId: string) => void;
@@ -25,7 +24,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   isSelected,
   onToggleSelection,
   onViewDetails,
-  onEditUser,
   onManagePermissions,
   onToggleActive,
   onDeleteUser,
@@ -76,7 +74,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
         <UserActionMenu
           user={user}
           onViewDetails={onViewDetails}
-          onEditUser={onEditUser}
           onManagePermissions={onManagePermissions}
           onToggleActive={onToggleActive}
           onDeleteUser={onDeleteUser}
