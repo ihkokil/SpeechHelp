@@ -48,8 +48,16 @@ export const useEditUser = () => {
         throw error;
       }
 
-      if (!data || !data.success) {
-        throw new Error(data?.error || 'Failed to update user');
+      // Handle the response data properly
+      let response;
+      if (typeof data === 'object' && data !== null) {
+        response = data as any;
+      } else {
+        throw new Error('Invalid response format');
+      }
+
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to update user');
       }
 
       toast({
@@ -57,7 +65,7 @@ export const useEditUser = () => {
         description: 'User information has been successfully updated.',
       });
 
-      return data;
+      return response;
     } catch (error: any) {
       console.error('Error updating user:', error);
       toast({
