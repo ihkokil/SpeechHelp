@@ -78,7 +78,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
     if (user) {
       console.log('Setting form values for user:', user);
       
-      // Extract data from both direct fields and user_metadata
+      // Extract data from both direct fields and user_metadata with guaranteed string fallbacks
       const firstName = user.first_name || user.user_metadata?.first_name || '';
       const lastName = user.last_name || user.user_metadata?.last_name || '';
       const email = user.email || '';
@@ -103,7 +103,8 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
         isActive
       });
 
-      form.reset({
+      // Create the form data object with explicit type assertion to ensure all required fields are present
+      const formData: EditUserFormData = {
         firstName,
         lastName,
         email,
@@ -114,7 +115,9 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
         zipCode,
         country,
         isActive,
-      });
+      };
+
+      form.reset(formData);
     }
   }, [user, form]);
 
