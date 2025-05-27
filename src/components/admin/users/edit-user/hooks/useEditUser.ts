@@ -103,8 +103,8 @@ export const useEditUser = ({ user, onSuccess, onClose }: UseEditUserProps) => {
         throw new Error(profileError.message || 'Failed to update user profile');
       }
 
-      // Type cast the response to our expected interface
-      const response = profileData as AdminUpdateUserProfileResponse;
+      // Type cast the response to our expected interface via unknown
+      const response = profileData as unknown as AdminUpdateUserProfileResponse;
 
       if (!response?.success) {
         throw new Error(response?.error || 'Failed to update user profile');
