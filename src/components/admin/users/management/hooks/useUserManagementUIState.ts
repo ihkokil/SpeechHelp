@@ -6,6 +6,7 @@ export const useUserManagementUIState = () => {
   // Dialog states
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
@@ -17,6 +18,7 @@ export const useUserManagementUIState = () => {
   const resetUIState = useCallback(() => {
     setIsDeleteDialogOpen(false);
     setIsAddUserDialogOpen(false);
+    setIsEditUserDialogOpen(false);
     setIsPermissionsDialogOpen(false);
     setIsDetailsOpen(false);
     setIsEmailDialogOpen(false);
@@ -29,6 +31,8 @@ export const useUserManagementUIState = () => {
     setIsDeleteDialogOpen,
     isAddUserDialogOpen,
     setIsAddUserDialogOpen,
+    isEditUserDialogOpen,
+    setIsEditUserDialogOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
     isDetailsOpen,
