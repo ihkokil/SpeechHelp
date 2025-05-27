@@ -26,7 +26,6 @@ interface UserTableProps {
   handleDeleteUser: (userId: string) => void;
   handleSendEmail?: (user: User) => void;
   handleUpdateSubscription?: (user: User) => void;
-  handleEditUser?: (user: User) => void;
 }
 
 export const UserTable: React.FC<UserTableProps> = ({
@@ -46,8 +45,7 @@ export const UserTable: React.FC<UserTableProps> = ({
   handleBulkDeactivate,
   handleDeleteUser,
   handleSendEmail,
-  handleUpdateSubscription,
-  handleEditUser
+  handleUpdateSubscription
 }) => {
   console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
@@ -91,7 +89,6 @@ export const UserTable: React.FC<UserTableProps> = ({
                 onDeleteUser={handleDeleteUser}
                 onSendEmail={handleSendEmail}
                 onUpdateSubscription={handleUpdateSubscription}
-                onEditUser={handleEditUser}
               />
             ))
           )}

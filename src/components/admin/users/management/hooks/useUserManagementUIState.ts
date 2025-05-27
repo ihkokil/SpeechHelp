@@ -3,54 +3,28 @@ import { useState, useCallback } from 'react';
 import { User } from '../../types';
 
 export const useUserManagementUIState = () => {
-  // Dialog and drawer states
+  // Dialog states
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   
-  // Selected user for dialogs or detailed view
+  // Selected user state
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
-  // Function to safely set details open (with user validation)
-  const safelyOpenDetails = useCallback((open: boolean, user: User | null) => {
-    if (open && !user) {
-      console.warn("Attempted to open details without a selected user");
-      return false;
-    }
-    setIsDetailsOpen(open);
-    return open;
+  // Reset all UI state
+  const resetUIState = useCallback(() => {
+    setIsDeleteDialogOpen(false);
+    setIsAddUserDialogOpen(false);
+    setIsPermissionsDialogOpen(false);
+    setIsDetailsOpen(false);
+    setIsEmailDialogOpen(false);
+    setSelectedUser(null);
   }, []);
   
-  // Function to safely select a user (with logging)
-  const safelySelectUser = useCallback((user: User | null) => {
-    console.log("Setting selected user:", user ? user.id : "null");
-    setSelectedUser(user);
-  }, []);
-  
-  // Function to reset all UI state with optional delay
-  const resetUIState = useCallback((delay: number = 0) => {
-    const resetFunc = () => {
-      setIsDeleteDialogOpen(false);
-      setIsAddUserDialogOpen(false);
-      setIsPermissionsDialogOpen(false);
-      setIsDetailsOpen(false);
-      setIsEditUserDialogOpen(false);
-      setIsEmailDialogOpen(false);
-      setSelectedUser(null);
-    };
-    
-    if (delay > 0) {
-      setTimeout(resetFunc, delay);
-    } else {
-      resetFunc();
-    }
-  }, []);
-
   return {
-    // Dialog and drawer states
+    // Dialog states
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
     isAddUserDialogOpen,
@@ -58,17 +32,15 @@ export const useUserManagementUIState = () => {
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
     isDetailsOpen,
-    setIsDetailsOpen: (open: boolean) => safelyOpenDetails(open, selectedUser),
-    isEditUserDialogOpen,
-    setIsEditUserDialogOpen,
+    setIsDetailsOpen,
     isEmailDialogOpen,
     setIsEmailDialogOpen,
     
-    // Selected user state
+    // Selected user
     selectedUser,
-    setSelectedUser: safelySelectUser,
+    setSelectedUser,
     
-    // Helper functions
+    // Reset function
     resetUIState
   };
 };
