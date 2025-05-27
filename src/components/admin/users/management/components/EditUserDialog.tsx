@@ -103,18 +103,18 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
         isActive
       });
 
-      // Create the form data object with explicit type assertion to ensure all required fields are present
+      // Create the form data object with explicit type assertion to ensure all required fields are strings
       const formData: EditUserFormData = {
-        firstName,
-        lastName,
-        email,
-        phone,
-        streetAddress,
-        city,
-        state,
-        zipCode,
-        country,
-        isActive,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        phone: phone,
+        streetAddress: streetAddress,
+        city: city,
+        state: state,
+        zipCode: zipCode,
+        country: country,
+        isActive: isActive,
       };
 
       form.reset(formData);
