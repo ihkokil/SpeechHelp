@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import SystemStatus from '@/components/admin/dashboard/SystemStatus';
 import RecentActivity from '@/components/admin/dashboard/RecentActivity';
 import DashboardCharts from '@/components/admin/dashboard/DashboardCharts';
 import LoadingSpinner from '@/components/admin/layout/LoadingSpinner';
-import { RefreshCw, Download, Settings } from 'lucide-react';
+import { RefreshCw, Download, Settings, Users } from 'lucide-react';
 
 export interface DashboardData {
   totalUsers: number;
