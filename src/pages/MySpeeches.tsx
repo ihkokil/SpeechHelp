@@ -1,16 +1,15 @@
 
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 
 const MySpeeches = () => {
   const { user, isLoading, speeches, fetchSpeeches } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const [initialFilter, setInitialFilter] = useState('all');
   const isMobile = useIsMobile();
 
@@ -18,58 +17,18 @@ const MySpeeches = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const filterParam = params.get('filter');
-
-    if (filterParam === 'upcoming') {
-      console.log('URL parameter detected: Setting filter to upcoming');
-      setInitialFilter('upcoming');
-    } else {
-      console.log('No URL parameter or different value: Setting filter to all');
-      setInitialFilter('all');
-    }
+    setInitialFilter(filterParam === 'upcoming' ? 'upcoming' : 'all');
   }, [location]);
-
-  // Debug logging
-  useEffect(() => {
-    console.log('MySpeeches - Initial filter set to:', initialFilter);
-  }, [initialFilter]);
 
   // Fetch speeches when component mounts
   useEffect(() => {
     if (user) {
-      console.log('MySpeeches component mounted, fetching speeches for user:', user.id);
-      // Always fetch fresh data when component mounts
       fetchSpeeches().catch(error => {
         console.error('Error fetching speeches:', error);
         toast.error('Failed to load speeches. Please try again.');
       });
     }
   }, [user, fetchSpeeches]);
-
-  // Enhanced debug log all speeches when they change
-  useEffect(() => {
-    console.log(`MySpeeches has ${speeches.length} total speeches from database`);
-    
-    // Log regular speeches from the backend
-    const savedSpeeches = speeches.filter(s => !s.isUpcoming);
-    
-    console.log(`Regular speeches from database: ${savedSpeeches.length}`);
-
-    // Check for localStorage upcoming events for the current user
-    if (user?.id) {
-      try {
-        const storageKey = `upcomingEvents_${user.id}`;
-        const upcomingEventsJSON = localStorage.getItem(storageKey);
-        if (upcomingEventsJSON) {
-          const parsedEvents = JSON.parse(upcomingEventsJSON);
-          console.log(`Found ${parsedEvents.length} upcoming events in localStorage for user ${user.id}`);
-        } else {
-          console.log(`No upcoming events found in localStorage for user ${user.id}`);
-        }
-      } catch (error) {
-        console.error('Error checking localStorage events:', error);
-      }
-    }
-  }, [speeches, user]);
 
   if (isLoading) {
     return (
