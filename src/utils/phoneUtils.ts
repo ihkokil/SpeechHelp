@@ -42,9 +42,6 @@ export const getCountryByCode = (code: string): Country | undefined => {
   const normalizedCode = code.toUpperCase().trim();
   console.log('🔍 Normalized code:', normalizedCode);
   
-  // Log all available country codes for debugging
-  console.log('📋 All available country codes:', countriesComplete.map(c => c.code));
-  
   const result = countriesComplete.find(country => {
     const countryCode = country.code.toUpperCase().trim();
     const match = countryCode === normalizedCode;
@@ -59,32 +56,47 @@ export const getCountryByCode = (code: string): Country | undefined => {
   
   if (!result) {
     console.log('❌ No country found for code:', normalizedCode);
-    console.log('🔍 Searching for partial matches...');
-    
-    // Try to find a partial match as fallback
-    const partialMatch = countriesComplete.find(country => 
-      country.code.toUpperCase().includes(normalizedCode) || 
-      country.name.toUpperCase().includes(normalizedCode)
-    );
-    
-    if (partialMatch) {
-      console.log('⚠️ Found partial match:', partialMatch);
-      return partialMatch;
-    }
   }
   
   return result;
 };
 
 export const getCountryByDialCode = (dialCode: string): Country | undefined => {
-  return countriesComplete.find(country => country.dialCode === dialCode);
+  console.log('🔍 getCountryByDialCode called with:', { dialCode, type: typeof dialCode });
+  
+  if (!dialCode) {
+    console.log('❌ No dial code provided to getCountryByDialCode');
+    return undefined;
+  }
+  
+  // Remove + if present and ensure it's a string
+  const normalizedDialCode = dialCode.toString().replace('+', '').trim();
+  console.log('🔍 Normalized dial code:', normalizedDialCode);
+  
+  const result = countriesComplete.find(country => {
+    const countryDialCode = country.dialCode.toString().trim();
+    const match = countryDialCode === normalizedDialCode;
+    if (match) {
+      console.log('✅ Found matching country by dial code:', {
+        searchDialCode: normalizedDialCode,
+        foundCountry: country
+      });
+    }
+    return match;
+  });
+  
+  if (!result) {
+    console.log('❌ No country found for dial code:', normalizedDialCode);
+  }
+  
+  return result;
 };
 
 export const getAllCountries = (): Country[] => {
   return countriesComplete;
 };
 
-export const parsePhoneNumber = (phoneNumber: string, countryCode: string): { 
+export const parsePhoneNumber = (phoneNumber: string, dialCode: string): { 
   country: Country | undefined, 
   formattedNumber: string 
 } => {
@@ -92,16 +104,16 @@ export const parsePhoneNumber = (phoneNumber: string, countryCode: string): {
     return { country: undefined, formattedNumber: '' };
   }
   
-  const country = getCountryByCode(countryCode);
+  const country = getCountryByDialCode(dialCode);
   const cleaned = stripNonNumeric(phoneNumber);
   const formatted = formatPhoneNumber(cleaned);
   
   return { country, formattedNumber: formatted };
 };
 
-// Enhanced function to extract country code from database with proper fallback priority
-export const extractCountryCodeFromUser = (user: any): string => {
-  console.log('🔍 Extracting country code for user:', {
+// Enhanced function to extract dial code from database (updated to work with dial codes)
+export const extractDialCodeFromUser = (user: any): string => {
+  console.log('🔍 Extracting dial code for user:', {
     userId: user.id,
     email: user.email,
     profileCountryCode: user.country_code,
@@ -109,29 +121,49 @@ export const extractCountryCodeFromUser = (user: any): string => {
     userMetadataCountry: user.user_metadata?.country
   });
 
-  // Priority 1: Check profiles.country_code (main database field)
+  // Priority 1: Check if it's already a dial code (starts with + or is numeric)
+  if (user.country_code && (user.country_code.startsWith('+') || /^\d+$/.test(user.country_code))) {
+    const dialCode = user.country_code.replace('+', '');
+    console.log('✅ Found dial code in profiles table:', dialCode);
+    return dialCode;
+  }
+  
+  // Priority 2: Check user_metadata for dial code
+  if (user.user_metadata?.country_code && (user.user_metadata.country_code.startsWith('+') || /^\d+$/.test(user.user_metadata.country_code))) {
+    const dialCode = user.user_metadata.country_code.replace('+', '');
+    console.log('✅ Found dial code in user_metadata:', dialCode);
+    return dialCode;
+  }
+  
+  // Priority 3: Try to convert country code to dial code
   if (user.country_code && user.country_code !== '') {
-    console.log('✅ Found country code in profiles table:', user.country_code);
-    return user.country_code;
+    const country = getCountryByCode(user.country_code);
+    if (country) {
+      console.log('✅ Converted country code to dial code:', user.country_code, '->', country.dialCode);
+      return country.dialCode;
+    }
   }
   
-  // Priority 2: Check user_metadata.country_code (auth metadata)
+  // Priority 4: Try user_metadata country code
   if (user.user_metadata?.country_code && user.user_metadata.country_code !== '') {
-    console.log('✅ Found country code in user_metadata:', user.user_metadata.country_code);
-    return user.user_metadata.country_code;
+    const country = getCountryByCode(user.user_metadata.country_code);
+    if (country) {
+      console.log('✅ Converted user_metadata country code to dial code:', user.user_metadata.country_code, '->', country.dialCode);
+      return country.dialCode;
+    }
   }
   
-  // Priority 3: Try to map country name to country code from user metadata
+  // Priority 5: Try to map country name to dial code
   const countryName = user.user_metadata?.country;
   if (countryName && countryName !== '') {
-    console.log('🔍 Trying to map country name to code:', countryName);
+    console.log('🔍 Trying to map country name to dial code:', countryName);
     
     // Handle special cases first
     if (countryName.toLowerCase().includes('united kingdom') || 
         countryName.toLowerCase().includes('england') ||
         countryName.toLowerCase().includes('britain')) {
-      console.log('✅ Mapped UK/England/Britain to GB');
-      return 'GB';
+      console.log('✅ Mapped UK/England/Britain to +44');
+      return '44';
     }
     
     // Try exact match first
@@ -148,16 +180,16 @@ export const extractCountryCodeFromUser = (user: any): string => {
     }
     
     if (country) {
-      console.log('✅ Successfully mapped country name to code:', countryName, '->', country.code);
-      return country.code;
+      console.log('✅ Successfully mapped country name to dial code:', countryName, '->', country.dialCode);
+      return country.dialCode;
     } else {
-      console.log('❌ Could not map country name to code:', countryName);
+      console.log('❌ Could not map country name to dial code:', countryName);
     }
   }
   
-  // Priority 4: Default to US as final fallback
-  console.log('⚠️ No country code found, defaulting to US for user:', user.email);
-  return 'US';
+  // Priority 6: Default to US dial code as final fallback
+  console.log('⚠️ No dial code found, defaulting to US (+1) for user:', user.email);
+  return '1';
 };
 
 // Enhanced function to get phone number directly from database fields
@@ -185,8 +217,8 @@ export const getPhoneFromDatabase = (user: any): string => {
   return '';
 };
 
-// Enhanced function to format phone with proper country code from database
-export const formatPhoneWithCountryCode = (phone: string, user: any): string => {
+// Enhanced function to format phone with proper dial code from database
+export const formatPhoneWithDialCode = (phone: string, user: any): string => {
   if (!phone) return '—';
   
   console.log('📞 Formatting phone for user:', {
@@ -196,9 +228,7 @@ export const formatPhoneWithCountryCode = (phone: string, user: any): string => 
   });
   
   try {
-    const countryCode = extractCountryCodeFromUser(user);
-    const country = getCountryByCode(countryCode);
-    const dialCode = country?.dialCode || '1';
+    const dialCode = extractDialCodeFromUser(user);
     
     // Clean the phone number - remove all non-numeric characters
     let cleanPhone = phone.replace(/\D/g, '');
@@ -209,13 +239,13 @@ export const formatPhoneWithCountryCode = (phone: string, user: any): string => 
       return phone;
     }
     
-    // Remove leading country code if it exists
+    // Remove leading dial code if it exists
     if (cleanPhone.startsWith(dialCode) && cleanPhone.length > dialCode.length) {
       cleanPhone = cleanPhone.substring(dialCode.length);
     }
     
     // Remove leading 1 for US/Canada numbers if present
-    if ((countryCode === 'US' || countryCode === 'CA') && cleanPhone.startsWith('1') && cleanPhone.length === 11) {
+    if (dialCode === '1' && cleanPhone.startsWith('1') && cleanPhone.length === 11) {
       cleanPhone = cleanPhone.substring(1);
     }
     
@@ -225,7 +255,6 @@ export const formatPhoneWithCountryCode = (phone: string, user: any): string => 
     
     console.log('✅ Phone formatting result:', {
       originalPhone: phone,
-      countryCode,
       dialCode,
       cleanedPhone: cleanPhone,
       formattedResult: result

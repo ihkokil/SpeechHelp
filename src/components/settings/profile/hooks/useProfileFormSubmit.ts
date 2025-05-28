@@ -62,7 +62,7 @@ export const useProfileFormSubmit = (
         });
       }
       
-      // Update profiles table with form data
+      // Update profiles table with form data (countryCode is now dial code)
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
@@ -70,7 +70,7 @@ export const useProfileFormSubmit = (
           first_name: data.firstName,
           last_name: data.lastName,
           phone: data.phone,
-          country_code: data.countryCode,
+          country_code: data.countryCode, // This is now the dial code
           avatar_url: avatarUrl || null,
           updated_at: new Date().toISOString()
         });
@@ -80,17 +80,17 @@ export const useProfileFormSubmit = (
         throw profileError;
       }
       
-      console.log('Profile updated successfully in profiles table');
+      console.log('Profile updated successfully in profiles table with dial code:', data.countryCode);
       
       // Also update user metadata for backward compatibility
       const metadata = {
         first_name: data.firstName,
         last_name: data.lastName,
         phone: data.phone,
-        country_code: data.countryCode,
+        country_code: data.countryCode, // Store dial code in metadata too
       };
       
-      console.log('Updating user metadata:', metadata);
+      console.log('Updating user metadata with dial code:', metadata);
       
       const { error: metadataError } = await supabase.auth.updateUser({
         data: metadata
