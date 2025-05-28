@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import PricingFeature from './PricingFeature';
 import { createCheckoutSession } from '@/services/stripe';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '../speech/hooks/useProfile';
 import { SubscriptionPlan } from '@/lib/plan_rules';
@@ -72,10 +72,27 @@ const PricingTier: React.FC<PricingTierProps> = ({
 
 			// Handle paid plans
 			if (!user) {
-				// Redirect to signup for non-authenticated users
-				window.location.href = `/signup?plan=${planType.toLowerCase()}`;
+				// Store the selected plan in localStorage and redirect to signup
+				localStorage.setItem('selectedPlan', JSON.stringify({
+					planType,
+					pricingPeriod,
+					priceId: pricingPeriod === 'monthly' ? price.monthly.productId : price.yearly.productId
+				}));
+				
+				toast({
+					title: "Sign up required",
+					description: "Please create an account to proceed with your subscription.",
+				});
+				
+				window.location.href = `/signup?plan=${planType.toLowerCase()}&period=${pricingPeriod}`;
 				return;
 			}
+
+			// Show loading state
+			toast({
+				title: "Redirecting to payment...",
+				description: "Please wait while we set up your payment.",
+			});
 
 			// Create checkout session with Supabase function
 			const { url } = await createCheckoutSession({
@@ -92,15 +109,26 @@ const PricingTier: React.FC<PricingTierProps> = ({
 			console.error('Checkout error:', error);
 			toast({
 				title: 'Checkout Error',
-				description: 'There was a problem initiating checkout. Please try again.',
+				description: 'There was a problem initiating checkout. Please try again or contact support.',
 				variant: 'destructive',
 			});
 		}
 	}, [name, planType, pricingPeriod, user, price, toast, updateProfile]);
 
+	// Check if this is the current user's plan
+	const isCurrentPlan = user && user.user_metadata?.subscription_plan === planType;
+
 	return (
-		<Card className="border border-gray-200 rounded-xl h-full overflow-hidden hover:shadow-lg transition-shadow">
+		<Card className={`border border-gray-200 rounded-xl h-full overflow-hidden hover:shadow-lg transition-shadow ${
+			isCurrentPlan ? 'ring-2 ring-purple-500 border-purple-500' : ''
+		}`}>
 			<div className="p-6 md:p-8 h-full flex flex-col">
+				{isCurrentPlan && (
+					<div className="mb-4 px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full text-center">
+						Your Current Plan
+					</div>
+				)}
+				
 				<h3 className="text-2xl font-bold text-center text-gray-900 mb-2">{name}</h3>
 				<div className="flex items-end justify-center mb-6">
 					<span className="text-4xl font-bold text-purple-600">
@@ -127,10 +155,20 @@ const PricingTier: React.FC<PricingTierProps> = ({
 				</ul>
 
 				<Button
-					className="w-full bg-gradient-to-r mt-auto from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+					className={`w-full mt-auto ${
+						isCurrentPlan 
+							? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
+							: 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700'
+					}`}
 					onClick={handleStripeCheckout}
+					disabled={isCurrentPlan}
 				>
-					{planType === SubscriptionPlan.FREE_TRIAL ? 'Start Free Trial' : 'Choose Plan'}
+					{isCurrentPlan 
+						? 'Current Plan' 
+						: planType === SubscriptionPlan.FREE_TRIAL 
+							? 'Start Free Trial' 
+							: 'Choose Plan'
+					}
 				</Button>
 			</div>
 		</Card>

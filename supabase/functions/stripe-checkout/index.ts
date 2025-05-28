@@ -1,6 +1,8 @@
+
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import Stripe from 'https://esm.sh/stripe@13.2.0?target=deno';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 interface CheckoutRequestBody {
 	plan: string;
@@ -30,13 +32,29 @@ serve(async (req) => {
 	}
 
 	try {
-		// Log request headers for debugging
-		log('Request headers:', Object.fromEntries(req.headers.entries()));
+		// Initialize Supabase client to get user info
+		const supabaseClient = createClient(
+			Deno.env.get('SUPABASE_URL') ?? "",
+			Deno.env.get('SUPABASE_ANON_KEY') ?? ""
+		);
+
+		// Get authenticated user
+		const authHeader = req.headers.get("Authorization");
+		let userId = null;
+		let userEmail = null;
+
+		if (authHeader) {
+			const token = authHeader.replace("Bearer ", "");
+			const { data: userData } = await supabaseClient.auth.getUser(token);
+			userId = userData.user?.id;
+			userEmail = userData.user?.email;
+			log('Authenticated user found:', { userId, userEmail });
+		}
 
 		const requestBody = await req.json();
 		log('Request body:', requestBody);
 
-		const { priceId, userId, returnUrl, pricingPeriod, plan } = requestBody as CheckoutRequestBody;
+		const { priceId, returnUrl, pricingPeriod, plan } = requestBody as CheckoutRequestBody;
 
 		if (!priceId) {
 			log('Error: Missing required parameter: priceId');
@@ -49,7 +67,7 @@ serve(async (req) => {
 			);
 		}
 
-		// Log environment variables (be careful not to log sensitive values in production)
+		// Get Stripe API key from environment
 		const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
 		log('Stripe key exists:', !!stripeKey);
 		if (!stripeKey) {
@@ -104,9 +122,10 @@ serve(async (req) => {
 			mode: 'subscription',
 			success_url: `${returnUrl}?success=true&session_id={CHECKOUT_SESSION_ID}`,
 			cancel_url: `${returnUrl}?canceled=true`,
-			client_reference_id: userId, // Store user ID for identification
+			client_reference_id: userId, // This is crucial for linking payment to user
+			customer_email: userEmail,
 			metadata: {
-				userId,
+				userId: userId || 'anonymous',
 				plan,
 				pricingPeriod,
 			},
@@ -165,4 +184,4 @@ serve(async (req) => {
 			}
 		);
 	}
-}); 
+});
