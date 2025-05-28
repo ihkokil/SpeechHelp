@@ -28,8 +28,12 @@ const UserMenu = () => {
 
   const handleSignOut = async () => {
     console.log('UserMenu - handleSignOut called');
-    await signOut();
-    navigate('/');
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   const handleNavigation = (path: string) => {
