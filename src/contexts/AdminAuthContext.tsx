@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { adminAuthService } from '@/services/adminAuthService';
 import { toast } from '@/hooks/use-toast';
@@ -109,7 +110,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
         setAdminUser(result.user || null);
         
         // Use displayName if available, otherwise fall back to username
-        const welcomeName = result.user.displayName || result.user.username;
+        const welcomeName = result.user?.displayName || result.user?.username;
         toast({
           title: "Login successful",
           description: `Welcome back, ${welcomeName}!`,
