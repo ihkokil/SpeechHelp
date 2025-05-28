@@ -1,4 +1,5 @@
 
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface AdminSetting {
@@ -44,7 +45,12 @@ export const adminSettingsService = {
         return { success: false, error: error.message };
       }
 
-      const result = data as RpcResponse;
+      // Safely convert data to RpcResponse with proper type checking
+      const result = data as unknown as RpcResponse;
+      if (!result || typeof result !== 'object' || !('success' in result)) {
+        return { success: false, error: 'Invalid response format' };
+      }
+
       if (!result.success) {
         return { success: false, error: result.error };
       }
@@ -99,3 +105,4 @@ export const adminSettingsService = {
     return null;
   }
 };
+
