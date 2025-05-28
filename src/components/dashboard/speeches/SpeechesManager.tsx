@@ -34,7 +34,7 @@ const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManag
   
   // Debug logging for incoming speeches data
   useEffect(() => {
-    console.log('SpeechesManager received speeches array:', speeches?.length || 0);
+    console.log('SpeechesManager received speeches array from props:', speeches?.length || 0);
     const speechesArray = speeches || [];
     const savedSpeeches = speechesArray.filter(s => !s.isUpcoming).length;
     const upcomingSpeeches = speechesArray.filter(s => s.isUpcoming).length;
