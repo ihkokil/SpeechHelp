@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { createClient } from '@supabase/supabase-js';
 
 export interface AdminSetting {
   setting_key: string;
@@ -15,19 +14,6 @@ interface RpcResponse {
   setting_key?: string;
   setting_value?: any;
 }
-
-// Create a separate client for admin operations using service role
-const getAdminSupabaseClient = () => {
-  return createClient(
-    "https://yotrueuqjxmgcwlbbyps.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvdHJ1ZXVxanhtZ2N3bGJieXBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEwMjIyNDEsImV4cCI6MjA1NjU5ODI0MX0.JNEPQePgfO5ven3C1mUcBvOYezKyjK_zCncPRzuYyXo",
-    {
-      auth: {
-        persistSession: false
-      }
-    }
-  );
-};
 
 export const adminSettingsService = {
   // Save a setting to the database using the upsert_admin_setting function
@@ -46,11 +32,8 @@ export const adminSettingsService = {
         return { success: false, error: 'Invalid admin session' };
       }
 
-      // Use the admin client directly - service role should bypass RLS
-      const adminClient = getAdminSupabaseClient();
-
-      // Use the upsert_admin_setting function
-      const { data, error } = await adminClient.rpc('upsert_admin_setting', {
+      // Use the regular supabase client with admin session
+      const { data, error } = await supabase.rpc('upsert_admin_setting', {
         setting_key_param: key,
         setting_value_param: value,
         setting_category_param: category
@@ -89,11 +72,8 @@ export const adminSettingsService = {
         return { success: false, error: 'Invalid admin session' };
       }
 
-      // Use the admin client directly - service role should bypass RLS
-      const adminClient = getAdminSupabaseClient();
-
-      // Use the get_admin_settings function
-      const { data, error } = await adminClient.rpc('get_admin_settings', {
+      // Use the regular supabase client with admin session
+      const { data, error } = await supabase.rpc('get_admin_settings', {
         category_filter: category || null
       });
 
