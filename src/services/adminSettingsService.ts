@@ -30,8 +30,8 @@ export const adminSettingsService = {
         return { success: false, error: error.message };
       }
 
-      // Type assertion to handle the JSON response
-      const response = data as RpcResponse;
+      // Type assertion to handle the JSON response - convert to unknown first for type safety
+      const response = data as unknown as RpcResponse;
       
       if (!response?.success) {
         return { success: false, error: response?.error || 'Unknown error occurred' };
