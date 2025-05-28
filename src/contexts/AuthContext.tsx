@@ -147,6 +147,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const updateUserWithProfile = async (sessionUser: User) => {
       if (!mounted) return sessionUser;
       
+      console.log('updateUserWithProfile called with user:', sessionUser.id);
+      
       try {
         const { data: profileData } = await supabase
           .from('profiles')
@@ -155,7 +157,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .single();
 
         if (profileData && mounted) {
-          return {
+          const enrichedUser = {
             ...sessionUser,
             user_metadata: {
               ...sessionUser.user_metadata,
@@ -166,11 +168,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               stripe_subscription_id: profileData.stripe_subscription_id,
             }
           };
+          console.log('User enriched with profile data:', enrichedUser);
+          return enrichedUser;
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
       }
       
+      console.log('Returning user without profile enrichment');
       return sessionUser;
     };
 
@@ -196,6 +201,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
           const userWithProfile = await updateUserWithProfile(data.session.user);
           if (mounted) {
+            console.log('Setting user from existing session:', userWithProfile);
             setUser(userWithProfile);
             // Defer the fetch to avoid potential auth state conflicts
             setTimeout(() => {
@@ -226,25 +232,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       console.log(`AuthContext - Auth state changed: ${event}`);
       
-      // Always set loading to false for auth state changes
-      setIsLoading(false);
       setSession(newSession);
       
       if (newSession?.user) {
         console.log('AuthContext - User authenticated, updating user data');
-        const userWithProfile = await updateUserWithProfile(newSession.user);
-        if (mounted) {
-          setUser(userWithProfile);
-          // Defer the fetch to avoid potential auth state conflicts
-          setTimeout(() => {
-            if (mounted) fetchSpeeches();
-          }, 0);
+        
+        try {
+          const userWithProfile = await updateUserWithProfile(newSession.user);
+          if (mounted) {
+            console.log('Setting user from auth state change:', userWithProfile);
+            setUser(userWithProfile);
+            // Always set loading to false after setting user
+            setIsLoading(false);
+            // Defer the fetch to avoid potential auth state conflicts
+            setTimeout(() => {
+              if (mounted) fetchSpeeches();
+            }, 0);
+          }
+        } catch (error) {
+          console.error('Error updating user with profile:', error);
+          if (mounted) {
+            setUser(newSession.user);
+            setIsLoading(false);
+          }
         }
       } else {
         console.log('AuthContext - User signed out, clearing user data');
         if (mounted) {
           setUser(null);
           setSpeeches([]);
+          setIsLoading(false);
         }
       }
     });
