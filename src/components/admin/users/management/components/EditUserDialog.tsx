@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { User } from '../../types';
 import { useEditUser } from '../hooks/useEditUser';
@@ -78,7 +77,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
     if (user) {
       console.log('Setting form values for user:', user);
       
-      const formData: EditUserFormData = {
+      const formData = {
         firstName: user.first_name || user.user_metadata?.first_name || '',
         lastName: user.last_name || user.user_metadata?.last_name || '',
         email: user.email || '',
@@ -89,7 +88,7 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
         zipCode: user.user_metadata?.zip_code || '',
         country: user.user_metadata?.country || '',
         isActive: user.is_active !== false,
-      };
+      } as EditUserFormData;
 
       console.log('Form data being set:', formData);
       form.reset(formData);
