@@ -1,10 +1,11 @@
 
+import { useState } from 'react';
 import { Speech } from '@/types/speech';
+import { useAuth } from '@/contexts/AuthContext';
 import ViewSpeechModal from './modals/ViewSpeechModal';
 import EditSpeechModal from './modals/EditSpeechModal';
-import DeleteSpeechAlert from './modals/DeleteSpeechAlert';
-import { useSpeechModals } from './hooks/useSpeechModals';
-import { useEffect } from 'react';
+import DeleteSpeechAlert from './DeleteSpeechAlert';
+import { toast } from 'sonner';
 
 interface SpeechModalsProps {
   selectedSpeech: Speech | null;
@@ -27,118 +28,73 @@ const SpeechModals = ({
   setIsDeleteAlertOpen,
   onEditClick,
 }: SpeechModalsProps) => {
-  const {
-    title,
-    setTitle,
-    content,
-    setContent,
-    handleEditModalOpen,
-    handleUpdateSpeech,
-    handleDeleteSpeech
-  } = useSpeechModals();
-  
-  // Debug log when selected speech changes
-  useEffect(() => {
-    if (selectedSpeech) {
-      console.log('Selected speech changed:', {
-        id: selectedSpeech.id,
-        title: selectedSpeech.title,
-        content: selectedSpeech.content ? (selectedSpeech.content.substring(0, 100) + '...') : 'empty'
-      });
-    }
-  }, [selectedSpeech]);
-  
-  // Handle edit modal opening/closing
-  useEffect(() => {
-    if (isEditModalOpen && selectedSpeech) {
-      // Initialize edit form when opening modal
-      setTitle(selectedSpeech.title);
-      
-      try {
-        // Process content based on its format
-        if (selectedSpeech.content && typeof selectedSpeech.content === 'string') {
-          if (selectedSpeech.content.trim().startsWith('{')) {
-            const parsedContent = JSON.parse(selectedSpeech.content);
-            if (parsedContent.content) {
-              setContent(parsedContent.content);
-            } else {
-              setContent(selectedSpeech.content);
-            }
-          } else {
-            setContent(selectedSpeech.content);
-          }
-        } else {
-          setContent(selectedSpeech.content || '');
-        }
-      } catch (error) {
-        console.error('Error processing content when modal opens:', error);
-        setContent(selectedSpeech.content || '');
-      }
-    }
-  }, [isEditModalOpen, selectedSpeech, setTitle, setContent]);
-  
-  const onEditModalOpenChange = (open: boolean) => {
-    console.log('Edit modal open state changing to:', open);
-    setIsEditModalOpen(handleEditModalOpen(open, selectedSpeech));
-  };
-  
-  // Handle speech update
-  const onSaveEdit = async () => {
-    console.log('Saving edit with:', {
-      speechId: selectedSpeech?.id,
-      title,
-      content: content.substring(0, 100) + '...' // Log just the beginning
-    });
+  const { deleteSpeech, fetchSpeeches, user } = useAuth();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedSpeech) return;
     
-    const success = await handleUpdateSpeech(selectedSpeech);
-    if (success) {
-      setIsEditModalOpen(false);
-    }
-  };
-  
-  // Handle speech deletion
-  const onConfirmDelete = async () => {
-    const success = await handleDeleteSpeech(selectedSpeech);
-    if (success) {
+    setIsDeleting(true);
+    try {
+      if (selectedSpeech.isUpcoming) {
+        // Handle upcoming event deletion from localStorage
+        const userId = user?.id;
+        if (userId) {
+          const storageKey = `upcomingEvents_${userId}`;
+          const upcomingEventsJSON = localStorage.getItem(storageKey);
+          
+          if (upcomingEventsJSON) {
+            const upcomingEvents = JSON.parse(upcomingEventsJSON);
+            const updatedEvents = upcomingEvents.filter((event: any) => event.id !== selectedSpeech.id);
+            localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
+            
+            console.log('Upcoming event deleted from localStorage');
+            toast.success('Upcoming event deleted successfully');
+            
+            // Refresh the speeches to update the UI
+            await fetchSpeeches();
+          }
+        }
+      } else {
+        // Handle regular speech deletion from database
+        await deleteSpeech(selectedSpeech.id);
+        console.log('Speech deleted from database');
+      }
+      
       setIsDeleteAlertOpen(false);
+      setSelectedSpeech(null);
+    } catch (error) {
+      console.error('Error deleting speech/event:', error);
+      toast.error('Failed to delete. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
     <>
-      {/* View Speech Modal */}
-      {selectedSpeech && (
-        <ViewSpeechModal
-          speech={selectedSpeech}
-          isOpen={isViewModalOpen}
-          onOpenChange={setIsViewModalOpen}
-          onEditClick={() => onEditClick(selectedSpeech)}
-        />
-      )}
-      
-      {/* Edit Speech Modal */}
-      {selectedSpeech && (
-        <EditSpeechModal
-          speech={selectedSpeech}
-          isOpen={isEditModalOpen}
-          onOpenChange={onEditModalOpenChange}
-          editTitle={title}
-          editContent={content}
-          setEditTitle={setTitle}
-          setEditContent={setContent}
-          onSave={onSaveEdit}
-        />
-      )}
-      
-      {/* Delete Speech Modal */}
-      {selectedSpeech && (
-        <DeleteSpeechAlert
-          speech={selectedSpeech}
-          isOpen={isDeleteAlertOpen}
-          onOpenChange={setIsDeleteAlertOpen}
-          onConfirm={onConfirmDelete}
-        />
-      )}
+      {/* View Modal */}
+      <ViewSpeechModal
+        isOpen={isViewModalOpen}
+        onOpenChange={setIsViewModalOpen}
+        speech={selectedSpeech}
+        onEditClick={onEditClick}
+      />
+
+      {/* Edit Modal */}
+      <EditSpeechModal
+        isOpen={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        speech={selectedSpeech}
+      />
+
+      {/* Delete Alert */}
+      <DeleteSpeechAlert
+        isOpen={isDeleteAlertOpen}
+        onOpenChange={setIsDeleteAlertOpen}
+        speech={selectedSpeech}
+        onConfirm={handleDeleteConfirm}
+      />
     </>
   );
 };

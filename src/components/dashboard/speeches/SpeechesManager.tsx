@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Speech } from '@/types/speech';
 import FilterBar from './FilterBar';
 import SpeechesTable from './SpeechesTable';
@@ -15,6 +16,8 @@ interface SpeechesManagerProps {
 }
 
 const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManagerProps) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterOption>(initialFilter as FilterOption);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -31,6 +34,27 @@ const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManag
       setFilterType(initialFilter as FilterOption);
     }
   }, [initialFilter]);
+
+  // Update URL when filter changes
+  useEffect(() => {
+    const currentParams = new URLSearchParams(location.search);
+    
+    if (filterType === 'upcoming') {
+      currentParams.set('filter', 'upcoming');
+    } else if (filterType === 'all') {
+      currentParams.delete('filter');
+    } else {
+      currentParams.set('filter', filterType);
+    }
+    
+    const newSearch = currentParams.toString();
+    const newPath = newSearch ? `${location.pathname}?${newSearch}` : location.pathname;
+    
+    // Only navigate if the URL actually needs to change
+    if (location.pathname + location.search !== newPath) {
+      navigate(newPath, { replace: true });
+    }
+  }, [filterType, navigate, location.pathname, location.search]);
   
   // Debug logging for incoming speeches data
   useEffect(() => {
@@ -66,6 +90,12 @@ const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManag
     setIsDeleteAlertOpen(true);
   };
 
+  // Update filter type handler to ensure URL updates
+  const handleFilterTypeChange = (newFilterType: FilterOption) => {
+    console.log('Filter type changing to:', newFilterType);
+    setFilterType(newFilterType);
+  };
+
   // Enhanced debug logging for filtered results
   useEffect(() => {
     console.log(`SpeechesManager - Current filter: ${filterType}`);
@@ -92,7 +122,7 @@ const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManag
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         filterType={filterType}
-        setFilterType={setFilterType}
+        setFilterType={handleFilterTypeChange}
         sortBy={sortBy}
         setSortBy={setSortBy}
       />
