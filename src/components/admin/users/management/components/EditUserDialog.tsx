@@ -78,17 +78,17 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
     if (user) {
       console.log('Setting form values for user:', user);
       
-      // Extract data from both direct fields and user_metadata with guaranteed string fallbacks
-      const firstName = user.first_name || user.user_metadata?.first_name || '';
-      const lastName = user.last_name || user.user_metadata?.last_name || '';
-      const email = user.email || '';
-      const phone = user.phone || user.user_metadata?.phone || '';
-      const streetAddress = user.user_metadata?.street_address || '';
-      const city = user.user_metadata?.city || '';
-      const state = user.user_metadata?.state || '';
-      const zipCode = user.user_metadata?.zip_code || '';
-      const country = user.user_metadata?.country || '';
-      const isActive = user.is_active !== false;
+      // Extract data with guaranteed string fallbacks and explicit typing
+      const firstName: string = user.first_name || user.user_metadata?.first_name || '';
+      const lastName: string = user.last_name || user.user_metadata?.last_name || '';
+      const email: string = user.email || '';
+      const phone: string = user.phone || user.user_metadata?.phone || '';
+      const streetAddress: string = user.user_metadata?.street_address || '';
+      const city: string = user.user_metadata?.city || '';
+      const state: string = user.user_metadata?.state || '';
+      const zipCode: string = user.user_metadata?.zip_code || '';
+      const country: string = user.user_metadata?.country || '';
+      const isActive: boolean = user.is_active !== false;
 
       console.log('Form data being set:', {
         firstName,
@@ -103,18 +103,18 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
         isActive
       });
 
-      // Create the form data object with explicit type assertion to ensure all required fields are strings
+      // Create the form data object - now all properties are properly typed as required
       const formData: EditUserFormData = {
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        phone: phone,
-        streetAddress: streetAddress,
-        city: city,
-        state: state,
-        zipCode: zipCode,
-        country: country,
-        isActive: isActive,
+        firstName,
+        lastName,
+        email,
+        phone,
+        streetAddress,
+        city,
+        state,
+        zipCode,
+        country,
+        isActive,
       };
 
       form.reset(formData);
