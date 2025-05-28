@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const Account = () => {
 	const navigate = useNavigate();
-	const { refreshUserData } = useAuth();
+	const { refreshUserData, user } = useAuth();
 	const { toast } = useToast();
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -19,18 +19,25 @@ const Account = () => {
 
 	useEffect(() => {
 		const verifyCheckout = async () => {
+			console.log('Account page - verifyCheckout called', { success, canceled, sessionId });
+
 			if (success === 'true' && sessionId) {
 				setIsLoading(true);
 				setError(null);
 
 				try {
+					console.log('Starting payment verification for session:', sessionId);
+					
 					// Call the Supabase function to verify the checkout
 					const { data, error } = await supabase.functions.invoke('stripe-verify', {
 						body: { sessionId }
 					});
 
+					console.log('Stripe verify response:', { data, error });
+
 					if (error) {
-						throw new Error(error.message);
+						console.error('Stripe verify error:', error);
+						throw new Error(error.message || 'Payment verification failed');
 					}
 
 					if (data?.success) {
@@ -43,7 +50,7 @@ const Account = () => {
 						// Show success toast
 						toast({
 							title: "Payment Successful!",
-							description: `Your ${data.plan} subscription has been activated. Welcome aboard!`,
+							description: `Your ${data.plan || 'subscription'} has been activated. Welcome aboard!`,
 						});
 
 						// Redirect to dashboard after a short delay
@@ -63,7 +70,8 @@ const Account = () => {
 					}
 				} catch (err) {
 					console.error('Error verifying checkout:', err);
-					setError('There was an error processing your payment. Please contact support if you believe this is a mistake.');
+					const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+					setError(`There was an error processing your payment: ${errorMessage}. Please contact support if you believe this is a mistake.`);
 					
 					// Show error toast
 					toast({
@@ -89,12 +97,22 @@ const Account = () => {
 				}, 2000);
 			} else {
 				// No checkout parameters, redirect to pricing
+				console.log('No checkout parameters found, redirecting to pricing');
 				navigate('/pricing');
 			}
 		};
 
-		verifyCheckout();
-	}, [success, canceled, sessionId, navigate, refreshUserData, toast]);
+		// Only run verification if we have the proper parameters
+		if (success || canceled) {
+			verifyCheckout();
+		} else if (!user) {
+			// If no user and no payment parameters, redirect to auth
+			navigate('/auth');
+		} else {
+			// If user is logged in but no payment parameters, redirect to dashboard
+			navigate('/dashboard');
+		}
+	}, [success, canceled, sessionId, navigate, refreshUserData, toast, user]);
 
 	// Loading state UI
 	if (isLoading) {
@@ -106,6 +124,9 @@ const Account = () => {
 					<p className="text-gray-600">Please wait while we verify your payment and activate your subscription.</p>
 					<div className="mt-6 bg-white rounded-lg p-4 shadow-sm">
 						<p className="text-sm text-gray-500">This may take a few moments. Please don't close this window.</p>
+						{sessionId && (
+							<p className="text-xs text-gray-400 mt-2">Session ID: {sessionId}</p>
+						)}
 					</div>
 				</div>
 			</div>
@@ -132,6 +153,12 @@ const Account = () => {
 							onClick={() => navigate('/pricing')}
 						>
 							Back to Pricing
+						</button>
+						<button
+							className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+							onClick={() => window.location.reload()}
+						>
+							Try Again
 						</button>
 					</div>
 				</div>
