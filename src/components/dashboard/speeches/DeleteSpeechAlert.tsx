@@ -17,14 +17,10 @@ interface DeleteSpeechAlertProps {
   onOpenChange: (open: boolean) => void;
   speech: Speech | null;
   onConfirm: () => void;
-  isLoading?: boolean;
 }
 
-const DeleteSpeechAlert = ({ isOpen, onOpenChange, speech, onConfirm, isLoading = false }: DeleteSpeechAlertProps) => {
+const DeleteSpeechAlert = ({ isOpen, onOpenChange, speech, onConfirm }: DeleteSpeechAlertProps) => {
   if (!speech) return null;
-
-  const isUpcoming = speech.isUpcoming;
-  const itemType = isUpcoming ? 'upcoming event' : 'speech';
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -32,19 +28,13 @@ const DeleteSpeechAlert = ({ isOpen, onOpenChange, speech, onConfirm, isLoading 
         <AlertDialogHeader>
           <AlertDialogTitle><Translate text="common.areYouSure" /></AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the {itemType} "{speech.title}".
+            <Translate text="dashboard.deleteWarning" /> "{speech.title}".
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>
-            <Translate text="common.cancel" />
-          </AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={onConfirm}
-            disabled={isLoading}
-            className="bg-red-600 hover:bg-red-700"
-          >
-            {isLoading ? 'Deleting...' : <Translate text="common.delete" />}
+          <AlertDialogCancel><Translate text="common.cancel" /></AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>
+            <Translate text="common.delete" />
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
