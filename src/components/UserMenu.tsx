@@ -41,13 +41,17 @@ const UserMenu = () => {
     navigate(path);
   };
 
+  // Show loading spinner only if auth is actually loading
   if (isLoading) {
+    console.log('UserMenu - showing loading state');
     return (
       <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse"></div>
     );
   }
 
+  // Show login/signup buttons if no user
   if (!user) {
+    console.log('UserMenu - showing login/signup buttons');
     return (
       <div className="flex items-center gap-2">
         <Link to="/auth?signin=true">
@@ -103,6 +107,7 @@ const UserMenu = () => {
 
   console.log('UserMenu - displayName:', displayName);
   console.log('UserMenu - displayFullName:', displayFullName);
+  console.log('UserMenu - rendering user menu for authenticated user');
 
   return (
     <DropdownMenu>
