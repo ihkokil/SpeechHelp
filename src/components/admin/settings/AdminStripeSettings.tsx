@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Eye, EyeOff, TestTube, Zap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { adminSettingsService } from '@/services/adminSettingsService';
 
 const AdminStripeSettings = () => {
   const [isLiveMode, setIsLiveMode] = useState(false);
@@ -18,6 +19,36 @@ const AdminStripeSettings = () => {
     webhookSecret: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // Load Stripe data on component mount
+  useEffect(() => {
+    loadStripeData();
+  }, []);
+
+  const loadStripeData = async () => {
+    setIsLoadingData(true);
+    try {
+      const result = await adminSettingsService.getSettings('stripe');
+      if (result.success && result.data) {
+        const settings = result.data.reduce((acc, setting) => {
+          acc[setting.setting_key] = setting.setting_value;
+          return acc;
+        }, {} as any);
+
+        setIsLiveMode(settings.is_live_mode || false);
+        setStripeConfig({
+          publishableKey: settings.publishable_key || '',
+          secretKey: settings.secret_key || '',
+          webhookSecret: settings.webhook_secret || ''
+        });
+      }
+    } catch (error) {
+      console.error('Error loading Stripe data:', error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setStripeConfig(prev => ({
@@ -29,17 +60,31 @@ const AdminStripeSettings = () => {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // Here you would save the Stripe configuration to your backend/secrets
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      // Save all Stripe settings
+      const savePromises = [
+        adminSettingsService.saveSetting('is_live_mode', isLiveMode, 'stripe'),
+        adminSettingsService.saveSetting('publishable_key', stripeConfig.publishableKey, 'stripe'),
+        adminSettingsService.saveSetting('secret_key', stripeConfig.secretKey, 'stripe'),
+        adminSettingsService.saveSetting('webhook_secret', stripeConfig.webhookSecret, 'stripe')
+      ];
+
+      const results = await Promise.all(savePromises);
+      const hasErrors = results.some(result => !result.success);
+
+      if (hasErrors) {
+        const errors = results.filter(r => !r.success).map(r => r.error).join(', ');
+        throw new Error(errors);
+      }
       
       toast({
         title: "Stripe settings updated",
         description: `Configuration saved for ${isLiveMode ? 'Live' : 'Test'} mode.`,
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error saving Stripe settings:', error);
       toast({
         title: "Error",
-        description: "Failed to update Stripe settings. Please try again.",
+        description: error.message || "Failed to update Stripe settings. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -82,6 +127,10 @@ const AdminStripeSettings = () => {
     if (key.length <= 8) return key;
     return key.substring(0, 8) + '•'.repeat(key.length - 8);
   };
+
+  if (isLoadingData) {
+    return <div className="flex items-center justify-center p-8">Loading Stripe settings...</div>;
+  }
 
   return (
     <div className="space-y-6">
