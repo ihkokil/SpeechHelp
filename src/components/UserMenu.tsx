@@ -91,20 +91,20 @@ const UserMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-gray-100">
+        <button className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-gray-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
           <UserCircle className="h-8 w-8 text-pink-600" />
           <span className="text-sm font-medium hidden md:block">
             {displayName}
           </span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-lg z-50">
         <div className="px-2 py-1.5">
           <p className="text-sm font-bold truncate">{displayFullName}</p>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <p className="text-xs text-gray-500 truncate cursor-help">{user.email}</p>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{user.email}</p>
@@ -113,33 +113,25 @@ const UserMenu = () => {
           </TooltipProvider>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <button className="w-full flex cursor-default items-center" onClick={() => navigate('/dashboard')}>
-            <LayoutDashboardIcon className="h-4 w-4 mr-2" />
-            Dashboard
-          </button>
+        <DropdownMenuItem onClick={() => navigate('/dashboard')} className="cursor-pointer">
+          <LayoutDashboardIcon className="h-4 w-4 mr-2" />
+          Dashboard
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <button className="w-full flex cursor-default items-center" onClick={() => navigate('/settings')}>
-            <Settings className="h-4 w-4 mr-2" />
-            Account Settings
-          </button>
+        <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+          <Settings className="h-4 w-4 mr-2" />
+          Account Settings
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <button className="w-full flex cursor-default items-center" onClick={() => navigate('/help')}>
-            <HelpCircle className="h-4 w-4 mr-2" />
-            Help & Support
-          </button>
+        <DropdownMenuItem onClick={() => navigate('/help')} className="cursor-pointer">
+          <HelpCircle className="h-4 w-4 mr-2" />
+          Help & Support
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <button 
-            className="w-full flex cursor-default items-center text-red-600 hover:bg-red-600 hover:text-white focus:bg-red-600 focus:text-white"
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Log Out
-          </button>
+        <DropdownMenuItem 
+          onClick={handleSignOut}
+          className="cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-600"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Log Out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
