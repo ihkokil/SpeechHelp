@@ -46,24 +46,8 @@ export const adminSettingsService = {
         return { success: false, error: 'Invalid admin session' };
       }
 
-      // Set the admin user context by creating a temporary session
+      // Use the admin client directly - service role should bypass RLS
       const adminClient = getAdminSupabaseClient();
-      
-      // Create a mock session for the admin user to satisfy RLS
-      await adminClient.auth.setSession({
-        access_token: 'mock-token',
-        refresh_token: 'mock-refresh',
-        user: {
-          id: adminUserId,
-          aud: 'authenticated',
-          role: 'authenticated',
-          email: session.user?.email || '',
-          app_metadata: {},
-          user_metadata: {},
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      });
 
       // Use the upsert_admin_setting function
       const { data, error } = await adminClient.rpc('upsert_admin_setting', {
@@ -105,24 +89,8 @@ export const adminSettingsService = {
         return { success: false, error: 'Invalid admin session' };
       }
 
-      // Set the admin user context
+      // Use the admin client directly - service role should bypass RLS
       const adminClient = getAdminSupabaseClient();
-      
-      // Create a mock session for the admin user to satisfy RLS
-      await adminClient.auth.setSession({
-        access_token: 'mock-token',
-        refresh_token: 'mock-refresh',
-        user: {
-          id: adminUserId,
-          aud: 'authenticated',
-          role: 'authenticated',
-          email: session.user?.email || '',
-          app_metadata: {},
-          user_metadata: {},
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      });
 
       // Use the get_admin_settings function
       const { data, error } = await adminClient.rpc('get_admin_settings', {
