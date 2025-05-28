@@ -6,13 +6,27 @@ import countries from '@/data/countries';
 
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Never';
-  return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+  try {
+    return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+  } catch (error) {
+    return 'Invalid date';
+  }
 };
 
 export const formatDateRelative = (dateString: string | null) => {
   if (!dateString) return 'Never';
   try {
     return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+  } catch (error) {
+    return 'Invalid date';
+  }
+};
+
+// New function for detailed date-time formatting
+export const formatDateTimeDetailed = (dateString: string | null) => {
+  if (!dateString) return 'Never';
+  try {
+    return format(new Date(dateString), 'MMM dd, yyyy • HH:mm');
   } catch (error) {
     return 'Invalid date';
   }

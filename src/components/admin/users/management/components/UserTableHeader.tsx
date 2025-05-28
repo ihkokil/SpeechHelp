@@ -19,7 +19,7 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = memo(({
   return (
     <TableHeader>
       <TableRow>
-        <TableHead className="w-[40px]">
+        <TableHead className="w-12">
           <Checkbox 
             checked={isAllSelected}
             onCheckedChange={onToggleAll}
@@ -27,16 +27,14 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = memo(({
             aria-label="Select all users"
           />
         </TableHead>
-        <TableHead className="w-[200px] md:w-[150px]">User</TableHead>
-        <TableHead className="hidden sm:table-cell">Email</TableHead>
-        <TableHead className="hidden md:table-cell">Phone</TableHead>
-        <TableHead className="hidden md:table-cell">Plan</TableHead>
-        <TableHead className="hidden lg:table-cell">Joined</TableHead>
-        <TableHead className="hidden lg:table-cell">Last Sign In</TableHead>
-        <TableHead className="hidden sm:table-cell">Status</TableHead>
-        <TableHead>
-          <span className="sr-only sm:not-sr-only">Actions</span>
-        </TableHead>
+        <TableHead className="min-w-[180px]">User</TableHead>
+        <TableHead className="min-w-[200px]">Email</TableHead>
+        <TableHead className="min-w-[120px]">Phone</TableHead>
+        <TableHead className="w-24 text-center">Plan</TableHead>
+        <TableHead className="min-w-[140px]">Joined</TableHead>
+        <TableHead className="min-w-[140px]">Last Sign In</TableHead>
+        <TableHead className="w-20 text-center">Status</TableHead>
+        <TableHead className="w-16 text-center">Actions</TableHead>
       </TableRow>
     </TableHeader>
   );
