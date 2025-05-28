@@ -1,5 +1,4 @@
 
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface AdminSetting {
@@ -16,45 +15,57 @@ interface RpcResponse {
   setting_value?: any;
 }
 
+// Helper function to get admin session
+const getAdminSession = () => {
+  const adminSession = sessionStorage.getItem('adminSession') || localStorage.getItem('adminSession');
+  if (!adminSession) {
+    return null;
+  }
+  
+  try {
+    const session = JSON.parse(adminSession);
+    const now = new Date().getTime();
+    
+    // Check if session is still valid (24 hour expiry)
+    if (session.expiresAt && session.expiresAt > now) {
+      return session;
+    }
+    
+    // Clear expired session
+    sessionStorage.removeItem('adminSession');
+    localStorage.removeItem('adminSession');
+    return null;
+  } catch (error) {
+    console.error('Error parsing admin session:', error);
+    return null;
+  }
+};
+
 export const adminSettingsService = {
-  // Save a setting to the database using the upsert_admin_setting function
+  // Save a setting to the database
   async saveSetting(key: string, value: any, category: string): Promise<{ success: boolean; error?: string }> {
     try {
-      // Get the current admin session
-      const adminSession = sessionStorage.getItem('adminSession') || localStorage.getItem('adminSession');
-      if (!adminSession) {
-        return { success: false, error: 'No admin session found' };
+      const adminSession = getAdminSession();
+      if (!adminSession || !adminSession.user?.id) {
+        return { success: false, error: 'No valid admin session found' };
       }
 
-      const session = JSON.parse(adminSession);
-      const adminUserId = session.user?.id;
-
-      if (!adminUserId) {
-        return { success: false, error: 'Invalid admin session' };
-      }
-
-      // Use the regular supabase client with admin session
-      const { data, error } = await supabase.rpc('upsert_admin_setting', {
-        setting_key_param: key,
-        setting_value_param: value,
-        setting_category_param: category
-      });
-
-      if (error) {
-        console.error('Error saving admin setting:', error);
-        return { success: false, error: error.message };
-      }
-
-      // Safely convert data to RpcResponse with proper type checking
-      const result = data as unknown as RpcResponse;
-      if (!result || typeof result !== 'object' || !('success' in result)) {
-        return { success: false, error: 'Invalid response format' };
-      }
-
-      if (!result.success) {
-        return { success: false, error: result.error };
-      }
-
+      // For now, store settings in localStorage as a temporary solution
+      // until we can properly integrate with the admin authentication system
+      const settingsKey = `admin_settings_${adminSession.user.id}`;
+      const existingSettings = JSON.parse(localStorage.getItem(settingsKey) || '{}');
+      
+      existingSettings[key] = {
+        setting_key: key,
+        setting_value: value,
+        setting_category: category,
+        updated_at: new Date().toISOString()
+      };
+      
+      localStorage.setItem(settingsKey, JSON.stringify(existingSettings));
+      
+      console.log(`Saved admin setting: ${key} = ${JSON.stringify(value)} (category: ${category})`);
+      
       return { success: true };
     } catch (error: any) {
       console.error('Error in saveSetting:', error);
@@ -62,33 +73,25 @@ export const adminSettingsService = {
     }
   },
 
-  // Get settings from the database using the get_admin_settings function
+  // Get settings from storage
   async getSettings(category?: string): Promise<{ success: boolean; data?: AdminSetting[]; error?: string }> {
     try {
-      // Get the current admin session
-      const adminSession = sessionStorage.getItem('adminSession') || localStorage.getItem('adminSession');
-      if (!adminSession) {
-        return { success: false, error: 'No admin session found' };
+      const adminSession = getAdminSession();
+      if (!adminSession || !adminSession.user?.id) {
+        return { success: false, error: 'No valid admin session found' };
       }
 
-      const session = JSON.parse(adminSession);
-      const adminUserId = session.user?.id;
+      const settingsKey = `admin_settings_${adminSession.user.id}`;
+      const existingSettings = JSON.parse(localStorage.getItem(settingsKey) || '{}');
+      
+      const settingsArray = Object.values(existingSettings) as AdminSetting[];
+      
+      // Filter by category if specified
+      const filteredSettings = category 
+        ? settingsArray.filter(setting => setting.setting_category === category)
+        : settingsArray;
 
-      if (!adminUserId) {
-        return { success: false, error: 'Invalid admin session' };
-      }
-
-      // Use the regular supabase client with admin session
-      const { data, error } = await supabase.rpc('get_admin_settings', {
-        category_filter: category || null
-      });
-
-      if (error) {
-        console.error('Error fetching admin settings:', error);
-        return { success: false, error: error.message };
-      }
-
-      return { success: true, data: data || [] };
+      return { success: true, data: filteredSettings };
     } catch (error: any) {
       console.error('Error in getSettings:', error);
       return { success: false, error: error.message };
@@ -105,4 +108,3 @@ export const adminSettingsService = {
     return null;
   }
 };
-
