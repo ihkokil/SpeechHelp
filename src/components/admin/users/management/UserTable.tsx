@@ -15,7 +15,6 @@ interface UserTableProps {
   toggleUserSelection: (user: User) => void;
   toggleAllUsers: () => void;
   handleViewUserDetails: (user: User) => void;
-  handleEditUser: (user: User) => void;
   handleManagePermissions: (user: User) => void;
   handleToggleUserStatus: (userId: string, isActive: boolean) => void;
   setSelectedUsers: (users: User[]) => void;
@@ -36,7 +35,6 @@ export const UserTable: React.FC<UserTableProps> = ({
   toggleUserSelection,
   toggleAllUsers,
   handleViewUserDetails,
-  handleEditUser,
   handleManagePermissions,
   handleToggleUserStatus,
   setSelectedUsers,
@@ -86,7 +84,6 @@ export const UserTable: React.FC<UserTableProps> = ({
                 isSelected={selectedUsers.some(selectedUser => selectedUser.id === user.id)}
                 onToggleSelection={toggleUserSelection}
                 onViewDetails={handleViewUserDetails}
-                onEditUser={handleEditUser}
                 onManagePermissions={handleManagePermissions}
                 onToggleActive={handleToggleUserStatus}
                 onDeleteUser={handleDeleteUser}
