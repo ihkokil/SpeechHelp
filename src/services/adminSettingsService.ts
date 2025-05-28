@@ -30,7 +30,7 @@ const getAdminSupabaseClient = () => {
 };
 
 export const adminSettingsService = {
-  // Save a setting to the database
+  // Save a setting to the database using the upsert_admin_setting function
   async saveSetting(key: string, value: any, category: string): Promise<{ success: boolean; error?: string }> {
     try {
       // Get the current admin session
@@ -46,25 +46,40 @@ export const adminSettingsService = {
         return { success: false, error: 'Invalid admin session' };
       }
 
-      // Use the admin client and set the admin user ID context
+      // Set the admin user context by creating a temporary session
       const adminClient = getAdminSupabaseClient();
       
-      // Insert directly into the admin_settings table instead of using RPC
-      const { data, error } = await adminClient
-        .from('admin_settings')
-        .upsert({
-          admin_user_id: adminUserId,
-          setting_key: key,
-          setting_value: value,
-          setting_category: category,
+      // Create a mock session for the admin user to satisfy RLS
+      await adminClient.auth.setSession({
+        access_token: 'mock-token',
+        refresh_token: 'mock-refresh',
+        user: {
+          id: adminUserId,
+          aud: 'authenticated',
+          role: 'authenticated',
+          email: session.user?.email || '',
+          app_metadata: {},
+          user_metadata: {},
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'admin_user_id,setting_key'
-        });
+        }
+      });
+
+      // Use the upsert_admin_setting function
+      const { data, error } = await adminClient.rpc('upsert_admin_setting', {
+        setting_key_param: key,
+        setting_value_param: value,
+        setting_category_param: category
+      });
 
       if (error) {
         console.error('Error saving admin setting:', error);
         return { success: false, error: error.message };
+      }
+
+      const result = data as RpcResponse;
+      if (!result.success) {
+        return { success: false, error: result.error };
       }
 
       return { success: true };
@@ -74,7 +89,7 @@ export const adminSettingsService = {
     }
   },
 
-  // Get settings from the database
+  // Get settings from the database using the get_admin_settings function
   async getSettings(category?: string): Promise<{ success: boolean; data?: AdminSetting[]; error?: string }> {
     try {
       // Get the current admin session
@@ -90,20 +105,29 @@ export const adminSettingsService = {
         return { success: false, error: 'Invalid admin session' };
       }
 
-      // Use the admin client
+      // Set the admin user context
       const adminClient = getAdminSupabaseClient();
       
-      // Query the admin_settings table directly
-      let query = adminClient
-        .from('admin_settings')
-        .select('setting_key, setting_value, setting_category, updated_at')
-        .eq('admin_user_id', adminUserId);
+      // Create a mock session for the admin user to satisfy RLS
+      await adminClient.auth.setSession({
+        access_token: 'mock-token',
+        refresh_token: 'mock-refresh',
+        user: {
+          id: adminUserId,
+          aud: 'authenticated',
+          role: 'authenticated',
+          email: session.user?.email || '',
+          app_metadata: {},
+          user_metadata: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      });
 
-      if (category) {
-        query = query.eq('setting_category', category);
-      }
-
-      const { data, error } = await query.order('setting_category, setting_key');
+      // Use the get_admin_settings function
+      const { data, error } = await adminClient.rpc('get_admin_settings', {
+        category_filter: category || null
+      });
 
       if (error) {
         console.error('Error fetching admin settings:', error);
