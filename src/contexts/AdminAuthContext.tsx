@@ -110,7 +110,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
         setAdminUser(result.user || null);
         
         // Use displayName if available, otherwise fall back to username
-        const welcomeName = result.user?.displayName || result.user?.username;
+        const welcomeName = result.user?.displayName || result.user?.username || 'Admin';
         toast({
           title: "Login successful",
           description: `Welcome back, ${welcomeName}!`,
@@ -160,10 +160,10 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
       if (result.success) {
         // Retrieve user information
         const storedData = sessionStorage.getItem('tempAdminUser');
-        let user = null;
+        let user: AdminUser | null = null;
         
         if (storedData) {
-          user = JSON.parse(storedData);
+          user = JSON.parse(storedData) as AdminUser;
           sessionStorage.removeItem('tempAdminUser');
         }
         
@@ -181,7 +181,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
         setPendingUserId(null);
         
         // Use displayName if available, otherwise fall back to username
-        const welcomeName = user?.displayName || user?.username;
+        const welcomeName = user?.displayName || user?.username || 'Admin';
         toast({
           title: "Verification successful",
           description: `Welcome back, ${welcomeName}!`,
