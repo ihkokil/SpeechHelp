@@ -77,18 +77,18 @@ const EditUserDialog: React.FC<EditUserDialogProps> = ({
     if (user) {
       console.log('Setting form values for user:', user);
       
-      const formData = {
-        firstName: user.first_name || user.user_metadata?.first_name || '',
-        lastName: user.last_name || user.user_metadata?.last_name || '',
-        email: user.email || '',
-        phone: user.phone || user.user_metadata?.phone || '',
-        streetAddress: user.user_metadata?.street_address || '',
-        city: user.user_metadata?.city || '',
-        state: user.user_metadata?.state || '',
-        zipCode: user.user_metadata?.zip_code || '',
-        country: user.user_metadata?.country || '',
+      const formData: EditUserFormData = {
+        firstName: (user.first_name || user.user_metadata?.first_name || '').toString(),
+        lastName: (user.last_name || user.user_metadata?.last_name || '').toString(),
+        email: (user.email || '').toString(),
+        phone: (user.phone || user.user_metadata?.phone || '').toString(),
+        streetAddress: (user.user_metadata?.street_address || '').toString(),
+        city: (user.user_metadata?.city || '').toString(),
+        state: (user.user_metadata?.state || '').toString(),
+        zipCode: (user.user_metadata?.zip_code || '').toString(),
+        country: (user.user_metadata?.country || '').toString(),
         isActive: user.is_active !== false,
-      } as EditUserFormData;
+      };
 
       console.log('Form data being set:', formData);
       form.reset(formData);
