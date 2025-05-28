@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -52,6 +51,7 @@ const DashboardCharts: React.FC = () => {
   const [speechTypesData, setSpeechTypesData] = useState<SpeechTypeData[]>([]);
   const [usageMetricsData, setUsageMetricsData] = useState<UsageMetricsData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasNoSpeeches, setHasNoSpeeches] = useState(false);
 
   const speechTypeColors = {
     wedding: '#ec4899',
@@ -78,15 +78,24 @@ const DashboardCharts: React.FC = () => {
       if (usersError) throw usersError;
       
       const users = usersData?.users || [];
+      console.log('Fetched users:', users.length);
       
-      // Fetch speeches data
+      // Fetch speeches data directly from the table
       const { data: speechesData, error: speechesError } = await supabase
         .from('speeches')
         .select('*');
       
-      if (speechesError) throw speechesError;
+      if (speechesError) {
+        console.error('Error fetching speeches:', speechesError);
+        throw speechesError;
+      }
       
       const speeches = speechesData || [];
+      console.log('Fetched speeches:', speeches.length);
+      console.log('Sample speech data:', speeches.slice(0, 3));
+      
+      // Check if we have no speeches and set flag
+      setHasNoSpeeches(speeches.length === 0);
       
       // Process user growth data (last 7 months)
       const userGrowth = processUserGrowthData(users);
@@ -96,8 +105,9 @@ const DashboardCharts: React.FC = () => {
       const speechActivity = processSpeechActivityData(speeches);
       setSpeechActivityData(speechActivity);
       
-      // Process speech types distribution
+      // Process speech types distribution with better handling
       const speechTypes = processSpeechTypesData(speeches);
+      console.log('Processed speech types:', speechTypes);
       setSpeechTypesData(speechTypes);
       
       // Process usage metrics (simplified hourly data)
@@ -175,21 +185,50 @@ const DashboardCharts: React.FC = () => {
   };
 
   const processSpeechTypesData = (speeches: any[]): SpeechTypeData[] => {
+    console.log('Processing speech types for speeches:', speeches.length);
+    
+    // If no speeches, return empty array but don't show error
+    if (!speeches || speeches.length === 0) {
+      console.log('No speeches found, returning empty array');
+      return [];
+    }
+    
     const typeCounts: Record<string, number> = {};
     
     speeches.forEach(speech => {
-      const type = speech.speech_type || 'other';
+      let type = speech.speech_type || 'other';
+      
+      // Normalize the type name to lowercase for consistency
+      type = type.toLowerCase().trim();
+      
+      // Map common variations to standard types
+      if (type.includes('wedding')) type = 'wedding';
+      else if (type.includes('business') || type.includes('corporate')) type = 'business';
+      else if (type.includes('birthday')) type = 'birthday';
+      else if (type.includes('graduation')) type = 'graduation';
+      else if (type.includes('award')) type = 'award';
+      else if (type.includes('keynote')) type = 'keynote';
+      else if (type.includes('motivational')) type = 'motivational';
+      else if (type.includes('funeral')) type = 'funeral';
+      else if (type.includes('retirement')) type = 'retirement';
+      else if (!type || type === '') type = 'other';
+      
       typeCounts[type] = (typeCounts[type] || 0) + 1;
     });
     
-    return Object.entries(typeCounts)
+    console.log('Speech type counts:', typeCounts);
+    
+    const result = Object.entries(typeCounts)
       .map(([type, count]) => ({
         name: type.charAt(0).toUpperCase() + type.slice(1),
         value: count,
         color: speechTypeColors[type as keyof typeof speechTypeColors] || speechTypeColors.other
       }))
       .sort((a, b) => b.value - a.value)
-      .slice(0, 5); // Top 5 types
+      .slice(0, 8); // Show top 8 types instead of 5
+    
+    console.log('Final speech types data:', result);
+    return result;
   };
 
   const processUsageMetricsData = (users: any[]): UsageMetricsData[] => {
@@ -315,8 +354,23 @@ const DashboardCharts: React.FC = () => {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
-                    <p>No speech data available</p>
+                  <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
+                    <MessageSquare className="h-12 w-12 text-gray-300 mb-4" />
+                    {hasNoSpeeches ? (
+                      <>
+                        <p className="text-center font-medium">No speeches created yet</p>
+                        <p className="text-sm text-center mt-2">
+                          Speech distribution will appear once users start creating speeches.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-center font-medium">Loading speech data...</p>
+                        <p className="text-sm text-center mt-2">
+                          Please wait while we process speech categories.
+                        </p>
+                      </>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -358,8 +412,8 @@ const DashboardCharts: React.FC = () => {
                     name="New Users"
                   />
                 </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
+              </CardContent>
+            </Card>
           </Card>
         </TabsContent>
 
