@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,7 +40,6 @@ const SubscriptionCard = ({
   const { toast } = useToast();
   const { user } = useAuth();
   const [isReactivating, setIsReactivating] = useState(false);
-  const [isUpgrading, setIsUpgrading] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
 
   const getStatusColor = (status: string) => {
@@ -171,47 +169,6 @@ const SubscriptionCard = ({
       });
     } finally {
       setIsReactivating(false);
-    }
-  };
-
-  const handleUpgradeSubscription = async () => {
-    if (!user) return;
-    
-    setIsUpgrading(true);
-    try {
-      const currentPlan = subscriptionData.plan.toLowerCase();
-      let targetPlan = 'pro';
-      let productId = 'prod_pro';
-      
-      // If current plan is pro, suggest premium, otherwise suggest pro
-      if (currentPlan.includes('pro')) {
-        targetPlan = 'premium';
-        productId = 'prod_premium';
-      }
-
-      const priceId = getPriceId(productId, subscriptionData.billingPeriod as 'monthly' | 'yearly');
-      const returnUrl = `${window.location.origin}/settings?success=true`;
-
-      const { url } = await createCheckoutSession({
-        plan: targetPlan,
-        priceId,
-        userId: user.id,
-        returnUrl,
-        pricingPeriod: subscriptionData.billingPeriod as 'monthly' | 'yearly',
-      });
-
-      // Open Stripe checkout in a new tab
-      window.open(url, '_blank');
-
-    } catch (error) {
-      console.error('Error creating upgrade checkout:', error);
-      toast({
-        title: "Error",
-        description: "Failed to start upgrade process. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsUpgrading(false);
     }
   };
 
@@ -356,30 +313,13 @@ const SubscriptionCard = ({
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3">
           {subscriptionData.status === 'active' && (
-            <>
-              <Button 
-                variant="outline" 
-                onClick={onToggleBillingPeriod}
-                className="flex-1"
-              >
-                Switch to {subscriptionData.billingPeriod === 'monthly' ? 'Yearly' : 'Monthly'} Billing
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={handleUpgradeSubscription}
-                disabled={isUpgrading}
-              >
-                {isUpgrading ? 'Processing...' : 'Upgrade Plan'}
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleCancelSubscription}
-                disabled={isCancelling}
-              >
-                {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
-              </Button>
-            </>
+            <Button 
+              variant="destructive" 
+              onClick={handleCancelSubscription}
+              disabled={isCancelling}
+            >
+              {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
+            </Button>
           )}
           
           {(subscriptionData.status === 'inactive' || subscriptionData.status === 'canceled') && (
