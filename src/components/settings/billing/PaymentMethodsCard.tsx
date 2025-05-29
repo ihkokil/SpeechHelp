@@ -9,6 +9,7 @@ import UpdatePaymentDialog from './UpdatePaymentDialog';
 import { usePaymentMethodActions } from './hooks/usePaymentMethodActions';
 import { PaymentMethod, PaymentFormValues } from './types';
 import EmptyPaymentMethods from './components/EmptyPaymentMethods';
+import { useToast } from '@/hooks/use-toast';
 
 interface PaymentMethodsCardProps {
   paymentMethods: PaymentMethod[];
@@ -23,6 +24,7 @@ const PaymentMethodsCard = ({
   onUpdatePaymentMethod,
   onDeletePaymentMethod
 }: PaymentMethodsCardProps) => {
+  const { toast } = useToast();
   const {
     isAddDialogOpen,
     setIsAddDialogOpen,
@@ -42,16 +44,36 @@ const PaymentMethodsCard = ({
   });
 
   const handleRealAddPaymentMethod = (data: PaymentFormValues) => {
+    const last4 = data.cardNumber.slice(-4);
+    const expiryMonth = parseInt(data.expiryMonth);
+    const expiryYear = parseInt(data.expiryYear);
+    
+    // Check if a card with the same last 4 digits and expiry date already exists
+    const existingCard = paymentMethods.find(method => 
+      method.last4 === last4 && 
+      method.expiryMonth === expiryMonth && 
+      method.expiryYear === expiryYear
+    );
+    
+    if (existingCard) {
+      toast({
+        title: "Card already exists",
+        description: `A card ending in ${last4} with the same expiry date is already saved.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // The payment method has already been added to Stripe via the edge function
     // Now we need to create the local representation for the UI
     const newPaymentMethod: PaymentMethod = {
       id: `temp-${Date.now()}`, // This will be replaced when we refresh from Stripe
       type: 'Credit Card',
-      last4: data.cardNumber.slice(-4),
-      expiryMonth: parseInt(data.expiryMonth),
-      expiryYear: parseInt(data.expiryYear),
+      last4: last4,
+      expiryMonth: expiryMonth,
+      expiryYear: expiryYear,
       brand: data.cardType || 'Unknown',
-      isDefault: data.isDefault,
+      isDefault: paymentMethods.length === 0 || data.isDefault, // First card is default, or if explicitly set
       cardHolder: data.cardHolder,
       billingAddress: {
         street: data.billingStreet,
@@ -61,6 +83,11 @@ const PaymentMethodsCard = ({
         country: data.billingCountry
       }
     };
+    
+    // If this is being set as default and there are existing cards, update them
+    if (newPaymentMethod.isDefault && paymentMethods.length > 0) {
+      // This will be handled by the parent component when it updates existing cards
+    }
     
     onAddPaymentMethod(newPaymentMethod);
   };
