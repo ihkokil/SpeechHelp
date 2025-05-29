@@ -26,6 +26,7 @@ interface PaymentHistory {
   plan_type: string;
   billing_period: string;
   payment_date: string;
+  stripe_session_id?: string;
 }
 
 // Helper function to capitalize subscription type names
@@ -189,7 +190,7 @@ const BillingSettings = () => {
           return;
         }
 
-        // Fetch payment history and remove duplicates
+        // Fetch payment history with improved duplicate removal
         const { data: payments, error: paymentsError } = await supabase
           .from('payment_history')
           .select('*')
@@ -199,10 +200,34 @@ const BillingSettings = () => {
         if (paymentsError) {
           console.error('Error fetching payment history:', paymentsError);
         } else {
-          // Remove duplicates based on stripe_session_id
-          const uniquePayments = payments?.filter((payment, index, self) => 
-            index === self.findIndex(p => p.stripe_session_id === payment.stripe_session_id)
-          ) || [];
+          console.log('Raw payment history:', payments);
+          
+          // Improved duplicate removal logic
+          const uniquePayments = payments?.reduce((acc: PaymentHistory[], payment) => {
+            // Check if we already have a payment with the same session ID
+            const existingPayment = acc.find(p => 
+              p.stripe_session_id && payment.stripe_session_id && 
+              p.stripe_session_id === payment.stripe_session_id
+            );
+            
+            if (existingPayment) {
+              // If we found a duplicate, keep the one with the correct billing period
+              // based on the amount (yearly should be higher)
+              if (payment.amount > existingPayment.amount) {
+                // Replace with the higher amount (likely the correct yearly payment)
+                const index = acc.findIndex(p => p.stripe_session_id === payment.stripe_session_id);
+                acc[index] = payment;
+              }
+              // Otherwise keep the existing one
+            } else {
+              // No duplicate found, add this payment
+              acc.push(payment);
+            }
+            
+            return acc;
+          }, []) || [];
+          
+          console.log('Filtered payment history:', uniquePayments);
           setPaymentHistory(uniquePayments);
         }
 
