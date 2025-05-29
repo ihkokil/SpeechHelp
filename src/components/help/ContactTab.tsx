@@ -40,7 +40,7 @@ const ContactTab = () => {
         toast({
           title: "Message sent",
           description: "Our support team will get back to you soon.",
-          variant: "default",
+          variant: "success",
         });
         // Reset form
         setContactName('');
