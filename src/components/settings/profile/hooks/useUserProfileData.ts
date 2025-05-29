@@ -13,8 +13,8 @@ export const useUserProfileData = (
   form: UseFormReturn<ProfileFormValues>,
   setFormattedPhone: (value: string) => void,
   setSelectedDialCode: (value: string) => void,
-  setAvailableStates: (states: any[]) => void,
-  setOriginalEmail: (email: string) => void
+  setAvailableStates?: (states: any[]) => void,
+  setOriginalEmail?: (email: string) => void
 ) => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -28,7 +28,7 @@ export const useUserProfileData = (
       console.log('Loading user data for:', user.id);
       const metadata = user.user_metadata || {};
       
-      if (user.email) {
+      if (user.email && setOriginalEmail) {
         setOriginalEmail(user.email);
       }
       
@@ -72,7 +72,7 @@ export const useUserProfileData = (
       }
       
       // Load available states for the user's country
-      if (metadata.country) {
+      if (metadata.country && setAvailableStates) {
         const countryCode = metadata.country_code || 'US';
         const states = getStatesForCountry(countryCode);
         setAvailableStates(states);
