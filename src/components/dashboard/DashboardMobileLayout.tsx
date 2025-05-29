@@ -12,10 +12,16 @@ interface DashboardMobileLayoutProps {
 }
 
 const DashboardMobileLayout: React.FC<DashboardMobileLayoutProps> = ({ speeches }) => {
+  const { user } = useAuth();
+
   return (
     <div className="space-y-4">
       {/* Welcome Section */}
-      <WelcomeCard />
+      <WelcomeCard 
+        userName={user?.email || 'User'}
+        firstName={user?.user_metadata?.first_name}
+        lastName={user?.user_metadata?.last_name}
+      />
       
       {/* Quick Actions */}
       <QuickActions />
