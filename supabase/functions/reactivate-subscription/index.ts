@@ -24,6 +24,18 @@ serve(async (req) => {
 	}
 
 	try {
+		// Validate method
+		if (req.method !== 'POST') {
+			log(`Method ${req.method} not allowed`);
+			return new Response(
+				JSON.stringify({ error: 'Method not allowed' }),
+				{
+					status: 405,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
 		const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
 		if (!stripeKey) {
 			log('ERROR: STRIPE_SECRET_KEY is not set');
@@ -77,17 +89,17 @@ serve(async (req) => {
 		const user = userData.user;
 		log('User authenticated', { userId: user.id, email: user.email });
 
-		// Get user's Stripe customer ID
+		// Get user's profile to check current subscription status
 		const { data: profile, error: profileError } = await supabase
 			.from('profiles')
-			.select('stripe_customer_id, stripe_subscription_id, subscription_plan, subscription_period')
+			.select('*')
 			.eq('id', user.id)
 			.single();
 
 		if (profileError || !profile) {
-			log('Error: User profile not found', profileError);
+			log('Error: No profile found for user');
 			return new Response(
-				JSON.stringify({ error: 'User profile not found' }),
+				JSON.stringify({ error: 'No profile found' }),
 				{
 					status: 404,
 					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -95,102 +107,75 @@ serve(async (req) => {
 			);
 		}
 
-		if (!profile.stripe_customer_id) {
-			log('Error: No Stripe customer ID found');
-			return new Response(
-				JSON.stringify({ 
-					error: true,
-					action: 'create_new',
-					message: 'No previous subscription found. Please create a new subscription.' 
-				}),
-				{
-					status: 400,
-					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-				}
-			);
-		}
-
-		// Check for existing canceled subscription
-		const subscriptions = await stripe.subscriptions.list({
-			customer: profile.stripe_customer_id,
-			status: 'canceled',
-			limit: 1,
+		log('User profile found', {
+			subscriptionStatus: profile.subscription_status,
+			subscriptionPlan: profile.subscription_plan,
+			stripeCustomerId: profile.stripe_customer_id,
+			stripeSubscriptionId: profile.stripe_subscription_id
 		});
 
-		if (subscriptions.data.length === 0) {
-			// Check for active subscription
-			const activeSubscriptions = await stripe.subscriptions.list({
-				customer: profile.stripe_customer_id,
-				status: 'active',
-				limit: 1,
-			});
+		// If user has a Stripe subscription ID, check if it's actually active in Stripe
+		if (profile.stripe_subscription_id) {
+			try {
+				const subscription = await stripe.subscriptions.retrieve(profile.stripe_subscription_id);
+				log('Retrieved Stripe subscription', {
+					id: subscription.id,
+					status: subscription.status,
+					currentPeriodEnd: subscription.current_period_end
+				});
 
-			if (activeSubscriptions.data.length > 0) {
-				return new Response(
-					JSON.stringify({ 
-						message: 'You already have an active subscription.' 
-					}),
-					{
-						status: 200,
-						headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				if (subscription.status === 'active') {
+					// Subscription is active in Stripe, update our database
+					const subscriptionStartDate = new Date(subscription.current_period_start * 1000).toISOString();
+					const subscriptionEndDate = new Date(subscription.current_period_end * 1000).toISOString();
+
+					const { error: updateError } = await supabase
+						.from('profiles')
+						.update({
+							subscription_status: 'active',
+							subscription_start_date: subscriptionStartDate,
+							subscription_end_date: subscriptionEndDate,
+							updated_at: new Date().toISOString(),
+						})
+						.eq('id', user.id);
+
+					if (updateError) {
+						log('Error updating subscription status:', updateError);
+						return new Response(
+							JSON.stringify({ error: 'Failed to update subscription status' }),
+							{
+								status: 500,
+								headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+							}
+						);
 					}
-				);
-			}
 
-			return new Response(
-				JSON.stringify({ 
-					error: true,
-					action: 'create_new',
-					message: 'No canceled subscription found. Please create a new subscription.' 
-				}),
-				{
-					status: 400,
-					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+					log('Successfully reactivated subscription');
+					return new Response(
+						JSON.stringify({
+							success: true,
+							message: 'Your subscription has been reactivated successfully!'
+						}),
+						{
+							status: 200,
+							headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+						}
+					);
 				}
-			);
+			} catch (stripeError) {
+				log('Error retrieving subscription from Stripe:', stripeError);
+			}
 		}
 
-		const canceledSubscription = subscriptions.data[0];
-		log('Found canceled subscription', { subscriptionId: canceledSubscription.id });
-
-		// Reactivate the subscription
-		const reactivatedSubscription = await stripe.subscriptions.update(canceledSubscription.id, {
-			cancel_at_period_end: false,
-		});
-
-		log('Subscription reactivated', { 
-			subscriptionId: reactivatedSubscription.id,
-			status: reactivatedSubscription.status,
-			currentPeriodEnd: reactivatedSubscription.current_period_end 
-		});
-
-		// Update user's subscription status in the database
-		const subscriptionEndDate = new Date(reactivatedSubscription.current_period_end * 1000);
-		
-		const { error: updateError } = await supabase
-			.from('profiles')
-			.update({
-				subscription_status: 'active',
-				subscription_end_date: subscriptionEndDate.toISOString(),
-				stripe_subscription_id: reactivatedSubscription.id,
-				updated_at: new Date().toISOString(),
-			})
-			.eq('id', user.id);
-
-		if (updateError) {
-			log('Error updating subscription status:', updateError);
-		} else {
-			log('Successfully updated subscription status in database');
-		}
-
+		// If we get here, the subscription is not active
 		return new Response(
-			JSON.stringify({ 
-				message: 'Your subscription has been reactivated successfully!',
-				subscriptionId: reactivatedSubscription.id,
-				endDate: subscriptionEndDate.toISOString()
+			JSON.stringify({
+				error: 'No active subscription found',
+				action: 'create_new',
+				message: 'No active subscription found. Please create a new subscription.'
 			}),
 			{
-				status: 200,
+				status: 404,
 				headers: { ...corsHeaders, 'Content-Type': 'application/json' },
 			}
 		);
