@@ -24,6 +24,18 @@ serve(async (req) => {
 	}
 
 	try {
+		// Validate method
+		if (req.method !== 'POST') {
+			log(`Method ${req.method} not allowed`);
+			return new Response(
+				JSON.stringify({ error: 'Method not allowed' }),
+				{
+					status: 405,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
 		const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
 		if (!stripeKey) {
 			log('ERROR: STRIPE_SECRET_KEY is not set');
@@ -77,17 +89,47 @@ serve(async (req) => {
 		const user = userData.user;
 		log('User authenticated', { userId: user.id, email: user.email });
 
-		// Get user's Stripe customer ID
+		// Parse request body
+		let requestBody;
+		try {
+			requestBody = await req.json();
+		} catch (parseError) {
+			log('Error parsing request body:', parseError);
+			return new Response(
+				JSON.stringify({ error: 'Invalid JSON in request body' }),
+				{
+					status: 400,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
+		const { autoRenew } = requestBody;
+
+		if (typeof autoRenew !== 'boolean') {
+			log('Error: Invalid autoRenew value');
+			return new Response(
+				JSON.stringify({ error: 'autoRenew must be a boolean value' }),
+				{
+					status: 400,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
+		log('Request data', { autoRenew });
+
+		// Get user's subscription information
 		const { data: profile, error: profileError } = await supabase
 			.from('profiles')
-			.select('stripe_customer_id, stripe_subscription_id, subscription_plan, subscription_period')
+			.select('stripe_subscription_id')
 			.eq('id', user.id)
 			.single();
 
-		if (profileError || !profile) {
-			log('Error: User profile not found', profileError);
+		if (profileError || !profile?.stripe_subscription_id) {
+			log('Error: No active subscription found for user');
 			return new Response(
-				JSON.stringify({ error: 'User profile not found' }),
+				JSON.stringify({ error: 'No active subscription found' }),
 				{
 					status: 404,
 					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -95,84 +137,26 @@ serve(async (req) => {
 			);
 		}
 
-		if (!profile.stripe_customer_id) {
-			log('Error: No Stripe customer ID found');
-			return new Response(
-				JSON.stringify({ 
-					error: true,
-					action: 'create_new',
-					message: 'No previous subscription found. Please create a new subscription.' 
-				}),
-				{
-					status: 400,
-					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-				}
-			);
-		}
+		log('Found subscription', { subscriptionId: profile.stripe_subscription_id });
 
-		// Check for existing canceled subscription
-		const subscriptions = await stripe.subscriptions.list({
-			customer: profile.stripe_customer_id,
-			status: 'canceled',
-			limit: 1,
+		// Update the subscription's auto-renewal setting in Stripe
+		const subscription = await stripe.subscriptions.update(profile.stripe_subscription_id, {
+			cancel_at_period_end: !autoRenew, // If autoRenew is false, cancel at period end
 		});
 
-		if (subscriptions.data.length === 0) {
-			// Check for active subscription
-			const activeSubscriptions = await stripe.subscriptions.list({
-				customer: profile.stripe_customer_id,
-				status: 'active',
-				limit: 1,
-			});
-
-			if (activeSubscriptions.data.length > 0) {
-				return new Response(
-					JSON.stringify({ 
-						message: 'You already have an active subscription.' 
-					}),
-					{
-						status: 200,
-						headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-					}
-				);
-			}
-
-			return new Response(
-				JSON.stringify({ 
-					error: true,
-					action: 'create_new',
-					message: 'No canceled subscription found. Please create a new subscription.' 
-				}),
-				{
-					status: 400,
-					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-				}
-			);
-		}
-
-		const canceledSubscription = subscriptions.data[0];
-		log('Found canceled subscription', { subscriptionId: canceledSubscription.id });
-
-		// Reactivate the subscription
-		const reactivatedSubscription = await stripe.subscriptions.update(canceledSubscription.id, {
-			cancel_at_period_end: false,
+		log('Updated subscription auto-renewal', { 
+			subscriptionId: subscription.id,
+			cancelAtPeriodEnd: subscription.cancel_at_period_end,
+			autoRenew: autoRenew 
 		});
 
-		log('Subscription reactivated', { 
-			subscriptionId: reactivatedSubscription.id,
-			status: reactivatedSubscription.status,
-			currentPeriodEnd: reactivatedSubscription.current_period_end 
-		});
-
-		// Update user's subscription status in the database
-		const subscriptionEndDate = new Date(reactivatedSubscription.current_period_end * 1000);
+		// Update the subscription status in our database if necessary
+		const subscriptionStatus = subscription.cancel_at_period_end ? 'will_cancel' : 'active';
 		
 		const { error: updateError } = await supabase
 			.from('profiles')
 			.update({
-				subscription_status: 'active',
-				subscription_end_date: subscriptionEndDate.toISOString(),
-				stripe_subscription_id: reactivatedSubscription.id,
+				subscription_status: subscriptionStatus,
 				updated_at: new Date().toISOString(),
 			})
 			.eq('id', user.id);
@@ -180,14 +164,15 @@ serve(async (req) => {
 		if (updateError) {
 			log('Error updating subscription status:', updateError);
 		} else {
-			log('Successfully updated subscription status in database');
+			log('Successfully updated subscription status');
 		}
 
 		return new Response(
 			JSON.stringify({ 
-				message: 'Your subscription has been reactivated successfully!',
-				subscriptionId: reactivatedSubscription.id,
-				endDate: subscriptionEndDate.toISOString()
+				success: true,
+				message: `Auto-renewal has been ${autoRenew ? 'enabled' : 'disabled'}.`,
+				autoRenew: autoRenew,
+				subscriptionStatus: subscriptionStatus
 			}),
 			{
 				status: 200,

@@ -360,6 +360,66 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_methods: {
+        Row: {
+          billing_city: string | null
+          billing_country: string | null
+          billing_state: string | null
+          billing_street: string | null
+          billing_zip: string | null
+          brand: string
+          card_holder: string
+          card_type: string
+          created_at: string
+          expiry_month: number
+          expiry_year: number
+          id: string
+          is_default: boolean
+          last4: string
+          stripe_payment_method_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_state?: string | null
+          billing_street?: string | null
+          billing_zip?: string | null
+          brand: string
+          card_holder: string
+          card_type: string
+          created_at?: string
+          expiry_month: number
+          expiry_year: number
+          id?: string
+          is_default?: boolean
+          last4: string
+          stripe_payment_method_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_city?: string | null
+          billing_country?: string | null
+          billing_state?: string | null
+          billing_street?: string | null
+          billing_zip?: string | null
+          brand?: string
+          card_holder?: string
+          card_type?: string
+          created_at?: string
+          expiry_month?: number
+          expiry_year?: number
+          id?: string
+          is_default?: boolean
+          last4?: string
+          stripe_payment_method_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           admin_role: string | null
