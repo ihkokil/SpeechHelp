@@ -109,14 +109,16 @@ const PasswordResetEmail = ({ resetUrl, userEmail }: PasswordResetEmailProps) =>
       <body style={styles.main}>
         <div style={styles.container}>
           <div style={styles.logoSection}>
-            <div style={{ 
-              fontSize: '24px', 
-              fontWeight: 'bold', 
-              color: '#be185d',
-              fontFamily: '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif'
-            }}>
-              SpeechHelp
-            </div>
+            <img 
+              src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg"
+              alt="SpeechHelp"
+              style={{ 
+                width: '150px', 
+                height: 'auto', 
+                display: 'block', 
+                margin: '0 auto' 
+              }}
+            />
           </div>
 
           <div>
