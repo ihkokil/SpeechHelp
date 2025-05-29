@@ -63,6 +63,14 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
     setIsSubmitting(true);
     
     try {
+      console.log('Submitting payment method data:', {
+        cardNumber: '****' + data.cardNumber.slice(-4),
+        cardHolder: data.cardHolder,
+        expiryMonth: data.expiryMonth,
+        expiryYear: data.expiryYear,
+        isDefault: data.isDefault
+      });
+
       // Call the Stripe edge function to add the payment method
       const { data: result, error } = await supabase.functions.invoke('add-payment-method', {
         body: {
@@ -72,21 +80,24 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
           cvv: data.cvv,
           cardHolder: data.cardHolder,
           isDefault: data.isDefault,
-          billingAddress: {
-            street: '',
-            city: '',
-            state: '',
-            zipCode: '',
-            country: 'US',
-          },
         },
       });
 
+      console.log('Edge function response:', { result, error });
+
       if (error) {
         console.error('Error adding payment method:', error);
+        let errorMessage = "Failed to add payment method. Please try again.";
+        
+        if (error.message?.includes('Failed to fetch')) {
+          errorMessage = "Unable to connect to payment service. Please check your connection and try again.";
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
         toast({
           title: "Error",
-          description: "Failed to add payment method. Please try again.",
+          description: errorMessage,
           variant: "destructive"
         });
         return;
@@ -101,20 +112,21 @@ const AddPaymentDialog = ({ open, onOpenChange, onSubmit, isProcessing }: AddPay
         // Create a PaymentFormValues object to pass to the parent component
         const paymentFormData: PaymentFormValues = {
           ...data,
-          cardType: result.paymentMethod.brand || data.cardType,
+          cardType: result.paymentMethod?.brand || 'Unknown',
         };
 
         onSubmit(paymentFormData);
         onOpenChange(false);
       } else {
+        const errorMessage = result?.error || "Failed to add payment method. Please try again.";
         toast({
           title: "Error",
-          description: "Failed to add payment method. Please try again.",
+          description: errorMessage,
           variant: "destructive"
         });
       }
     } catch (error) {
-      console.error('Error adding payment method:', error);
+      console.error('Unexpected error adding payment method:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
