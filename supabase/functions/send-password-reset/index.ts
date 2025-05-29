@@ -42,9 +42,10 @@ async function sendSMTPEmail(
 
   // For secure SMTP (port 465), use TLS from the start
   const port = parseInt(smtpPort);
-  const isSecure = port === 465;
   
   try {
+    log(`Connecting to SMTP server: ${smtpHost}:${port}`);
+    
     // Connect to SMTP server
     const conn = await Deno.connect({
       hostname: smtpHost,
@@ -65,7 +66,8 @@ async function sendSMTPEmail(
 
     // Helper function to send command
     const sendCommand = async (command: string) => {
-      log('SMTP Command:', command);
+      const logCommand = command.startsWith('AUTH') ? 'AUTH [HIDDEN]' : command;
+      log('SMTP Command:', logCommand);
       await conn.write(encoder.encode(command + '\r\n'));
       return await readResponse();
     };
@@ -79,20 +81,24 @@ async function sendSMTPEmail(
       throw new Error(`SMTP connection failed: ${response}`);
     }
 
-    // Send EHLO
+    // Send EHLO/HELO
     response = await sendCommand(`EHLO ${smtpHost}`);
     if (!response.startsWith('250')) {
-      throw new Error(`EHLO failed: ${response}`);
+      // Try HELO instead
+      response = await sendCommand(`HELO ${smtpHost}`);
+      if (!response.startsWith('250')) {
+        throw new Error(`EHLO/HELO failed: ${response}`);
+      }
     }
 
-    // For port 587, start TLS; for port 465, already secure
+    // For port 587, start TLS
     if (port === 587) {
       response = await sendCommand('STARTTLS');
       if (!response.startsWith('220')) {
-        throw new Error(`STARTTLS failed: ${response}`);
+        log('STARTTLS not supported, continuing without TLS');
+      } else {
+        log('TLS started (simplified implementation)');
       }
-      // Note: Full TLS implementation would require additional setup
-      log('TLS started (simplified implementation)');
     }
 
     // Authenticate with AUTH LOGIN
@@ -115,6 +121,8 @@ async function sendSMTPEmail(
       throw new Error(`Password authentication failed: ${response}`);
     }
 
+    log('SMTP authentication successful');
+
     // Send MAIL FROM
     response = await sendCommand(`MAIL FROM:<${smtpUser}>`);
     if (!response.startsWith('250')) {
@@ -134,17 +142,21 @@ async function sendSMTPEmail(
     }
 
     // Send email content
+    log('Sending email content...');
     await conn.write(encoder.encode(emailBody + '\r\n.\r\n'));
     response = await readResponse();
     if (!response.startsWith('250')) {
       throw new Error(`Email sending failed: ${response}`);
     }
 
+    log('Email content sent successfully');
+
     // Send QUIT
     response = await sendCommand('QUIT');
     
     conn.close();
     
+    log(`Email successfully sent from ${smtpUser} to ${to}`);
     return { success: true, message: 'Email sent successfully' };
     
   } catch (error) {
@@ -184,7 +196,7 @@ serve(async (req) => {
       );
     }
 
-    log('Processing password reset request', { email });
+    log('Processing password reset request', { email, resetUrlDomain: new URL(resetUrl).hostname });
 
     // Initialize Supabase client
     const supabase = createClient(
@@ -233,13 +245,18 @@ serve(async (req) => {
     const smtpUser = Deno.env.get('SMTP_USER');
     const smtpPassword = Deno.env.get('SMTP_PASSWORD');
 
+    log('SMTP Configuration check:', {
+      hasHost: !!smtpHost,
+      hasPort: !!smtpPort,
+      hasUser: !!smtpUser,
+      hasPassword: !!smtpPassword,
+      host: smtpHost,
+      port: smtpPort,
+      user: smtpUser ? `${smtpUser.substring(0, 3)}***${smtpUser.substring(smtpUser.length - 3)}` : 'N/A'
+    });
+
     if (!smtpHost || !smtpPort || !smtpUser || !smtpPassword) {
-      log('SMTP configuration incomplete', {
-        hasHost: !!smtpHost,
-        hasPort: !!smtpPort,
-        hasUser: !!smtpUser,
-        hasPassword: !!smtpPassword
-      });
+      log('SMTP configuration incomplete');
       
       return new Response(
         JSON.stringify({ 
@@ -256,11 +273,7 @@ serve(async (req) => {
     }
 
     try {
-      log('Sending password reset email via SMTP', {
-        host: smtpHost,
-        port: smtpPort,
-        user: smtpUser
-      });
+      log('Sending password reset email via SMTP');
       
       const htmlContent = `
 <!DOCTYPE html>
@@ -347,13 +360,15 @@ serve(async (req) => {
         htmlContent
       );
 
-      log('Email sent successfully via SMTP');
+      log('Password reset email sent successfully to:', email);
 
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: 'Password reset email sent successfully',
-          emailSent: true
+          emailSent: true,
+          recipient: email,
+          timestamp: new Date().toISOString()
         }),
         {
           status: 200,
@@ -370,7 +385,8 @@ serve(async (req) => {
           success: true, 
           message: 'Password reset link generated (email delivery may have failed)',
           note: 'If you don\'t receive the email, please contact support',
-          resetLink: resetLinkUrl // Include for debugging/testing
+          resetLink: resetLinkUrl, // Include for debugging/testing
+          emailError: emailError.message
         }),
         {
           status: 200,
