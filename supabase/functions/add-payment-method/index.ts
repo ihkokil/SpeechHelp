@@ -162,20 +162,71 @@ serve(async (req) => {
 				.eq('id', user.id);
 		}
 
-		// Create payment method in Stripe
-		log('Creating payment method in Stripe');
-		const paymentMethod = await stripe.paymentMethods.create({
-			type: 'card',
-			card: {
-				number: cardNumber,
-				exp_month: parseInt(expiryMonth),
-				exp_year: parseInt(expiryYear),
-				cvc: cvv,
-			},
-			billing_details: {
-				name: cardHolder,
-			},
-		});
+		// Map test card numbers to Stripe test tokens
+		const testCardTokens: { [key: string]: string } = {
+			'4242424242424242': 'pm_card_visa',
+			'4000056655665556': 'pm_card_visa_debit',
+			'5555555555554444': 'pm_card_mastercard',
+			'2223003122003222': 'pm_card_mastercard',
+			'5200828282828210': 'pm_card_mastercard_debit',
+			'5105105105105100': 'pm_card_mastercard_prepaid',
+			'378282246310005': 'pm_card_amex',
+			'371449635398431': 'pm_card_amex',
+			'6011111111111117': 'pm_card_discover',
+			'6011000990139424': 'pm_card_discover',
+			'3056930009020004': 'pm_card_diners',
+			'36227206271667': 'pm_card_diners',
+			'3566002020360505': 'pm_card_jcb',
+			'6200000000000005': 'pm_card_unionpay'
+		};
+
+		let paymentMethod;
+		
+		// Check if this is a test card and use the appropriate token
+		if (testCardTokens[cardNumber]) {
+			log('Using Stripe test card token for card number', { cardNumber: '****' + cardNumber.slice(-4) });
+			
+			// For test cards, we'll create a payment method using the test token
+			// But we need to create it differently for test environment
+			try {
+				paymentMethod = await stripe.paymentMethods.create({
+					type: 'card',
+					card: {
+						token: testCardTokens[cardNumber]
+					}
+				});
+			} catch (tokenError) {
+				log('Test token method failed, trying direct card creation with test data');
+				// If token method fails, create with test-safe parameters
+				paymentMethod = await stripe.paymentMethods.create({
+					type: 'card',
+					card: {
+						number: cardNumber,
+						exp_month: parseInt(expiryMonth),
+						exp_year: parseInt(expiryYear),
+						cvc: cvv,
+					},
+					billing_details: {
+						name: cardHolder,
+					},
+				});
+			}
+		} else {
+			// For non-test cards or in production, create normally
+			log('Creating payment method with provided card details');
+			paymentMethod = await stripe.paymentMethods.create({
+				type: 'card',
+				card: {
+					number: cardNumber,
+					exp_month: parseInt(expiryMonth),
+					exp_year: parseInt(expiryYear),
+					cvc: cvv,
+				},
+				billing_details: {
+					name: cardHolder,
+				},
+			});
+		}
 
 		log('Created payment method', { paymentMethodId: paymentMethod.id });
 
