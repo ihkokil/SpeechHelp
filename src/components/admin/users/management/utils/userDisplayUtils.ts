@@ -102,48 +102,32 @@ export const getUserPhone = (user: User) => {
     return '—';
   }
   
-  // Get dial code from profiles table (could be stored as dial code or country code)
-  const countryCodeOrDialCode = safeString(user.country_code);
+  // Get dial code from profiles table - now it should be stored as dial code directly
+  const dialCode = safeString(user.country_code);
   
-  console.log('📱 Processing country code/dial code:', {
+  console.log('📱 Processing dial code from profiles:', {
     originalValue: user.country_code,
-    processedValue: countryCodeOrDialCode
+    processedValue: dialCode
   });
   
-  if (countryCodeOrDialCode) {
-    let country;
+  if (dialCode) {
+    // Since country_code now stores dial codes directly, we can use it as-is
+    // Just ensure it's clean (remove any + prefix that might exist)
+    const cleanDialCode = dialCode.replace('+', '');
     
-    // Check if it's already a dial code (numeric or starts with +)
-    if (countryCodeOrDialCode.startsWith('+') || /^\d+$/.test(countryCodeOrDialCode)) {
-      const dialCode = countryCodeOrDialCode.replace('+', '');
-      country = getCountryByDialCode(dialCode);
-      console.log('📱 Treated as dial code, lookup result:', {
-        dialCode,
-        country,
-        flag: country?.flag
-      });
-    } else {
-      // Treat as country code and convert to dial code
-      const allCountries = getAllCountries();
-      country = allCountries.find(c => c.code.toUpperCase() === countryCodeOrDialCode.toUpperCase());
-      console.log('📱 Treated as country code, lookup result:', {
-        countryCode: countryCodeOrDialCode,
-        country,
-        dialCode: country?.dialCode,
-        flag: country?.flag
-      });
-    }
+    // Verify this is a valid dial code by looking it up
+    const country = getCountryByDialCode(cleanDialCode);
     
-    if (country?.dialCode) {
-      const formattedPhone = `+${country.dialCode} ${phone}`;
+    if (country) {
+      const formattedPhone = `+${cleanDialCode} ${phone}`;
       console.log('📱 Final formatted phone:', formattedPhone);
       return formattedPhone;
     } else {
-      console.log('📱 No country found for code/dial code:', countryCodeOrDialCode);
+      console.log('📱 Dial code not found in lookup:', cleanDialCode);
     }
   }
   
-  // Return phone as-is if no country code or country not found
+  // Return phone as-is if no valid dial code
   console.log('📱 Returning phone without country code:', phone);
   return phone;
 };
@@ -157,7 +141,7 @@ export const getCountryFlagUrl = (countryCode: string | undefined) => {
   return `https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`;
 };
 
-// Get country flag emoji from profiles table (works with both dial codes and country codes)
+// Get country flag emoji from profiles table using dial codes
 export const getCountryFlag = (user: User) => {
   console.log('🏳️ Getting country flag for user:', {
     userId: user.id,
@@ -165,50 +149,40 @@ export const getCountryFlag = (user: User) => {
     profileCountryCode: user.country_code
   });
   
-  // Get country code/dial code directly from profiles table
-  const countryCodeOrDialCode = safeString(user.country_code);
+  // Get dial code directly from profiles table
+  const dialCode = safeString(user.country_code);
   
-  console.log('🏳️ Processing country code/dial code for flag:', {
+  console.log('🏳️ Processing dial code for flag:', {
     originalValue: user.country_code,
-    processedValue: countryCodeOrDialCode
+    processedValue: dialCode
   });
   
-  if (!countryCodeOrDialCode) {
-    console.log('🏳️ No country code/dial code found, using default flag');
+  if (!dialCode) {
+    console.log('🏳️ No dial code found, using default flag');
     return '🌍';
   }
   
-  let country;
+  // Clean the dial code (remove any + prefix)
+  const cleanDialCode = dialCode.replace('+', '');
   
-  // Check if it's a dial code (numeric or starts with +)
-  if (countryCodeOrDialCode.startsWith('+') || /^\d+$/.test(countryCodeOrDialCode)) {
-    const dialCode = countryCodeOrDialCode.replace('+', '');
-    country = getCountryByDialCode(dialCode);
-    console.log('🏳️ Treated as dial code, flag lookup result:', {
-      dialCode,
-      country,
-      flag: country?.flag
-    });
-  } else {
-    // Treat as country code
-    const allCountries = getAllCountries();
-    country = allCountries.find(c => c.code.toUpperCase() === countryCodeOrDialCode.toUpperCase());
-    console.log('🏳️ Treated as country code, flag lookup result:', {
-      countryCode: countryCodeOrDialCode,
-      country,
-      flag: country?.flag
-    });
-  }
+  // Look up the country by dial code
+  const country = getCountryByDialCode(cleanDialCode);
+  
+  console.log('🏳️ Dial code lookup result:', {
+    dialCode: cleanDialCode,
+    country,
+    flag: country?.flag
+  });
   
   if (country?.flag) {
     console.log('🏳️ Found country flag:', {
-      countryCodeOrDialCode,
+      dialCode: cleanDialCode,
       countryName: country.name,
       flag: country.flag
     });
     return country.flag;
   }
   
-  console.log('🏳️ Country not found in lookup, using default flag:', countryCodeOrDialCode);
+  console.log('🏳️ Country not found in lookup, using default flag:', cleanDialCode);
   return '🌍';
 };

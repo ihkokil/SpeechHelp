@@ -68,7 +68,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     }
   };
 
-  // Get user data using simplified functions
+  // Get user data using utility functions that handle dial codes
   const userPhone = getUserPhone(user);
   const countryFlag = getCountryFlag(user);
   const displayName = formatUserDisplayName(user);
@@ -113,7 +113,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       <TableCell className="px-2">
         <div className="flex items-center text-sm text-gray-600">
           {userPhone !== '—' && countryFlag && (
-            <span className="mr-1" title={`Country: ${user.country_code || 'Unknown'}`}>
+            <span className="mr-1" title={`Dial code: +${user.country_code || 'Unknown'}`}>
               {countryFlag}
             </span>
           )}

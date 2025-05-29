@@ -56,7 +56,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
             <h3 className="text-sm font-medium text-muted-foreground">Phone</h3>
             <p className="flex items-center">
               <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-              {userPhone !== '—' && <span className="mr-1">{countryFlag}</span>}
+              {userPhone !== '—' && <span className="mr-1" title={`Dial code: +${user.country_code || 'Unknown'}`}>{countryFlag}</span>}
               {userPhone}
             </p>
           </div>
