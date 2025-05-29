@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import NavLinks from "./NavLinks";
-import UserMenu from "../UserMenu";
+import UserMenu from "../user/UserMenu";
 import LanguageSelector from "../common/LanguageSelector";
 
 const MobileNav = () => {

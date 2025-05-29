@@ -1,7 +1,6 @@
 
-import { Link } from "react-router-dom";
 import NavLinks from "./NavLinks";
-import UserMenu from "../UserMenu";
+import UserMenu from "../user/UserMenu";
 import LanguageSelector from "../common/LanguageSelector";
 
 const DesktopNav = () => {
