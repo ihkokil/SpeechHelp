@@ -19,7 +19,12 @@ export const getCountryByCode = (code: string): CountryEntry | undefined => {
 };
 
 export const getStatesForCountry = (countryCode: string): StateEntry[] => {
-  return statesProvinces.filter(state => state.countryCode === countryCode);
+  const statesForCountry = statesProvinces[countryCode] || [];
+  return statesForCountry.map(state => ({
+    code: state.code,
+    name: state.name,
+    countryCode: countryCode
+  }));
 };
 
 export const getAllCountries = (): CountryEntry[] => {
@@ -27,5 +32,15 @@ export const getAllCountries = (): CountryEntry[] => {
 };
 
 export const getAllStates = (): StateEntry[] => {
-  return statesProvinces;
+  const allStates: StateEntry[] = [];
+  Object.entries(statesProvinces).forEach(([countryCode, states]) => {
+    states.forEach(state => {
+      allStates.push({
+        code: state.code,
+        name: state.name,
+        countryCode: countryCode
+      });
+    });
+  });
+  return allStates;
 };
