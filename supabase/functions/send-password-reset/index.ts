@@ -86,27 +86,18 @@ serve(async (req) => {
 
     log('Reset link generated successfully');
 
-    // Check SMTP configuration
-    const smtpHost = Deno.env.get('SMTP_HOST');
-    const smtpPort = Deno.env.get('SMTP_PORT');
-    const smtpUser = Deno.env.get('SMTP_USER');
-    const smtpPassword = Deno.env.get('SMTP_PASSWORD');
+    // Check if Resend API key is configured
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
-    if (!smtpHost || !smtpPort || !smtpUser || !smtpPassword) {
-      log('SMTP configuration incomplete', {
-        hasHost: !!smtpHost,
-        hasPort: !!smtpPort,
-        hasUser: !!smtpUser,
-        hasPassword: !!smtpPassword
-      });
+    if (!resendApiKey) {
+      log('Resend API key not configured');
       
-      // For now, return success even if email can't be sent
-      // The reset link is generated and could be used if obtained through other means
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: 'Password reset link generated successfully',
-          note: 'Email service not fully configured - please contact support for the reset link'
+          note: 'Email service not configured - please contact support for the reset link',
+          resetLink: resetLinkUrl // Include for debugging/testing
         }),
         {
           status: 200,
@@ -116,13 +107,20 @@ serve(async (req) => {
     }
 
     try {
-      // Simple email sending using fetch to SMTP service
-      const emailContent = `Subject: Reset Your SpeechHelp Password
-From: SpeechHelp <${smtpUser}>
-To: ${email}
-MIME-Version: 1.0
-Content-Type: text/html; charset=UTF-8
-
+      // Send email using Resend
+      log('Sending password reset email via Resend');
+      
+      const emailResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'SpeechHelp <noreply@speechhelp.ai>',
+          to: [email],
+          subject: 'Reset Your SpeechHelp Password',
+          html: `
 <!DOCTYPE html>
 <html>
 <head>
@@ -193,17 +191,25 @@ Content-Type: text/html; charset=UTF-8
     </div>
   </div>
 </body>
-</html>`;
+</html>
+          `,
+        }),
+      });
 
-      // For development/testing, we'll skip the actual SMTP sending
-      // and just return success since the reset link is generated
-      log('Skipping SMTP email sending for now - reset link generated successfully');
+      if (!emailResponse.ok) {
+        const errorText = await emailResponse.text();
+        log('Resend API error:', { status: emailResponse.status, error: errorText });
+        throw new Error(`Resend API error: ${emailResponse.status} - ${errorText}`);
+      }
+
+      const emailResult = await emailResponse.json();
+      log('Email sent successfully via Resend:', emailResult);
 
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: 'Password reset link generated successfully',
-          resetLink: resetLinkUrl // Include for debugging/testing
+          message: 'Password reset email sent successfully',
+          emailId: emailResult.id
         }),
         {
           status: 200,
@@ -212,14 +218,15 @@ Content-Type: text/html; charset=UTF-8
       );
 
     } catch (emailError) {
-      log('Email sending failed, but reset link was generated:', emailError);
+      log('Email sending failed:', emailError);
       
       // Return success even if email fails since the reset link exists
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: 'Password reset link generated (email delivery may have failed)',
-          resetLink: resetLinkUrl
+          note: 'If you don\'t receive the email, please contact support',
+          resetLink: resetLinkUrl // Include for debugging/testing
         }),
         {
           status: 200,

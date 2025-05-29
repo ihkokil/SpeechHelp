@@ -193,10 +193,18 @@ export const resetPassword = async (email: string, showToast: ShowToastFunction)
 				console.log('Password reset link (for testing):', data.resetLink);
 			}
 			
-			showToast({
-				title: "Password reset sent",
-				description: data.note || "Check your email for password reset instructions.",
-			});
+			// Show appropriate message based on email service configuration
+			if (data.emailId) {
+				showToast({
+					title: "Password reset sent",
+					description: "Check your email for password reset instructions.",
+				});
+			} else {
+				showToast({
+					title: "Password reset link generated",
+					description: data.note || "Check your email for password reset instructions. If you don't receive it, please contact support.",
+				});
+			}
 		} else {
 			throw new Error(data?.error || 'Unknown error occurred');
 		}
