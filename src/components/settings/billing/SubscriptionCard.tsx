@@ -126,9 +126,30 @@ const SubscriptionCard = ({
         return;
       }
 
+      // Handle different response types
+      if (data?.error) {
+        console.error('Reactivation error:', data);
+        
+        if (data.action === 'create_new') {
+          toast({
+            title: "No Previous Subscription Found",
+            description: data.message || "Please create a new subscription instead.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: data.message || "Failed to reactivate subscription. Please try again.",
+            variant: "destructive"
+          });
+        }
+        return;
+      }
+
+      // Success case
       toast({
         title: "Success",
-        description: "Your subscription has been reactivated successfully!",
+        description: data?.message || "Your subscription has been reactivated successfully!",
       });
 
       // Refresh subscription data
@@ -240,7 +261,7 @@ const SubscriptionCard = ({
               onClick={handleReactivateSubscription}
               disabled={isReactivating}
             >
-              {isReactivating ? 'Reactivating...' : 'Reactivate Subscription'}
+              {isReactivating ? 'Checking Subscription...' : 'Reactivate Subscription'}
             </Button>
           )}
           
