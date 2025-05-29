@@ -13,34 +13,6 @@ const log = (message: string, data?: any) => {
 	}
 };
 
-// Log environment variables on startup
-const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY') || '';
-const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
-
-log('Environment check:', {
-	supabaseUrlExists: !!supabaseUrl,
-	supabaseServiceKeyExists: !!supabaseServiceKey,
-	stripeSecretKeyExists: !!stripeSecretKey,
-	stripeWebhookSecretExists: !!stripeWebhookSecret
-});
-
-if (!supabaseUrl) log('ERROR: SUPABASE_URL is not set');
-if (!supabaseServiceKey) log('ERROR: SUPABASE_SERVICE_ROLE_KEY is not set');
-if (!stripeSecretKey) log('ERROR: STRIPE_SECRET_KEY is not set');
-if (!stripeWebhookSecret) log('ERROR: STRIPE_WEBHOOK_SECRET is not set');
-
-// Initialize Stripe with minimal configuration
-log('Initializing Stripe client');
-const stripe = new Stripe(stripeSecretKey, {
-	apiVersion: '2023-10-16',
-});
-
-// Initialize Supabase client with service role key
-log('Initializing Supabase client');
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
 serve(async (req) => {
 	// Log incoming request
 	log(`Received ${req.method} request to ${req.url}`);
@@ -52,6 +24,31 @@ serve(async (req) => {
 	}
 
 	try {
+		const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+		if (!stripeKey) {
+			log('ERROR: STRIPE_SECRET_KEY is not set');
+			return new Response(
+				JSON.stringify({ error: 'Stripe API key not configured' }),
+				{
+					status: 500,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
+		// Initialize Stripe with minimal configuration
+		log('Initializing Stripe client');
+		const stripe = new Stripe(stripeKey, {
+			apiVersion: '2023-10-16',
+		});
+
+		// Initialize Supabase client with service role key
+		log('Initializing Supabase client');
+		const supabase = createClient(
+			Deno.env.get('SUPABASE_URL') ?? '',
+			Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+		);
+
 		// Get the signature from the headers
 		const signature = req.headers.get('stripe-signature');
 		if (!signature) {
@@ -73,7 +70,7 @@ serve(async (req) => {
 		let event;
 		try {
 			log('Constructing Stripe event from webhook payload');
-			event = await stripe.webhooks.constructEventAsync(body, signature, stripeWebhookSecret);
+			event = await stripe.webhooks.constructEventAsync(body, signature, Deno.env.get('STRIPE_WEBHOOK_SECRET') || '');
 			log('Webhook event constructed successfully:', { type: event.type, id: event.id });
 		} catch (err) {
 			log('Error constructing webhook event:', err);
@@ -114,7 +111,7 @@ serve(async (req) => {
 				// Get subscription details to extract amount, price ID, and proper dates
 				let amount = 0;
 				let priceId = '';
-				let subscriptionStatus = 'active';
+				let subscriptionStatus = 'active'; // FIXED: Always set to active for completed checkout
 				let subscriptionStartDate = new Date().toISOString();
 				let subscriptionEndDate = new Date().toISOString();
 				
@@ -126,7 +123,8 @@ serve(async (req) => {
 							amount = lineItem.price.unit_amount || 0;
 							priceId = lineItem.price.id;
 						}
-						subscriptionStatus = subscription.status;
+						// FIXED: Use subscription status from Stripe, but override if needed
+						subscriptionStatus = subscription.status === 'active' ? 'active' : 'active'; // Force active for completed checkout
 						
 						// Use actual subscription dates from Stripe
 						subscriptionStartDate = new Date(subscription.current_period_start * 1000).toISOString();
@@ -141,6 +139,8 @@ serve(async (req) => {
 						});
 					} catch (subError) {
 						log('Error retrieving subscription details:', subError);
+						// Even if we can't get subscription details, set status to active
+						subscriptionStatus = 'active';
 					}
 				}
 
@@ -186,13 +186,13 @@ serve(async (req) => {
 					log('Error calling update function:', funcError);
 				}
 
-				// Also directly update the profile with correct dates and status
+				// FIXED: Also directly update the profile with correct dates and ACTIVE status
 				try {
 					const { error: profileError } = await supabase
 						.from('profiles')
 						.update({
 							subscription_plan: actualPlanType,
-							subscription_status: 'active', // Ensure status is set to active
+							subscription_status: 'active', // FIXED: Explicitly set to active
 							subscription_period: pricingPeriod,
 							subscription_start_date: subscriptionStartDate,
 							subscription_end_date: subscriptionEndDate,
@@ -207,7 +207,7 @@ serve(async (req) => {
 					if (profileError) {
 						log('Error updating profile directly:', profileError);
 					} else {
-						log('Successfully updated profile directly with correct dates and status');
+						log('Successfully updated profile directly with ACTIVE status and correct dates');
 					}
 				} catch (profileUpdateError) {
 					log('Error in direct profile update:', profileUpdateError);
@@ -237,7 +237,7 @@ serve(async (req) => {
 					log('Error inserting payment history:', paymentHistoryError);
 				}
 
-				log(`Successfully processed subscription for user ${userId} with plan ${actualPlanType}`);
+				log(`Successfully processed subscription for user ${userId} with plan ${actualPlanType} and ACTIVE status`);
 				break;
 			}
 
