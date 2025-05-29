@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -282,20 +281,12 @@ const BillingSettings = () => {
   const handleUpdatePaymentMethod = (index: number, updatedMethod: PaymentMethod) => {
     let updatedMethods = [...paymentMethods];
     
-    // If setting this card as default, update all others to not be default
-    if (updatedMethod.isDefault) {
-      updatedMethods = updatedMethods.map(method => ({...method, isDefault: false}));
-    }
-    
     // Update the selected payment method with new data
     updatedMethods[index] = updatedMethod;
     
     setPaymentMethods(updatedMethods);
     
-    toast({
-      title: "Payment method updated",
-      description: `Your ${updatedMethod.brand} card ending in ${updatedMethod.last4} has been updated.`,
-    });
+    // Don't show toast here since it's handled in the PaymentMethodsCard
   };
 
   const handleDeletePaymentMethod = (index: number) => {

@@ -24,9 +24,6 @@ serve(async (req) => {
 	}
 
 	try {
-		// Log request headers for debugging
-		log('Request headers:', Object.fromEntries(req.headers.entries()));
-
 		const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
 		if (!stripeKey) {
 			log('ERROR: STRIPE_SECRET_KEY is not set');
@@ -81,6 +78,19 @@ serve(async (req) => {
 		const user = userData.user;
 		log('User authenticated', { userId: user.id, email: user.email });
 
+		// Get the payment method ID from the request body
+		const { paymentMethodId } = await req.json();
+		if (!paymentMethodId) {
+			log('Error: No payment method ID provided');
+			return new Response(
+				JSON.stringify({ error: 'Payment method ID is required' }),
+				{
+					status: 400,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
 		// Get user's profile to find Stripe customer ID
 		const { data: profile, error: profileError } = await supabase
 			.from('profiles')
@@ -91,9 +101,9 @@ serve(async (req) => {
 		if (profileError || !profile?.stripe_customer_id) {
 			log('No Stripe customer found for user');
 			return new Response(
-				JSON.stringify({ paymentMethods: [] }),
+				JSON.stringify({ error: 'No Stripe customer found' }),
 				{
-					status: 200,
+					status: 404,
 					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
 				}
 			);
@@ -101,43 +111,17 @@ serve(async (req) => {
 
 		log('Found Stripe customer', { customerId: profile.stripe_customer_id });
 
-		// Get customer details including default payment method
-		const customer = await stripe.customers.retrieve(profile.stripe_customer_id);
-		const defaultPaymentMethodId = customer.invoice_settings?.default_payment_method;
-
-		log('Customer default payment method', { defaultPaymentMethodId });
-
-		// Get payment methods from Stripe
-		const paymentMethods = await stripe.paymentMethods.list({
-			customer: profile.stripe_customer_id,
-			type: 'card',
+		// Set the payment method as the default for the customer
+		await stripe.customers.update(profile.stripe_customer_id, {
+			invoice_settings: {
+				default_payment_method: paymentMethodId,
+			},
 		});
 
-		log('Retrieved payment methods from Stripe', { count: paymentMethods.data.length });
-
-		// Format payment methods for frontend
-		const formattedPaymentMethods = paymentMethods.data.map((pm) => ({
-			id: pm.id,
-			type: 'Credit Card',
-			last4: pm.card?.last4 || '',
-			expiryMonth: pm.card?.exp_month || 0,
-			expiryYear: pm.card?.exp_year || 0,
-			brand: pm.card?.brand ? pm.card.brand.charAt(0).toUpperCase() + pm.card.brand.slice(1) : '',
-			isDefault: pm.id === defaultPaymentMethodId,
-			cardHolder: pm.billing_details?.name || '',
-			billingAddress: {
-				street: pm.billing_details?.address?.line1 || '',
-				city: pm.billing_details?.address?.city || '',
-				state: pm.billing_details?.address?.state || '',
-				zipCode: pm.billing_details?.address?.postal_code || '',
-				country: pm.billing_details?.address?.country || ''
-			}
-		}));
-
-		log('Formatted payment methods for frontend', formattedPaymentMethods);
+		log('Successfully set default payment method', { paymentMethodId });
 
 		return new Response(
-			JSON.stringify({ paymentMethods: formattedPaymentMethods }),
+			JSON.stringify({ success: true }),
 			{
 				status: 200,
 				headers: { ...corsHeaders, 'Content-Type': 'application/json' },
