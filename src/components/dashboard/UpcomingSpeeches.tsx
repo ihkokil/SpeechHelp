@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { Speech } from '@/types/speech';
-import EventForm from './upcoming-speeches/EventForm';
+import EventFormDialog from './upcoming-speeches/EventFormDialog';
 import EventList from './upcoming-speeches/EventList';
 import { useUpcomingEvents } from './upcoming-speeches/useUpcomingEvents';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,13 +46,15 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   console.log('UpcomingSpeeches - upcomingEvents loaded:', upcomingEvents?.length);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
+    <div className="bg-white rounded-lg shadow-sm border">
       <div className="border-b p-4">
         <h2 className="text-lg font-semibold text-gray-800">{t('dashboard.upcomingSpeeches', currentLanguage.code)}</h2>
       </div>
       
       {/* Add new event form */}
-      <EventForm onAddEvent={addEvent} />
+      <div className="p-4 border-b">
+        <EventFormDialog onAddEvent={addEvent} />
+      </div>
       
       {/* List of upcoming events */}
       <EventList 
