@@ -3,6 +3,7 @@ import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import PricingFeature from './PricingFeature';
 import { createCheckoutSession } from '@/services/stripe';
 import { useToast } from '@/components/ui/use-toast';
@@ -26,6 +27,7 @@ interface PricingTierProps {
 		icon?: React.ReactNode;
 	}[];
 	pricingPeriod: PricingPeriod;
+	isCurrentPlan?: boolean;
 }
 
 const PricingTier: React.FC<PricingTierProps> = ({
@@ -35,6 +37,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
 	description,
 	features,
 	pricingPeriod,
+	isCurrentPlan = false,
 }) => {
 	const { toast } = useToast();
 	const { user } = useAuth();
@@ -42,11 +45,13 @@ const PricingTier: React.FC<PricingTierProps> = ({
 
 	const handleStripeCheckout = useCallback(async () => {
 		try {
+			console.log('Starting checkout process for plan:', planType);
+			
 			// Handle free tier separately
 			if (planType === SubscriptionPlan.FREE_TRIAL) {
 				if (!user) {
 					// Redirect to signup for non-authenticated users
-					window.location.href = '/signup?plan=free_trial';
+					window.location.href = '/auth?plan=free_trial';
 					return;
 				}
 				
@@ -74,7 +79,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
 			// Handle paid plans
 			if (!user) {
 				// Redirect to signup for non-authenticated users
-				window.location.href = `/signup?plan=${planType.toLowerCase()}`;
+				window.location.href = `/auth?plan=${planType.toLowerCase()}`;
 				return;
 			}
 
@@ -84,31 +89,65 @@ const PricingTier: React.FC<PricingTierProps> = ({
 				description: "Please wait while we set up your payment.",
 			});
 
+			console.log('Creating checkout session with params:', {
+				plan: planType,
+				priceId: pricingPeriod === 'monthly' ? price.monthly.productId : price.yearly.productId,
+				userId: user?.id,
+				pricingPeriod,
+			});
+
 			// Create checkout session with Supabase function
 			const { url } = await createCheckoutSession({
 				plan: planType,
 				priceId: pricingPeriod === 'monthly' ? price.monthly.productId : price.yearly.productId,
 				userId: user?.id,
-				returnUrl: `${window.location.origin}/account?tab=billing`,
+				returnUrl: `${window.location.origin}/settings?tab=billing`,
 				pricingPeriod,
 			});
 
+			console.log('Checkout session created, redirecting to:', url);
+
 			// Redirect to Stripe Checkout
-			window.location.href = url;
+			if (url) {
+				window.location.href = url;
+			} else {
+				throw new Error('No checkout URL received');
+			}
 		} catch (error) {
 			console.error('Checkout error:', error);
 			toast({
 				title: 'Checkout Error',
-				description: 'There was a problem initiating checkout. Please try again.',
+				description: error instanceof Error ? error.message : 'There was a problem initiating checkout. Please try again.',
 				variant: 'destructive',
 			});
 		}
-	}, [name, planType, pricingPeriod, user, price, toast, updateProfile]);
+	}, [planType, pricingPeriod, user, price, toast, updateProfile]);
+
+	const getButtonText = () => {
+		if (isCurrentPlan) {
+			return 'Current Plan';
+		}
+		if (planType === SubscriptionPlan.FREE_TRIAL) {
+			return 'Start Free Trial';
+		}
+		return 'Choose Plan';
+	};
 
 	return (
-		<Card className="border border-gray-200 rounded-xl h-full overflow-hidden hover:shadow-lg transition-shadow">
+		<Card className={`border rounded-xl h-full overflow-hidden hover:shadow-lg transition-shadow ${
+			isCurrentPlan 
+				? 'border-purple-500 bg-purple-50 shadow-lg' 
+				: 'border-gray-200'
+		}`}>
 			<div className="p-6 md:p-8 h-full flex flex-col">
-				<h3 className="text-2xl font-bold text-center text-gray-900 mb-2">{name}</h3>
+				<div className="flex items-center justify-between mb-2">
+					<h3 className="text-2xl font-bold text-center text-gray-900">{name}</h3>
+					{isCurrentPlan && (
+						<Badge className="bg-purple-600 text-white">
+							Your Plan
+						</Badge>
+					)}
+				</div>
 				<div className="flex items-end justify-center mb-6">
 					<span className="text-4xl font-bold text-purple-600">
 						{pricingPeriod === 'monthly' ? price.monthly.price : price.yearly.price}
@@ -134,10 +173,15 @@ const PricingTier: React.FC<PricingTierProps> = ({
 				</ul>
 
 				<Button
-					className="w-full bg-gradient-to-r mt-auto from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-					onClick={handleStripeCheckout}
+					className={`w-full mt-auto ${
+						isCurrentPlan 
+							? 'bg-purple-600 hover:bg-purple-700 cursor-default' 
+							: 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700'
+					}`}
+					onClick={isCurrentPlan ? undefined : handleStripeCheckout}
+					disabled={isCurrentPlan}
 				>
-					{planType === SubscriptionPlan.FREE_TRIAL ? 'Start Free Trial' : 'Choose Plan'}
+					{getButtonText()}
 				</Button>
 			</div>
 		</Card>

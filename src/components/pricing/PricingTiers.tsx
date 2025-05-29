@@ -3,6 +3,8 @@ import React from 'react';
 import { Check, Sparkle, Unlock, Clock, Mail, Edit, MessageCircle, Star } from 'lucide-react';
 import PricingTier from './PricingTier';
 import { SubscriptionPlan } from '@/lib/plan_rules';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '../speech/hooks/useProfile';
 
 type PricingPeriod = 'monthly' | 'yearly';
 
@@ -18,6 +20,16 @@ const productIds = {
 };
 
 const PricingTiers: React.FC<PricingTiersProps> = ({ pricingPeriod }) => {
+	const { user } = useAuth();
+	const { profile } = useProfile();
+
+	const isCurrentPlan = (planType: SubscriptionPlan) => {
+		if (!user || !profile) return false;
+		const currentPlan = profile.subscription_plan?.toLowerCase();
+		const targetPlan = planType.toLowerCase();
+		return currentPlan === targetPlan && profile.subscription_status === 'active';
+	};
+
 	const pricingTiers = [
 		{
 			name: 'Basic / Free Trial',
@@ -148,6 +160,7 @@ const PricingTiers: React.FC<PricingTiersProps> = ({ pricingPeriod }) => {
 					description={tier.description}
 					features={tier.features}
 					pricingPeriod={pricingPeriod}
+					isCurrentPlan={isCurrentPlan(tier.planType)}
 				/>
 			))}
 		</div>
