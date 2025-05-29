@@ -315,6 +315,51 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_history: {
+        Row: {
+          amount: number
+          billing_period: string | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          payment_date: string | null
+          plan_type: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          billing_period?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          payment_date?: string | null
+          plan_type: string
+          status: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          billing_period?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          payment_date?: string | null
+          plan_type?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           admin_role: string | null
@@ -329,9 +374,14 @@ export type Database = {
           phone: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          subscription_amount: number | null
+          subscription_currency: string | null
           subscription_end_date: string | null
+          subscription_period: string | null
           subscription_plan: string | null
+          subscription_price_id: string | null
           subscription_start_date: string | null
+          subscription_status: string | null
           updated_at: string
           username: string | null
         }
@@ -348,9 +398,14 @@ export type Database = {
           phone?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          subscription_amount?: number | null
+          subscription_currency?: string | null
           subscription_end_date?: string | null
+          subscription_period?: string | null
           subscription_plan?: string | null
+          subscription_price_id?: string | null
           subscription_start_date?: string | null
+          subscription_status?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -367,9 +422,14 @@ export type Database = {
           phone?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          subscription_amount?: number | null
+          subscription_currency?: string | null
           subscription_end_date?: string | null
+          subscription_period?: string | null
           subscription_plan?: string | null
+          subscription_price_id?: string | null
           subscription_start_date?: string | null
+          subscription_status?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -505,6 +565,18 @@ export type Database = {
       }
       update_user_subscription: {
         Args: { user_id: string; plan: string; end_date: string }
+        Returns: Json
+      }
+      update_user_subscription_after_payment: {
+        Args: {
+          user_id_param: string
+          plan_type_param: string
+          billing_period_param: string
+          stripe_customer_id_param: string
+          stripe_subscription_id_param: string
+          amount_param: number
+          price_id_param: string
+        }
         Returns: Json
       }
       upsert_admin_setting: {

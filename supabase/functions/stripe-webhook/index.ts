@@ -1,3 +1,4 @@
+
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { corsHeaders } from '../_shared/cors.ts';
 import Stripe from 'https://esm.sh/stripe@13.2.0?target=deno';
@@ -105,44 +106,82 @@ serve(async (req) => {
 				const userId = session.client_reference_id;
 				const customerId = session.customer;
 				const subscriptionId = session.subscription;
+				const planType = session.metadata?.plan || 'premium';
+				const pricingPeriod = session.metadata?.pricingPeriod || 'monthly';
 
 				if (!userId) {
 					log('Warning: No userId (client_reference_id) found in session');
+					break;
 				}
 
-				if (userId) {
-					// Update user's subscription in the database
-					log(`Updating user ${userId} subscription data in profiles table`);
-
-					const updateData = {
-						stripe_customer_id: customerId,
-						stripe_subscription_id: subscriptionId,
-						subscription_plan: session.metadata?.plan || null,
-						subscription_start_date: session.created,
-						subscription_end_date: session.current_period_end,
-						is_active: true,
-					};
-
-					log('Update data:', updateData);
-
-					const { error } = await supabase
-						.from('profiles')
-						.update(updateData)
-						.eq('id', userId);
-
-					if (error) {
-						log('Error updating user subscription:', error);
-						return new Response(
-							JSON.stringify({ error: 'Error updating user subscription', details: error }),
-							{
-								status: 500,
-								headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-							}
-						);
+				// Get subscription details to extract amount and price ID
+				let amount = 0;
+				let priceId = '';
+				
+				if (subscriptionId) {
+					try {
+						const subscription = await stripe.subscriptions.retrieve(subscriptionId as string);
+						const lineItem = subscription.items.data[0];
+						if (lineItem) {
+							amount = lineItem.price.unit_amount || 0;
+							priceId = lineItem.price.id;
+						}
+						log('Subscription details:', { amount, priceId });
+					} catch (subError) {
+						log('Error retrieving subscription details:', subError);
 					}
-
-					log(`Successfully updated subscription for user ${userId}`);
 				}
+
+				// Update user's subscription using our database function
+				log(`Updating user ${userId} subscription data using database function`);
+				try {
+					const { data: updateResult, error: updateError } = await supabase.rpc(
+						'update_user_subscription_after_payment',
+						{
+							user_id_param: userId,
+							plan_type_param: planType,
+							billing_period_param: pricingPeriod,
+							stripe_customer_id_param: customerId as string,
+							stripe_subscription_id_param: subscriptionId as string,
+							amount_param: amount,
+							price_id_param: priceId
+						}
+					);
+
+					if (updateError) {
+						log('Error updating user subscription via function:', updateError);
+					} else {
+						log('Successfully updated subscription via function:', updateResult);
+					}
+				} catch (funcError) {
+					log('Error calling update function:', funcError);
+				}
+
+				// Store payment history
+				try {
+					const { error: paymentError } = await supabase
+						.from('payment_history')
+						.insert({
+							user_id: userId,
+							stripe_session_id: session.id,
+							amount: amount,
+							currency: 'usd',
+							status: 'paid',
+							plan_type: planType,
+							billing_period: pricingPeriod,
+							payment_date: new Date().toISOString()
+						});
+
+					if (paymentError) {
+						log('Error storing payment history:', paymentError);
+					} else {
+						log('Successfully stored payment history');
+					}
+				} catch (paymentHistoryError) {
+					log('Error inserting payment history:', paymentHistoryError);
+				}
+
+				log(`Successfully processed subscription for user ${userId}`);
 				break;
 			}
 
@@ -154,43 +193,29 @@ serve(async (req) => {
 					status: subscription.status
 				});
 
-				// Get the customer ID from the subscription
-				const customerId = subscription.customer;
-
-				// Update the subscription status
-				log(`Finding user with Stripe customer ID: ${customerId}`);
-				const { data: users, error } = await supabase
+				// Find user by Stripe customer ID and update subscription status
+				const { data: profiles, error: profileError } = await supabase
 					.from('profiles')
-					.select('id, subscription_status')
-					.eq('stripe_customer_id', customerId);
+					.select('id')
+					.eq('stripe_customer_id', subscription.customer);
 
-				if (error) {
-					log('Error finding user by customer ID:', error);
+				if (profileError || !profiles || profiles.length === 0) {
+					log('No user found with customer ID:', subscription.customer);
 					break;
 				}
 
-				if (!users || users.length === 0) {
-					log(`No user found with Stripe customer ID: ${customerId}`);
-					break;
-				}
-
-				const userId = users[0].id;
-				log(`Found user ${userId} with customer ID ${customerId}`);
-
-				// Update subscription status based on the Stripe status
-				log(`Updating subscription status to '${subscription.status}' for user ${userId}`);
 				const { error: updateError } = await supabase
 					.from('profiles')
 					.update({
 						subscription_status: subscription.status,
 						updated_at: new Date().toISOString(),
 					})
-					.eq('id', userId);
+					.eq('id', profiles[0].id);
 
 				if (updateError) {
 					log('Error updating subscription status:', updateError);
 				} else {
-					log(`Successfully updated subscription status for user ${userId}`);
+					log(`Successfully updated subscription status for user ${profiles[0].id}`);
 				}
 				break;
 			}
@@ -202,42 +227,30 @@ serve(async (req) => {
 					customerId: subscription.customer
 				});
 
-				const customerId = subscription.customer;
-
-				// Find the user with this customer ID
-				log(`Finding user with Stripe customer ID: ${customerId}`);
-				const { data: users, error } = await supabase
+				// Find user by Stripe customer ID and cancel subscription
+				const { data: profiles, error: profileError } = await supabase
 					.from('profiles')
 					.select('id')
-					.eq('stripe_customer_id', customerId);
+					.eq('stripe_customer_id', subscription.customer);
 
-				if (error) {
-					log('Error finding user by customer ID:', error);
+				if (profileError || !profiles || profiles.length === 0) {
+					log('No user found with customer ID:', subscription.customer);
 					break;
 				}
 
-				if (!users || users.length === 0) {
-					log(`No user found with Stripe customer ID: ${customerId}`);
-					break;
-				}
-
-				const userId = users[0].id;
-				log(`Found user ${userId} with customer ID ${customerId}`);
-
-				// Update the user's subscription status
-				log(`Setting subscription status to 'canceled' for user ${userId}`);
 				const { error: updateError } = await supabase
 					.from('profiles')
 					.update({
 						subscription_status: 'canceled',
+						subscription_end_date: new Date().toISOString(),
 						updated_at: new Date().toISOString(),
 					})
-					.eq('id', userId);
+					.eq('id', profiles[0].id);
 
 				if (updateError) {
-					log('Error updating subscription status:', updateError);
+					log('Error canceling subscription:', updateError);
 				} else {
-					log(`Successfully canceled subscription for user ${userId}`);
+					log(`Successfully canceled subscription for user ${profiles[0].id}`);
 				}
 				break;
 			}
@@ -269,4 +282,4 @@ serve(async (req) => {
 			}
 		);
 	}
-}); 
+});

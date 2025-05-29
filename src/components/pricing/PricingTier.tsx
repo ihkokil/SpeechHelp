@@ -58,6 +58,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
 					subscription_plan: planType,
 					subscription_start_date: new Date().toISOString(),
 					subscription_end_date: trialEndDate.toISOString(),
+					subscription_status: 'active',
 				});
 				
 				toast({
@@ -77,12 +78,18 @@ const PricingTier: React.FC<PricingTierProps> = ({
 				return;
 			}
 
+			// Show loading state
+			toast({
+				title: "Redirecting to checkout...",
+				description: "Please wait while we set up your payment.",
+			});
+
 			// Create checkout session with Supabase function
 			const { url } = await createCheckoutSession({
 				plan: planType,
 				priceId: pricingPeriod === 'monthly' ? price.monthly.productId : price.yearly.productId,
 				userId: user?.id,
-				returnUrl: `${window.location.origin}/account`,
+				returnUrl: `${window.location.origin}/account?tab=billing`,
 				pricingPeriod,
 			});
 

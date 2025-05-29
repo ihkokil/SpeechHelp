@@ -1,156 +1,168 @@
 
-import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, AlertTriangle } from 'lucide-react';
-import { format, addMonths, addYears } from 'date-fns';
-import { useToast } from '@/hooks/use-toast';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Calendar, CreditCard, RefreshCw } from 'lucide-react';
+import { format } from 'date-fns';
+import { PaymentMethod } from './types';
+
+interface SubscriptionData {
+  plan: string;
+  status: string;
+  price: string;
+  billingPeriod: string;
+  startDate: Date;
+  endDate: Date;
+  paymentMethod?: PaymentMethod;
+}
 
 interface SubscriptionCardProps {
-  subscriptionData: {
-    plan: string;
-    status: string;
-    price: string;
-    billingPeriod: string;
-    startDate: Date;
-    endDate: Date;
-  };
+  subscriptionData: SubscriptionData;
   autoRenew: boolean;
   onAutoRenewToggle: (checked: boolean) => void;
   onToggleBillingPeriod: () => void;
 }
 
-const SubscriptionCard = ({ 
-  subscriptionData, 
-  autoRenew, 
-  onAutoRenewToggle, 
-  onToggleBillingPeriod 
+const SubscriptionCard = ({
+  subscriptionData,
+  autoRenew,
+  onAutoRenewToggle,
+  onToggleBillingPeriod,
 }: SubscriptionCardProps) => {
-  const { toast } = useToast();
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'canceled':
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'past_due':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'inactive':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
-  const handleCancelSubscription = async () => {
-    setIsProcessing(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      onAutoRenewToggle(false);
-      
-      toast({
-        title: "Auto-renewal disabled",
-        description: `Your subscription will remain active until ${format(subscriptionData.endDate, 'MMMM d, yyyy')} and will not renew automatically.`,
-      });
-      setShowCancelDialog(false);
-    } catch (error) {
-      console.error('Error cancelling subscription:', error);
-      toast({
-        title: "Cancellation failed",
-        description: "There was a problem cancelling your subscription. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
+  const getStatusText = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'Active';
+      case 'canceled':
+      case 'cancelled':
+        return 'Canceled';
+      case 'past_due':
+        return 'Past Due';
+      case 'inactive':
+        return 'Inactive';
+      default:
+        return 'Unknown';
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center">
-          <Calendar className="h-5 w-5 mr-2 text-pink-600" />
-          Current Subscription
-        </CardTitle>
-        <CardDescription>
-          Manage your subscription plan and billing cycle
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              Current Subscription
+              <Badge className={getStatusColor(subscriptionData.status)}>
+                {getStatusText(subscriptionData.status)}
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              Manage your subscription and billing preferences
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="font-semibold text-lg">{subscriptionData.plan}</h3>
-              <p className="text-gray-500">{subscriptionData.price} per {subscriptionData.billingPeriod}</p>
+      <CardContent className="space-y-6">
+        {/* Plan Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <h4 className="font-medium">Plan Details</h4>
+            <div className="space-y-1">
+              <p className="text-2xl font-bold">{subscriptionData.plan}</p>
+              <p className="text-lg text-muted-foreground">
+                {subscriptionData.price}
+                {subscriptionData.price !== '$0.00' && (
+                  <span className="text-sm">/{subscriptionData.billingPeriod}</span>
+                )}
+              </p>
             </div>
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-              {subscriptionData.status === 'active' ? 'Active' : 'Inactive'}
-            </Badge>
           </div>
           
-          <div className="border-t border-b py-4 space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-500">Start Date</span>
-              <span className="font-medium">{format(subscriptionData.startDate, 'MMMM d, yyyy')}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Renewal Date</span>
-              <span className="font-medium">{format(subscriptionData.endDate, 'MMMM d, yyyy')}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-500">Auto-Renewal</span>
-              <Switch 
-                checked={autoRenew} 
-                onCheckedChange={onAutoRenewToggle}
-                className="data-[state=checked]:bg-pink-600"
-              />
+          <div className="space-y-2">
+            <h4 className="font-medium">Billing Information</h4>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="h-4 w-4" />
+                <span>Started: {format(subscriptionData.startDate, 'MMM dd, yyyy')}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <RefreshCw className="h-4 w-4" />
+                <span>
+                  {subscriptionData.status === 'active' ? 'Renews' : 'Ends'}: {format(subscriptionData.endDate, 'MMM dd, yyyy')}
+                </span>
+              </div>
+              {subscriptionData.paymentMethod && (
+                <div className="flex items-center gap-2 text-sm">
+                  <CreditCard className="h-4 w-4" />
+                  <span>
+                    {subscriptionData.paymentMethod.brand} •••• {subscriptionData.paymentMethod.last4}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={onToggleBillingPeriod}>
-          Switch to {subscriptionData.billingPeriod === 'monthly' ? 'Yearly' : 'Monthly'} Billing
-        </Button>
-        <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-          <DialogTrigger asChild>
-            <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-              Cancel Subscription
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="flex items-center">
-                <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
-                Cancel Subscription
-              </DialogTitle>
-              <DialogDescription>
-                Are you sure you want to cancel your subscription? Your subscription will remain active until the end of your current billing period, but will not renew automatically.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="my-4 p-4 bg-red-50 rounded-md text-red-800 text-sm">
-              <p><strong>Your subscription will remain active until:</strong></p>
-              <p className="font-medium">{format(subscriptionData.endDate, 'MMMM d, yyyy')}</p>
-            </div>
-            <DialogFooter>
+
+        {/* Auto-renewal toggle */}
+        {subscriptionData.status === 'active' && (
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="auto-renew"
+              checked={autoRenew}
+              onCheckedChange={onAutoRenewToggle}
+            />
+            <Label htmlFor="auto-renew">Auto-renewal</Label>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          {subscriptionData.status === 'active' && (
+            <>
               <Button 
                 variant="outline" 
-                onClick={() => setShowCancelDialog(false)}
-                disabled={isProcessing}
+                onClick={onToggleBillingPeriod}
+                className="flex-1"
               >
-                Keep Subscription
+                Switch to {subscriptionData.billingPeriod === 'monthly' ? 'Yearly' : 'Monthly'} Billing
               </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleCancelSubscription}
-                disabled={isProcessing}
-              >
-                {isProcessing ? "Processing..." : "Cancel Subscription"}
+              <Button variant="outline" className="flex-1">
+                Manage Subscription
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </CardFooter>
+            </>
+          )}
+          
+          {(subscriptionData.status === 'inactive' || subscriptionData.status === 'canceled') && (
+            <Button className="flex-1">
+              Reactivate Subscription
+            </Button>
+          )}
+          
+          {subscriptionData.status === 'past_due' && (
+            <Button className="flex-1" variant="destructive">
+              Update Payment Method
+            </Button>
+          )}
+        </div>
+      </CardContent>
     </Card>
   );
 };
