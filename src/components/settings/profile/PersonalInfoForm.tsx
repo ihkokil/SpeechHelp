@@ -3,42 +3,28 @@ import { UseFormReturn } from 'react-hook-form';
 import { ProfileFormValues } from './types';
 import NameFields from './components/NameFields';
 import EmailField from './components/EmailField';
-import PhoneFields from './components/PhoneFields';
 import PasswordConfirmField from './components/PasswordConfirmField';
+import PhoneInput from '@/components/ui/phone-input';
 
 interface PersonalInfoFormProps {
   form: UseFormReturn<ProfileFormValues>;
-  formattedPhone: string;
-  selectedDialCode: string;
-  handlePhoneChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleCountryCodeChange: (code: string) => void;
   originalEmail: string;
 }
 
-const PersonalInfoForm = ({
-  form,
-  formattedPhone,
-  selectedDialCode,
-  handlePhoneChange,
-  handleCountryCodeChange,
-  originalEmail
-}: PersonalInfoFormProps) => {
-  const currentEmail = form.watch('email');
-  const isEmailChanged = currentEmail !== originalEmail;
-
+const PersonalInfoForm = ({ form, originalEmail }: PersonalInfoFormProps) => {
   return (
-    <>
+    <div className="space-y-6">
       <NameFields form={form} />
-      <EmailField form={form} />
-      <PasswordConfirmField form={form} isEmailChanged={isEmailChanged} />
-      <PhoneFields 
+      <EmailField form={form} originalEmail={originalEmail} />
+      <PasswordConfirmField form={form} />
+      <PhoneInput 
         form={form}
-        formattedPhone={formattedPhone}
-        selectedDialCode={selectedDialCode}
-        handlePhoneChange={handlePhoneChange}
-        handleCountryCodeChange={handleCountryCodeChange}
+        phoneFieldName="phone"
+        countryFieldName="countryCode"
+        label="Phone Number"
+        placeholder="Enter your phone number"
       />
-    </>
+    </div>
   );
 };
 

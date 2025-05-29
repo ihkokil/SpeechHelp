@@ -1,6 +1,5 @@
 
 import { Form } from '@/components/ui/form';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import PersonalInfoForm from './profile/PersonalInfoForm';
@@ -14,12 +13,8 @@ export default function ProfileSettings() {
   
   const {
     form,
-    formattedPhone,
-    selectedDialCode,
     isLoading,
     originalEmail,
-    handlePhoneChange,
-    handleCountryCodeChange,
     onSubmit
   } = useProfileForm();
 
@@ -41,10 +36,6 @@ export default function ProfileSettings() {
                 <p className="text-sm text-gray-500 mb-6">Update your personal information and contact details</p>
                 <PersonalInfoForm 
                   form={form}
-                  formattedPhone={formattedPhone}
-                  selectedDialCode={selectedDialCode}
-                  handlePhoneChange={handlePhoneChange}
-                  handleCountryCodeChange={handleCountryCodeChange}
                   originalEmail={originalEmail}
                 />
               </div>

@@ -1,8 +1,7 @@
 
 import { User } from '../../types';
 import { format, formatDistanceToNow } from 'date-fns';
-import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
-import countries from '@/data/countries';
+import { formatPhoneNumber, getCountryByCode } from '@/utils/phoneUtils';
 
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Never';
@@ -93,17 +92,9 @@ export const getUserPhone = (user: User) => {
   
   try {
     const countryCode = user.user_metadata?.country_code || 'US';
-    
-    let dialCode = '1';
-    
-    const formattedNumber = formatPhoneNumber(phone, countryCode);
-    
-    if (countryCode && countryCode !== 'US') {
-      const country = countries.find((c: any) => c.code === countryCode);
-      if (country) {
-        dialCode = country.dialCode;
-      }
-    }
+    const country = getCountryByCode(countryCode);
+    const dialCode = country?.dialCode || '1';
+    const formattedNumber = formatPhoneNumber(phone);
     
     return `+${dialCode} ${formattedNumber}`;
   } catch (error) {
@@ -124,8 +115,7 @@ export const getCountryCode = (user: User) => {
   const countryCode = user.user_metadata?.country_code;
   
   if (user.user_metadata?.country === 'United Kingdom' || 
-      user.user_metadata?.country === 'England' || 
-      user.user_metadata?.state === 'England') {
+      user.user_metadata?.country === 'England') {
     return 'GB';
   }
   
