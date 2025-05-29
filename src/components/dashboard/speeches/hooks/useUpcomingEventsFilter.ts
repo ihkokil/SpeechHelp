@@ -1,16 +1,11 @@
 
 import { useMemo } from 'react';
 import { Speech } from '@/types/speech';
-import { useAuth } from '@/contexts/AuthContext';
 
 export const useUpcomingEventsFilter = () => {
-  const { user } = useAuth();
-  
   const upcomingSpeeches = useMemo(() => {
-    if (!user?.id) return [];
-    
     try {
-      const storageKey = `upcomingEvents_${user.id}`;
+      const storageKey = 'upcomingEvents_guest';
       const upcomingEventsJSON = localStorage.getItem(storageKey);
       
       if (!upcomingEventsJSON) return [];
@@ -19,7 +14,7 @@ export const useUpcomingEventsFilter = () => {
       
       return upcomingEvents.map((event: any) => ({
         id: event.id,
-        user_id: user.id,
+        user_id: 'guest',
         title: event.title || 'Untitled Event',
         content: event.notes || '',
         created_at: event.date || '',
@@ -32,7 +27,7 @@ export const useUpcomingEventsFilter = () => {
       console.error('Error loading upcoming events:', error);
       return [];
     }
-  }, [user?.id]);
+  }, []);
   
   return { upcomingSpeeches };
 };

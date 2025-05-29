@@ -1,16 +1,15 @@
 
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import SpeechesManager from '@/components/dashboard/speeches/SpeechesManager';
 import { toast } from 'sonner';
 
 const MySpeeches = () => {
-  const { user, isLoading, speeches, fetchSpeeches } = useAuth();
   const location = useLocation();
   const [initialFilter, setInitialFilter] = useState('all');
+  const [speeches, setSpeeches] = useState([]);
   const isMobile = useIsMobile();
 
   // Parse URL parameters for filtering
@@ -19,28 +18,6 @@ const MySpeeches = () => {
     const filterParam = params.get('filter');
     setInitialFilter(filterParam === 'upcoming' ? 'upcoming' : 'all');
   }, [location]);
-
-  // Fetch speeches when component mounts and user is available
-  useEffect(() => {
-    if (user && !isLoading) {
-      fetchSpeeches().catch(error => {
-        console.error('Error fetching speeches:', error);
-        toast.error('Failed to load speeches. Please try again.');
-      });
-    }
-  }, [user, isLoading, fetchSpeeches]);
-
-  // Show loading state while auth is being determined
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-          <p className="mt-4 text-white text-lg font-medium">Loading...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex bg-gray-50">

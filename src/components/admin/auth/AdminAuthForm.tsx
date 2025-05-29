@@ -1,14 +1,12 @@
 
 import React, { useState } from 'react';
-import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { toast } from '@/hooks/use-toast';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertCircle, LockKeyhole, Shield, Eye, EyeOff } from 'lucide-react';
@@ -249,17 +247,13 @@ const AdminAuthForm: React.FC<AdminAuthFormProps> = ({
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-10"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Sending..." : "Reset Password"}
+                  {isSubmitting ? "Sending..." : "Send Reset Email"}
                 </Button>
               </form>
             </Form>
           </TabsContent>
         </Tabs>
       </CardContent>
-      
-      <CardFooter className="justify-center text-sm text-gray-500 pt-0">
-        <p>Secure access for authorized personnel only</p>
-      </CardFooter>
     </Card>
   );
 };
