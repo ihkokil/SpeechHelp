@@ -26,15 +26,13 @@ const SignInForm = ({
     setLoading(true);
 
     try {
+      console.log('SignInForm: Attempting to sign in');
       await signIn(email, password);
-      navigate('/');
+      console.log('SignInForm: Sign in successful, navigating to dashboard');
+      navigate('/dashboard');
     } catch (error: any) {
-      console.error('Authentication error:', error);
-      toast({
-        title: "Authentication error",
-        description: error.message || "An error occurred during authentication",
-        variant: "destructive"
-      });
+      console.error('SignInForm: Authentication error:', error);
+      // Error handling is already done in the AuthContext
     } finally {
       setLoading(false);
     }

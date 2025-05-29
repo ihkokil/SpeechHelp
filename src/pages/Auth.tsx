@@ -15,7 +15,7 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -42,10 +42,28 @@ const Auth = () => {
 
   // Redirect if already logged in (except for reset password flow)
   useEffect(() => {
-    if (user && !isResetPassword) {
+    if (!isLoading && user && !isResetPassword) {
+      console.log('Auth: User is already logged in, redirecting to dashboard');
       navigate('/dashboard');
     }
-  }, [user, navigate, isResetPassword]);
+  }, [user, navigate, isResetPassword, isLoading]);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <AuthContainer>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </AuthContainer>
+    );
+  }
+
+  // Don't render anything if user is logged in (will redirect)
+  if (user && !isResetPassword) {
+    return null;
+  }
 
   // Handle form transitions
   const handleSwitchToSignUp = () => setIsSignUp(true);

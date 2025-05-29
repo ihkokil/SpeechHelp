@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +16,6 @@ import {
   HelpCircle, 
   LogOut 
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const UserMenu = () => {
@@ -24,6 +23,7 @@ const UserMenu = () => {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
+    console.log('UserMenu: Handling sign out');
     await signOut();
     navigate('/');
   };
