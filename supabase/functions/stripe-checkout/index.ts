@@ -119,6 +119,16 @@ serve(async (req) => {
 			}
 		}
 
+		// Extract the origin from returnUrl to ensure correct redirect
+		const url = new URL(returnUrl);
+		const origin = `${url.protocol}//${url.host}`;
+		
+		// FIXED: Use /account instead of returnUrl for success URL
+		const successUrl = `${origin}/account?success=true&session_id={CHECKOUT_SESSION_ID}`;
+		const cancelUrl = `${origin}/pricing?canceled=true`;
+		
+		log('Using URLs:', { successUrl, cancelUrl });
+
 		// Prepare checkout session parameters
 		const sessionParams: any = {
 			payment_method_types: ['card'],
@@ -129,8 +139,8 @@ serve(async (req) => {
 				},
 			],
 			mode: 'subscription',
-			success_url: `${returnUrl}?success=true&session_id={CHECKOUT_SESSION_ID}`,
-			cancel_url: `${returnUrl}?canceled=true`,
+			success_url: successUrl,
+			cancel_url: cancelUrl,
 			client_reference_id: userId, // Store user ID for identification
 			metadata: {
 				userId,
