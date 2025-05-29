@@ -6,6 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Calendar, CreditCard, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { PaymentMethod } from './types';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
 interface SubscriptionData {
   plan: string;
@@ -22,6 +25,7 @@ interface SubscriptionCardProps {
   autoRenew: boolean;
   onAutoRenewToggle: (checked: boolean) => void;
   onToggleBillingPeriod: () => void;
+  onSubscriptionUpdate?: () => void;
 }
 
 const SubscriptionCard = ({
@@ -29,7 +33,11 @@ const SubscriptionCard = ({
   autoRenew,
   onAutoRenewToggle,
   onToggleBillingPeriod,
+  onSubscriptionUpdate,
 }: SubscriptionCardProps) => {
+  const { toast } = useToast();
+  const [isReactivating, setIsReactivating] = useState(false);
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'active':
@@ -100,6 +108,42 @@ const SubscriptionCard = ({
         return 'Free Plan';
       default:
         return subscriptionData.plan; // Return as-is if we can't determine
+    }
+  };
+
+  const handleReactivateSubscription = async () => {
+    setIsReactivating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('reactivate-subscription');
+
+      if (error) {
+        console.error('Error reactivating subscription:', error);
+        toast({
+          title: "Error",
+          description: "Failed to reactivate subscription. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Your subscription has been reactivated successfully!",
+      });
+
+      // Refresh subscription data
+      if (onSubscriptionUpdate) {
+        onSubscriptionUpdate();
+      }
+    } catch (error) {
+      console.error('Error reactivating subscription:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reactivate subscription. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsReactivating(false);
     }
   };
 
@@ -191,8 +235,12 @@ const SubscriptionCard = ({
           )}
           
           {(subscriptionData.status === 'inactive' || subscriptionData.status === 'canceled') && (
-            <Button className="flex-1">
-              Reactivate Subscription
+            <Button 
+              className="flex-1"
+              onClick={handleReactivateSubscription}
+              disabled={isReactivating}
+            >
+              {isReactivating ? 'Reactivating...' : 'Reactivate Subscription'}
             </Button>
           )}
           
