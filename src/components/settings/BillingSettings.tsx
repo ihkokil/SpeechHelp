@@ -62,6 +62,66 @@ const BillingSettings = () => {
     }
   };
 
+  // Force refresh subscription data from database
+  const refreshSubscriptionData = async () => {
+    if (!user) return;
+
+    try {
+      // Re-fetch user profile with latest subscription data
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error fetching updated profile:', profileError);
+        return;
+      }
+
+      if (profile) {
+        // Process updated subscription data
+        const planName = profile.subscription_plan 
+          ? profile.subscription_plan.charAt(0).toUpperCase() + profile.subscription_plan.slice(1) + ' Plan'
+          : 'Free Trial';
+        
+        const startDate = profile.subscription_start_date 
+          ? new Date(profile.subscription_start_date) 
+          : new Date();
+        
+        const endDate = profile.subscription_end_date 
+          ? new Date(profile.subscription_end_date)
+          : addMonths(startDate, 1);
+
+        // Calculate price based on subscription data
+        let price = '$0.00';
+        if (profile.subscription_amount) {
+          price = `$${(profile.subscription_amount / 100).toFixed(2)}`;
+        }
+
+        setSubscriptionData({
+          plan: planName,
+          status: profile.subscription_status || 'inactive',
+          price: price,
+          billingPeriod: profile.subscription_period || 'monthly',
+          startDate: startDate,
+          endDate: endDate,
+          paymentMethod: paymentMethods[0] // Use first real payment method if available
+        });
+
+        console.log('Updated subscription data:', {
+          plan: planName,
+          status: profile.subscription_status,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          amount: profile.subscription_amount
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing subscription data:', error);
+    }
+  };
+
   // Fetch user's subscription data from the database
   useEffect(() => {
     const fetchSubscriptionData = async () => {
@@ -106,10 +166,13 @@ const BillingSettings = () => {
 
         // Process subscription data
         if (profile) {
+          console.log('Raw profile data:', profile);
+          
           const planName = profile.subscription_plan 
             ? profile.subscription_plan.charAt(0).toUpperCase() + profile.subscription_plan.slice(1) + ' Plan'
             : 'Free Trial';
           
+          // Use the actual dates from the database
           const startDate = profile.subscription_start_date 
             ? new Date(profile.subscription_start_date) 
             : new Date();
@@ -124,6 +187,14 @@ const BillingSettings = () => {
             price = `$${(profile.subscription_amount / 100).toFixed(2)}`;
           }
 
+          console.log('Processed subscription data:', {
+            plan: planName,
+            status: profile.subscription_status,
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            price: price
+          });
+
           setSubscriptionData({
             plan: planName,
             status: profile.subscription_status || 'inactive',
@@ -131,7 +202,7 @@ const BillingSettings = () => {
             billingPeriod: profile.subscription_period || 'monthly',
             startDate: startDate,
             endDate: endDate,
-            paymentMethod: paymentMethods[0] // Use first real payment method if available
+            paymentMethod: undefined // Will be set when payment methods load
           });
         }
       } catch (error) {
@@ -158,6 +229,18 @@ const BillingSettings = () => {
       } : null);
     }
   }, [paymentMethods]);
+
+  // Listen for URL changes to refresh data (after successful checkout)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      // Delay to allow webhook to process
+      setTimeout(() => {
+        refreshSubscriptionData();
+        fetchPaymentMethods();
+      }, 2000);
+    }
+  }, []);
 
   const handleAutoRenewToggle = (checked: boolean) => {
     setAutoRenew(checked);
