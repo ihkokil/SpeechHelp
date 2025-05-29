@@ -188,9 +188,14 @@ export const resetPassword = async (email: string, showToast: ShowToastFunction)
 		}
 
 		if (data?.success) {
+			// Log the reset link for development/testing
+			if (data.resetLink) {
+				console.log('Password reset link (for testing):', data.resetLink);
+			}
+			
 			showToast({
 				title: "Password reset sent",
-				description: "Check your email for password reset instructions.",
+				description: data.note || "Check your email for password reset instructions.",
 			});
 		} else {
 			throw new Error(data?.error || 'Unknown error occurred');
