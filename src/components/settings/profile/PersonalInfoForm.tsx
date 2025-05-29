@@ -12,11 +12,15 @@ interface PersonalInfoFormProps {
 }
 
 const PersonalInfoForm = ({ form, originalEmail }: PersonalInfoFormProps) => {
+  // Watch the email field to detect changes
+  const currentEmail = form.watch('email');
+  const isEmailChanged = currentEmail !== originalEmail;
+
   return (
     <div className="space-y-6">
       <NameFields form={form} />
-      <EmailField form={form} originalEmail={originalEmail} />
-      <PasswordConfirmField form={form} />
+      <EmailField form={form} />
+      <PasswordConfirmField form={form} isEmailChanged={isEmailChanged} />
       <PhoneInput 
         form={form}
         phoneFieldName="phone"
