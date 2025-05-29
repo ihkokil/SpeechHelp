@@ -16,7 +16,6 @@ import WritingTips from "./pages/WritingTips";
 import HelpSupport from "./pages/HelpSupport";
 import Settings from "./pages/Settings";
 import Pricing from "./pages/Pricing";
-import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import Test from "./pages/Test";
 import AdminAuth from "./pages/AdminAuth";
@@ -46,7 +45,6 @@ const App = () => (
                 <Route path="/help" element={<HelpSupport />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/pricing" element={<Pricing />} />
-                <Route path="/account" element={<Account />} />
                 <Route path="/test" element={<Test />} />
                 <Route path="/admin/auth" element={<AdminAuth />} />
                 <Route path="/admin" element={<AdminLayout />}>

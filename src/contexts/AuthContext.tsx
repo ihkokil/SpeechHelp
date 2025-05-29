@@ -21,47 +21,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Refresh user data from Supabase
   const refreshUserData = async () => {
-    if (!session?.user) {
-      console.log('No session available for refresh');
+    if (!session) return;
+    
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error('Error refreshing user data:', error);
       return;
     }
     
-    try {
-      // Get fresh user data
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData.user) {
-        console.error('Error refreshing user data:', userError);
-        return;
-      }
-      
-      // Get profile data to include subscription info
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userData.user.id)
-        .single();
-
-      if (!profileError && profileData) {
-        // Merge profile data into user metadata
-        const updatedUser = {
-          ...userData.user,
-          user_metadata: {
-            ...userData.user.user_metadata,
-            subscription_plan: profileData.subscription_plan,
-            subscription_start_date: profileData.subscription_start_date,
-            subscription_end_date: profileData.subscription_end_date,
-            stripe_customer_id: profileData.stripe_customer_id,
-            stripe_subscription_id: profileData.stripe_subscription_id,
-          }
-        };
-        setUser(updatedUser);
-        console.log('User data refreshed with subscription info');
-      } else {
-        setUser(userData.user);
-        console.log('User data refreshed (no profile found)');
-      }
-    } catch (error) {
-      console.error('Error in refreshUserData:', error);
+    if (data.user) {
+      setUser(data.user);
     }
   };
 
@@ -112,129 +81,71 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Auth functions wrapped to control loading state
   const handleSignIn = async (email: string, password: string) => {
+    setIsLoading(true);
     try {
       await signIn(email, password, toast);
-    } catch (error) {
-      console.error('Sign in error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSignUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
+    setIsLoading(true);
     try {
       await signUp(email, password, toast, firstName, lastName);
-    } catch (error) {
-      console.error('Sign up error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSignOut = async () => {
+    setIsLoading(true);
     try {
       await signOut(toast);
-      setSpeeches([]);
-    } catch (error) {
-      console.error('Sign out error:', error);
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  // Enhanced function to add profile data to user
-  const enrichUserWithProfile = async (sessionUser: User) => {
-    try {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', sessionUser.id)
-        .single();
-
-      if (profileData) {
-        return {
-          ...sessionUser,
-          user_metadata: {
-            ...sessionUser.user_metadata,
-            subscription_plan: profileData.subscription_plan,
-            subscription_start_date: profileData.subscription_start_date,
-            subscription_end_date: profileData.subscription_end_date,
-            stripe_customer_id: profileData.stripe_customer_id,
-            stripe_subscription_id: profileData.stripe_subscription_id,
-          }
-        };
-      }
-    } catch (error) {
-      console.error('Error fetching profile data:', error);
-    }
-    
-    return sessionUser;
   };
 
   useEffect(() => {
-    let mounted = true;
-
-    // Simple initialization function
-    const initAuth = async () => {
-      console.log('AuthContext - Starting authentication check');
+    // Check for existing session
+    const getSession = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase.auth.getSession();
       
-      // Get current session
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      
-      if (!mounted) return;
-
-      if (currentSession?.user) {
-        console.log('AuthContext - User is authenticated');
-        const enrichedUser = await enrichUserWithProfile(currentSession.user);
-        
-        if (mounted) {
-          setSession(currentSession);
-          setUser(enrichedUser);
-          setIsLoading(false);
-          
-          // Load speeches after a short delay
-          setTimeout(() => {
-            if (mounted) fetchSpeeches();
-          }, 100);
-        }
-      } else {
-        console.log('AuthContext - No authenticated user');
-        if (mounted) {
-          setSession(null);
-          setUser(null);
-          setIsLoading(false);
-        }
+      if (error) {
+        console.error('Error getting session:', error);
+      } else if (data?.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+        await fetchSpeeches();
       }
+      
+      setIsLoading(false);
     };
 
+    getSession();
+
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if (!mounted) return;
-      
-      console.log(`AuthContext - Auth event: ${event}`);
+    const { data } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      console.log(`Auth state changed: ${event}`);
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
       
       if (newSession?.user) {
-        const enrichedUser = await enrichUserWithProfile(newSession.user);
-        if (mounted) {
-          setSession(newSession);
-          setUser(enrichedUser);
-          setIsLoading(false);
-          
-          // Load speeches after auth
-          setTimeout(() => {
-            if (mounted) fetchSpeeches();
-          }, 100);
-        }
+        // Defer the fetch to avoid potential auth state conflicts
+        setTimeout(() => {
+          fetchSpeeches();
+        }, 0);
       } else {
-        if (mounted) {
-          setSession(null);
-          setUser(null);
-          setSpeeches([]);
-          setIsLoading(false);
-        }
+        setSpeeches([]);
       }
+      
+      setIsLoading(false);
     });
 
-    // Initialize
-    initAuth();
-
     return () => {
-      mounted = false;
-      subscription.unsubscribe();
+      data.subscription.unsubscribe();
     };
   }, []);
 

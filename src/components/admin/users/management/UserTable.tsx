@@ -62,42 +62,39 @@ export const UserTable: React.FC<UserTableProps> = ({
   };
 
   return (
-    <div className="space-y-4 w-full">
-      <div className="rounded-md border bg-white shadow-sm w-full">
-        {/* Horizontal scroll container for the table only */}
-        <div className="w-full overflow-x-auto">
-          <div className="min-w-[1200px]">
-            <Table>
-              <UserTableHeader 
-                onToggleAll={handleToggleAll}
-                isAllSelected={isAllSelected}
-                disabled={isLoading || filteredUsers.length === 0}
-                selectedCount={selectedUsers.length}
-              />
-              <TableBody>
-                {isLoading ? (
-                  <LoadingState />
-                ) : filteredUsers.length === 0 ? (
-                  <EmptyState />
-                ) : (
-                  filteredUsers.map((user) => (
-                    <UserTableRow
-                      key={user.id}
-                      user={user}
-                      isSelected={selectedUsers.some(selectedUser => selectedUser.id === user.id)}
-                      onToggleSelection={toggleUserSelection}
-                      onViewDetails={handleViewUserDetails}
-                      onManagePermissions={handleManagePermissions}
-                      onToggleActive={handleToggleUserStatus}
-                      onDeleteUser={handleDeleteUser}
-                      onSendEmail={handleSendEmail}
-                      onUpdateSubscription={handleUpdateSubscription}
-                    />
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+    <div className="space-y-4">
+      <div className="rounded-md border bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <Table>
+            <UserTableHeader 
+              onToggleAll={handleToggleAll}
+              isAllSelected={isAllSelected}
+              disabled={isLoading || filteredUsers.length === 0}
+              selectedCount={selectedUsers.length}
+            />
+            <TableBody>
+              {isLoading ? (
+                <LoadingState />
+              ) : filteredUsers.length === 0 ? (
+                <EmptyState />
+              ) : (
+                filteredUsers.map((user) => (
+                  <UserTableRow
+                    key={user.id}
+                    user={user}
+                    isSelected={selectedUsers.some(selectedUser => selectedUser.id === user.id)}
+                    onToggleSelection={toggleUserSelection}
+                    onViewDetails={handleViewUserDetails}
+                    onManagePermissions={handleManagePermissions}
+                    onToggleActive={handleToggleUserStatus}
+                    onDeleteUser={handleDeleteUser}
+                    onSendEmail={handleSendEmail}
+                    onUpdateSubscription={handleUpdateSubscription}
+                  />
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
       
