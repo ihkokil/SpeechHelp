@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +27,22 @@ interface PaymentHistory {
   billing_period: string;
   payment_date: string;
 }
+
+// Helper function to capitalize subscription type names
+const capitalizeSubscriptionType = (planType: string): string => {
+  if (!planType) return '';
+  
+  // Handle specific cases
+  const words = planType.toLowerCase().split('_').join(' ').split(' ');
+  return words.map(word => {
+    if (word === 'pro') return 'Pro';
+    if (word === 'premium') return 'Premium';
+    if (word === 'basic') return 'Basic';
+    if (word === 'free') return 'Free';
+    if (word === 'trial') return 'Trial';
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }).join(' ');
+};
 
 const BillingSettings = () => {
   const { toast } = useToast();
@@ -174,7 +189,7 @@ const BillingSettings = () => {
           return;
         }
 
-        // Fetch payment history
+        // Fetch payment history and remove duplicates
         const { data: payments, error: paymentsError } = await supabase
           .from('payment_history')
           .select('*')
@@ -184,7 +199,11 @@ const BillingSettings = () => {
         if (paymentsError) {
           console.error('Error fetching payment history:', paymentsError);
         } else {
-          setPaymentHistory(payments || []);
+          // Remove duplicates based on stripe_session_id
+          const uniquePayments = payments?.filter((payment, index, self) => 
+            index === self.findIndex(p => p.stripe_session_id === payment.stripe_session_id)
+          ) || [];
+          setPaymentHistory(uniquePayments);
         }
 
         // Fetch real payment methods
@@ -377,7 +396,9 @@ const BillingSettings = () => {
             {paymentHistory.map((payment) => (
               <div key={payment.id} className="flex justify-between items-center p-3 border rounded">
                 <div>
-                  <p className="font-medium">{payment.plan_type} Plan - {payment.billing_period}</p>
+                  <p className="font-medium">
+                    {capitalizeSubscriptionType(payment.plan_type)} Plan - {capitalizeSubscriptionType(payment.billing_period)}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {format(new Date(payment.payment_date), 'MMM dd, yyyy')}
                   </p>
