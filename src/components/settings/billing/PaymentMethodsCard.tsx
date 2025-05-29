@@ -1,15 +1,14 @@
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import PaymentMethodItem from './PaymentMethodItem';
 import AddPaymentDialog from './AddPaymentDialog';
 import DeletePaymentDialog from './DeletePaymentDialog';
-import { PaymentMethod, PaymentFormValues } from './types';
-import PaymentMethodItem from './PaymentMethodItem';
-import EmptyPaymentMethods from './components/EmptyPaymentMethods';
+import UpdatePaymentDialog from './UpdatePaymentDialog';
 import { usePaymentMethodActions } from './hooks/usePaymentMethodActions';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { PaymentMethod, PaymentFormValues } from './types';
+import EmptyPaymentMethods from './components/EmptyPaymentMethods';
 
 interface PaymentMethodsCardProps {
   paymentMethods: PaymentMethod[];
@@ -18,18 +17,18 @@ interface PaymentMethodsCardProps {
   onDeletePaymentMethod: (index: number) => void;
 }
 
-const PaymentMethodsCard = ({ 
-  paymentMethods, 
-  onAddPaymentMethod, 
-  onUpdatePaymentMethod, 
-  onDeletePaymentMethod 
+const PaymentMethodsCard = ({
+  paymentMethods,
+  onAddPaymentMethod,
+  onUpdatePaymentMethod,
+  onDeletePaymentMethod
 }: PaymentMethodsCardProps) => {
-  const { toast } = useToast();
   const {
     isAddDialogOpen,
     setIsAddDialogOpen,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
+    selectedPaymentMethod,
     setSelectedPaymentMethod,
     isProcessing,
     handleAddPaymentMethod,
@@ -42,111 +41,86 @@ const PaymentMethodsCard = ({
     onDeletePaymentMethod
   });
 
-  const handleSetDefault = async (index: number) => {
-    const paymentMethod = paymentMethods[index];
-    if (!paymentMethod.id) {
-      toast({
-        title: "Error",
-        description: "Payment method ID not found",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('set-default-payment-method', {
-        body: { paymentMethodId: paymentMethod.id }
-      });
-
-      if (error) {
-        console.error('Error setting default payment method:', error);
-        toast({
-          title: "Error",
-          description: "Failed to set default payment method",
-          variant: "destructive"
-        });
-        return;
+  const handleRealAddPaymentMethod = (data: PaymentFormValues) => {
+    // The payment method has already been added to Stripe via the edge function
+    // Now we need to create the local representation for the UI
+    const newPaymentMethod: PaymentMethod = {
+      id: `temp-${Date.now()}`, // This will be replaced when we refresh from Stripe
+      type: 'Credit Card',
+      last4: data.cardNumber.slice(-4),
+      expiryMonth: parseInt(data.expiryMonth),
+      expiryYear: parseInt(data.expiryYear),
+      brand: data.cardType || 'Unknown',
+      isDefault: data.isDefault,
+      cardHolder: data.cardHolder,
+      billingAddress: {
+        street: data.billingStreet,
+        city: data.billingCity,
+        state: data.billingState,
+        zipCode: data.billingZip,
+        country: data.billingCountry
       }
-
-      // Update local state to reflect the change
-      const updatedMethods = paymentMethods.map((method, i) => ({
-        ...method,
-        isDefault: i === index
-      }));
-
-      // Update all payment methods to reflect the new default
-      updatedMethods.forEach((method, i) => {
-        onUpdatePaymentMethod(i, method);
-      });
-
-      toast({
-        title: "Success",
-        description: `${paymentMethod.brand} card ending in ${paymentMethod.last4} is now your default payment method.`,
-      });
-    } catch (error) {
-      console.error('Error setting default payment method:', error);
-      toast({
-        title: "Error",
-        description: "Failed to set default payment method",
-        variant: "destructive"
-      });
-    }
+    };
+    
+    onAddPaymentMethod(newPaymentMethod);
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Payment Methods</CardTitle>
-          <CardDescription>
-            Manage your payment methods and billing information.
-          </CardDescription>
-        </div>
-        <Button 
-          onClick={() => setIsAddDialogOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <Plus size={16} />
-          Add Payment Method
-        </Button>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {paymentMethods.length === 0 ? (
-          <EmptyPaymentMethods onAddClick={() => setIsAddDialogOpen(true)} />
-        ) : (
-          <div className="space-y-4">
-            {paymentMethods.map((method, index) => (
-              <PaymentMethodItem 
-                key={`${method.brand}-${method.last4}-${index}`}
-                paymentMethod={method}
-                onSetDefault={() => handleSetDefault(index)}
-                onDelete={() => {
-                  setSelectedPaymentMethod(index);
-                  setIsDeleteDialogOpen(true);
-                }}
-                canDelete={!method.isDefault || paymentMethods.length > 1}
-                canSetDefault={!method.isDefault}
-              />
-            ))}
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Payment Methods</CardTitle>
+              <CardDescription>
+                Manage your payment methods for automatic subscription renewal
+              </CardDescription>
+            </div>
+            <Button onClick={() => setIsAddDialogOpen(true)} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Card
+            </Button>
           </div>
-        )}
-      </CardContent>
-      
-      <AddPaymentDialog 
+        </CardHeader>
+        <CardContent>
+          {paymentMethods.length === 0 ? (
+            <EmptyPaymentMethods onAddClick={() => setIsAddDialogOpen(true)} />
+          ) : (
+            <div className="space-y-4">
+              {paymentMethods.map((method, index) => (
+                <PaymentMethodItem
+                  key={`${method.id || index}-${method.last4}`}
+                  method={method}
+                  onSetDefault={() => {
+                    const updatedMethod = { ...method, isDefault: true };
+                    onUpdatePaymentMethod(index, updatedMethod);
+                  }}
+                  onDelete={() => {
+                    setSelectedPaymentMethod(index);
+                    setIsDeleteDialogOpen(true);
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <AddPaymentDialog
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
-        onSubmit={handleAddPaymentMethod}
+        onSubmit={handleRealAddPaymentMethod}
         isProcessing={isProcessing}
       />
-      
-      <DeletePaymentDialog 
+
+      <DeletePaymentDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        onDelete={handleDeletePaymentMethod}
-        isProcessing={isProcessing}
         paymentMethod={getSelectedPaymentMethod()}
+        onConfirm={handleDeletePaymentMethod}
+        isProcessing={isProcessing}
       />
-    </Card>
+    </>
   );
 };
 

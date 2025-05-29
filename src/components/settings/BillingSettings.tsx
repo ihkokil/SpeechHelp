@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -267,14 +268,18 @@ const BillingSettings = () => {
   };
 
   const handleAddPaymentMethod = (newPaymentMethod: PaymentMethod) => {
-    // For now, just add to local state
-    // In a real implementation, you'd want to use Stripe's setup intent flow
+    // Add to local state immediately
     const updatedPaymentMethods = [...paymentMethods, newPaymentMethod];
     setPaymentMethods(updatedPaymentMethods);
     
+    // Refresh payment methods from Stripe to get the real data
+    setTimeout(() => {
+      fetchPaymentMethods();
+    }, 1000);
+    
     toast({
       title: "Payment method added",
-      description: `Your ${newPaymentMethod.brand} card ending in ${newPaymentMethod.last4} has been saved.`,
+      description: `Your ${newPaymentMethod.brand} card ending in ${newPaymentMethod.last4} has been saved for automatic renewal.`,
     });
   };
 
