@@ -14,19 +14,26 @@ const log = (message: string, data?: any) => {
 };
 
 serve(async (req) => {
-	// Log incoming request
 	log(`Received ${req.method} request to ${req.url}`);
 
-	// Handle CORS preflight request
 	if (req.method === 'OPTIONS') {
 		log('Handling CORS preflight request');
 		return new Response('ok', { headers: corsHeaders });
 	}
 
 	try {
+		if (req.method !== 'POST') {
+			return new Response(
+				JSON.stringify({ error: 'Method not allowed' }),
+				{
+					status: 405,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
 		const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
 		if (!stripeKey) {
-			log('ERROR: STRIPE_SECRET_KEY is not set');
 			return new Response(
 				JSON.stringify({ error: 'Stripe API key not configured' }),
 				{
@@ -36,23 +43,17 @@ serve(async (req) => {
 			);
 		}
 
-		// Initialize Stripe
-		log('Initializing Stripe client');
 		const stripe = new Stripe(stripeKey, {
 			apiVersion: '2023-10-16',
-			httpClient: Stripe.createFetchHttpClient(),
 		});
 
-		// Initialize Supabase client with service role key
 		const supabase = createClient(
 			Deno.env.get('SUPABASE_URL') ?? '',
 			Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 		);
 
-		// Get user from authorization header
 		const authHeader = req.headers.get('Authorization');
 		if (!authHeader) {
-			log('Error: No authorization header provided');
 			return new Response(
 				JSON.stringify({ error: 'No authorization header provided' }),
 				{
@@ -65,7 +66,6 @@ serve(async (req) => {
 		const token = authHeader.replace('Bearer ', '');
 		const { data: userData, error: userError } = await supabase.auth.getUser(token);
 		if (userError || !userData.user) {
-			log('Error: Invalid user token');
 			return new Response(
 				JSON.stringify({ error: 'Invalid user token' }),
 				{
@@ -78,10 +78,8 @@ serve(async (req) => {
 		const user = userData.user;
 		log('User authenticated', { userId: user.id, email: user.email });
 
-		// Get the payment method ID from the request body
 		const { paymentMethodId } = await req.json();
 		if (!paymentMethodId) {
-			log('Error: No payment method ID provided');
 			return new Response(
 				JSON.stringify({ error: 'Payment method ID is required' }),
 				{
@@ -91,37 +89,40 @@ serve(async (req) => {
 			);
 		}
 
-		// Get user's profile to find Stripe customer ID
-		const { data: profile, error: profileError } = await supabase
+		// Get user's Stripe customer ID
+		const { data: profile } = await supabase
 			.from('profiles')
 			.select('stripe_customer_id')
 			.eq('id', user.id)
 			.single();
 
-		if (profileError || !profile?.stripe_customer_id) {
-			log('No Stripe customer found for user');
+		if (!profile?.stripe_customer_id) {
 			return new Response(
 				JSON.stringify({ error: 'No Stripe customer found' }),
 				{
-					status: 404,
+					status: 400,
 					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
 				}
 			);
 		}
 
-		log('Found Stripe customer', { customerId: profile.stripe_customer_id });
-
-		// Set the payment method as the default for the customer
+		// Set the payment method as default for the customer
 		await stripe.customers.update(profile.stripe_customer_id, {
 			invoice_settings: {
 				default_payment_method: paymentMethodId,
 			},
 		});
 
-		log('Successfully set default payment method', { paymentMethodId });
+		log('Successfully set default payment method', { 
+			customerId: profile.stripe_customer_id,
+			paymentMethodId 
+		});
 
 		return new Response(
-			JSON.stringify({ success: true }),
+			JSON.stringify({ 
+				success: true,
+				message: 'Default payment method updated successfully'
+			}),
 			{
 				status: 200,
 				headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -129,12 +130,11 @@ serve(async (req) => {
 		);
 
 	} catch (error) {
-		log('Unhandled error:', error);
+		log('Error setting default payment method:', error);
 		return new Response(
 			JSON.stringify({
 				error: 'Server error',
-				message: error.message,
-				stack: Deno.env.get('NODE_ENV') === 'production' ? undefined : error.stack
+				message: error.message
 			}),
 			{
 				status: 500,
