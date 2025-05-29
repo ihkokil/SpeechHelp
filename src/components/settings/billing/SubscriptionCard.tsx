@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -71,16 +70,37 @@ const SubscriptionCard = ({
       return '$0.00';
     }
     
-    if (planName.includes('premium')) {
-      return subscriptionData.billingPeriod === 'yearly' ? '$99.99' : '$9.99';
-    }
-    
     if (planName.includes('pro')) {
       return subscriptionData.billingPeriod === 'yearly' ? '$299.99' : '$29.99';
     }
     
+    if (planName.includes('premium')) {
+      return subscriptionData.billingPeriod === 'yearly' ? '$99.99' : '$9.99';
+    }
+    
     // Fallback to the original price from subscription data
     return subscriptionData.price;
+  };
+
+  // Get the correct plan display name based on the raw plan type
+  const getActualPlanName = () => {
+    const rawPlan = subscriptionData.plan.toLowerCase();
+    
+    // Remove " plan" suffix if it exists to get the raw plan type
+    const planType = rawPlan.replace(' plan', '');
+    
+    switch (planType) {
+      case 'premium':
+        return 'Premium Plan';
+      case 'pro':
+        return 'Pro Plan';
+      case 'free_trial':
+        return 'Free Trial';
+      case 'free':
+        return 'Free Plan';
+      default:
+        return subscriptionData.plan; // Return as-is if we can't determine
+    }
   };
 
   return (
@@ -106,7 +126,7 @@ const SubscriptionCard = ({
           <div className="space-y-2">
             <h4 className="font-medium">Plan Details</h4>
             <div className="space-y-1">
-              <p className="text-2xl font-bold">{subscriptionData.plan}</p>
+              <p className="text-2xl font-bold">{getActualPlanName()}</p>
               <p className="text-lg text-muted-foreground">
                 {getPlanPrice()}
                 {getPlanPrice() !== '$0.00' && (
