@@ -43,19 +43,33 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
 
   // Check if user is authenticated
   const checkAuth = async () => {
+    console.log('Setting up auth state listeners');
     try {
-      // For now, check if we have admin user data in session storage
+      // Check if we have admin user data in session storage
       const storedUser = sessionStorage.getItem('adminSession') || localStorage.getItem('adminSession');
       if (storedUser) {
-        const user = JSON.parse(storedUser);
-        setAdminUser({
-          ...user,
-          displayName: user.username || user.email
-        });
+        try {
+          const user = JSON.parse(storedUser);
+          console.log('Found stored admin session:', user);
+          setAdminUser({
+            ...user,
+            displayName: user.username || user.email
+          });
+        } catch (parseError) {
+          console.error('Error parsing stored admin session:', parseError);
+          // Clear invalid session data
+          sessionStorage.removeItem('adminSession');
+          localStorage.removeItem('adminSession');
+        }
+      } else {
+        console.log('Initial session: No user');
       }
     } catch (error) {
       console.error('Auth check failed:', error);
       setAdminUser(null);
+      // Clear any corrupt session data
+      sessionStorage.removeItem('adminSession');
+      localStorage.removeItem('adminSession');
     } finally {
       setIsLoading(false);
     }
@@ -70,6 +84,8 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
   const signIn = async (username: string, password: string) => {
     try {
       setIsLoading(true);
+      console.log(`Attempting to sign in with username: ${username}`);
+      
       const result = await adminAuthService.signIn({ username, password });
       
       if (result.success && result.user) {
@@ -91,6 +107,7 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
         return { success: false, error: result.error || 'Login failed' };
       }
     } catch (error: any) {
+      console.error('Login error:', error);
       return { success: false, error: error.message || 'Login failed' };
     } finally {
       setIsLoading(false);
