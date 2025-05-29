@@ -52,9 +52,6 @@ serve(async (req) => {
 	}
 
 	try {
-		// Log request headers for debugging
-		log('Request headers:', Object.fromEntries(req.headers.entries()));
-
 		// Get the signature from the headers
 		const signature = req.headers.get('stripe-signature');
 		if (!signature) {
@@ -117,6 +114,7 @@ serve(async (req) => {
 				// Get subscription details to extract amount and price ID
 				let amount = 0;
 				let priceId = '';
+				let subscriptionStatus = 'active';
 				
 				if (subscriptionId) {
 					try {
@@ -126,7 +124,8 @@ serve(async (req) => {
 							amount = lineItem.price.unit_amount || 0;
 							priceId = lineItem.price.id;
 						}
-						log('Subscription details:', { amount, priceId });
+						subscriptionStatus = subscription.status;
+						log('Subscription details:', { amount, priceId, status: subscriptionStatus });
 					} catch (subError) {
 						log('Error retrieving subscription details:', subError);
 					}

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,26 +36,31 @@ const BillingSettings = () => {
   const [loading, setLoading] = useState(true);
   const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
-  
-  // Keep payment methods as local state for now
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    {
-      type: 'Credit Card',
-      last4: '4242',
-      expiryMonth: 12,
-      expiryYear: 2026,
-      brand: 'Visa',
-      isDefault: true,
-      cardHolder: 'John Doe',
-      billingAddress: {
-        street: '123 Main St',
-        city: 'San Francisco',
-        state: 'CA',
-        zipCode: '94105',
-        country: 'United States'
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [paymentMethodsLoading, setPaymentMethodsLoading] = useState(true);
+
+  // Fetch real payment methods from Stripe
+  const fetchPaymentMethods = async () => {
+    if (!user) return;
+
+    try {
+      setPaymentMethodsLoading(true);
+      const { data, error } = await supabase.functions.invoke('get-payment-methods');
+
+      if (error) {
+        console.error('Error fetching payment methods:', error);
+        // Fallback to empty array if there's an error
+        setPaymentMethods([]);
+      } else {
+        setPaymentMethods(data?.paymentMethods || []);
       }
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+      setPaymentMethods([]);
+    } finally {
+      setPaymentMethodsLoading(false);
     }
-  ]);
+  };
 
   // Fetch user's subscription data from the database
   useEffect(() => {
@@ -95,6 +101,9 @@ const BillingSettings = () => {
           setPaymentHistory(payments || []);
         }
 
+        // Fetch real payment methods
+        await fetchPaymentMethods();
+
         // Process subscription data
         if (profile) {
           const planName = profile.subscription_plan 
@@ -122,7 +131,7 @@ const BillingSettings = () => {
             billingPeriod: profile.subscription_period || 'monthly',
             startDate: startDate,
             endDate: endDate,
-            paymentMethod: paymentMethods[0] // Use first payment method for now
+            paymentMethod: paymentMethods[0] // Use first real payment method if available
           });
         }
       } catch (error) {
@@ -140,24 +149,14 @@ const BillingSettings = () => {
     fetchSubscriptionData();
   }, [user, toast]);
 
-  // Load payment methods from localStorage when component mounts
+  // Update subscription data when payment methods change
   useEffect(() => {
-    const savedPaymentMethods = localStorage.getItem('paymentMethods');
-    if (savedPaymentMethods) {
-      try {
-        const parsed = JSON.parse(savedPaymentMethods);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setPaymentMethods(parsed);
-        }
-      } catch (error) {
-        console.error('Error parsing payment methods from localStorage:', error);
-      }
+    if (subscriptionData && paymentMethods.length > 0) {
+      setSubscriptionData(prev => prev ? {
+        ...prev,
+        paymentMethod: paymentMethods[0]
+      } : null);
     }
-  }, []);
-
-  // Save payment methods to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('paymentMethods', JSON.stringify(paymentMethods));
   }, [paymentMethods]);
 
   const handleAutoRenewToggle = (checked: boolean) => {
@@ -186,18 +185,10 @@ const BillingSettings = () => {
   };
 
   const handleAddPaymentMethod = (newPaymentMethod: PaymentMethod) => {
-    // If it's default, update all other cards to not be default
-    let updatedMethods = [...paymentMethods];
-    if (newPaymentMethod.isDefault) {
-      updatedMethods = updatedMethods.map(method => ({...method, isDefault: false}));
-    }
-    
-    // Add the new payment method to the collection
-    const updatedPaymentMethods = [...updatedMethods, newPaymentMethod];
+    // For now, just add to local state
+    // In a real implementation, you'd want to use Stripe's setup intent flow
+    const updatedPaymentMethods = [...paymentMethods, newPaymentMethod];
     setPaymentMethods(updatedPaymentMethods);
-    
-    // Save to localStorage immediately
-    localStorage.setItem('paymentMethods', JSON.stringify(updatedPaymentMethods));
     
     toast({
       title: "Payment method added",
@@ -218,9 +209,6 @@ const BillingSettings = () => {
     
     setPaymentMethods(updatedMethods);
     
-    // Save to localStorage immediately
-    localStorage.setItem('paymentMethods', JSON.stringify(updatedMethods));
-    
     toast({
       title: "Payment method updated",
       description: `Your ${updatedMethod.brand} card ending in ${updatedMethod.last4} has been updated.`,
@@ -237,9 +225,6 @@ const BillingSettings = () => {
     }
     
     setPaymentMethods(newMethods);
-    
-    // Save to localStorage immediately
-    localStorage.setItem('paymentMethods', JSON.stringify(newMethods));
     
     toast({
       title: "Payment method removed",
