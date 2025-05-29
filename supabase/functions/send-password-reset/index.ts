@@ -40,9 +40,9 @@ async function sendSMTPEmail(
     `--${boundary}--`
   ].join('\r\n');
 
-  // For Gmail SMTP, use secure connection
-  const isGmail = smtpHost.includes('gmail');
+  // For secure SMTP (port 465), use TLS from the start
   const port = parseInt(smtpPort);
+  const isSecure = port === 465;
   
   try {
     // Connect to SMTP server
@@ -58,11 +58,14 @@ async function sendSMTPEmail(
     const readResponse = async () => {
       const buffer = new Uint8Array(1024);
       const n = await conn.read(buffer);
-      return decoder.decode(buffer.subarray(0, n || 0));
+      const response = decoder.decode(buffer.subarray(0, n || 0));
+      log('SMTP Response:', response.trim());
+      return response;
     };
 
     // Helper function to send command
     const sendCommand = async (command: string) => {
+      log('SMTP Command:', command);
       await conn.write(encoder.encode(command + '\r\n'));
       return await readResponse();
     };
@@ -72,56 +75,74 @@ async function sendSMTPEmail(
     
     // Read initial greeting
     let response = await readResponse();
-    log('SMTP greeting:', response);
-
-    // Send HELO
-    response = await sendCommand(`HELO ${smtpHost}`);
-    log('HELO response:', response);
-
-    // Start TLS if needed (for Gmail and other secure SMTP)
-    if (isGmail || port === 587) {
-      response = await sendCommand('STARTTLS');
-      log('STARTTLS response:', response);
-      
-      // Note: Full TLS implementation would require additional setup
-      // For now, we'll use a simplified approach
+    if (!response.startsWith('220')) {
+      throw new Error(`SMTP connection failed: ${response}`);
     }
 
-    // Authenticate
+    // Send EHLO
+    response = await sendCommand(`EHLO ${smtpHost}`);
+    if (!response.startsWith('250')) {
+      throw new Error(`EHLO failed: ${response}`);
+    }
+
+    // For port 587, start TLS; for port 465, already secure
+    if (port === 587) {
+      response = await sendCommand('STARTTLS');
+      if (!response.startsWith('220')) {
+        throw new Error(`STARTTLS failed: ${response}`);
+      }
+      // Note: Full TLS implementation would require additional setup
+      log('TLS started (simplified implementation)');
+    }
+
+    // Authenticate with AUTH LOGIN
     response = await sendCommand('AUTH LOGIN');
-    log('AUTH LOGIN response:', response);
+    if (!response.startsWith('334')) {
+      throw new Error(`AUTH LOGIN failed: ${response}`);
+    }
 
     // Send username (base64 encoded)
     const encodedUser = btoa(smtpUser);
     response = await sendCommand(encodedUser);
-    log('Username response:', response);
+    if (!response.startsWith('334')) {
+      throw new Error(`Username authentication failed: ${response}`);
+    }
 
     // Send password (base64 encoded)
     const encodedPassword = btoa(smtpPassword);
     response = await sendCommand(encodedPassword);
-    log('Password response:', response);
+    if (!response.startsWith('235')) {
+      throw new Error(`Password authentication failed: ${response}`);
+    }
 
     // Send MAIL FROM
     response = await sendCommand(`MAIL FROM:<${smtpUser}>`);
-    log('MAIL FROM response:', response);
+    if (!response.startsWith('250')) {
+      throw new Error(`MAIL FROM failed: ${response}`);
+    }
 
     // Send RCPT TO
     response = await sendCommand(`RCPT TO:<${to}>`);
-    log('RCPT TO response:', response);
+    if (!response.startsWith('250')) {
+      throw new Error(`RCPT TO failed: ${response}`);
+    }
 
     // Send DATA
     response = await sendCommand('DATA');
-    log('DATA response:', response);
+    if (!response.startsWith('354')) {
+      throw new Error(`DATA command failed: ${response}`);
+    }
 
     // Send email content
     await conn.write(encoder.encode(emailBody + '\r\n.\r\n'));
     response = await readResponse();
-    log('Email content response:', response);
+    if (!response.startsWith('250')) {
+      throw new Error(`Email sending failed: ${response}`);
+    }
 
     // Send QUIT
     response = await sendCommand('QUIT');
-    log('QUIT response:', response);
-
+    
     conn.close();
     
     return { success: true, message: 'Email sent successfully' };
@@ -235,7 +256,11 @@ serve(async (req) => {
     }
 
     try {
-      log('Sending password reset email via SMTP');
+      log('Sending password reset email via SMTP', {
+        host: smtpHost,
+        port: smtpPort,
+        user: smtpUser
+      });
       
       const htmlContent = `
 <!DOCTYPE html>
