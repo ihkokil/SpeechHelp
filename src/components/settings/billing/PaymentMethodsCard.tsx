@@ -90,7 +90,7 @@ const PaymentMethodsCard = ({
               {paymentMethods.map((method, index) => (
                 <PaymentMethodItem
                   key={`${method.id || index}-${method.last4}`}
-                  method={method}
+                  paymentMethod={method}
                   onSetDefault={() => {
                     const updatedMethod = { ...method, isDefault: true };
                     onUpdatePaymentMethod(index, updatedMethod);
@@ -99,6 +99,8 @@ const PaymentMethodsCard = ({
                     setSelectedPaymentMethod(index);
                     setIsDeleteDialogOpen(true);
                   }}
+                  canDelete={paymentMethods.length > 1 || !method.isDefault}
+                  canSetDefault={!method.isDefault}
                 />
               ))}
             </div>
@@ -117,7 +119,7 @@ const PaymentMethodsCard = ({
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         paymentMethod={getSelectedPaymentMethod()}
-        onConfirm={handleDeletePaymentMethod}
+        onDelete={handleDeletePaymentMethod}
         isProcessing={isProcessing}
       />
     </>
