@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '../speech/hooks/useProfile';
 import { SubscriptionPlan } from '@/lib/plan_rules';
+import { Crown, CheckCircle } from 'lucide-react';
 
 type PricingPeriod = 'monthly' | 'yearly';
 
@@ -133,54 +133,104 @@ const PricingTier: React.FC<PricingTierProps> = ({
 		return 'Choose Plan';
 	};
 
-	return (
-		<Card className={`border rounded-xl h-full overflow-hidden hover:shadow-lg transition-shadow ${
-			isCurrentPlan 
-				? 'border-purple-500 bg-purple-50 shadow-lg' 
-				: 'border-gray-200'
-		}`}>
-			<div className="p-6 md:p-8 h-full flex flex-col">
-				<div className="flex items-center justify-between mb-2">
-					<h3 className="text-2xl font-bold text-center text-gray-900">{name}</h3>
-					{isCurrentPlan && (
-						<Badge className="bg-purple-600 text-white">
-							Your Plan
-						</Badge>
-					)}
-				</div>
-				<div className="flex items-end justify-center mb-6">
-					<span className="text-4xl font-bold text-purple-600">
-						{pricingPeriod === 'monthly' ? price.monthly.price : price.yearly.price}
-					</span>
-					{pricingPeriod === 'monthly' && planType !== SubscriptionPlan.FREE_TRIAL && (
-						<span className="text-gray-500 ml-2">/month</span>
-					)}
-					{pricingPeriod === 'yearly' && planType !== SubscriptionPlan.FREE_TRIAL && (
-						<span className="text-gray-500 ml-2">/year</span>
-					)}
-				</div>
-				<p className="text-center text-gray-600 mb-6">{description}</p>
+	// Determine if this is a popular/recommended plan
+	const isPopular = planType === SubscriptionPlan.PREMIUM;
 
-				<ul className="space-y-6 mb-8">
+	return (
+		<Card className={`relative border rounded-2xl h-full overflow-hidden transition-all duration-300 ${
+			isCurrentPlan 
+				? 'border-4 border-gradient-to-r from-pink-500 to-purple-600 bg-gradient-to-br from-purple-50 to-pink-50 shadow-2xl scale-105 ring-4 ring-purple-200 ring-opacity-50' 
+				: isPopular
+				? 'border-2 border-purple-300 shadow-xl hover:shadow-2xl hover:scale-105'
+				: 'border-2 border-gray-200 shadow-lg hover:shadow-xl hover:scale-102'
+		}`}>
+			{/* Current Plan Badge */}
+			{isCurrentPlan && (
+				<div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+					<Badge className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-2 text-sm font-bold shadow-lg">
+						<Crown className="w-4 h-4 mr-2" />
+						Your Plan
+					</Badge>
+				</div>
+			)}
+
+			{/* Popular Badge */}
+			{isPopular && !isCurrentPlan && (
+				<div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+					<Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 text-sm font-bold shadow-lg">
+						Most Popular
+					</Badge>
+				</div>
+			)}
+
+			<div className="p-8 h-full flex flex-col relative">
+				{/* Plan Header */}
+				<div className="text-center mb-6">
+					<h3 className={`text-2xl font-bold mb-2 ${
+						isCurrentPlan ? 'text-purple-700' : 'text-gray-900'
+					}`}>
+						{name}
+					</h3>
+					<div className="flex items-end justify-center mb-4">
+						<span className={`text-5xl font-bold ${
+							isCurrentPlan ? 'text-purple-600' : 'text-gray-900'
+						}`}>
+							{pricingPeriod === 'monthly' ? price.monthly.price : price.yearly.price}
+						</span>
+						{pricingPeriod === 'monthly' && planType !== SubscriptionPlan.FREE_TRIAL && (
+							<span className="text-gray-500 ml-2 text-lg">/month</span>
+						)}
+						{pricingPeriod === 'yearly' && planType !== SubscriptionPlan.FREE_TRIAL && (
+							<span className="text-gray-500 ml-2 text-lg">/year</span>
+						)}
+					</div>
+					<p className={`text-center mb-6 ${
+						isCurrentPlan ? 'text-purple-600' : 'text-gray-600'
+					}`}>
+						{description}
+					</p>
+				</div>
+
+				{/* Features List */}
+				<ul className="space-y-4 mb-8 flex-grow">
 					{(features || []).map((feature, index) => (
-						<PricingFeature
-							key={index}
-							text={feature.text}
-							description={feature.description}
-							icon={feature.icon}
-						/>
+						<li key={index} className="flex items-start">
+							{feature.icon || (
+								<CheckCircle className={`h-5 w-5 mr-3 mt-0.5 flex-shrink-0 ${
+									isCurrentPlan ? 'text-purple-500' : 'text-green-500'
+								}`} />
+							)}
+							<div>
+								<span className={`font-medium ${
+									isCurrentPlan ? 'text-purple-700' : 'text-gray-700'
+								}`}>
+									{feature.text}
+								</span>
+								{feature.description && (
+									<p className={`text-sm mt-1 ${
+										isCurrentPlan ? 'text-purple-600' : 'text-gray-500'
+									}`}>
+										{feature.description}
+									</p>
+								)}
+							</div>
+						</li>
 					))}
 				</ul>
 
+				{/* Action Button */}
 				<Button
-					className={`w-full mt-auto ${
+					className={`w-full py-4 text-lg font-semibold transition-all duration-300 ${
 						isCurrentPlan 
-							? 'bg-purple-600 hover:bg-purple-700 cursor-default' 
-							: 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700'
+							? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white cursor-default shadow-lg' 
+							: planType === SubscriptionPlan.FREE_TRIAL
+							? 'bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white'
+							: 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl'
 					}`}
 					onClick={isCurrentPlan ? undefined : handleStripeCheckout}
 					disabled={isCurrentPlan}
 				>
+					{isCurrentPlan && <CheckCircle className="w-5 h-5 mr-2" />}
 					{getButtonText()}
 				</Button>
 			</div>

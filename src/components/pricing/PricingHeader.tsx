@@ -31,43 +31,50 @@ const PricingHeader: React.FC = () => {
     const getStatusColor = (status: string) => {
       switch (status.toLowerCase()) {
         case 'active':
-          return 'bg-green-100 text-green-800';
+          return 'bg-green-500 text-white hover:bg-green-600';
         case 'canceled':
         case 'cancelled':
-          return 'bg-red-100 text-red-800';
+          return 'bg-red-500 text-white hover:bg-red-600';
         case 'past_due':
-          return 'bg-yellow-100 text-yellow-800';
+          return 'bg-yellow-500 text-white hover:bg-yellow-600';
         default:
-          return 'bg-gray-100 text-gray-800';
+          return 'bg-gray-500 text-white hover:bg-gray-600';
       }
     };
 
     return (
-      <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-        <div className="flex items-center justify-center gap-3">
-          <span className="text-lg font-medium text-gray-700">
-            Your Current Plan:
-          </span>
-          <Badge className={`${getStatusColor(status)} font-medium px-3 py-1`}>
-            {formatPlanName(planName)}
-          </Badge>
-          {status === 'active' && profile.subscription_end_date && (
-            <span className="text-sm text-gray-600">
-              (Renews: {new Date(profile.subscription_end_date).toLocaleDateString()})
-            </span>
-          )}
+      <div className="mb-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200 shadow-lg">
+        <div className="flex flex-col items-center gap-4">
+          <h2 className="text-xl font-semibold text-gray-800">
+            Your Current Subscription
+          </h2>
+          <div className="flex items-center gap-3 flex-wrap justify-center">
+            <Badge className={`${getStatusColor(status)} font-semibold px-4 py-2 text-base`}>
+              {formatPlanName(planName)}
+            </Badge>
+            {status === 'active' && profile.subscription_end_date && (
+              <span className="text-sm text-gray-700 bg-white px-3 py-1 rounded-full border">
+                Renews: {new Date(profile.subscription_end_date).toLocaleDateString()}
+              </span>
+            )}
+            {status !== 'active' && (
+              <span className="text-sm text-gray-600 bg-white px-3 py-1 rounded-full border">
+                Status: {status.charAt(0).toUpperCase() + status.slice(1)}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="text-center max-w-3xl mx-auto mb-8">
-      <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600">
-        Affordable Plans for Everyone
+    <div className="text-center max-w-4xl mx-auto mb-12">
+      <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600">
+        Choose Your Perfect Plan
       </h1>
-      <p className="text-lg text-gray-600 mb-6">
-        Find the perfect plan that suits your needs.
+      <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+        Unlock the full potential of Speech Help with our flexible pricing plans designed for every need.
       </p>
       {getCurrentPlanDisplay()}
     </div>
