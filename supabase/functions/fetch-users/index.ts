@@ -93,14 +93,6 @@ serve(async (req) => {
       const fullName = constructFullName(firstName, lastName);
       const displayName = fullName || authUser.email?.split('@')[0] || 'User';
       
-      // Extract address information from metadata
-      const streetAddress = safeString(metadata.street_address);
-      const city = safeString(metadata.city);
-      const state = safeString(metadata.state);
-      const zipCode = safeString(metadata.zip_code);
-      const country = safeString(metadata.country);
-      const countryCode = safeString(metadata.country_code);
-      
       return {
         ...authUser,
         // Direct fields from profiles table
@@ -114,7 +106,7 @@ serve(async (req) => {
         subscription_end_date: profile.subscription_end_date || null,
         stripe_customer_id: safeString(profile.stripe_customer_id) || null,
         stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
-        // Enhanced user_metadata with proper fallbacks and address fields
+        // Enhanced user_metadata with proper fallbacks
         user_metadata: {
           first_name: firstName,
           last_name: lastName,
@@ -122,12 +114,6 @@ serve(async (req) => {
           name: fullName,
           email: safeString(authUser.email),
           phone: safeString(metadata.phone) || safeString(profile.phone),
-          street_address: streetAddress,
-          city: city,
-          state: state,
-          zip_code: zipCode,
-          country: country,
-          country_code: countryCode,
         },
         profile: {
           username: safeString(profile.username) || fullName || authUser.email?.split('@')[0] || '',
