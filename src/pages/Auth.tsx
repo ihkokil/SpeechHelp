@@ -4,20 +4,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
-// Import the auth components
+// Import the new components
 import AuthContainer from '@/components/auth/AuthContainer';
 import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
-import OTPVerificationForm from '@/components/auth/OTPVerificationForm';
 import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const [isOTPVerification, setIsOTPVerification] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,7 +41,6 @@ const Auth = () => {
         setIsResetPassword(true);
         setIsSignUp(false);
         setIsForgotPassword(false);
-        setIsOTPVerification(false);
         return; // Don't check other conditions if this is a recovery flow
       }
     }
@@ -92,72 +88,32 @@ const Auth = () => {
     setIsSignUp(true);
     setIsResetPassword(false);
     setIsForgotPassword(false);
-    setIsOTPVerification(false);
   };
   
   const handleSwitchToSignIn = () => {
     setIsSignUp(false);
     setIsResetPassword(false);
     setIsForgotPassword(false);
-    setIsOTPVerification(false);
   };
   
   const handleSwitchToForgotPassword = () => {
     setIsForgotPassword(true);
     setIsSignUp(false);
     setIsResetPassword(false);
-    setIsOTPVerification(false);
   };
   
   const handleBackToLogin = () => {
     setIsForgotPassword(false);
     setIsSignUp(false);
     setIsResetPassword(false);
-    setIsOTPVerification(false);
-    setResetEmail('');
-  };
-
-  const handleOTPSent = (email: string) => {
-    setResetEmail(email);
-    setIsForgotPassword(false);
-    setIsOTPVerification(true);
-  };
-
-  const handleBackToForgotPassword = () => {
-    setIsOTPVerification(false);
-    setIsForgotPassword(true);
-  };
-
-  const handleOTPSuccess = () => {
-    setIsOTPVerification(false);
-    setResetEmail('');
-    
-    toast({
-      title: "Password reset complete",
-      description: "You can now sign in with your new password.",
-    });
-    
-    // Redirect to sign in
-    setTimeout(() => {
-      handleSwitchToSignIn();
-    }, 1000);
   };
 
   return (
     <AuthContainer>
       {isResetPassword ? (
         <ResetPasswordForm />
-      ) : isOTPVerification ? (
-        <OTPVerificationForm 
-          email={resetEmail}
-          onBackToForgotPassword={handleBackToForgotPassword}
-          onSuccess={handleOTPSuccess}
-        />
       ) : isForgotPassword ? (
-        <ForgotPasswordForm 
-          onBackToLogin={handleBackToLogin}
-          onOTPSent={handleOTPSent}
-        />
+        <ForgotPasswordForm onBackToLogin={handleBackToLogin} />
       ) : isSignUp ? (
         <SignUpForm 
           onSwitchToSignIn={handleSwitchToSignIn} 
