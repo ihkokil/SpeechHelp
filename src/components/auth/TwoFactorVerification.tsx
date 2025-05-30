@@ -1,9 +1,8 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { verify2FA } from '@/services/authService';
 import { Shield } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
@@ -29,25 +28,17 @@ const TwoFactorVerification = ({ userId, onVerificationSuccess, onCancel }: TwoF
     }
 
     setIsLoading(true);
+    console.log('Verifying 2FA code:', verificationCode, 'for user:', userId);
+    
     try {
-      const { data, error } = await supabase.functions.invoke('verify-2fa-login', {
-        body: { userId, code: verificationCode }
-      });
+      const result = await verify2FA(userId, verificationCode, toast);
       
-      if (error) throw error;
-      
-      if (data.success) {
-        toast({
-          title: "Verification successful",
-          description: "Welcome back!"
-        });
+      if (result.success) {
+        console.log('2FA verification successful, calling onVerificationSuccess');
         onVerificationSuccess();
       } else {
-        toast({
-          title: "Verification failed",
-          description: "Invalid verification code. Please try again.",
-          variant: "destructive"
-        });
+        console.log('2FA verification failed');
+        // Error message already shown by verify2FA function
       }
     } catch (error: any) {
       console.error('Error verifying 2FA:', error);
@@ -69,6 +60,7 @@ const TwoFactorVerification = ({ userId, onVerificationSuccess, onCancel }: TwoF
           <h1 className="text-2xl font-bold text-gray-800">Two-Factor Authentication</h1>
         </div>
         <p className="text-gray-600">Enter the 6-digit code from your authenticator app</p>
+        <p className="text-sm text-gray-500 mt-2">For demo: try 123456 or 000000</p>
       </div>
       
       <div className="space-y-4">
