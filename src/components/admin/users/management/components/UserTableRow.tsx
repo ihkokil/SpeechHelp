@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { User } from '../../types';
 import UserActionMenu from './UserActionMenu';
-import { formatUserDisplayName, getUserPhone, getCountryFlag } from '../utils/userDisplayUtils';
+import { formatUserDisplayName, getUserPhone } from '../utils/userDisplayUtils';
 import { format } from 'date-fns';
 
 interface UserTableRowProps {
@@ -70,7 +70,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
 
   // Get user data using utility functions that handle dial codes
   const userPhone = getUserPhone(user);
-  const countryFlag = getCountryFlag(user);
   const displayName = formatUserDisplayName(user);
 
   console.log('🔍 UserTableRow rendering user:', {
@@ -78,7 +77,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     email: user.email,
     displayName,
     userPhone,
-    countryFlag,
     profileData: {
       phone: user.phone,
       country_code: user.country_code,
@@ -112,11 +110,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       
       <TableCell className="px-2">
         <div className="flex items-center text-sm text-gray-600">
-          {userPhone !== '—' && countryFlag && (
-            <span className="mr-1" title={`Dial code: +${user.country_code || 'Unknown'}`}>
-              {countryFlag}
-            </span>
-          )}
           {userPhone}
         </div>
       </TableCell>
