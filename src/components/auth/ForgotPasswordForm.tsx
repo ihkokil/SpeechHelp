@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 import { resetPassword } from '@/services/authService';
+import { Mail, ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface ForgotPasswordFormProps {
   onBackToLogin: () => void;
@@ -31,30 +32,36 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
   return (
     <>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Forgot Password?</h1>
-        <p className="text-gray-600">Enter your email address and we'll send you a link to reset your password</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Reset Password</h1>
+        <p className="text-gray-600">Enter your email address and we'll send you a secure link to reset your password</p>
       </div>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-2">
+          <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
             Email Address
           </label>
-          <input
-            id="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-            placeholder="Enter your email address"
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Mail className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
+              placeholder="Enter your email address"
+              autoFocus
+            />
+          </div>
         </div>
 
         <ButtonCustom
           type="submit"
           variant="magenta"
-          className="w-full py-2"
+          className="w-full py-3 font-semibold"
           disabled={loading}
         >
           {loading ? (
@@ -65,16 +72,22 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
               </svg>
               Sending Reset Link...
             </span>
-          ) : 'Send Reset Link'}
+          ) : (
+            <span className="flex items-center justify-center">
+              Send Reset Link
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </span>
+          )}
         </ButtonCustom>
 
         <div className="text-center">
           <button
             type="button"
             onClick={onBackToLogin}
-            className="text-pink-600 hover:text-pink-700 text-sm font-medium"
+            className="inline-flex items-center text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
           >
-            ← Back to Login
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Sign In
           </button>
         </div>
       </form>

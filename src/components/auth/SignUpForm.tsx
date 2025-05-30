@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
+import { User, Mail, Lock, ArrowRight } from 'lucide-react';
 
 interface SignUpFormProps {
   onSwitchToSignIn: () => void;
@@ -65,78 +66,101 @@ const SignUpForm = ({
   return (
     <>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Create an Account</h1>
-        <p className="text-gray-600">Sign up to start improving your speech</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Your Account</h1>
+        <p className="text-gray-600">Join thousands of users improving their speech skills</p>
       </div>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="space-y-2">
+            <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700">
               First Name
             </label>
-            <input
-              id="firstName"
-              type="text"
-              required
-              ref={firstNameInputRef}
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-              placeholder="John"
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <User className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                id="firstName"
+                type="text"
+                required
+                ref={firstNameInputRef}
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
+                placeholder="John"
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="space-y-2">
+            <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700">
               Last Name
             </label>
-            <input
-              id="lastName"
-              type="text"
-              required
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-              placeholder="Doe"
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <User className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                id="lastName"
+                type="text"
+                required
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
+                placeholder="Doe"
+              />
+            </div>
           </div>
         </div>
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email
+        <div className="space-y-2">
+          <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+            Email Address
           </label>
-          <input
-            id="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-            placeholder="your@email.com"
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Mail className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
+              placeholder="your@email.com"
+            />
+          </div>
         </div>
         
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="space-y-2">
+          <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-pink-500 focus:border-pink-500"
-            placeholder="••••••••"
-            minLength={6}
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Lock className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
+              placeholder="Create a strong password"
+              minLength={6}
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Password must be at least 6 characters long
+          </p>
         </div>
 
         <ButtonCustom
           type="submit"
           variant="magenta"
-          className="w-full py-2"
+          className="w-full py-3 font-semibold"
           disabled={loading}
         >
           {loading ? (
@@ -145,25 +169,39 @@ const SignUpForm = ({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Processing...
+              Creating Account...
             </span>
-          ) : 'Sign Up'}
+          ) : (
+            <span className="flex items-center justify-center">
+              Create Account
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </span>
+          )}
         </ButtonCustom>
       </form>
 
-      <div className="mt-6 text-center space-y-2">
+      <div className="mt-8 space-y-4">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Already have an account?</span>
+          </div>
+        </div>
+        
         <button
           type="button"
           onClick={onSwitchToSignIn}
-          className="text-pink-600 hover:text-pink-800 text-sm font-medium"
+          className="w-full text-pink-600 hover:text-pink-800 text-sm font-semibold py-2 transition-colors"
         >
-          Already have an account? Log In
+          Sign in to your account
         </button>
         
         <button
           type="button"
           onClick={onSwitchToForgotPassword}
-          className="block w-full text-pink-600 hover:text-pink-800 text-sm font-medium"
+          className="w-full text-gray-600 hover:text-gray-800 text-sm font-medium py-2 transition-colors"
         >
           Forgot your password?
         </button>
