@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionPlan } from '@/lib/plan_rules.ts';
 
@@ -190,6 +191,26 @@ export const signUp = async (
 	lastName?: string
 ) => {
 	try {
+		console.log('SignUp: Starting signup process for:', email);
+		
+		// First, check if user already exists
+		console.log('SignUp: Checking if user already exists...');
+		const { data: emailCheckData, error: emailCheckError } = await supabase.functions.invoke('verify-email', {
+			body: { email }
+		});
+
+		if (emailCheckError) {
+			console.error('SignUp: Error checking email existence:', emailCheckError);
+			// Continue with signup if check fails - don't block the process
+		} else if (emailCheckData && emailCheckData.userExists) {
+			console.log('SignUp: User already exists with this email');
+			const error = new Error('User already registered');
+			error.message = 'User already registered';
+			throw error;
+		}
+
+		console.log('SignUp: User does not exist, proceeding with signup...');
+		
 		// Clean up any existing auth state first
 		await supabase.auth.signOut({ scope: 'global' });
 		
@@ -234,6 +255,7 @@ export const signUp = async (
 
 		// If user was created successfully, send confirmation email
 		if (res.data.user && !res.error) {
+			console.log('SignUp: User created successfully, sending confirmation email...');
 			try {
 				// Call the send-confirmation edge function
 				const { data: emailData, error: emailError } = await supabase.functions.invoke('send-confirmation', {
