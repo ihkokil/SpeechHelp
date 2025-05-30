@@ -62,22 +62,58 @@ export const useProfileFormSubmit = (
         });
       }
       
-      // Update profiles table with form data (countryCode is now dial code)
-      const { error: profileError } = await supabase
+      // First check if profile exists
+      const { data: existingProfile, error: checkError } = await supabase
         .from('profiles')
-        .upsert({
-          id: user.id,
-          first_name: data.firstName,
-          last_name: data.lastName,
-          phone: data.phone,
-          country_code: data.countryCode, // This is now the dial code
-          avatar_url: avatarUrl || null,
-          updated_at: new Date().toISOString()
-        });
-      
-      if (profileError) {
-        console.error('Error updating profiles table:', profileError);
-        throw profileError;
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which is ok
+        console.error('Error checking existing profile:', checkError);
+        throw new Error('Failed to check existing profile');
+      }
+
+      if (existingProfile) {
+        // Update existing profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            first_name: data.firstName,
+            last_name: data.lastName,
+            phone: data.phone,
+            country_code: data.countryCode, // This is now the dial code
+            avatar_url: avatarUrl || null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+        
+        if (profileError) {
+          console.error('Error updating profiles table:', profileError);
+          throw profileError;
+        }
+      } else {
+        // Create new profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            first_name: data.firstName,
+            last_name: data.lastName,
+            username: `${data.firstName} ${data.lastName}`.trim() || data.email.split('@')[0],
+            phone: data.phone,
+            country_code: data.countryCode, // This is now the dial code
+            avatar_url: avatarUrl || null,
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          throw profileError;
+        }
       }
       
       console.log('Profile updated successfully in profiles table with dial code:', data.countryCode);
