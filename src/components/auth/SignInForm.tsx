@@ -29,41 +29,70 @@ const SignInForm = ({
 
   const checkTwoFactorEnabled = async (userId: string): Promise<boolean> => {
     try {
+      console.log('Checking 2FA status for user:', userId);
+      
       const { data, error } = await supabase
         .from('user_2fa')
-        .select('is_enabled')
+        .select('is_enabled, secret_key')
         .eq('user_id', userId)
-        .eq('is_enabled', true)
         .maybeSingle();
 
-      return !error && data?.is_enabled === true;
+      console.log('2FA check result:', { data, error, userId });
+
+      if (error) {
+        console.error('Error checking 2FA status:', error);
+        return false;
+      }
+
+      const isEnabled = data?.is_enabled === true && data?.secret_key;
+      console.log('2FA enabled status:', isEnabled);
+      
+      return isEnabled;
     } catch (error) {
-      console.error('Error checking 2FA status:', error);
+      console.error('Exception checking 2FA status:', error);
       return false;
     }
   };
 
   const validateCredentials = async (email: string, password: string) => {
+    console.log('Validating credentials for:', email);
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Credential validation failed:', error);
+      throw error;
+    }
     
-    // Immediately sign out to prevent session creation
+    if (!data.user) {
+      throw new Error('No user returned from sign in');
+    }
+
+    console.log('Credentials validated for user:', data.user.id);
+    
+    // Immediately sign out to prevent session creation during validation
     await supabase.auth.signOut();
     
     return data.user;
   };
 
   const completeSignIn = async () => {
+    console.log('Completing sign in for:', email);
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Final sign in failed:', error);
+      throw error;
+    }
+    
+    console.log('Sign in completed successfully');
     
     toast({
       title: "Login successful",
@@ -78,35 +107,34 @@ const SignInForm = ({
     setLoading(true);
 
     try {
-      console.log('Validating credentials for:', email);
+      console.log('=== Starting sign in process ===');
+      console.log('Email:', email);
       
       // Step 1: Validate credentials without creating a session
       const user = await validateCredentials(email, password);
       
-      if (!user) {
-        toast({
-          title: "Login failed",
-          description: "Invalid credentials",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      console.log('Credentials valid, checking 2FA status for user:', user.id);
+      console.log('Credentials validated, checking 2FA for user:', user.id);
       
       // Step 2: Check if 2FA is enabled
       const has2FA = await checkTwoFactorEnabled(user.id);
       
+      console.log('2FA check result:', has2FA);
+      
       if (has2FA) {
-        console.log('2FA required, showing verification step');
+        console.log('=== 2FA REQUIRED - Showing verification step ===');
         setPendingUserId(user.id);
         setCurrentStep('two-factor');
+        
+        toast({
+          title: "Two-factor authentication required",
+          description: "Please enter your verification code to continue.",
+        });
       } else {
-        console.log('No 2FA required, completing sign in');
+        console.log('=== No 2FA required - Completing sign in ===');
         await completeSignIn();
       }
     } catch (error: any) {
-      console.error('Sign in error:', error);
+      console.error('=== Sign in error ===', error);
       toast({
         title: "Login failed",
         description: error.message || "An error occurred during login",
@@ -119,7 +147,9 @@ const SignInForm = ({
 
   const handleTwoFactorSuccess = async () => {
     try {
-      console.log('2FA verification successful, completing sign in');
+      console.log('=== 2FA verification successful ===');
+      setCurrentStep('credentials');
+      setPendingUserId(null);
       await completeSignIn();
     } catch (error: any) {
       console.error('Error completing sign in after 2FA:', error);
@@ -128,10 +158,14 @@ const SignInForm = ({
         description: "Failed to complete sign in after verification.",
         variant: "destructive"
       });
+      // Reset to credentials step on error
+      setCurrentStep('credentials');
+      setPendingUserId(null);
     }
   };
 
   const handleTwoFactorCancel = () => {
+    console.log('=== 2FA verification cancelled ===');
     setCurrentStep('credentials');
     setPendingUserId(null);
     toast({
@@ -140,7 +174,9 @@ const SignInForm = ({
     });
   };
 
+  // Show 2FA verification if we're on that step
   if (currentStep === 'two-factor' && pendingUserId) {
+    console.log('Rendering 2FA verification for user:', pendingUserId);
     return (
       <TwoFactorVerification
         userId={pendingUserId}
@@ -150,6 +186,9 @@ const SignInForm = ({
     );
   }
 
+  // Show credentials form
+  console.log('Rendering credentials form, current step:', currentStep);
+  
   return (
     <>
       <div className="text-center mb-8">
