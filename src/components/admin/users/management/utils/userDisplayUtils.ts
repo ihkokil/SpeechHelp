@@ -85,13 +85,12 @@ export const formatUserDisplayName = (user: User) => {
   return getUserName(user);
 };
 
-// Enhanced phone number formatting using profiles table data with dial codes
+// Simplified phone number formatting - just return the raw phone number
 export const getUserPhone = (user: User) => {
-  console.log('📱 Getting user phone from profiles table:', {
+  console.log('📱 Getting user phone (simplified):', {
     userId: user.id,
     email: user.email,
-    profilePhone: user.phone,
-    profileCountryCode: user.country_code
+    profilePhone: user.phone
   });
   
   // Get phone directly from profiles table
@@ -102,33 +101,7 @@ export const getUserPhone = (user: User) => {
     return '—';
   }
   
-  // Get dial code from profiles table - now it should be stored as dial code directly
-  const dialCode = safeString(user.country_code);
-  
-  console.log('📱 Processing dial code from profiles:', {
-    originalValue: user.country_code,
-    processedValue: dialCode
-  });
-  
-  if (dialCode) {
-    // Since country_code now stores dial codes directly, we can use it as-is
-    // Just ensure it's clean (remove any + prefix that might exist)
-    const cleanDialCode = dialCode.replace('+', '');
-    
-    // Verify this is a valid dial code by looking it up
-    const country = getCountryByDialCode(cleanDialCode);
-    
-    if (country) {
-      const formattedPhone = `+${cleanDialCode} ${phone}`;
-      console.log('📱 Final formatted phone:', formattedPhone);
-      return formattedPhone;
-    } else {
-      console.log('📱 Dial code not found in lookup:', cleanDialCode);
-    }
-  }
-  
-  // Return phone as-is if no valid dial code
-  console.log('📱 Returning phone without country code:', phone);
+  console.log('📱 Returning raw phone:', phone);
   return phone;
 };
 
