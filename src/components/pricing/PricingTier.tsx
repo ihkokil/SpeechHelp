@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -146,12 +145,14 @@ const PricingTier: React.FC<PricingTierProps> = ({
 					</div>
 				)}
 				
-				<div className={`flex items-center justify-between mb-2 ${isCurrentPlan ? 'mt-8' : ''}`}>
-					<h3 className="text-2xl font-bold text-center text-gray-900">{name}</h3>
+				<div className={`text-center mb-2 ${isCurrentPlan ? 'mt-8' : ''}`}>
+					<h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
 					{isCurrentPlan && (
-						<Badge className="bg-purple-600 text-white">
-							Active
-						</Badge>
+						<div className="flex justify-center">
+							<Badge className="bg-purple-600 text-white">
+								Active
+							</Badge>
+						</div>
 					)}
 				</div>
 				<div className="flex items-end justify-center mb-6">
