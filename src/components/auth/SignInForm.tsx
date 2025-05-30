@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -53,54 +54,6 @@ const SignInForm = ({
     }
   };
 
-  const validateCredentials = async (email: string, password: string) => {
-    console.log('Validating credentials for:', email);
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      console.error('Credential validation failed:', error);
-      throw error;
-    }
-    
-    if (!data.user) {
-      throw new Error('No user returned from sign in');
-    }
-
-    console.log('Credentials validated for user:', data.user.id);
-    
-    // Immediately sign out to prevent session creation during validation
-    await supabase.auth.signOut();
-    
-    return data.user;
-  };
-
-  const completeSignIn = async () => {
-    console.log('Completing sign in for:', email);
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      console.error('Final sign in failed:', error);
-      throw error;
-    }
-    
-    console.log('Sign in completed successfully');
-    
-    toast({
-      title: "Login successful",
-      description: "Welcome back!",
-    });
-    
-    navigate('/dashboard');
-  };
-
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -109,19 +62,36 @@ const SignInForm = ({
       console.log('=== Starting sign in process ===');
       console.log('Email:', email);
       
-      // Step 1: Validate credentials without creating a session
-      const user = await validateCredentials(email, password);
+      // First, attempt to sign in to validate credentials
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        console.error('Sign in failed:', signInError);
+        throw signInError;
+      }
+
+      if (!signInData.user) {
+        throw new Error('No user returned from sign in');
+      }
+
+      console.log('Credentials validated, checking 2FA for user:', signInData.user.id);
       
-      console.log('Credentials validated, checking 2FA for user:', user.id);
-      
-      // Step 2: Check if 2FA is enabled
-      const has2FA = await checkTwoFactorEnabled(user.id);
+      // Check if 2FA is enabled for this user
+      const has2FA = await checkTwoFactorEnabled(signInData.user.id);
       
       console.log('2FA check result:', has2FA);
       
       if (has2FA) {
-        console.log('=== 2FA REQUIRED - Showing verification step ===');
-        setPendingUserId(user.id);
+        console.log('=== 2FA REQUIRED - Signing out and showing verification step ===');
+        
+        // Sign out the user since we need 2FA verification first
+        await supabase.auth.signOut();
+        
+        // Set up 2FA verification
+        setPendingUserId(signInData.user.id);
         setCurrentStep('two-factor');
         
         toast({
@@ -129,11 +99,22 @@ const SignInForm = ({
           description: "Please enter your verification code to continue.",
         });
       } else {
-        console.log('=== No 2FA required - Completing sign in ===');
-        await completeSignIn();
+        console.log('=== No 2FA required - User is now logged in ===');
+        
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+        
+        // Navigate to dashboard since user is already signed in
+        navigate('/dashboard');
       }
     } catch (error: any) {
       console.error('=== Sign in error ===', error);
+      
+      // Make sure to sign out in case of error
+      await supabase.auth.signOut();
+      
       toast({
         title: "Login failed",
         description: error.message || "An error occurred during login",
@@ -146,10 +127,31 @@ const SignInForm = ({
 
   const handleTwoFactorSuccess = async () => {
     try {
-      console.log('=== 2FA verification successful ===');
+      console.log('=== 2FA verification successful, completing sign in ===');
+      
+      // Now complete the sign in process
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('Final sign in failed:', error);
+        throw error;
+      }
+      
+      console.log('Sign in completed successfully after 2FA');
+      
+      // Reset state
       setCurrentStep('credentials');
       setPendingUserId(null);
-      await completeSignIn();
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
+      
+      navigate('/dashboard');
     } catch (error: any) {
       console.error('Error completing sign in after 2FA:', error);
       toast({
