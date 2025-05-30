@@ -1,8 +1,9 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 const ResetPasswordForm = () => {
@@ -11,10 +12,67 @@ const ResetPasswordForm = () => {
   const [loading, setLoading] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isValidSession, setIsValidSession] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Check if we have a valid recovery session
+  useEffect(() => {
+    const checkRecoverySession = async () => {
+      console.log('ResetPassword: Checking recovery session');
+      
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('ResetPassword: Error getting session:', error);
+          toast({
+            title: "Invalid reset link",
+            description: "This password reset link is invalid or has expired. Please request a new one.",
+            variant: "destructive"
+          });
+          navigate('/auth');
+          return;
+        }
+        
+        if (session && session.user) {
+          console.log('ResetPassword: Valid recovery session found for user:', session.user.id);
+          setIsValidSession(true);
+        } else {
+          console.log('ResetPassword: No valid session found');
+          toast({
+            title: "Invalid reset link",
+            description: "This password reset link is invalid or has expired. Please request a new one.",
+            variant: "destructive"
+          });
+          navigate('/auth');
+        }
+      } catch (error) {
+        console.error('ResetPassword: Exception checking session:', error);
+        toast({
+          title: "Error",
+          description: "An error occurred while verifying your reset link.",
+          variant: "destructive"
+        });
+        navigate('/auth');
+      }
+    };
+
+    checkRecoverySession();
+  }, [toast, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isValidSession) {
+      toast({
+        title: "Invalid session",
+        description: "Your reset session is invalid. Please request a new password reset.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setLoading(true);
 
     // Validate that passwords match
@@ -28,13 +86,31 @@ const ResetPasswordForm = () => {
       return;
     }
 
+    // Validate password length
+    if (newPassword.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
+      console.log('ResetPassword: Updating password');
+      
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('ResetPassword: Error updating password:', error);
+        throw error;
+      }
 
+      console.log('ResetPassword: Password updated successfully');
+      
       toast({
         title: "Password updated",
         description: "Your password has been updated successfully. You can now log in with your new password.",
@@ -44,8 +120,16 @@ const ResetPasswordForm = () => {
       setNewPassword('');
       setConfirmPassword('');
       
+      // Sign out the user so they can log in with their new password
+      await supabase.auth.signOut();
+      
+      // Redirect to login after a short delay
+      setTimeout(() => {
+        navigate('/auth');
+      }, 2000);
+      
     } catch (error: any) {
-      console.error('Password update error:', error);
+      console.error('ResetPassword: Password update error:', error);
       toast({
         title: "Error updating password",
         description: error.message || "An error occurred while updating your password",
@@ -55,6 +139,21 @@ const ResetPasswordForm = () => {
       setLoading(false);
     }
   };
+
+  // Show loading while checking session validity
+  if (!isValidSession) {
+    return (
+      <>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Verifying Reset Link</h1>
+          <p className="text-gray-600">Please wait while we verify your password reset link...</p>
+        </div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600 mx-auto"></div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
