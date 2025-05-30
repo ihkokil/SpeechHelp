@@ -14,7 +14,6 @@ interface AuthContextType {
   fetchSpeeches: () => Promise<void>;
   refreshUser: () => Promise<void>;
   refreshUserData: () => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
   saveSpeech: (title: string, content: string, speechType: string) => Promise<void>;
   updateSpeech: (id: string, title: string, content: string) => Promise<void>;
@@ -97,36 +96,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await refreshUser();
     if (user) {
       await fetchSpeeches();
-    }
-  };
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      console.log('Attempting to sign in with email:', email);
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.error('Sign in error:', error);
-        toast({
-          title: "Login failed",
-          description: error.message,
-          variant: "destructive"
-        });
-        throw error;
-      }
-
-      console.log('User signed in successfully:', data.user?.id);
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
-    } catch (error) {
-      console.error('Error signing in:', error);
-      throw error;
     }
   };
 
@@ -339,7 +308,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchSpeeches,
     refreshUser,
     refreshUserData,
-    signIn,
     signUp,
     saveSpeech,
     updateSpeech,

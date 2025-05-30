@@ -12,50 +12,6 @@ type ToastProps = {
 // Create a type for the showToast function that will be passed in
 type ShowToastFunction = (props: ToastProps) => void;
 
-// Service functions now accept toast function as a parameter
-export const signIn = async (email: string, password: string, showToast: ShowToastFunction) => {
-	try {
-		// Clean up any existing auth state first
-		await supabase.auth.signOut({ scope: 'global' });
-		
-		const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-		if (error) {
-			console.error('Sign in error:', error);
-			
-			// Handle specific error types
-			if (error.message.includes('Invalid login credentials')) {
-				showToast({
-					title: "Login failed",
-					description: "Invalid email or password. Please check your credentials and try again.",
-					variant: "destructive"
-				});
-			} else if (error.message.includes('Email not confirmed')) {
-				showToast({
-					title: "Email not confirmed",
-					description: "Please check your email and click the confirmation link before signing in.",
-					variant: "destructive"
-				});
-			} else {
-				showToast({
-					title: "Login failed",
-					description: error.message,
-					variant: "destructive"
-				});
-			}
-			throw error;
-		}
-
-		showToast({
-			title: "Login successful",
-			description: "Welcome back!",
-		});
-	} catch (error) {
-		console.error('Sign in error:', error);
-		throw error;
-	}
-};
-
 export const signUp = async (
 	email: string,
 	password: string,
