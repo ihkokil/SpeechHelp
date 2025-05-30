@@ -49,43 +49,49 @@ const SignInForm = ({
     try {
       console.log('SignInForm: Attempting to sign in');
       
-      // First, check if user exists and get their ID without signing them in
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      // Step 1: Authenticate user to get their ID, but immediately sign out
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (signInError) {
-        console.error('SignInForm: Authentication error:', signInError);
+      if (authError) {
+        console.error('SignInForm: Authentication error:', authError);
         toast({
           title: "Login failed",
-          description: signInError.message,
+          description: authError.message,
           variant: "destructive"
         });
         return;
       }
 
-      if (signInData.user) {
-        console.log('SignInForm: User authenticated, checking 2FA status');
-        
-        // Immediately sign out to prevent auto-redirect
-        await supabase.auth.signOut();
-        
-        // Check if 2FA is enabled for this user
-        const has2FA = await checkTwoFactorEnabled(signInData.user.id);
-        
-        if (has2FA) {
-          console.log('SignInForm: 2FA required for user');
-          // Store credentials and show 2FA form
-          setPendingUserId(signInData.user.id);
-          setPendingCredentials({ email, password });
-          setShowTwoFactor(true);
-        } else {
-          console.log('SignInForm: No 2FA required, completing sign in');
-          // Complete the sign in through the context
-          await signIn(email, password);
-          navigate('/dashboard');
-        }
+      if (!authData.user) {
+        toast({
+          title: "Login failed",
+          description: "No user data received",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('SignInForm: User authenticated, checking 2FA status');
+      
+      // Step 2: Immediately sign out to prevent AuthContext redirect
+      await supabase.auth.signOut();
+      
+      // Step 3: Check if 2FA is enabled
+      const has2FA = await checkTwoFactorEnabled(authData.user.id);
+      
+      if (has2FA) {
+        console.log('SignInForm: 2FA required for user');
+        // Store credentials and show 2FA form
+        setPendingUserId(authData.user.id);
+        setPendingCredentials({ email, password });
+        setShowTwoFactor(true);
+      } else {
+        console.log('SignInForm: No 2FA required, completing sign in');
+        // Complete the sign in through the context (this will trigger redirect)
+        await signIn(email, password);
       }
     } catch (error: any) {
       console.error('SignInForm: Authentication error:', error);
@@ -101,11 +107,11 @@ const SignInForm = ({
 
   const handleTwoFactorSuccess = async () => {
     try {
+      console.log('SignInForm: 2FA verified, completing sign in');
       // Now complete the actual sign in using stored credentials
       if (pendingCredentials) {
         await signIn(pendingCredentials.email, pendingCredentials.password);
-        console.log('SignInForm: 2FA verified, sign in completed');
-        navigate('/dashboard');
+        // The AuthContext will handle the redirect to dashboard
       }
     } catch (error: any) {
       console.error('SignInForm: Error completing sign in after 2FA:', error);
