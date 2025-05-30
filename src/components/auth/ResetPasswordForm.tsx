@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 const ResetPasswordForm = () => {
@@ -13,15 +13,37 @@ const ResetPasswordForm = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check if we have a valid recovery session
   useEffect(() => {
     const checkRecoverySession = async () => {
       console.log('ResetPassword: Checking recovery session');
+      console.log('ResetPassword: Current URL hash:', location.hash);
+      console.log('ResetPassword: Current URL search:', location.search);
       
       try {
+        // First check if we have recovery tokens in the URL
+        const hash = location.hash;
+        if (hash) {
+          const hashParams = new URLSearchParams(hash.substring(1));
+          const type = hashParams.get('type');
+          const accessToken = hashParams.get('access_token');
+          
+          console.log('ResetPassword: Hash params - type:', type, 'has access_token:', !!accessToken);
+          
+          if (type === 'recovery' && accessToken) {
+            console.log('ResetPassword: Recovery tokens found in URL');
+            setIsValidSession(true);
+            setIsChecking(false);
+            return;
+          }
+        }
+        
+        // If no tokens in URL, check current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -35,8 +57,14 @@ const ResetPasswordForm = () => {
           return;
         }
         
+        console.log('ResetPassword: Session check result:', {
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          sessionType: session?.user?.app_metadata?.provider
+        });
+        
         if (session && session.user) {
-          console.log('ResetPassword: Valid recovery session found for user:', session.user.id);
+          console.log('ResetPassword: Valid session found for user:', session.user.id);
           setIsValidSession(true);
         } else {
           console.log('ResetPassword: No valid session found');
@@ -55,11 +83,13 @@ const ResetPasswordForm = () => {
           variant: "destructive"
         });
         navigate('/auth');
+      } finally {
+        setIsChecking(false);
       }
     };
 
     checkRecoverySession();
-  }, [toast, navigate]);
+  }, [toast, navigate, location.hash, location.search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,11 +151,12 @@ const ResetPasswordForm = () => {
       setConfirmPassword('');
       
       // Sign out the user so they can log in with their new password
-      await supabase.auth.signOut();
+      console.log('ResetPassword: Signing out user after password update');
+      await supabase.auth.signOut({ scope: 'global' });
       
       // Redirect to login after a short delay
       setTimeout(() => {
-        navigate('/auth');
+        navigate('/auth?signin=true');
       }, 2000);
       
     } catch (error: any) {
@@ -141,15 +172,32 @@ const ResetPasswordForm = () => {
   };
 
   // Show loading while checking session validity
-  if (!isValidSession) {
+  if (isChecking || !isValidSession) {
     return (
       <>
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Verifying Reset Link</h1>
-          <p className="text-gray-600">Please wait while we verify your password reset link...</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            {isChecking ? 'Verifying Reset Link' : 'Invalid Reset Link'}
+          </h1>
+          <p className="text-gray-600">
+            {isChecking 
+              ? 'Please wait while we verify your password reset link...' 
+              : 'This reset link is invalid or has expired.'
+            }
+          </p>
         </div>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600 mx-auto"></div>
+          {isChecking ? (
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600 mx-auto"></div>
+          ) : (
+            <ButtonCustom
+              onClick={() => navigate('/auth')}
+              variant="magenta"
+              className="w-full py-3 font-semibold"
+            >
+              Back to Sign In
+            </ButtonCustom>
+          )}
         </div>
       </>
     );
