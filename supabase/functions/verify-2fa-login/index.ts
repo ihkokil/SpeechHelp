@@ -99,24 +99,28 @@ async function verifyTOTP(secret: string, token: string, windowSize: number = 1)
 // Check if code is a backup code
 function verifyBackupCode(backupCodes: string[], providedCode: string): boolean {
   console.log('Verifying backup code...');
-  console.log('Provided code:', providedCode);
-  console.log('Available backup codes:', backupCodes);
+  console.log('Provided code:', providedCode, 'Type:', typeof providedCode);
+  console.log('Available backup codes:', backupCodes, 'Type:', typeof backupCodes);
   
   if (!Array.isArray(backupCodes) || backupCodes.length === 0) {
-    console.log('No backup codes available');
+    console.log('No backup codes available or not an array');
     return false;
   }
   
-  // Normalize the provided code (remove any whitespace and ensure it's a string)
-  const normalizedProvidedCode = String(providedCode).trim();
+  // Normalize the provided code
+  const normalizedProvidedCode = String(providedCode).trim().replace(/\s+/g, '');
+  console.log('Normalized provided code:', normalizedProvidedCode);
   
-  // Check against each backup code (also normalized)
-  for (const backupCode of backupCodes) {
-    const normalizedBackupCode = String(backupCode).trim();
+  // Check against each backup code
+  for (let i = 0; i < backupCodes.length; i++) {
+    const backupCode = backupCodes[i];
+    const normalizedBackupCode = String(backupCode).trim().replace(/\s+/g, '');
+    
+    console.log(`Backup code ${i}: "${backupCode}" -> normalized: "${normalizedBackupCode}"`);
     console.log(`Comparing: "${normalizedProvidedCode}" === "${normalizedBackupCode}"`);
     
     if (normalizedProvidedCode === normalizedBackupCode) {
-      console.log('Backup code match found!');
+      console.log(`Backup code match found at index ${i}!`);
       return true;
     }
   }
@@ -134,15 +138,16 @@ serve(async (req) => {
 
   try {
     const { userId, code } = await req.json();
-    console.log('Verifying 2FA for user:', userId, 'with code length:', code?.length);
+    console.log('Verifying 2FA for user:', userId, 'with code:', code, 'code length:', code?.length, 'code type:', typeof code);
     
     if (!userId || !code) {
       throw new Error("Missing userId or code");
     }
 
     // Validate code format (should be 6 digits for both TOTP and backup codes)
-    if (!/^\d{6}$/.test(code)) {
-      console.log('Invalid code format - not 6 digits');
+    const codeStr = String(code).trim();
+    if (!/^\d{6}$/.test(codeStr)) {
+      console.log('Invalid code format - not 6 digits:', codeStr);
       return new Response(JSON.stringify({
         success: false,
         error: "Invalid code format"
@@ -177,7 +182,12 @@ serve(async (req) => {
       });
     }
 
-    console.log('2FA data fetched, verifying code...');
+    console.log('2FA data fetched:', {
+      hasSecret: !!twoFactorData.secret_key,
+      hasBackupCodes: !!twoFactorData.backup_codes,
+      backupCodesLength: twoFactorData.backup_codes?.length || 0,
+      backupCodesType: typeof twoFactorData.backup_codes
+    });
 
     let verified = false;
     let isBackupCode = false;
@@ -185,7 +195,7 @@ serve(async (req) => {
     // First try backup codes (they are usually checked first in most 2FA implementations)
     if (twoFactorData.backup_codes && Array.isArray(twoFactorData.backup_codes)) {
       console.log('Checking backup codes first...');
-      verified = verifyBackupCode(twoFactorData.backup_codes, code);
+      verified = verifyBackupCode(twoFactorData.backup_codes, codeStr);
       isBackupCode = verified;
       console.log('Backup code verification result:', verified);
     }
@@ -194,7 +204,7 @@ serve(async (req) => {
     if (!verified) {
       console.log('Backup code failed, trying TOTP...');
       try {
-        verified = await verifyTOTP(twoFactorData.secret_key, code);
+        verified = await verifyTOTP(twoFactorData.secret_key, codeStr);
       } catch (error) {
         console.error('TOTP verification error:', error);
       }
@@ -215,12 +225,14 @@ serve(async (req) => {
     if (isBackupCode) {
       console.log('Removing used backup code...');
       const updatedBackupCodes = twoFactorData.backup_codes.filter((backupCode: string) => {
-        const normalizedBackupCode = String(backupCode).trim();
-        const normalizedUsedCode = String(code).trim();
+        const normalizedBackupCode = String(backupCode).trim().replace(/\s+/g, '');
+        const normalizedUsedCode = String(codeStr).trim().replace(/\s+/g, '');
         return normalizedBackupCode !== normalizedUsedCode;
       });
       
+      console.log('Original backup codes:', twoFactorData.backup_codes);
       console.log('Updated backup codes:', updatedBackupCodes);
+      console.log('Removed codes count:', twoFactorData.backup_codes.length - updatedBackupCodes.length);
       
       const { error: updateError } = await supabaseClient
         .from('user_2fa')
