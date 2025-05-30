@@ -1,6 +1,8 @@
 
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
+import { useToast } from '@/hooks/use-toast';
+import { verifyEmail, verifyPassword, verify2FA } from '@/services/authService';
 import TwoFactorVerification from './TwoFactorVerification';
 
 interface SignInFormProps {
@@ -21,23 +23,74 @@ const SignInForm = ({
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [show2FA, setShow2FA] = useState(false);
+  const { toast } = useToast();
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Email validation logic will be implemented elsewhere
+    setLoading(true);
+
+    try {
+      const result = await verifyEmail(email, toast);
+      
+      if (result.success && result.userExists) {
+        setEmailValidated(true);
+        setShowPassword(true);
+        setUserHas2FA(result.has2FA || false);
+        setPendingUserId(result.userId || null);
+        console.log('Email verified, 2FA status:', result.has2FA);
+      }
+    } catch (error) {
+      console.error('Email verification failed:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Password validation logic will be implemented elsewhere
+    setLoading(true);
+
+    try {
+      const result = await verifyPassword(email, password, toast);
+      
+      if (result.success) {
+        setPasswordValidated(true);
+        
+        if (userHas2FA && pendingUserId) {
+          // Show 2FA verification
+          setShow2FA(true);
+          console.log('Password verified, showing 2FA');
+        } else {
+          // Direct login without 2FA
+          console.log('Login successful without 2FA');
+          toast({
+            title: "Login successful",
+            description: "Welcome back!",
+          });
+          // Redirect to dashboard
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 500);
+        }
+      }
+    } catch (error) {
+      console.error('Password verification failed:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTwoFactorSuccess = async () => {
-    // 2FA success logic will be implemented elsewhere
+    console.log('2FA verification successful, redirecting to dashboard');
+    setTimeout(() => {
+      window.location.href = '/dashboard';
+    }, 500);
   };
 
   const handleTwoFactorCancel = () => {
-    // 2FA cancel logic will be implemented elsewhere
+    setShow2FA(false);
+    setPasswordValidated(false);
+    setPassword('');
   };
 
   const resetForm = () => {
