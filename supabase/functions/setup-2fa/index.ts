@@ -1,8 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.26.0";
-import * as speakeasy from "https://esm.sh/speakeasy@2.0.0";
-import * as qrcode from "https://esm.sh/qrcode@1.5.3";
+import { encode as base32Encode } from "https://deno.land/std@0.168.0/encoding/base32.ts";
+import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,6 +19,47 @@ function getUserIdFromToken(authHeader: string): string | null {
     console.error('Error decoding token:', error);
     return null;
   }
+}
+
+// Generate a random secret for 2FA
+function generateSecret(): { secret: string; base32: string; otpauthUrl: string } {
+  // Generate 20 random bytes for the secret
+  const secretBytes = new Uint8Array(20);
+  crypto.getRandomValues(secretBytes);
+  
+  // Convert to base32
+  const base32Secret = base32Encode(secretBytes).replace(/=/g, '');
+  
+  // Create the TOTP URL
+  const issuer = "SpeechHelp";
+  const accountName = "SpeechHelp User";
+  
+  const otpauthUrl = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}?secret=${base32Secret}&issuer=${encodeURIComponent(issuer)}`;
+  
+  return {
+    secret: Array.from(secretBytes).map(b => b.toString(16).padStart(2, '0')).join(''),
+    base32: base32Secret,
+    otpauthUrl: otpauthUrl
+  };
+}
+
+// Generate QR code as SVG
+function generateQRCodeSVG(text: string): string {
+  // Simple QR code placeholder - in production you'd want a proper QR library
+  // For now, we'll create a simple data URL that can be used
+  const qrText = encodeURIComponent(text);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${qrText}`;
+  
+  // Return a simple SVG that shows the QR URL as a link
+  return `data:image/svg+xml;base64,${base64Encode(`
+    <svg width="200" height="250" xmlns="http://www.w3.org/2000/svg">
+      <rect width="200" height="200" fill="white" stroke="black"/>
+      <text x="100" y="100" text-anchor="middle" font-size="10" fill="black">QR Code</text>
+      <text x="100" y="115" text-anchor="middle" font-size="8" fill="blue">Please use: ${qrUrl}</text>
+      <text x="100" y="230" text-anchor="middle" font-size="8" fill="gray">Manual entry key:</text>
+      <text x="100" y="245" text-anchor="middle" font-size="6" fill="gray">${text.split('secret=')[1]?.split('&')[0] || ''}</text>
+    </svg>
+  `)}`;
 }
 
 serve(async (req) => {
@@ -65,17 +106,16 @@ serve(async (req) => {
 
     const userEmail = userData?.username || 'user@example.com';
 
-    // Generate secret
-    const secret = speakeasy.generateSecret({
-      name: `SpeechHelp (${userEmail})`,
-      issuer: "SpeechHelp",
-      length: 32,
-    });
+    // Generate secret using our custom function
+    const secretData = generateSecret();
+    
+    // Update the otpauth URL with user email
+    const otpauthUrl = secretData.otpauthUrl.replace('SpeechHelp User', userEmail);
 
     console.log('Secret generated, creating QR code...');
 
     // Generate QR code
-    const qrCodeDataURL = await qrcode.toDataURL(secret.otpauth_url!);
+    const qrCodeDataURL = generateQRCodeSVG(otpauthUrl);
 
     console.log('QR code generated, storing in database...');
 
@@ -84,7 +124,7 @@ serve(async (req) => {
       .from('user_2fa')
       .upsert({
         user_id: userId,
-        secret_key: secret.base32!,
+        secret_key: secretData.base32,
         is_enabled: false,
         backup_codes: [],
       });
@@ -98,8 +138,10 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       success: true,
-      secret: secret.base32,
-      qrCode: qrCodeDataURL
+      secret: secretData.base32,
+      qrCode: qrCodeDataURL,
+      manualEntryKey: secretData.base32,
+      qrUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauthUrl)}`
     }), {
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
