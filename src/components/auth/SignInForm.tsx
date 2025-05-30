@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
-import { verifyEmail, verifyPassword, verify2FA } from '@/services/authService';
+import { verifyEmail, verifyPassword, verify2FA, completeLogin } from '@/services/authService';
 import TwoFactorVerification from './TwoFactorVerification';
 
 interface SignInFormProps {
@@ -62,16 +62,18 @@ const SignInForm = ({
           setShow2FA(true);
           console.log('Showing 2FA verification form');
         } else {
-          // Direct login without 2FA
-          console.log('Login successful without 2FA');
-          toast({
-            title: "Login successful",
-            description: "Welcome back!",
-          });
-          // Redirect to dashboard
-          setTimeout(() => {
-            window.location.href = '/dashboard';
-          }, 500);
+          // Complete login without 2FA
+          console.log('Completing login without 2FA');
+          const loginResult = await completeLogin(email, password, toast);
+          if (loginResult.success) {
+            toast({
+              title: "Login successful",
+              description: "Welcome back!",
+            });
+            setTimeout(() => {
+              window.location.href = '/dashboard';
+            }, 500);
+          }
         }
       }
     } catch (error) {
@@ -82,14 +84,19 @@ const SignInForm = ({
   };
 
   const handleTwoFactorSuccess = async () => {
-    console.log('2FA verification successful, redirecting to dashboard');
-    toast({
-      title: "Login successful",
-      description: "Welcome back!",
-    });
-    setTimeout(() => {
-      window.location.href = '/dashboard';
-    }, 500);
+    console.log('2FA verification successful, completing login');
+    
+    // Complete the login after successful 2FA
+    const loginResult = await completeLogin(email, password, toast);
+    if (loginResult.success) {
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 500);
+    }
   };
 
   const handleTwoFactorCancel = () => {

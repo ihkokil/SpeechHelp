@@ -60,10 +60,9 @@ export const verifyPassword = async (
 	showToast: ShowToastFunction
 ) => {
 	try {
-		// Attempt to sign in with email and password
-		const { data, error } = await supabase.auth.signInWithPassword({
-			email,
-			password,
+		// Use the verify-password edge function instead of signing in directly
+		const { data, error } = await supabase.functions.invoke('verify-password', {
+			body: { email, password }
 		});
 
 		if (error) {
@@ -76,15 +75,19 @@ export const verifyPassword = async (
 			return { success: false };
 		}
 
-		if (data.user) {
+		if (data.success) {
 			return { 
 				success: true, 
-				user: data.user,
-				session: data.session 
+				userId: data.userId 
 			};
+		} else {
+			showToast({
+				title: "Invalid password",
+				description: "The password you entered is incorrect.",
+				variant: "destructive"
+			});
+			return { success: false };
 		}
-
-		return { success: false };
 	} catch (error: any) {
 		console.error('Password verification error:', error);
 		showToast({
@@ -117,10 +120,6 @@ export const verify2FA = async (
 		}
 
 		if (data.success) {
-			showToast({
-				title: "Login successful",
-				description: "Welcome back!",
-			});
 			return { success: true };
 		} else {
 			showToast({
@@ -135,6 +134,48 @@ export const verify2FA = async (
 		showToast({
 			title: "Verification failed",
 			description: "Unable to verify 2FA code. Please try again.",
+			variant: "destructive"
+		});
+		return { success: false };
+	}
+};
+
+// New function to complete the login after 2FA or for users without 2FA
+export const completeLogin = async (
+	email: string,
+	password: string,
+	showToast: ShowToastFunction
+) => {
+	try {
+		const { data, error } = await supabase.auth.signInWithPassword({
+			email,
+			password,
+		});
+
+		if (error) {
+			console.error('Login completion error:', error);
+			showToast({
+				title: "Login failed",
+				description: "Unable to complete login. Please try again.",
+				variant: "destructive"
+			});
+			return { success: false };
+		}
+
+		if (data.user) {
+			return { 
+				success: true, 
+				user: data.user,
+				session: data.session 
+			};
+		}
+
+		return { success: false };
+	} catch (error: any) {
+		console.error('Login completion error:', error);
+		showToast({
+			title: "Login failed",
+			description: "Unable to complete login. Please try again.",
 			variant: "destructive"
 		});
 		return { success: false };
