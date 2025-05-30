@@ -18,78 +18,103 @@ const ResetPasswordForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check if we have a valid recovery session
-  useEffect(() => {
-    const checkRecoverySession = async () => {
-      console.log('ResetPassword: Checking recovery session');
-      console.log('ResetPassword: Current URL hash:', location.hash);
-      console.log('ResetPassword: Current URL search:', location.search);
-      
-      try {
-        // First check if we have recovery tokens in the URL
-        const hash = location.hash;
-        if (hash) {
-          const hashParams = new URLSearchParams(hash.substring(1));
-          const type = hashParams.get('type');
-          const accessToken = hashParams.get('access_token');
+  // Enhanced recovery session validation
+  const validateRecoverySession = async () => {
+    console.log('ResetPassword: Starting recovery session validation');
+    console.log('ResetPassword: Current URL:', location.pathname + location.search + location.hash);
+    
+    try {
+      // Check for recovery tokens in URL hash first
+      const hash = location.hash;
+      if (hash) {
+        const hashParams = new URLSearchParams(hash.substring(1));
+        const type = hashParams.get('type');
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        
+        console.log('ResetPassword: Hash params found:', { 
+          type, 
+          hasAccessToken: !!accessToken, 
+          hasRefreshToken: !!refreshToken 
+        });
+        
+        if (type === 'recovery' && accessToken) {
+          console.log('ResetPassword: Valid recovery tokens found in hash');
           
-          console.log('ResetPassword: Hash params - type:', type, 'has access_token:', !!accessToken);
+          // Set the session using the tokens from the URL
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || ''
+          });
           
-          if (type === 'recovery' && accessToken) {
-            console.log('ResetPassword: Recovery tokens found in URL');
+          if (error) {
+            console.error('ResetPassword: Error setting session from hash tokens:', error);
+            throw error;
+          }
+          
+          if (data.session) {
+            console.log('ResetPassword: Session successfully set from hash tokens');
             setIsValidSession(true);
-            setIsChecking(false);
             return;
           }
         }
+      }
+      
+      // Check for recovery parameters in query string
+      const searchParams = new URLSearchParams(location.search);
+      const queryType = searchParams.get('type');
+      
+      if (queryType === 'recovery') {
+        console.log('ResetPassword: Recovery type found in query parameters');
         
-        // If no tokens in URL, check current session
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Check if we have a valid session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error('ResetPassword: Error getting session:', error);
-          toast({
-            title: "Invalid reset link",
-            description: "This password reset link is invalid or has expired. Please request a new one.",
-            variant: "destructive"
-          });
-          navigate('/auth');
-          return;
+        if (sessionError) {
+          console.error('ResetPassword: Error getting session:', sessionError);
+          throw sessionError;
         }
-        
-        console.log('ResetPassword: Session check result:', {
-          hasSession: !!session,
-          hasUser: !!session?.user,
-          sessionType: session?.user?.app_metadata?.provider
-        });
         
         if (session && session.user) {
-          console.log('ResetPassword: Valid session found for user:', session.user.id);
+          console.log('ResetPassword: Valid recovery session found');
           setIsValidSession(true);
-        } else {
-          console.log('ResetPassword: No valid session found');
-          toast({
-            title: "Invalid reset link",
-            description: "This password reset link is invalid or has expired. Please request a new one.",
-            variant: "destructive"
-          });
-          navigate('/auth');
+          return;
         }
-      } catch (error) {
-        console.error('ResetPassword: Exception checking session:', error);
-        toast({
-          title: "Error",
-          description: "An error occurred while verifying your reset link.",
-          variant: "destructive"
-        });
-        navigate('/auth');
-      } finally {
-        setIsChecking(false);
       }
-    };
+      
+      // If we get here, no valid recovery session was found
+      console.log('ResetPassword: No valid recovery session found');
+      toast({
+        title: "Invalid reset link",
+        description: "This password reset link is invalid or has expired. Please request a new one.",
+        variant: "destructive"
+      });
+      
+      // Navigate back to auth page with a delay to show the toast
+      setTimeout(() => {
+        navigate('/auth');
+      }, 2000);
+      
+    } catch (error) {
+      console.error('ResetPassword: Exception during session validation:', error);
+      toast({
+        title: "Error",
+        description: "An error occurred while verifying your reset link. Please try again.",
+        variant: "destructive"
+      });
+      
+      setTimeout(() => {
+        navigate('/auth');
+      }, 2000);
+    } finally {
+      setIsChecking(false);
+    }
+  };
 
-    checkRecoverySession();
-  }, [toast, navigate, location.hash, location.search]);
+  // Check recovery session on component mount and URL changes
+  useEffect(() => {
+    validateRecoverySession();
+  }, [location.hash, location.search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,7 +196,7 @@ const ResetPasswordForm = () => {
     }
   };
 
-  // Show loading while checking session validity
+  // Show loading or error state while checking session validity
   if (isChecking || !isValidSession) {
     return (
       <>
