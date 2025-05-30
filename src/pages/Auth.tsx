@@ -21,46 +21,18 @@ const Auth = () => {
   const { toast } = useToast();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
 
-  // Enhanced function to detect recovery flow from both query params and hash
+  // Simplified function to detect recovery flow
   const detectRecoveryFlow = () => {
-    const searchParams = new URLSearchParams(location.search);
-    const hash = location.hash;
+    const fullUrl = window.location.href;
+    console.log('Auth: Checking for recovery flow in URL:', fullUrl);
     
-    console.log('Auth: Checking URL params and hash:', { 
-      search: location.search, 
-      hash: hash,
-      searchType: searchParams.get('type'),
-      searchRecovery: searchParams.get('recovery')
-    });
+    // Check if URL contains recovery indicators
+    const hasRecoveryType = fullUrl.includes('type=recovery');
+    const hasAccessToken = fullUrl.includes('access_token=');
     
-    // Check query parameters first (e.g., ?type=recovery)
-    const queryType = searchParams.get('type');
-    if (queryType === 'recovery') {
-      console.log('Auth: Recovery flow detected in query parameters');
-      return true;
-    }
+    console.log('Auth: Recovery indicators:', { hasRecoveryType, hasAccessToken });
     
-    // Check for recovery parameter directly
-    if (searchParams.get('recovery') === 'true') {
-      console.log('Auth: Recovery flow detected via recovery parameter');
-      return true;
-    }
-    
-    // Check hash parameters (e.g., #type=recovery&access_token=...)
-    if (hash) {
-      const hashParams = new URLSearchParams(hash.substring(1));
-      const hashType = hashParams.get('type');
-      const accessToken = hashParams.get('access_token');
-      
-      console.log('Auth: Hash params - type:', hashType, 'has access_token:', !!accessToken);
-      
-      if (hashType === 'recovery' && accessToken) {
-        console.log('Auth: Recovery flow detected in hash with access token');
-        return true;
-      }
-    }
-    
-    return false;
+    return hasRecoveryType;
   };
 
   // Check for password reset flow
@@ -70,7 +42,8 @@ const Auth = () => {
     console.log('Auth: URL change detected:', { 
       pathname: location.pathname, 
       search: location.search, 
-      hash: location.hash 
+      hash: location.hash,
+      fullUrl: window.location.href
     });
     
     // Check for recovery flow first - this takes priority
@@ -79,7 +52,7 @@ const Auth = () => {
       setIsResetPassword(true);
       setIsSignUp(false);
       setIsForgotPassword(false);
-      return; // Don't check other conditions if this is a recovery flow
+      return;
     }
     
     // Check for signup/signin params only if not in recovery flow
