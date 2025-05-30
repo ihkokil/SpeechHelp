@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import TwoFactorVerification from './TwoFactorVerification';
 
 interface SignInFormProps {
   onSwitchToSignUp: () => void;
@@ -17,9 +19,27 @@ const SignInForm = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const checkTwoFactorEnabled = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_2fa')
+        .select('is_enabled')
+        .eq('user_id', userId)
+        .eq('is_enabled', true)
+        .maybeSingle();
+
+      return !error && data?.is_enabled === true;
+    } catch (error) {
+      console.error('Error checking 2FA status:', error);
+      return false;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,16 +47,89 @@ const SignInForm = ({
 
     try {
       console.log('SignInForm: Attempting to sign in');
-      await signIn(email, password);
-      console.log('SignInForm: Sign in successful, navigating to dashboard');
-      navigate('/dashboard');
+      
+      // First, try to sign in with email/password
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('SignInForm: Authentication error:', error);
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data.user) {
+        // Check if 2FA is enabled for this user
+        const has2FA = await checkTwoFactorEnabled(data.user.id);
+        
+        if (has2FA) {
+          console.log('SignInForm: 2FA required for user');
+          // Sign out immediately and show 2FA form
+          await supabase.auth.signOut();
+          setPendingUserId(data.user.id);
+          setShowTwoFactor(true);
+        } else {
+          console.log('SignInForm: No 2FA required, completing sign in');
+          // Complete the sign in through the context
+          await signIn(email, password);
+          navigate('/dashboard');
+        }
+      }
     } catch (error: any) {
       console.error('SignInForm: Authentication error:', error);
-      // Error handling is already done in the AuthContext
+      toast({
+        title: "Login failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
   };
+
+  const handleTwoFactorSuccess = async () => {
+    try {
+      // Now complete the actual sign in
+      await signIn(email, password);
+      console.log('SignInForm: 2FA verified, sign in completed');
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('SignInForm: Error completing sign in after 2FA:', error);
+      toast({
+        title: "Login failed",
+        description: "Failed to complete sign in after verification.",
+        variant: "destructive"
+      });
+    } finally {
+      setShowTwoFactor(false);
+      setPendingUserId(null);
+    }
+  };
+
+  const handleTwoFactorCancel = () => {
+    setShowTwoFactor(false);
+    setPendingUserId(null);
+    toast({
+      title: "Login cancelled",
+      description: "Two-factor authentication was cancelled.",
+    });
+  };
+
+  if (showTwoFactor && pendingUserId) {
+    return (
+      <TwoFactorVerification
+        userId={pendingUserId}
+        onVerificationSuccess={handleTwoFactorSuccess}
+        onCancel={handleTwoFactorCancel}
+      />
+    );
+  }
 
   return (
     <>
