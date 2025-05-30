@@ -98,7 +98,31 @@ async function verifyTOTP(secret: string, token: string, windowSize: number = 1)
 
 // Check if code is a backup code
 function verifyBackupCode(backupCodes: string[], providedCode: string): boolean {
-  return backupCodes.includes(providedCode);
+  console.log('Verifying backup code...');
+  console.log('Provided code:', providedCode);
+  console.log('Available backup codes:', backupCodes);
+  
+  if (!Array.isArray(backupCodes) || backupCodes.length === 0) {
+    console.log('No backup codes available');
+    return false;
+  }
+  
+  // Normalize the provided code (remove any whitespace and ensure it's a string)
+  const normalizedProvidedCode = String(providedCode).trim();
+  
+  // Check against each backup code (also normalized)
+  for (const backupCode of backupCodes) {
+    const normalizedBackupCode = String(backupCode).trim();
+    console.log(`Comparing: "${normalizedProvidedCode}" === "${normalizedBackupCode}"`);
+    
+    if (normalizedProvidedCode === normalizedBackupCode) {
+      console.log('Backup code match found!');
+      return true;
+    }
+  }
+  
+  console.log('No backup code match found');
+  return false;
 }
 
 serve(async (req) => {
@@ -116,7 +140,7 @@ serve(async (req) => {
       throw new Error("Missing userId or code");
     }
 
-    // Validate code format (should be 6 digits)
+    // Validate code format (should be 6 digits for both TOTP and backup codes)
     if (!/^\d{6}$/.test(code)) {
       console.log('Invalid code format - not 6 digits');
       return new Response(JSON.stringify({
@@ -158,18 +182,22 @@ serve(async (req) => {
     let verified = false;
     let isBackupCode = false;
 
-    // First try TOTP verification
-    try {
-      verified = await verifyTOTP(twoFactorData.secret_key, code);
-    } catch (error) {
-      console.error('TOTP verification error:', error);
-    }
-
-    // If TOTP fails, try backup codes
-    if (!verified && twoFactorData.backup_codes && Array.isArray(twoFactorData.backup_codes)) {
+    // First try backup codes (they are usually checked first in most 2FA implementations)
+    if (twoFactorData.backup_codes && Array.isArray(twoFactorData.backup_codes)) {
+      console.log('Checking backup codes first...');
       verified = verifyBackupCode(twoFactorData.backup_codes, code);
       isBackupCode = verified;
       console.log('Backup code verification result:', verified);
+    }
+
+    // If backup code fails, try TOTP verification
+    if (!verified) {
+      console.log('Backup code failed, trying TOTP...');
+      try {
+        verified = await verifyTOTP(twoFactorData.secret_key, code);
+      } catch (error) {
+        console.error('TOTP verification error:', error);
+      }
     }
 
     console.log('Final verification result:', verified, 'isBackupCode:', isBackupCode);
@@ -186,7 +214,13 @@ serve(async (req) => {
     // If a backup code was used, remove it from the list
     if (isBackupCode) {
       console.log('Removing used backup code...');
-      const updatedBackupCodes = twoFactorData.backup_codes.filter((backupCode: string) => backupCode !== code);
+      const updatedBackupCodes = twoFactorData.backup_codes.filter((backupCode: string) => {
+        const normalizedBackupCode = String(backupCode).trim();
+        const normalizedUsedCode = String(code).trim();
+        return normalizedBackupCode !== normalizedUsedCode;
+      });
+      
+      console.log('Updated backup codes:', updatedBackupCodes);
       
       const { error: updateError } = await supabaseClient
         .from('user_2fa')
