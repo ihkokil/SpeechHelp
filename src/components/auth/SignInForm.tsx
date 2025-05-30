@@ -21,6 +21,7 @@ const SignInForm = ({
   const [loading, setLoading] = useState(false);
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const [pendingCredentials, setPendingCredentials] = useState<{email: string, password: string} | null>(null);
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -73,6 +74,7 @@ const SignInForm = ({
           // Sign out immediately and show 2FA form
           await supabase.auth.signOut();
           setPendingUserId(data.user.id);
+          setPendingCredentials({ email, password });
           setShowTwoFactor(true);
         } else {
           console.log('SignInForm: No 2FA required, completing sign in');
@@ -95,10 +97,12 @@ const SignInForm = ({
 
   const handleTwoFactorSuccess = async () => {
     try {
-      // Now complete the actual sign in
-      await signIn(email, password);
-      console.log('SignInForm: 2FA verified, sign in completed');
-      navigate('/dashboard');
+      // Now complete the actual sign in using stored credentials
+      if (pendingCredentials) {
+        await signIn(pendingCredentials.email, pendingCredentials.password);
+        console.log('SignInForm: 2FA verified, sign in completed');
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       console.error('SignInForm: Error completing sign in after 2FA:', error);
       toast({
@@ -109,12 +113,14 @@ const SignInForm = ({
     } finally {
       setShowTwoFactor(false);
       setPendingUserId(null);
+      setPendingCredentials(null);
     }
   };
 
   const handleTwoFactorCancel = () => {
     setShowTwoFactor(false);
     setPendingUserId(null);
+    setPendingCredentials(null);
     toast({
       title: "Login cancelled",
       description: "Two-factor authentication was cancelled.",
