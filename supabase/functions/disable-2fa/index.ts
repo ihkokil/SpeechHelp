@@ -8,6 +8,8 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('disable-2fa function called');
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -16,6 +18,7 @@ serve(async (req) => {
     // Get the authorization header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      console.error('No authorization header found');
       throw new Error("No authorization header");
     }
 
@@ -38,6 +41,8 @@ serve(async (req) => {
       throw new Error("Unauthorized");
     }
 
+    console.log('User authenticated:', user.id);
+
     // Delete 2FA settings for the user
     const { error: deleteError } = await supabaseClient
       .from('user_2fa')
@@ -48,6 +53,8 @@ serve(async (req) => {
       console.error('Error disabling 2FA:', deleteError);
       throw deleteError;
     }
+
+    console.log('2FA disabled successfully');
 
     return new Response(JSON.stringify({
       success: true
