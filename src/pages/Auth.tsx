@@ -22,18 +22,35 @@ const Auth = () => {
   const { toast } = useToast();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
 
-  // Simplified function to detect recovery flow
+  // Enhanced function to detect recovery flow
   const detectRecoveryFlow = () => {
     const fullUrl = window.location.href;
-    console.log('Auth: Checking for recovery flow in URL:', fullUrl);
+    const searchParams = location.search;
+    const hashParams = location.hash;
     
-    // Check if URL contains recovery indicators
-    const hasRecoveryType = fullUrl.includes('type=recovery');
-    const hasAccessToken = fullUrl.includes('access_token=');
+    console.log('Auth: Checking for recovery flow:', { 
+      fullUrl, 
+      searchParams, 
+      hashParams 
+    });
     
-    console.log('Auth: Recovery indicators:', { hasRecoveryType, hasAccessToken });
+    // Check multiple ways the recovery type can be present
+    const hasRecoveryInSearch = searchParams.includes('type=recovery');
+    const hasRecoveryInHash = hashParams.includes('type=recovery');
+    const hasRecoveryInUrl = fullUrl.includes('type=recovery');
+    const hasTokenInUrl = fullUrl.includes('token=');
     
-    return hasRecoveryType;
+    const isRecoveryFlow = hasRecoveryInSearch || hasRecoveryInHash || hasRecoveryInUrl;
+    
+    console.log('Auth: Recovery detection:', {
+      hasRecoveryInSearch,
+      hasRecoveryInHash, 
+      hasRecoveryInUrl,
+      hasTokenInUrl,
+      isRecoveryFlow
+    });
+    
+    return isRecoveryFlow;
   };
 
   // Check for password reset flow FIRST - this must happen before any other logic
@@ -52,12 +69,8 @@ const Auth = () => {
     }
   }, []); // Only run once on mount
 
-  // Check for other URL parameters only if not in recovery flow
+  // Check for URL changes and recovery flow
   useEffect(() => {
-    if (isRecoveryFlowDetected) {
-      return; // Skip if we're in recovery flow
-    }
-
     const params = new URLSearchParams(location.search);
     
     console.log('Auth: URL change detected:', { 
@@ -67,8 +80,9 @@ const Auth = () => {
       fullUrl: window.location.href
     });
     
-    // Check for recovery flow again on URL changes
-    if (detectRecoveryFlow()) {
+    // Always check for recovery flow first on URL changes
+    const isRecoveryFlow = detectRecoveryFlow();
+    if (isRecoveryFlow) {
       console.log('Auth: Recovery flow detected on URL change, setting reset password mode');
       setIsResetPassword(true);
       setIsRecoveryFlowDetected(true);
@@ -77,14 +91,16 @@ const Auth = () => {
       return;
     }
     
-    // Check for signup/signin params only if not in recovery flow
-    if (params.get('signup') === 'true') {
-      console.log('Auth: Signup flow detected');
-      setIsSignUp(true);
-      setAutoFocusFirstName(true);
-    } else if (params.get('signin') === 'true') {
-      console.log('Auth: Signin flow detected');
-      setIsSignUp(false);
+    // Only check other params if not in recovery flow
+    if (!isRecoveryFlowDetected && !isRecoveryFlow) {
+      if (params.get('signup') === 'true') {
+        console.log('Auth: Signup flow detected');
+        setIsSignUp(true);
+        setAutoFocusFirstName(true);
+      } else if (params.get('signin') === 'true') {
+        console.log('Auth: Signin flow detected');
+        setIsSignUp(false);
+      }
     }
   }, [location, isRecoveryFlowDetected]);
 
