@@ -25,7 +25,7 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
   useEffect(() => {
     const checkResetLink = async () => {
       try {
-        // Check URL parameters for reset tokens
+        // Check URL parameters for reset type
         const params = new URLSearchParams(location.search);
         const hashParams = new URLSearchParams(location.hash.substring(1));
         
@@ -35,12 +35,28 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
           pathname: location.pathname, 
           search: location.search,
           hash: location.hash,
-          type: type
+          type: type,
+          fullUrl: window.location.href
         });
         
         if (type === 'recovery') {
           console.log('Valid password reset link detected');
-          setIsValidResetLink(true);
+          
+          // For the new format, Supabase handles the session automatically
+          // We just need to check if we have a valid session
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (session) {
+            console.log('Session found for password reset:', session.user?.id);
+            setIsValidResetLink(true);
+          } else {
+            console.log('No session found for password reset');
+            toast({
+              title: "Reset link expired",
+              description: "This password reset link has expired or is invalid. Please request a new one.",
+              variant: "destructive"
+            });
+          }
         } else {
           console.log('Invalid or missing reset type');
           toast({
@@ -100,6 +116,7 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
       console.log('Updating password...');
 
       // Update the password using Supabase's built-in method
+      // With the new format, the session is already established
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       });
