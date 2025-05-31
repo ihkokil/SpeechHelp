@@ -4,7 +4,6 @@ import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 import { Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface ResetPasswordFormProps {
   email: string;
@@ -19,21 +18,42 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userEmail, setUserEmail] = useState(email);
+  const [hasValidSession, setHasValidSession] = useState(false);
   const { toast } = useToast();
-  const { refreshUser } = useAuth();
 
-  // Get user email from session if not provided
+  // Check for valid recovery session and get user email
   useEffect(() => {
-    const getUserEmail = async () => {
-      if (!email) {
-        const { data } = await supabase.auth.getUser();
-        if (data.user?.email) {
-          setUserEmail(data.user.email);
+    const checkSession = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session check error:', error);
+          setHasValidSession(false);
+          return;
         }
+
+        if (data.session?.user) {
+          setHasValidSession(true);
+          setUserEmail(data.session.user.email || email);
+        } else {
+          setHasValidSession(false);
+          if (!email) {
+            toast({
+              title: "Session expired",
+              description: "Please click the reset link in your email again.",
+              variant: "destructive"
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Session check error:', error);
+        setHasValidSession(false);
       }
     };
-    getUserEmail();
-  }, [email]);
+
+    checkSession();
+  }, [email, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +79,17 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
       return;
     }
 
+    // Check if we have a valid session before attempting password update
+    if (!hasValidSession) {
+      toast({
+        title: "Session expired",
+        description: "Please click the reset link in your email again.",
+        variant: "destructive"
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.updateUser({
         password: newPassword
@@ -70,23 +101,28 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
 
       toast({
         title: "Password updated successfully",
-        description: "Your password has been updated. You can now sign in with your new password.",
+        description: "Your password has been updated. You will be signed in automatically.",
       });
 
-      // Sign out to force fresh login
-      await supabase.auth.signOut();
-      
-      // Refresh user state and redirect
-      await refreshUser();
+      // Don't sign out - let them stay signed in with the new password
       onResetSuccess();
 
     } catch (error: any) {
       console.error('Password reset error:', error);
-      toast({
-        title: "Reset failed",
-        description: error.message || "Failed to reset password. Please try again.",
-        variant: "destructive"
-      });
+      
+      if (error.message?.includes('session')) {
+        toast({
+          title: "Session expired",
+          description: "Please click the reset link in your email again.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Reset failed",
+          description: error.message || "Failed to reset password. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -103,6 +139,11 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
             "Enter your new password"
           )}
         </p>
+        {!hasValidSession && (
+          <p className="text-red-600 text-sm mt-2">
+            Session expired. Please click the reset link in your email again.
+          </p>
+        )}
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -123,6 +164,7 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
               className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
               placeholder="Enter new password"
               autoFocus
+              disabled={!hasValidSession}
             />
             <button
               type="button"
@@ -154,6 +196,7 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
               placeholder="Confirm new password"
+              disabled={!hasValidSession}
             />
             <button
               type="button"
@@ -173,7 +216,7 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
           type="submit"
           variant="magenta"
           className="w-full py-3 font-semibold"
-          disabled={loading}
+          disabled={loading || !hasValidSession}
         >
           {loading ? (
             <span className="flex items-center justify-center">

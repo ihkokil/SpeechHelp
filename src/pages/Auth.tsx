@@ -18,6 +18,7 @@ const Auth = () => {
   const [currentStep, setCurrentStep] = useState<AuthStep>('signin');
   const [authInitialized, setAuthInitialized] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [isRecoveryFlow, setIsRecoveryFlow] = useState(false);
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,6 +32,7 @@ const Auth = () => {
   
   const handleSwitchToSignIn = () => {
     setCurrentStep('signin');
+    setIsRecoveryFlow(false);
   };
 
   const handleForgotPassword = () => {
@@ -39,11 +41,16 @@ const Auth = () => {
 
   const handleBackToSignIn = () => {
     setCurrentStep('signin');
+    setIsRecoveryFlow(false);
   };
 
   const handleCodeSent = (email: string) => {
     setResetEmail(email);
-    setCurrentStep('reset-password');
+    // Don't automatically switch to reset form - wait for recovery session
+    toast({
+      title: "Reset link sent",
+      description: "Please check your email and click the reset link to continue.",
+    });
   };
 
   const handleBackToForgot = () => {
@@ -53,6 +60,7 @@ const Auth = () => {
   const handleResetSuccess = () => {
     setCurrentStep('signin');
     setResetEmail('');
+    setIsRecoveryFlow(false);
   };
 
   // Check for signup/signin flow and password recovery on component mount
@@ -66,6 +74,7 @@ const Auth = () => {
       // Handle password recovery flow
       if (type === 'recovery') {
         console.log('Auth: Password recovery flow detected');
+        setIsRecoveryFlow(true);
         
         try {
           const { data, error } = await supabase.auth.getSession();
@@ -78,10 +87,15 @@ const Auth = () => {
               variant: "destructive"
             });
             setCurrentStep('signin');
+            setIsRecoveryFlow(false);
           } else if (data.session) {
-            // User is authenticated via recovery link, redirect to password reset
+            // User is authenticated via recovery link, show reset form
             console.log('Auth: Recovery session found, showing reset form');
             setCurrentStep('reset-password');
+            // Extract email from session if available
+            if (data.session.user?.email) {
+              setResetEmail(data.session.user.email);
+            }
           } else {
             console.log('Auth: No recovery session found');
             toast({
@@ -90,10 +104,12 @@ const Auth = () => {
               variant: "destructive"
             });
             setCurrentStep('signin');
+            setIsRecoveryFlow(false);
           }
         } catch (error) {
           console.error('Auth: Recovery flow error:', error);
           setCurrentStep('signin');
+          setIsRecoveryFlow(false);
         }
       } else if (params.get('signup') === 'true') {
         console.log('Auth: Signup flow detected');
@@ -114,16 +130,16 @@ const Auth = () => {
   useEffect(() => {
     if (!authInitialized || isLoading) return;
     
-    // Don't redirect if we're in recovery mode
+    // Don't redirect if we're in recovery mode and showing reset form
     const params = new URLSearchParams(location.search);
-    if (params.get('type') === 'recovery') return;
+    if (params.get('type') === 'recovery' && currentStep === 'reset-password') return;
     
-    // Redirect if user is logged in
-    if (user) {
+    // Redirect if user is logged in and not in recovery flow
+    if (user && !isRecoveryFlow) {
       console.log('Auth: User is logged in, redirecting to dashboard');
       navigate('/dashboard');
     }
-  }, [user, navigate, isLoading, authInitialized, location.search]);
+  }, [user, navigate, isLoading, authInitialized, location.search, currentStep, isRecoveryFlow]);
 
   // Show loading state until auth is initialized
   if (isLoading || !authInitialized) {

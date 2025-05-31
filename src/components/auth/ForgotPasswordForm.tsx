@@ -30,11 +30,7 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
       }
 
       setEmailSent(true);
-      onCodeSent(email); // This is crucial - notify parent component that email was sent
-      toast({
-        title: "Reset link sent",
-        description: "If an account with this email exists, a password reset link has been sent.",
-      });
+      onCodeSent(email);
 
     } catch (error: any) {
       console.error('Password reset request error:', error);
