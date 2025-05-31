@@ -23,24 +23,43 @@ const PasswordResetForm = ({ onBackToLogin }: PasswordResetFormProps) => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    // Extract tokens from URL hash or search params
-    const hash = window.location.hash;
-    const urlParams = new URLSearchParams(hash.substring(1));
+    // Get tokens from URL parameters (not hash)
+    const access_token = searchParams.get('access_token');
+    const refresh_token = searchParams.get('refresh_token');
+    const type = searchParams.get('type');
     
-    const access_token = urlParams.get('access_token') || searchParams.get('access_token');
-    const refresh_token = urlParams.get('refresh_token') || searchParams.get('refresh_token');
+    console.log('Password reset tokens from URL params:', { 
+      hasAccessToken: !!access_token, 
+      hasRefreshToken: !!refresh_token,
+      type: type
+    });
     
-    console.log('Password reset tokens:', { access_token: !!access_token, refresh_token: !!refresh_token });
-    
-    if (access_token && refresh_token) {
+    if (type === 'recovery' && access_token && refresh_token) {
       setAccessToken(access_token);
       setRefreshToken(refresh_token);
     } else {
-      toast({
-        title: "Invalid reset link",
-        description: "This password reset link is invalid or has expired. Please request a new one.",
-        variant: "destructive"
+      // Fallback: try to get from hash if not in params
+      const hash = window.location.hash;
+      const hashParams = new URLSearchParams(hash.substring(1));
+      
+      const hash_access_token = hashParams.get('access_token');
+      const hash_refresh_token = hashParams.get('refresh_token');
+      
+      console.log('Password reset tokens from hash:', { 
+        hasAccessToken: !!hash_access_token, 
+        hasRefreshToken: !!hash_refresh_token
       });
+      
+      if (hash_access_token && hash_refresh_token) {
+        setAccessToken(hash_access_token);
+        setRefreshToken(hash_refresh_token);
+      } else {
+        toast({
+          title: "Invalid reset link",
+          description: "This password reset link is invalid or has expired. Please request a new one.",
+          variant: "destructive"
+        });
+      }
     }
   }, [searchParams, toast]);
 
@@ -85,6 +104,8 @@ const PasswordResetForm = ({ onBackToLogin }: PasswordResetFormProps) => {
     setLoading(true);
 
     try {
+      console.log('Setting session for password reset...');
+      
       // Set the session using the tokens from the reset link
       const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
         access_token: accessToken,
@@ -101,6 +122,8 @@ const PasswordResetForm = ({ onBackToLogin }: PasswordResetFormProps) => {
         return;
       }
 
+      console.log('Session set successfully, updating password...');
+
       // Update the password
       const { error: updateError } = await supabase.auth.updateUser({
         password: password
@@ -116,13 +139,17 @@ const PasswordResetForm = ({ onBackToLogin }: PasswordResetFormProps) => {
         return;
       }
 
+      console.log('Password updated successfully');
+
       toast({
         title: "Password reset successful",
         description: "Your password has been updated successfully. You can now sign in with your new password.",
       });
 
-      // Sign out and redirect to login
+      // Sign out to clear the temporary session and redirect to login
       await supabase.auth.signOut();
+      
+      // Navigate to login page
       navigate('/auth?signin=true');
 
     } catch (error: any) {
@@ -184,6 +211,7 @@ const PasswordResetForm = ({ onBackToLogin }: PasswordResetFormProps) => {
               className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
               placeholder="Enter your new password"
               minLength={6}
+              autoFocus
             />
             <button
               type="button"

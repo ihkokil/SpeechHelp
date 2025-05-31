@@ -190,7 +190,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Generate password reset using Supabase Auth
+    // Generate password reset using Supabase Auth - but we'll extract the tokens manually
     const { data, error } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email: email,
@@ -223,7 +223,20 @@ serve(async (req) => {
       );
     }
 
-    log('Reset link generated successfully');
+    // Extract tokens from the Supabase-generated URL
+    const urlObj = new URL(resetLinkUrl);
+    const access_token = urlObj.searchParams.get('access_token') || urlObj.hash.match(/access_token=([^&]+)/)?.[1];
+    const refresh_token = urlObj.searchParams.get('refresh_token') || urlObj.hash.match(/refresh_token=([^&]+)/)?.[1];
+    
+    // Create our custom reset URL with tokens as parameters (not hash)
+    const customResetUrl = new URL(resetUrl);
+    customResetUrl.searchParams.set('type', 'recovery');
+    customResetUrl.searchParams.set('access_token', access_token || '');
+    customResetUrl.searchParams.set('refresh_token', refresh_token || '');
+    
+    const finalResetUrl = customResetUrl.toString();
+
+    log('Custom reset URL generated successfully');
 
     // Check SMTP configuration
     const smtpHost = Deno.env.get('SMTP_HOST');
@@ -249,7 +262,7 @@ serve(async (req) => {
           success: true, 
           message: 'Password reset link generated successfully',
           note: 'Email service not configured - please contact support for the reset link',
-          resetLink: resetLinkUrl // Include for debugging/testing
+          resetLink: finalResetUrl // Include for debugging/testing
         }),
         {
           status: 200,
@@ -292,7 +305,7 @@ serve(async (req) => {
       </p>
 
       <div style="margin: 40px 0; text-align: center;">
-        <a href="${resetLinkUrl}" style="background-color: #be185d; border-radius: 8px; color: #fff; display: inline-block; font-size: 16px; font-weight: bold; padding: 16px 32px; text-decoration: none; text-transform: uppercase;">
+        <a href="${finalResetUrl}" style="background-color: #be185d; border-radius: 8px; color: #fff; display: inline-block; font-size: 16px; font-weight: bold; padding: 16px 32px; text-decoration: none; text-transform: uppercase;">
           Reset Your Password
         </a>
       </div>
@@ -302,8 +315,8 @@ serve(async (req) => {
       </p>
       
       <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 16px 0;">
-        <a href="${resetLinkUrl}" style="color: #be185d; font-weight: 500; text-decoration: none; word-break: break-all;">
-          ${resetLinkUrl}
+        <a href="${finalResetUrl}" style="color: #be185d; font-weight: 500; text-decoration: none; word-break: break-all;">
+          ${finalResetUrl}
         </a>
       </p>
 
@@ -371,7 +384,7 @@ serve(async (req) => {
           success: true, 
           message: 'Password reset link generated (email delivery may have failed)',
           note: 'If you don\'t receive the email, please contact support',
-          resetLink: resetLinkUrl, // Include for debugging/testing
+          resetLink: finalResetUrl, // Include for debugging/testing
           emailError: emailError.message
         }),
         {
