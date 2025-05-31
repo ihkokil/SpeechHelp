@@ -9,106 +9,83 @@ import AuthContainer from '@/components/auth/AuthContainer';
 import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
-import PasswordResetForm from '@/components/auth/PasswordResetForm';
+import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const [isPasswordReset, setIsPasswordReset] = useState(false);
+  const [isResetPassword, setIsResetPassword] = useState(false);
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const [autoFocusFirstName, setAutoFocusFirstName] = useState(false);
 
-  // Handle form transitions - declare these functions first
+  // Handle form transitions
   const handleSwitchToSignUp = () => {
     setIsSignUp(true);
     setIsForgotPassword(false);
-    setIsPasswordReset(false);
+    setIsResetPassword(false);
   };
   
   const handleSwitchToSignIn = () => {
     setIsSignUp(false);
     setIsForgotPassword(false);
-    setIsPasswordReset(false);
+    setIsResetPassword(false);
   };
   
   const handleSwitchToForgotPassword = () => {
     setIsForgotPassword(true);
     setIsSignUp(false);
-    setIsPasswordReset(false);
+    setIsResetPassword(false);
   };
   
   const handleBackToLogin = () => {
     setIsForgotPassword(false);
     setIsSignUp(false);
-    setIsPasswordReset(false);
+    setIsResetPassword(false);
   };
 
-  // Check for URL parameters - this needs to run first to prevent redirect
+  // Check for password reset flow
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const hash = window.location.hash;
-    const hashParams = new URLSearchParams(hash.substring(1));
     
-    console.log('Auth: URL change detected:', { 
-      pathname: location.pathname, 
-      search: location.search,
-      hash: hash,
-      fullUrl: window.location.href,
-      allHashParams: Array.from(hashParams.entries()),
-      allSearchParams: Array.from(params.entries())
-    });
-    
-    // Check if this is a password reset link - check both URL params and hash
-    const type = params.get('type') || hashParams.get('type');
-    const access_token = hashParams.get('access_token');
-    const refresh_token = hashParams.get('refresh_token');
-    
-    console.log('Auth: Token check:', { 
-      type, 
-      hasAccessToken: !!access_token,
-      hasRefreshToken: !!refresh_token,
-      accessTokenLength: access_token?.length,
-      refreshTokenLength: refresh_token?.length
-    });
-    
-    // Handle password reset flow FIRST - this takes priority
-    // Check for recovery type OR if we have both tokens (fallback)
-    if (type === 'recovery' || (access_token && refresh_token)) {
-      console.log('Auth: Password reset flow detected - setting isPasswordReset to true');
-      setIsPasswordReset(true);
-      setIsSignUp(false);
-      setIsForgotPassword(false);
-      return; // Exit early to prevent other flows
+    // Check for password reset link in hash
+    if (location.hash) {
+      const hashParams = new URLSearchParams(location.hash.substring(1));
+      if (hashParams.get('type') === 'recovery') {
+        console.log('Auth: Password reset flow detected from hash');
+        setIsResetPassword(true);
+        setIsSignUp(false);
+        setIsForgotPassword(false);
+        return;
+      }
     }
     
-    // Only check other flows if it's not a password reset
+    // Check other URL parameters
     if (params.get('signup') === 'true') {
       console.log('Auth: Signup flow detected');
       setIsSignUp(true);
       setAutoFocusFirstName(true);
-      setIsPasswordReset(false);
+      setIsResetPassword(false);
       setIsForgotPassword(false);
     } else if (params.get('signin') === 'true') {
       console.log('Auth: Signin flow detected');
       setIsSignUp(false);
-      setIsPasswordReset(false);
+      setIsResetPassword(false);
       setIsForgotPassword(false);
     } else {
       // Default to sign in if no specific flow detected
       console.log('Auth: No specific flow detected, defaulting to sign in');
       setIsSignUp(false);
-      setIsPasswordReset(false);
+      setIsResetPassword(false);
       setIsForgotPassword(false);
     }
-  }, [location.search, location.hash]); // Also listen to hash changes
+  }, [location.search, location.hash]);
 
   // Redirect if user is logged in - but NOT during password reset
   useEffect(() => {
-    // Don't redirect during password reset flow
-    if (isPasswordReset) {
+    if (isResetPassword) {
       console.log('Auth: Password reset in progress, not redirecting');
       return;
     }
@@ -117,21 +94,10 @@ const Auth = () => {
       console.log('Auth: User is logged in, redirecting to dashboard');
       navigate('/dashboard');
     }
-  }, [user, navigate, isLoading, isPasswordReset]);
-
-  // Add debug logging for state changes
-  useEffect(() => {
-    console.log('Auth: State changed:', {
-      isPasswordReset,
-      isSignUp,
-      isForgotPassword,
-      hasUser: !!user,
-      isLoading
-    });
-  }, [isPasswordReset, isSignUp, isForgotPassword, user, isLoading]);
+  }, [user, navigate, isLoading, isResetPassword]);
 
   // Show loading state
-  if (isLoading && !isPasswordReset) {
+  if (isLoading && !isResetPassword) {
     return (
       <AuthContainer>
         <div className="text-center">
@@ -143,11 +109,11 @@ const Auth = () => {
   }
 
   // For password reset, always show the form regardless of user state
-  if (isPasswordReset) {
-    console.log('Auth: Rendering PasswordResetForm');
+  if (isResetPassword) {
+    console.log('Auth: Rendering ResetPasswordForm');
     return (
       <AuthContainer>
-        <PasswordResetForm onBackToLogin={handleBackToLogin} />
+        <ResetPasswordForm />
       </AuthContainer>
     );
   }
