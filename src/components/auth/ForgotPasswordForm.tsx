@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, ArrowLeft, ArrowRight } from 'lucide-react';
-import { sendPasswordReset } from '@/services/authService';
 
 interface ForgotPasswordFormProps {
   onBackToLogin: () => void;
@@ -19,12 +18,15 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
     setLoading(true);
 
     try {
-      const result = await sendPasswordReset(email, toast);
+      // For now, just show a message that password reset is not available
+      toast({
+        title: "Feature not available",
+        description: "Password reset functionality is currently not available. Please contact support for assistance.",
+        variant: "destructive"
+      });
       
-      if (result.success) {
-        // Clear the form on success
-        setEmail('');
-      }
+      // Clear the form
+      setEmail('');
     } catch (error) {
       console.error('Password reset error:', error);
     } finally {
