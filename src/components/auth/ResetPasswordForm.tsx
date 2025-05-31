@@ -101,10 +101,12 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
 
       toast({
         title: "Password updated successfully",
-        description: "Your password has been updated. You will be signed in automatically.",
+        description: "Your password has been updated. Please sign in with your new password.",
       });
 
-      // Don't sign out - let them stay signed in with the new password
+      // Sign out the user after successful password reset so they need to sign in again
+      await supabase.auth.signOut();
+      
       onResetSuccess();
 
     } catch (error: any) {
