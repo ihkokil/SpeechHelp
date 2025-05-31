@@ -1,8 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
-import { Lock, Eye, EyeOff, ArrowLeft, KeyRound } from 'lucide-react';
+import { Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -13,14 +13,27 @@ interface ResetPasswordFormProps {
 }
 
 const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPasswordFormProps) => {
-  const [otpCode, setOtpCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState(email);
   const { toast } = useToast();
   const { refreshUser } = useAuth();
+
+  // Get user email from session if not provided
+  useEffect(() => {
+    const getUserEmail = async () => {
+      if (!email) {
+        const { data } = await supabase.auth.getUser();
+        if (data.user?.email) {
+          setUserEmail(data.user.email);
+        }
+      }
+    };
+    getUserEmail();
+  }, [email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,12 +60,8 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('verify-reset-token', {
-        body: { 
-          email,
-          otpCode,
-          newPassword
-        }
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
       });
 
       if (error) {
@@ -60,30 +69,24 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
       }
 
       toast({
-        title: "Password reset successful",
+        title: "Password updated successfully",
         description: "Your password has been updated. You can now sign in with your new password.",
       });
 
+      // Sign out to force fresh login
+      await supabase.auth.signOut();
+      
       // Refresh user state and redirect
       await refreshUser();
       onResetSuccess();
 
     } catch (error: any) {
-      console.error('Password reset verification error:', error);
-      
-      if (error.message?.includes('Invalid or expired')) {
-        toast({
-          title: "Invalid or expired code",
-          description: "Please check your code or request a new one.",
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "Reset failed",
-          description: "Failed to reset password. Please try again.",
-          variant: "destructive"
-        });
-      }
+      console.error('Password reset error:', error);
+      toast({
+        title: "Reset failed",
+        description: error.message || "Failed to reset password. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -92,35 +95,17 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
   return (
     <>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Reset Password</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Set New Password</h1>
         <p className="text-gray-600">
-          Enter the code sent to <span className="font-semibold">{email}</span>
+          {userEmail ? (
+            <>Enter a new password for <span className="font-semibold">{userEmail}</span></>
+          ) : (
+            "Enter your new password"
+          )}
         </p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <label htmlFor="otpCode" className="block text-sm font-semibold text-gray-700">
-            Reset Code
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <KeyRound className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              id="otpCode"
-              type="text"
-              required
-              value={otpCode}
-              onChange={(e) => setOtpCode(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors text-center text-2xl font-mono tracking-widest"
-              placeholder="000000"
-              maxLength={6}
-              autoFocus
-            />
-          </div>
-        </div>
-
         <div className="space-y-2">
           <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-700">
             New Password
@@ -137,6 +122,7 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
               onChange={(e) => setNewPassword(e.target.value)}
               className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
               placeholder="Enter new password"
+              autoFocus
             />
             <button
               type="button"
@@ -195,10 +181,10 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Resetting Password...
+              Updating Password...
             </span>
           ) : (
-            "Reset Password"
+            "Update Password"
           )}
         </ButtonCustom>
 

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
@@ -142,17 +143,27 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
             )}
           </ButtonCustom>
 
-          <div className="text-center">
-            <p className="text-gray-600">
-              Don't have an account?{' '}
-              <button
-                type="button"
-                onClick={onSwitchToSignUp}
-                className="text-pink-600 hover:text-pink-800 font-semibold transition-colors"
-              >
-                Sign up here
-              </button>
-            </p>
+          <div className="text-center space-y-4">
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors block w-full"
+            >
+              Forgot your password?
+            </button>
+            
+            <div>
+              <p className="text-gray-600">
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={onSwitchToSignUp}
+                  className="text-pink-600 hover:text-pink-800 font-semibold transition-colors"
+                >
+                  Sign up here
+                </button>
+              </p>
+            </div>
           </div>
         </form>
       ) : (
