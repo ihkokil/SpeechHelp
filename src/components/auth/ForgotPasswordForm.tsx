@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
@@ -20,9 +19,14 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
     setLoading(true);
 
     try {
-      // Use Supabase's built-in password reset functionality with explicit redirect
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth#type=recovery`
+      // Use the send-password-reset edge function instead of Supabase's built-in method
+      const resetUrl = `${window.location.origin}/auth#type=recovery`;
+      
+      const { data, error } = await supabase.functions.invoke('send-password-reset', {
+        body: { 
+          email: email,
+          resetUrl: resetUrl
+        }
       });
 
       if (error) {
@@ -32,11 +36,18 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
           description: error.message || "Unable to send password reset email. Please try again.",
           variant: "destructive"
         });
-      } else {
+      } else if (data && data.success) {
         setEmailSent(true);
         toast({
           title: "Password reset email sent",
           description: "Please check your email for password reset instructions.",
+        });
+      } else {
+        console.error('Password reset failed:', data);
+        toast({
+          title: "Password reset failed",
+          description: "Unable to send password reset email. Please try again.",
+          variant: "destructive"
         });
       }
     } catch (error: any) {
