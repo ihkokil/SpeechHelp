@@ -2,14 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { ArrowLeft, Save, AlertCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import Translate from '@/components/Translate';
 import SpeechEditor from '../components/SpeechEditor';
 import { useSpeechSave } from '../hooks/useSpeechSave';
 import { useSpeechReset } from '../hooks/useSpeechReset';
 import { useSpeechDownload } from '../hooks/useSpeechDownload';
 import { createPlaceholderSpeech } from '../utils/speechContentUtils';
-import { useToast } from "@/hooks/use-toast";
 
 interface Step4Props {
 	prevStep: () => void;
@@ -26,11 +25,8 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 	onTitleChange,
 	speechDetails = {}
 }) => {
-	const { toast } = useToast();
 	const [title, setTitle] = useState(speechTitle);
 	const [content, setContent] = useState('');
-	const [hasRecoveredSpeech, setHasRecoveredSpeech] = useState(false);
-	const [isAutoSaved, setIsAutoSaved] = useState(false);
 
 	const { isSaving, handleSave, speechId } = useSpeechSave({
 		title,
@@ -57,46 +53,14 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 	}, [speechTitle]);
 
 	useEffect(() => {
-		// Try to recover the generated speech from multiple possible storage locations
 		const savedSpeech = localStorage.getItem('generatedSpeech');
-		const backupSpeech = localStorage.getItem('speechBackup');
-		const tempSpeech = localStorage.getItem('tempGeneratedSpeech');
-		
-		let recoveredContent = '';
-		let recoverySource = '';
-
-		if (savedSpeech && savedSpeech.trim()) {
-			recoveredContent = savedSpeech;
-			recoverySource = 'main storage';
-		} else if (backupSpeech && backupSpeech.trim()) {
-			recoveredContent = backupSpeech;
-			recoverySource = 'backup storage';
-		} else if (tempSpeech && tempSpeech.trim()) {
-			recoveredContent = tempSpeech;
-			recoverySource = 'temporary storage';
-		}
-
-		if (recoveredContent) {
-			setContent(recoveredContent);
-			setHasRecoveredSpeech(true);
-			setIsAutoSaved(true); // Assume it was auto-saved during generation
-			
-			toast({
-				title: "Speech Ready!",
-				description: `Your generated speech is ready for editing. It has been automatically saved to your account.`,
-			});
+		if (savedSpeech) {
+			setContent(savedSpeech);
 		} else {
-			// Fallback to placeholder if no recovery possible
 			const placeholderSpeech = createPlaceholderSpeech(title, speechDetails);
 			setContent(placeholderSpeech);
-			
-			toast({
-				title: "No Saved Speech Found",
-				description: "We couldn't recover your previous speech. You can start fresh or go back to regenerate.",
-				variant: "destructive"
-			});
 		}
-	}, [title, speechDetails, toast]);
+	}, []);
 
 	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setTitle(e.target.value);
@@ -104,28 +68,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 	};
 
 	const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-		const newContent = e.target.value;
-		setContent(newContent);
-		
-		// Auto-backup content as user edits
-		localStorage.setItem('speechBackup', newContent);
-		
-		// If content changes from the auto-saved version, mark as needing save
-		if (isAutoSaved) {
-			setIsAutoSaved(false);
-		}
-	};
-
-	const handleSaveWithBackup = async () => {
-		// Save the speech (either create new or update existing)
-		await handleSave();
-		if (!isSaving) {
-			setIsAutoSaved(true);
-			// Clear recovery data after successful manual save
-			localStorage.removeItem('generatedSpeech');
-			localStorage.removeItem('speechBackup');
-			localStorage.removeItem('tempGeneratedSpeech');
-		}
+		setContent(e.target.value);
 	};
 
 	return (
@@ -133,22 +76,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 			<CardHeader>
 				<CardTitle><Translate text="speechLab.editTitle" /></CardTitle>
 				<CardDescription><Translate text="speechLab.editDesc" /></CardDescription>
-				{hasRecoveredSpeech && isAutoSaved && (
-					<div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
-						<CheckCircle className="h-4 w-4 text-green-600" />
-						<span className="text-sm text-green-700">
-							Speech automatically saved! You can edit and save again if needed.
-						</span>
-					</div>
-				)}
-				{hasRecoveredSpeech && !isAutoSaved && (
-					<div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-						<AlertCircle className="h-4 w-4 text-yellow-600" />
-						<span className="text-sm text-yellow-700">
-							You have unsaved changes. Remember to save your edits.
-						</span>
-					</div>
-				)}
 			</CardHeader>
 			<CardContent>
 				<SpeechEditor
@@ -167,7 +94,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 				</ButtonCustom>
 				<ButtonCustom
 					variant="magenta"
-					onClick={handleSaveWithBackup}
+					onClick={handleSave}
 					disabled={isSaving || !title.trim() || !content.trim()}
 				>
 					{isSaving ? (
@@ -178,11 +105,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 							</svg>
 							<Translate text="common.saving" fallback="Saving..." />
 						</span>
-					) : isAutoSaved ? (
-						<>
-							<Save className="mr-2 h-4 w-4" />
-							<Translate text="speechLab.saveChanges" fallback="Save Changes" />
-						</>
 					) : (
 						<>
 							<Save className="mr-2 h-4 w-4" />

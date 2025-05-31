@@ -1,17 +1,16 @@
 
-import { CreditCard, MoreVertical, Check, Trash, Star } from 'lucide-react';
+import { CreditCard, MoreVertical, Check, Pencil, Trash } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PaymentMethod } from './types';
 
 export interface PaymentMethodItemProps {
   paymentMethod: PaymentMethod;
-  onSetDefault: () => void;
+  onEdit: () => void;
   onDelete: () => void;
   canDelete: boolean;
-  canSetDefault: boolean;
 }
 
-const PaymentMethodItem = ({ paymentMethod, onSetDefault, onDelete, canDelete, canSetDefault }: PaymentMethodItemProps) => {
+const PaymentMethodItem = ({ paymentMethod, onEdit, onDelete, canDelete }: PaymentMethodItemProps) => {
   const getBrandIcon = (brand: string) => {
     return <CreditCard className="h-5 w-5 text-gray-500" />;
   };
@@ -48,12 +47,10 @@ const PaymentMethodItem = ({ paymentMethod, onSetDefault, onDelete, canDelete, c
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-white">
-          {canSetDefault && (
-            <DropdownMenuItem className="cursor-pointer" onClick={onSetDefault}>
-              <Star className="mr-2 h-4 w-4" />
-              Set as Default
-            </DropdownMenuItem>
-          )}
+          <DropdownMenuItem className="cursor-pointer" onClick={onEdit}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+          </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
             onClick={onDelete}

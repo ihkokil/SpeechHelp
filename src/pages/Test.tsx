@@ -1,9 +1,8 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import WelcomeEmail from '@/services/welcome-email';
 import { FC, useEffect } from 'react';
 import { renderToString } from 'react-dom/server';
 import PricingPlans from '@/components/PricingPlans';
-
 const Test: FC = () => {
 
 	return (

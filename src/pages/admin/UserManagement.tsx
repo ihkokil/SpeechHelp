@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
 import { SearchToolbar } from '@/components/admin/users/management/SearchToolbar';
@@ -6,8 +7,8 @@ import { UserTable } from '@/components/admin/users/management/UserTable';
 import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
+import EditUserDialog from '@/components/admin/users/edit-user/EditUserDialog';
 import AdminPermissionsDialog from '@/components/admin/users/AdminPermissionsDialog';
-import UpdateSubscriptionDialog from '@/components/admin/users/management/components/UpdateSubscriptionDialog';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/components/admin/users/types';
 
@@ -26,32 +27,31 @@ const UserManagement = () => {
     isLoading,
     isActionLoading,
     selectedUser,
-    setSelectedUser,
     isDetailsOpen,
     isPermissionsDialogOpen,
     setIsPermissionsDialogOpen,
     filteredUsers,
     fetchUsers,
     toggleUserSelection,
-    toggleAllUsers: baseToggleAllUsers,
+    toggleAllUsers,
     handleDeleteUsers,
     handleDeleteUser,
     handleToggleUserStatus,
     handleViewUserDetails,
     handleCloseUserDetails,
+    handleToggleUserSubscription,
     handleManagePermissions,
     handlePermissionsUpdated,
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
+    handleEditUser,
     handleSendEmail,
     cleanup,
     addUser,
-    handleUpdateSubscription,
+    isEditUserDialogOpen,
+    setIsEditUserDialogOpen,
   } = useUserManagement();
-  
-  // New state for subscription dialog
-  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   
   const { toast } = useToast();
   
@@ -74,30 +74,16 @@ const UserManagement = () => {
     }
   };
 
-  // Handler for opening the subscription dialog
-  const handleOpenSubscriptionDialog = (user: User) => {
-    console.log("Opening subscription dialog for user:", user.id);
-    setSelectedUser(user);
-    setIsSubscriptionDialogOpen(true);
-  };
-
-  // Handler for when a subscription is updated
-  const handleSubscriptionUpdated = (userId: string, tier: string, endDate: Date) => {
-    if (handleUpdateSubscription) {
-      handleUpdateSubscription(userId, tier, endDate, users, setUsers);
-    }
-    setIsSubscriptionDialogOpen(false);
-  };
-
-  // Create a wrapped toggle all users function that handles filtered users
-  const toggleAllUsersWithFilter = () => {
-    if (selectedUsers.length === filteredUsers.length) {
-      // If all filtered users are selected, deselect them all
-      setSelectedUsers([]);
-    } else {
-      // Otherwise, select all filtered users
-      setSelectedUsers([...filteredUsers]);
-    }
+  // Handler for when a user is updated via the EditUserDialog
+  const handleUserUpdated = (updatedUser: User) => {
+    console.log("User updated:", updatedUser);
+    setUsers(prevUsers => 
+      prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
+    );
+    toast({
+      title: "User updated",
+      description: `${updatedUser.email} has been updated successfully.`
+    });
   };
 
   return (
@@ -128,10 +114,11 @@ const UserManagement = () => {
             isLoading={isLoading}
             selectedUsers={selectedUsers}
             toggleUserSelection={toggleUserSelection}
-            toggleAllUsers={toggleAllUsersWithFilter}
+            toggleAllUsers={toggleAllUsers}
             handleViewUserDetails={handleViewUserDetails}
             handleManagePermissions={handleManagePermissions}
             handleToggleUserStatus={handleToggleUserStatus}
+            handleToggleUserSubscription={handleToggleUserSubscription}
             setSelectedUsers={setSelectedUsers}
             setIsDeleteDialogOpen={setIsDeleteDialogOpen}
             searchTerm={searchTerm}
@@ -139,8 +126,8 @@ const UserManagement = () => {
             handleBulkActivate={handleBulkActivate}
             handleBulkDeactivate={handleBulkDeactivate}
             handleDeleteUser={handleDeleteUser}
+            handleEditUser={handleEditUser}
             handleSendEmail={handleSendEmail}
-            handleUpdateSubscription={handleOpenSubscriptionDialog}
           />
         </CardContent>
       </Card>
@@ -167,22 +154,21 @@ const UserManagement = () => {
         onUserAdded={handleUserAdded}
       />
 
+      {isEditUserDialogOpen && selectedUser && (
+        <EditUserDialog
+          user={selectedUser}
+          open={isEditUserDialogOpen}
+          onOpenChange={setIsEditUserDialogOpen}
+          onUserUpdated={handleUserUpdated}
+        />
+      )}
+
       {isPermissionsDialogOpen && selectedUser && (
         <AdminPermissionsDialog
           user={selectedUser}
           open={isPermissionsDialogOpen}
           onOpenChange={setIsPermissionsDialogOpen}
           onPermissionsUpdated={(updatedUser) => handlePermissionsUpdated(updatedUser)}
-        />
-      )}
-
-      {/* Add the subscription dialog */}
-      {isSubscriptionDialogOpen && selectedUser && (
-        <UpdateSubscriptionDialog
-          user={selectedUser}
-          open={isSubscriptionDialogOpen}
-          onOpenChange={setIsSubscriptionDialogOpen}
-          onSubscriptionUpdated={handleSubscriptionUpdated}
         />
       )}
     </div>

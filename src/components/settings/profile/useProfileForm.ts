@@ -4,11 +4,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { profileFormSchema, ProfileFormValues } from './types';
+import { usePhoneInput } from './hooks/usePhoneInput';
+import { useLocationFields } from './hooks/useLocationFields';
 import { useProfileFormSubmit } from './hooks/useProfileFormSubmit';
 import { useUserProfileData } from './hooks/useUserProfileData';
 
 export const useProfileForm = () => {
   const { refreshUserData } = useAuth();
+  const [formattedPhone, setFormattedPhone] = useState('');
+  const [selectedDialCode, setSelectedDialCode] = useState('1');
+  const [availableStates, setAvailableStates] = useState<any[]>([]);
   const [originalEmail, setOriginalEmail] = useState('');
 
   // Initialize form with default values
@@ -21,14 +26,36 @@ export const useProfileForm = () => {
       password: '',
       phone: '',
       countryCode: 'US',
+      streetAddress: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'United States',
     },
   });
 
   // Load user data into form
   const { isLoading } = useUserProfileData(
     form, 
+    setFormattedPhone, 
+    setSelectedDialCode, 
+    setAvailableStates,
     setOriginalEmail
   );
+
+  // Handle phone input
+  const {
+    formattedPhone: phoneDisplay,
+    selectedDialCode: dialCode,
+    handlePhoneChange,
+    handleCountryCodeChange
+  } = usePhoneInput(form);
+
+  // Handle location fields
+  const {
+    availableStates: states,
+    handleCountryChange
+  } = useLocationFields(form);
 
   // Handle form submission
   const { isSubmitting, handleSubmit } = useProfileFormSubmit(refreshUserData);
@@ -38,6 +65,12 @@ export const useProfileForm = () => {
     isLoading,
     isSubmitting,
     originalEmail,
+    formattedPhone: phoneDisplay || formattedPhone,
+    selectedDialCode: dialCode || selectedDialCode,
+    availableStates: states.length ? states : availableStates,
+    handlePhoneChange,
+    handleCountryCodeChange,
+    handleCountryChange,
     onSubmit: handleSubmit
   };
 };

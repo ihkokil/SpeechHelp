@@ -24,6 +24,7 @@ export const useUserActions = () => {
   
   const {
     handleToggleUserStatus,
+    handleToggleUserSubscription,
     handleDeleteUser
   } = useIndividualUserActions();
   
@@ -119,6 +120,7 @@ export const useUserActions = () => {
     
     // User subscription and status operations
     handleToggleUserStatus,
+    handleToggleUserSubscription,
     
     // User details operations
     handleViewUserDetails,

@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -7,7 +7,7 @@ import { Speech } from '@/types/speech';
 import EventForm from './upcoming-speeches/EventForm';
 import EventList from './upcoming-speeches/EventList';
 import { useUpcomingEvents } from './upcoming-speeches/useUpcomingEvents';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext'; // Add auth context import
 
 interface UpcomingSpeechesProps {
   speeches?: Speech[];
@@ -16,10 +16,7 @@ interface UpcomingSpeechesProps {
 const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  const { user } = useAuth();
-  
-  // Debug info
-  console.log('UpcomingSpeeches - received speeches:', speeches?.length);
+  const { user } = useAuth(); // Get current user
   
   const { 
     upcomingEvents, 
@@ -29,21 +26,11 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
     loadEvents
   } = useUpcomingEvents(speeches);
 
-  // Force refresh of events when component mounts
-  useEffect(() => {
-    if (user?.id) {
-      console.log('UpcomingSpeeches - forcing refresh of events for user:', user.id);
-      loadEvents();
-    }
-  }, [user?.id, loadEvents]);
-
   // Render nothing if no user is authenticated
   if (!user) {
     console.log('No user authenticated, not rendering upcoming speeches');
     return null;
   }
-  
-  console.log('UpcomingSpeeches - upcomingEvents loaded:', upcomingEvents?.length);
 
   return (
     <div className="bg-white rounded-lg shadow-sm">
@@ -64,7 +51,7 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
       <div className="border-t p-4 text-center">
         <Button 
           variant="link" 
-          className="text-pink-600 hover:text-pink-800 font-medium transition-colors"
+          className="text-pink-600 hover:text-pink-800 text-sm"
           onClick={viewAllEvents}
         >
           {t('dashboard.viewAll', currentLanguage.code)}

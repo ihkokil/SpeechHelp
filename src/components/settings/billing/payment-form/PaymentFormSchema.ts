@@ -2,7 +2,7 @@
 import * as z from 'zod';
 
 export const paymentMethodSchema = z.object({
-  cardType: z.string().optional(),
+  cardType: z.string().min(1, "Please select a card type"),
   cardNumber: z.string()
     .min(15, "Card number must be at least 15 digits")
     .max(19, "Card number is too long")
@@ -15,11 +15,11 @@ export const paymentMethodSchema = z.object({
     .max(4, "CVV can be up to 4 digits")
     .refine(val => /^\d+$/.test(val), { message: "CVV must contain only digits" }),
   isDefault: z.boolean().default(false),
-  billingStreet: z.string().optional(),
-  billingCity: z.string().optional(),
-  billingState: z.string().optional(),
-  billingZip: z.string().optional(),
-  billingCountry: z.string().optional(),
+  billingStreet: z.string().min(1, "Street address is required"),
+  billingCity: z.string().min(1, "City is required"),
+  billingState: z.string().min(1, "State/Province is required"),
+  billingZip: z.string().min(1, "ZIP/Postal code is required"),
+  billingCountry: z.string().min(1, "Country is required"),
 });
 
 export type PaymentFormValues = z.infer<typeof paymentMethodSchema>;

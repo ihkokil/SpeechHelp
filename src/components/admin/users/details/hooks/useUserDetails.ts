@@ -20,10 +20,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
 
   // Function to fetch speech data
   const fetchUserSpeeches = useCallback(async (userId: string) => {
-    if (!userId) {
-      console.log('No userId provided for speech fetching');
-      return;
-    }
+    if (!userId) return;
     
     setIsLoadingSpeeches(true);
     try {
@@ -37,16 +34,13 @@ export const useUserDetails = (user: User | null, open: boolean) => {
         
       if (error) {
         console.error('Error fetching user speeches:', error);
-        setSpeeches([]);
       } else {
-        console.log('Fetched speeches for user:', userId, 'Count:', data?.length || 0);
-        console.log('Speech data:', data);
+        console.log('Fetched speeches:', data?.length || 0, data);
         setSpeeches(data || []);
         calculateTotalActivityTime(data || []);
       }
     } catch (error) {
       console.error('Exception fetching user speeches:', error);
-      setSpeeches([]);
     } finally {
       setIsLoadingSpeeches(false);
     }
@@ -66,32 +60,11 @@ export const useUserDetails = (user: User | null, open: boolean) => {
   
   // Calculate activity time based on speeches
   const calculateTotalActivityTime = useCallback((speeches: Speech[]) => {
-    // Enhanced estimate of total activity time:
-    // - Base time for each speech: 5 minutes
-    // - Additional time based on content length: 1 minute per 500 chars
-    // - Consider speech type (certain types take more time)
-    
-    const speechTypeMultipliers: Record<string, number> = {
-      'wedding': 1.5,      // Wedding speeches often require more effort
-      'business': 1.3,     // Business presentations need more preparation
-      'tedtalk': 1.7,      // TED talks need significant preparation
-      'funeral': 1.4,      // Emotional speeches take more time
-      'keynote': 1.5,      // Keynotes are typically longer/more complex
-      'default': 1.0       // Default multiplier
-    };
-    
+    // Estimate total activity time based on speeches (5 minutes per speech as a rough estimate)
     const totalTime = speeches.reduce((total, speech) => {
-      // Base time
-      let estimatedMinutes = 5;
-      
-      // Content length factor
+      // Estimate time based on content length - longer speeches take more time
       const contentLength = speech.content?.length || 0;
-      estimatedMinutes += Math.floor(contentLength / 500);
-      
-      // Speech type multiplier
-      const typeMultiplier = speechTypeMultipliers[speech.speech_type?.toLowerCase()] || speechTypeMultipliers.default;
-      estimatedMinutes = Math.round(estimatedMinutes * typeMultiplier);
-      
+      const estimatedMinutes = Math.max(5, Math.floor(contentLength / 500)); // 1 min per 500 chars, min 5 mins
       return total + estimatedMinutes;
     }, 0);
     
@@ -104,23 +77,11 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     
     if (user && open) {
       console.log('User details drawer opened for user:', user.id);
-      console.log('User data:', user);
-      
+      // When opening drawer with a user, reset state and fetch data
       if (isMounted) {
-        // Reset state first
         resetState();
-        
-        // Calculate user stats
         calculateUserStats(user);
-        
-        // Fetch speeches for this user
         fetchUserSpeeches(user.id);
-      }
-    } else if (!open) {
-      console.log('User details drawer closed, resetting state');
-      // Reset state when drawer closes
-      if (isMounted) {
-        resetState();
       }
     }
     

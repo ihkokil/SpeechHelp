@@ -19,6 +19,7 @@ export const usePaymentMethodActions = ({
 }: PaymentMethodActionsProps) => {
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -47,7 +48,38 @@ export const usePaymentMethodActions = ({
       onAddPaymentMethod(newPaymentMethod);
       
       setIsProcessing(false);
-      setIsAddDialogOpen(false);
+      setIsAddDialogOpen(false);  // Close the dialog after successful submission
+    }, 1500);
+  };
+
+  const handleUpdatePaymentMethod = (data: PaymentFormValues) => {
+    if (selectedPaymentMethod === null) return;
+    
+    setIsProcessing(true);
+    setTimeout(() => {
+      const last4 = data.cardNumber.slice(-4);
+      const updatedPaymentMethod: PaymentMethod = {
+        type: data.cardType,
+        last4,
+        expiryMonth: parseInt(data.expiryMonth),
+        expiryYear: parseInt(data.expiryYear),
+        brand: data.cardType === 'Select card type' ? determineCardBrand(data.cardNumber) : data.cardType,
+        isDefault: data.isDefault,
+        cardHolder: data.cardHolder,
+        billingAddress: {
+          street: data.billingStreet,
+          city: data.billingCity,
+          state: data.billingState,
+          zipCode: data.billingZip,
+          country: data.billingCountry
+        }
+      };
+      
+      onUpdatePaymentMethod(selectedPaymentMethod, updatedPaymentMethod);
+      
+      setSelectedPaymentMethod(null);
+      setIsProcessing(false);
+      setIsUpdateDialogOpen(false);  // Close the dialog after successful submission
     }, 1500);
   };
 
@@ -60,7 +92,7 @@ export const usePaymentMethodActions = ({
       
       setSelectedPaymentMethod(null);
       setIsProcessing(false);
-      setIsDeleteDialogOpen(false);
+      setIsDeleteDialogOpen(false);  // Close the dialog after successful deletion
     }, 1000);
   };
 
@@ -73,12 +105,15 @@ export const usePaymentMethodActions = ({
   return {
     isAddDialogOpen,
     setIsAddDialogOpen,
+    isUpdateDialogOpen,
+    setIsUpdateDialogOpen,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
     selectedPaymentMethod,
     setSelectedPaymentMethod,
     isProcessing,
     handleAddPaymentMethod,
+    handleUpdatePaymentMethod,
     handleDeletePaymentMethod,
     getSelectedPaymentMethod
   };

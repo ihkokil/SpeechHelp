@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { Speech } from '@/types/speech';
 import FilterBar from './FilterBar';
 import SpeechesTable from './SpeechesTable';
@@ -14,10 +13,7 @@ interface SpeechesManagerProps {
   initialFilter?: string;
 }
 
-const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManagerProps) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  
+const SpeechesManager = ({ speeches, initialFilter = 'all' }: SpeechesManagerProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterOption>(initialFilter as FilterOption);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -33,21 +29,6 @@ const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManag
       setFilterType(initialFilter as FilterOption);
     }
   }, [initialFilter]);
-  
-  // Update URL when filter changes
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const currentFilter = params.get('filter');
-    
-    if (filterType !== 'all' && filterType !== currentFilter) {
-      params.set('filter', filterType);
-      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
-    } else if (filterType === 'all' && currentFilter) {
-      params.delete('filter');
-      const newSearch = params.toString();
-      navigate(`${location.pathname}${newSearch ? `?${newSearch}` : ''}`, { replace: true });
-    }
-  }, [filterType, location, navigate]);
   
   const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
   
