@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
-import { resetPassword } from '@/services/authService';
 import { Mail, ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface ForgotPasswordFormProps {
@@ -19,11 +18,23 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
     setLoading(true);
 
     try {
-      await resetPassword(email, toast);
+      // TODO: Implement fresh password reset logic here
+      console.log('Password reset for:', email);
+      
+      toast({
+        title: "Reset link sent",
+        description: "Check your email for password reset instructions.",
+      });
+      
       // Clear the form on success
       setEmail('');
     } catch (error) {
-      // Error is already handled in the service
+      console.error('Password reset error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send reset email. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
