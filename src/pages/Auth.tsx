@@ -7,10 +7,15 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import AuthContainer from '@/components/auth/AuthContainer';
 import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
+import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
+import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
+
+type AuthStep = 'signin' | 'signup' | 'forgot-password' | 'reset-password';
 
 const Auth = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [currentStep, setCurrentStep] = useState<AuthStep>('signin');
   const [authInitialized, setAuthInitialized] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,11 +23,33 @@ const Auth = () => {
 
   // Handle form transitions
   const handleSwitchToSignUp = () => {
-    setIsSignUp(true);
+    setCurrentStep('signup');
   };
   
   const handleSwitchToSignIn = () => {
-    setIsSignUp(false);
+    setCurrentStep('signin');
+  };
+
+  const handleForgotPassword = () => {
+    setCurrentStep('forgot-password');
+  };
+
+  const handleBackToSignIn = () => {
+    setCurrentStep('signin');
+  };
+
+  const handleCodeSent = (email: string) => {
+    setResetEmail(email);
+    setCurrentStep('reset-password');
+  };
+
+  const handleBackToForgot = () => {
+    setCurrentStep('forgot-password');
+  };
+
+  const handleResetSuccess = () => {
+    setCurrentStep('signin');
+    setResetEmail('');
   };
 
   // Check for signup/signin flow on component mount
@@ -34,11 +61,11 @@ const Auth = () => {
       
       if (params.get('signup') === 'true') {
         console.log('Auth: Signup flow detected');
-        setIsSignUp(true);
+        setCurrentStep('signup');
         setAutoFocusFirstName(true);
       } else if (params.get('signin') === 'true') {
         console.log('Auth: Signin flow detected');
-        setIsSignUp(false);
+        setCurrentStep('signin');
       }
       
       setAuthInitialized(true);
@@ -70,18 +97,43 @@ const Auth = () => {
     );
   }
 
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 'signup':
+        return (
+          <SignUpForm 
+            onSwitchToSignIn={handleSwitchToSignIn}
+            autoFocus={autoFocusFirstName}
+          />
+        );
+      case 'forgot-password':
+        return (
+          <ForgotPasswordForm
+            onBackToSignIn={handleBackToSignIn}
+            onCodeSent={handleCodeSent}
+          />
+        );
+      case 'reset-password':
+        return (
+          <ResetPasswordForm
+            email={resetEmail}
+            onBackToForgot={handleBackToForgot}
+            onResetSuccess={handleResetSuccess}
+          />
+        );
+      default:
+        return (
+          <SignInForm 
+            onSwitchToSignUp={handleSwitchToSignUp}
+            onForgotPassword={handleForgotPassword}
+          />
+        );
+    }
+  };
+
   return (
     <AuthContainer>
-      {isSignUp ? (
-        <SignUpForm 
-          onSwitchToSignIn={handleSwitchToSignIn}
-          autoFocus={autoFocusFirstName}
-        />
-      ) : (
-        <SignInForm 
-          onSwitchToSignUp={handleSwitchToSignUp}
-        />
-      )}
+      {renderCurrentStep()}
     </AuthContainer>
   );
 };

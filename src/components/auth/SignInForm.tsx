@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
@@ -9,9 +8,10 @@ import { verifyEmail, verifyPassword, verify2FA, completeLogin } from '@/service
 
 interface SignInFormProps {
   onSwitchToSignUp: () => void;
+  onForgotPassword: () => void;
 }
 
-const SignInForm = ({ onSwitchToSignUp }: SignInFormProps) => {
+const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -236,6 +236,14 @@ const SignInForm = ({ onSwitchToSignUp }: SignInFormProps) => {
               className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
             >
               Use different email
+            </button>
+            
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors block w-full"
+            >
+              Forgot your password?
             </button>
             
             <div>
