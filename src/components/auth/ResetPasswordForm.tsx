@@ -16,6 +16,7 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
   const [loading, setLoading] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -50,17 +51,21 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
       
       if (error) throw error;
 
+      setResetSuccess(true);
       toast({
         title: "Password updated successfully",
-        description: "Your password has been updated. You can now log in with your new password.",
+        description: "Your password has been updated. You will be redirected to sign in.",
       });
 
-      setNewPassword('');
-      setConfirmPassword('');
-      
-      // Redirect to sign in after successful password reset
-      setTimeout(() => {
-        navigate('/auth?signin=true');
+      // Sign out the user and redirect to sign in after a short delay
+      setTimeout(async () => {
+        try {
+          await supabase.auth.signOut();
+          navigate('/auth?signin=true');
+        } catch (err) {
+          console.error('Error signing out:', err);
+          navigate('/auth?signin=true');
+        }
       }, 2000);
     } catch (error: any) {
       console.error('Password update error:', error);
@@ -73,6 +78,27 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
       setLoading(false);
     }
   };
+
+  if (resetSuccess) {
+    return (
+      <>
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Password Updated</h1>
+          <p className="text-gray-600">Your password has been successfully updated. You will be redirected to sign in shortly.</p>
+        </div>
+        
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-pink-600 mx-auto mb-4"></div>
+          <p className="text-gray-500">Redirecting...</p>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
