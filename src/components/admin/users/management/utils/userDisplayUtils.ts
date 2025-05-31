@@ -76,10 +76,10 @@ export const getUserName = (user: User) => {
   
   // Final fallback to email
   if (!fullName && user.email) {
-    return `${user.email.split('@')[0]} (No name provided)`;
+    return user.email.split('@')[0];
   }
   
-  return fullName || 'No name provided';
+  return fullName || 'Unknown User';
 };
 
 export const formatUserDisplayName = (user: User) => {

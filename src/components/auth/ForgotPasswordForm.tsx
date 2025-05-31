@@ -10,7 +10,7 @@ interface ForgotPasswordFormProps {
   onCodeSent: (email: string) => void;
 }
 
-const ForgotPasswordForm = ({ onBackToSignIn }: ForgotPasswordFormProps) => {
+const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -30,6 +30,7 @@ const ForgotPasswordForm = ({ onBackToSignIn }: ForgotPasswordFormProps) => {
       }
 
       setEmailSent(true);
+      onCodeSent(email); // This is crucial - notify parent component that email was sent
       toast({
         title: "Reset link sent",
         description: "If an account with this email exists, a password reset link has been sent.",
