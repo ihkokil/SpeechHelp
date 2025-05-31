@@ -28,7 +28,7 @@ export const useUserProfileData = (
       // Fetch profile data from the profiles table
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('first_name, last_name, phone, country_code, avatar_url, created_at, updated_at')
         .eq('id', user.id)
         .maybeSingle();
 

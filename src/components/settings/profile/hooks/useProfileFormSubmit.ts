@@ -75,18 +75,20 @@ export const useProfileFormSubmit = (
         throw new Error('Failed to check existing profile');
       }
 
+      const profileUpdateData = {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        phone: data.phone,
+        country_code: data.countryCode, // This is now the dial code
+        avatar_url: avatarUrl || null,
+        updated_at: new Date().toISOString()
+      };
+
       if (existingProfile) {
         // Update existing profile
         const { error: profileError } = await supabase
           .from('profiles')
-          .update({
-            first_name: data.firstName,
-            last_name: data.lastName,
-            phone: data.phone,
-            country_code: data.countryCode, // This is now the dial code
-            avatar_url: avatarUrl || null,
-            updated_at: new Date().toISOString()
-          })
+          .update(profileUpdateData)
           .eq('id', user.id);
         
         if (profileError) {
@@ -99,15 +101,9 @@ export const useProfileFormSubmit = (
           .from('profiles')
           .insert({
             id: user.id,
-            first_name: data.firstName,
-            last_name: data.lastName,
-            username: `${data.firstName} ${data.lastName}`.trim() || data.email.split('@')[0],
-            phone: data.phone,
-            country_code: data.countryCode, // This is now the dial code
-            avatar_url: avatarUrl || null,
+            ...profileUpdateData,
             is_active: true,
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
           });
         
         if (profileError) {
