@@ -12,6 +12,7 @@ import { UserStatistics } from './UserStatistics';
 import { UserActivity } from './UserActivity';
 import { UserPermissions } from './UserPermissions';
 import { User as UserType, Speech } from '../types';
+import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
 
 interface DrawerSheetContentProps {
   user: UserType;
@@ -58,7 +59,7 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
           </SheetClose>
         </div>
         <SheetDescription>
-          Detailed information about {user.user_metadata?.full_name || user.email}
+          Detailed information about <span className="bg-gray-100 px-2 py-0.5 rounded-md font-medium">{formatUserDisplayName(user)}</span>
         </SheetDescription>
       </SheetHeader>
       

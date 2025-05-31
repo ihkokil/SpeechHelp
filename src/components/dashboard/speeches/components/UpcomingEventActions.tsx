@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SpeechEvent {
   id: string;
@@ -41,18 +42,20 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
   const [isEditingDate, setIsEditingDate] = useState(false);
   const [newDate, setNewDate] = useState<Date>(new Date(event.date));
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { user } = useAuth();
   
   // Get today's date at the start of the day (midnight) for disabling past dates
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
   const handleDateChange = (date: Date | undefined) => {
-    if (!date) return;
+    if (!date || !user?.id) return;
     
     setNewDate(date);
     
     // Update the event in localStorage
-    const savedEvents = localStorage.getItem('upcomingEvents');
+    const storageKey = `upcomingEvents_${user.id}`;
+    const savedEvents = localStorage.getItem(storageKey);
     if (savedEvents) {
       try {
         const parsedEvents = JSON.parse(savedEvents);
@@ -67,7 +70,7 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
         });
         
         // Save back to localStorage
-        localStorage.setItem('upcomingEvents', JSON.stringify(updatedEvents));
+        localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
         
         // Close the date picker
         setIsEditingDate(false);
@@ -85,8 +88,11 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
   };
   
   const handleDeleteEvent = () => {
+    if (!user?.id) return;
+    
     // Delete the event from localStorage
-    const savedEvents = localStorage.getItem('upcomingEvents');
+    const storageKey = `upcomingEvents_${user.id}`;
+    const savedEvents = localStorage.getItem(storageKey);
     if (savedEvents) {
       try {
         const parsedEvents = JSON.parse(savedEvents);
@@ -95,7 +101,7 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
         );
         
         // Save back to localStorage
-        localStorage.setItem('upcomingEvents', JSON.stringify(updatedEvents));
+        localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
         
         // Show success message
         toast.success('Event deleted successfully');

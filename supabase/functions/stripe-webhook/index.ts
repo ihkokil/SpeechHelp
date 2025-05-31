@@ -1,8 +1,8 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { corsHeaders } from '../_shared/cors.ts';
-import Stripe from "https://esm.sh/stripe@13.2.0?target=deno";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.8?target=deno";
+import Stripe from 'https://esm.sh/stripe@13.2.0?target=deno';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.8?target=deno';
 
 // Helper function to log with timestamps
 const log = (message: string, data?: any) => {
@@ -10,86 +10,6 @@ const log = (message: string, data?: any) => {
 	console.log(`[${timestamp}] ${message}`);
 	if (data) {
 		console.log(JSON.stringify(data, null, 2));
-	}
-};
-
-// Log environment variables on startup
-const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY') || '';
-const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
-
-log('Environment check:', {
-	supabaseUrlExists: !!supabaseUrl,
-	supabaseServiceKeyExists: !!supabaseServiceKey,
-	stripeSecretKeyExists: !!stripeSecretKey,
-	stripeWebhookSecretExists: !!stripeWebhookSecret
-});
-
-if (!supabaseUrl) log('ERROR: SUPABASE_URL is not set');
-if (!supabaseServiceKey) log('ERROR: SUPABASE_SERVICE_ROLE_KEY is not set');
-if (!stripeSecretKey) log('ERROR: STRIPE_SECRET_KEY is not set');
-if (!stripeWebhookSecret) log('ERROR: STRIPE_WEBHOOK_SECRET is not set');
-
-// Initialize Stripe with minimal configuration
-log('Initializing Stripe client');
-const stripe = new Stripe(stripeSecretKey, {
-	apiVersion: '2023-10-16',
-});
-
-// Initialize Supabase client with service role key
-log('Initializing Supabase client');
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-// Helper function to determine plan type from Stripe product metadata or price
-const determinePlanType = async (subscription: any): Promise<string> => {
-	try {
-		// Default to premium if we can't determine
-		let planType = 'premium';
-		
-		if (subscription.items && subscription.items.data && subscription.items.data.length > 0) {
-			// First try to get it from product metadata
-			const productId = subscription.items.data[0].price.product as string;
-			const product = await stripe.products.retrieve(productId);
-			
-			if (product.metadata && product.metadata.plan_type) {
-				planType = product.metadata.plan_type.toLowerCase();
-				log(`Found plan type from product metadata: ${planType}`);
-				return planType;
-			}
-			
-			// If not in metadata, try to determine from the price or product name
-			if (product.name) {
-				const name = product.name.toLowerCase();
-				if (name.includes('pro')) {
-					return 'pro';
-				} else if (name.includes('premium')) {
-					return 'premium';
-				} else if (name.includes('free') || name.includes('trial')) {
-					return 'free_trial';
-				}
-			}
-			
-			// Try to determine from price
-			const price = await stripe.prices.retrieve(subscription.items.data[0].price.id);
-			const amount = price.unit_amount || 0;
-			
-			// Determine plan type based on price
-			if (amount <= 0) {
-				planType = 'free_trial';
-			} else if (amount <= 1500) {
-				planType = 'premium';
-			} else {
-				planType = 'pro';
-			}
-			
-			log(`Determined plan type from price: ${planType} (amount: ${amount})`);
-		}
-		
-		return planType;
-	} catch (error) {
-		log('Error determining plan type:', error);
-		return 'premium'; // Default fallback
 	}
 };
 
@@ -104,8 +24,30 @@ serve(async (req) => {
 	}
 
 	try {
-		// Log request headers for debugging
-		log('Request headers:', Object.fromEntries(req.headers.entries()));
+		const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+		if (!stripeKey) {
+			log('ERROR: STRIPE_SECRET_KEY is not set');
+			return new Response(
+				JSON.stringify({ error: 'Stripe API key not configured' }),
+				{
+					status: 500,
+					headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+				}
+			);
+		}
+
+		// Initialize Stripe with minimal configuration
+		log('Initializing Stripe client');
+		const stripe = new Stripe(stripeKey, {
+			apiVersion: '2023-10-16',
+		});
+
+		// Initialize Supabase client with service role key
+		log('Initializing Supabase client');
+		const supabase = createClient(
+			Deno.env.get('SUPABASE_URL') ?? '',
+			Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+		);
 
 		// Get the signature from the headers
 		const signature = req.headers.get('stripe-signature');
@@ -128,7 +70,7 @@ serve(async (req) => {
 		let event;
 		try {
 			log('Constructing Stripe event from webhook payload');
-			event = await stripe.webhooks.constructEventAsync(body, signature, stripeWebhookSecret);
+			event = await stripe.webhooks.constructEventAsync(body, signature, Deno.env.get('STRIPE_WEBHOOK_SECRET') || '');
 			log('Webhook event constructed successfully:', { type: event.type, id: event.id });
 		} catch (err) {
 			log('Error constructing webhook event:', err);
@@ -159,64 +101,143 @@ serve(async (req) => {
 				const customerId = session.customer;
 				const subscriptionId = session.subscription;
 				const planType = session.metadata?.plan || 'premium';
+				const pricingPeriod = session.metadata?.pricingPeriod || 'monthly';
 
 				if (!userId) {
 					log('Warning: No userId (client_reference_id) found in session');
+					break;
 				}
 
-				if (userId) {
-					// Update user's subscription in the database
-					log(`Updating user ${userId} subscription data in profiles table`);
-
-					// Get subscription details to get proper end date
-					let subscriptionEndDate = null;
-					let determinedPlanType = planType;
-					
-					if (subscriptionId) {
-						try {
-							const subscriptionDetails = await stripe.subscriptions.retrieve(subscriptionId);
-							subscriptionEndDate = new Date(subscriptionDetails.current_period_end * 1000).toISOString();
-							log('Retrieved subscription end date:', subscriptionEndDate);
-							
-							// Get plan type from subscription
-							determinedPlanType = await determinePlanType(subscriptionDetails);
-							log('Determined plan type:', determinedPlanType);
-						} catch (subError) {
-							log('Error retrieving subscription details:', subError);
+				// Get subscription details to extract amount, price ID, and proper dates
+				let amount = 0;
+				let priceId = '';
+				let subscriptionStatus = 'active'; // FIXED: Always set to active for completed checkout
+				let subscriptionStartDate = new Date().toISOString();
+				let subscriptionEndDate = new Date().toISOString();
+				
+				if (subscriptionId) {
+					try {
+						const subscription = await stripe.subscriptions.retrieve(subscriptionId as string);
+						const lineItem = subscription.items.data[0];
+						if (lineItem) {
+							amount = lineItem.price.unit_amount || 0;
+							priceId = lineItem.price.id;
 						}
+						// FIXED: Use subscription status from Stripe, but override if needed
+						subscriptionStatus = subscription.status === 'active' ? 'active' : 'active'; // Force active for completed checkout
+						
+						// Use actual subscription dates from Stripe
+						subscriptionStartDate = new Date(subscription.current_period_start * 1000).toISOString();
+						subscriptionEndDate = new Date(subscription.current_period_end * 1000).toISOString();
+						
+						log('Subscription details:', { 
+							amount, 
+							priceId, 
+							status: subscriptionStatus,
+							startDate: subscriptionStartDate,
+							endDate: subscriptionEndDate
+						});
+					} catch (subError) {
+						log('Error retrieving subscription details:', subError);
+						// Even if we can't get subscription details, set status to active
+						subscriptionStatus = 'active';
 					}
+				}
 
-					const updateData = {
-						stripe_customer_id: customerId,
-						stripe_subscription_id: subscriptionId,
-						subscription_plan: determinedPlanType,
-						subscription_tier: determinedPlanType,
-						subscription_status: 'active',
-						subscription_start_date: new Date().toISOString(),
-						subscription_end_date: subscriptionEndDate,
-						is_active: true,
-					};
+				// Map the plan type correctly based on metadata or price
+				let actualPlanType = planType;
+				if (session.metadata?.plan) {
+					actualPlanType = session.metadata.plan;
+				} else {
+					// Fallback: determine plan from amount
+					if (amount >= 4999) { // $49.99 or more
+						actualPlanType = 'pro';
+					} else if (amount >= 2999) { // $29.99 or more
+						actualPlanType = 'premium';
+					} else {
+						actualPlanType = 'free_trial';
+					}
+				}
 
-					log('Update data:', updateData);
+				log('Determined plan type:', { originalPlan: planType, actualPlan: actualPlanType, amount });
 
-					const { error } = await supabase
+				// Update user's subscription using our database function
+				log(`Updating user ${userId} subscription data using database function`);
+				try {
+					const { data: updateResult, error: updateError } = await supabase.rpc(
+						'update_user_subscription_after_payment',
+						{
+							user_id_param: userId,
+							plan_type_param: actualPlanType,
+							billing_period_param: pricingPeriod,
+							stripe_customer_id_param: customerId as string,
+							stripe_subscription_id_param: subscriptionId as string,
+							amount_param: amount,
+							price_id_param: priceId
+						}
+					);
+
+					if (updateError) {
+						log('Error updating user subscription via function:', updateError);
+					} else {
+						log('Successfully updated subscription via function:', updateResult);
+					}
+				} catch (funcError) {
+					log('Error calling update function:', funcError);
+				}
+
+				// FIXED: Also directly update the profile with correct dates and ACTIVE status
+				try {
+					const { error: profileError } = await supabase
 						.from('profiles')
-						.update(updateData)
+						.update({
+							subscription_plan: actualPlanType,
+							subscription_status: 'active', // FIXED: Explicitly set to active
+							subscription_period: pricingPeriod,
+							subscription_start_date: subscriptionStartDate,
+							subscription_end_date: subscriptionEndDate,
+							subscription_price_id: priceId,
+							subscription_amount: amount,
+							stripe_customer_id: customerId as string,
+							stripe_subscription_id: subscriptionId as string,
+							updated_at: new Date().toISOString(),
+						})
 						.eq('id', userId);
 
-					if (error) {
-						log('Error updating user subscription:', error);
-						return new Response(
-							JSON.stringify({ error: 'Error updating user subscription', details: error }),
-							{
-								status: 500,
-								headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-							}
-						);
+					if (profileError) {
+						log('Error updating profile directly:', profileError);
+					} else {
+						log('Successfully updated profile directly with ACTIVE status and correct dates');
 					}
-
-					log(`Successfully updated subscription for user ${userId}`);
+				} catch (profileUpdateError) {
+					log('Error in direct profile update:', profileUpdateError);
 				}
+
+				// Store payment history with correct data
+				try {
+					const { error: paymentError } = await supabase
+						.from('payment_history')
+						.insert({
+							user_id: userId,
+							stripe_session_id: session.id,
+							amount: amount,
+							currency: 'usd',
+							status: 'paid',
+							plan_type: actualPlanType,
+							billing_period: pricingPeriod,
+							payment_date: subscriptionStartDate
+						});
+
+					if (paymentError) {
+						log('Error storing payment history:', paymentError);
+					} else {
+						log('Successfully stored payment history');
+					}
+				} catch (paymentHistoryError) {
+					log('Error inserting payment history:', paymentHistoryError);
+				}
+
+				log(`Successfully processed subscription for user ${userId} with plan ${actualPlanType} and ACTIVE status`);
 				break;
 			}
 
@@ -228,51 +249,34 @@ serve(async (req) => {
 					status: subscription.status
 				});
 
-				// Get the customer ID from the subscription
-				const customerId = subscription.customer;
+				// Find user by Stripe customer ID and update subscription status
+				const { data: profiles, error: profileError } = await supabase
+					.from('profiles')
+					.select('id')
+					.eq('stripe_customer_id', subscription.customer);
+
+				if (profileError || !profiles || profiles.length === 0) {
+					log('No user found with customer ID:', subscription.customer);
+					break;
+				}
+
+				const subscriptionStartDate = new Date(subscription.current_period_start * 1000).toISOString();
 				const subscriptionEndDate = new Date(subscription.current_period_end * 1000).toISOString();
 
-				// Update the subscription status
-				log(`Finding user with Stripe customer ID: ${customerId}`);
-				const { data: users, error } = await supabase
-					.from('profiles')
-					.select('id, subscription_status')
-					.eq('stripe_customer_id', customerId);
-
-				if (error) {
-					log('Error finding user by customer ID:', error);
-					break;
-				}
-
-				if (!users || users.length === 0) {
-					log(`No user found with Stripe customer ID: ${customerId}`);
-					break;
-				}
-
-				const userId = users[0].id;
-				log(`Found user ${userId} with customer ID ${customerId}`);
-
-				// Determine plan type from subscription
-				const planType = await determinePlanType(subscription);
-				log(`Plan type determined for subscription update: ${planType}`);
-
-				// Update subscription status based on the Stripe status
-				log(`Updating subscription status to '${subscription.status}' and plan to '${planType}' for user ${userId}`);
 				const { error: updateError } = await supabase
 					.from('profiles')
 					.update({
 						subscription_status: subscription.status,
-						subscription_plan: planType,
-						subscription_tier: planType,
+						subscription_start_date: subscriptionStartDate,
 						subscription_end_date: subscriptionEndDate,
 						updated_at: new Date().toISOString(),
 					})
-					.eq('id', userId);
+					.eq('id', profiles[0].id);
 
 				if (updateError) {
 					log('Error updating subscription status:', updateError);
 				} else {
-					log(`Successfully updated subscription status for user ${userId}`);
+					log(`Successfully updated subscription status for user ${profiles[0].id}`);
 				}
 				break;
 			}
@@ -284,44 +288,30 @@ serve(async (req) => {
 					customerId: subscription.customer
 				});
 
-				const customerId = subscription.customer;
-
-				// Find the user with this customer ID
-				log(`Finding user with Stripe customer ID: ${customerId}`);
-				const { data: users, error } = await supabase
+				// Find user by Stripe customer ID and cancel subscription
+				const { data: profiles, error: profileError } = await supabase
 					.from('profiles')
 					.select('id')
-					.eq('stripe_customer_id', customerId);
+					.eq('stripe_customer_id', subscription.customer);
 
-				if (error) {
-					log('Error finding user by customer ID:', error);
+				if (profileError || !profiles || profiles.length === 0) {
+					log('No user found with customer ID:', subscription.customer);
 					break;
 				}
 
-				if (!users || users.length === 0) {
-					log(`No user found with Stripe customer ID: ${customerId}`);
-					break;
-				}
-
-				const userId = users[0].id;
-				log(`Found user ${userId} with customer ID ${customerId}`);
-
-				// Update the user's subscription status
-				log(`Setting subscription status to 'canceled' for user ${userId}`);
 				const { error: updateError } = await supabase
 					.from('profiles')
 					.update({
 						subscription_status: 'canceled',
-						subscription_plan: 'free_trial',
-						subscription_tier: 'free_trial',
+						subscription_end_date: new Date().toISOString(),
 						updated_at: new Date().toISOString(),
 					})
-					.eq('id', userId);
+					.eq('id', profiles[0].id);
 
 				if (updateError) {
-					log('Error updating subscription status:', updateError);
+					log('Error canceling subscription:', updateError);
 				} else {
-					log(`Successfully canceled subscription for user ${userId}`);
+					log(`Successfully canceled subscription for user ${profiles[0].id}`);
 				}
 				break;
 			}

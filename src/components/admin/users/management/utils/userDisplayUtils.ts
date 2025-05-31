@@ -1,12 +1,15 @@
 
 import { User } from '../../types';
 import { format, formatDistanceToNow } from 'date-fns';
-import { formatPhoneNumber } from '@/components/settings/profile/utils/phoneUtils';
-import countries from '@/data/countries';
+import { formatPhoneNumber, getCountryByCode } from '@/utils/phoneUtils';
 
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Never';
-  return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+  try {
+    return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+  } catch (error) {
+    return 'Invalid date';
+  }
 };
 
 export const formatDateRelative = (dateString: string | null) => {
@@ -18,27 +21,65 @@ export const formatDateRelative = (dateString: string | null) => {
   }
 };
 
+// New function for detailed date-time formatting
+export const formatDateTimeDetailed = (dateString: string | null) => {
+  if (!dateString) return 'Never';
+  try {
+    return format(new Date(dateString), 'MMM dd, yyyy • HH:mm');
+  } catch (error) {
+    return 'Invalid date';
+  }
+};
+
+// Helper function to safely extract string values
+const safeString = (value: any): string => {
+  if (typeof value === 'string') return value.trim();
+  if (value === null || value === undefined) return '';
+  return String(value).trim();
+};
+
+// Helper function to construct full name from first and last name
+const constructFullName = (firstName: string, lastName: string): string => {
+  const first = safeString(firstName);
+  const last = safeString(lastName);
+  if (first && last) {
+    return `${first} ${last}`;
+  }
+  if (first) return first;
+  if (last) return last;
+  return '';
+};
+
 export const getUserName = (user: User) => {
-  const firstName = user.user_metadata?.first_name || '';
-  const lastName = user.user_metadata?.last_name || '';
+  // Always prioritize first_name and last_name from the user object (profile data)
+  const firstName = safeString(user.first_name);
+  const lastName = safeString(user.last_name);
   
-  if (firstName && lastName) {
-    return `${firstName} ${lastName}`;
+  // Try to construct from profile first_name and last_name
+  let fullName = constructFullName(firstName, lastName);
+  
+  // If no profile data, try user_metadata
+  if (!fullName) {
+    const metaFirstName = safeString(user.user_metadata?.first_name);
+    const metaLastName = safeString(user.user_metadata?.last_name);
+    fullName = constructFullName(metaFirstName, metaLastName);
   }
   
-  if (user.user_metadata?.full_name) {
-    return user.user_metadata.full_name;
+  // If still no name, fallback to user_metadata full_name or name
+  if (!fullName && user.user_metadata?.full_name) {
+    fullName = safeString(user.user_metadata.full_name);
   }
   
-  if (user.user_metadata?.name) {
-    return user.user_metadata.name;
+  if (!fullName && user.user_metadata?.name) {
+    fullName = safeString(user.user_metadata.name);
   }
   
-  if (user.email) {
+  // Final fallback to email
+  if (!fullName && user.email) {
     return `${user.email.split('@')[0]} (No name provided)`;
   }
   
-  return 'No name provided';
+  return fullName || 'No name provided';
 };
 
 export const formatUserDisplayName = (user: User) => {
@@ -51,17 +92,9 @@ export const getUserPhone = (user: User) => {
   
   try {
     const countryCode = user.user_metadata?.country_code || 'US';
-    
-    let dialCode = '1';
-    
-    const formattedNumber = formatPhoneNumber(phone, countryCode);
-    
-    if (countryCode && countryCode !== 'US') {
-      const country = countries.find((c: any) => c.code === countryCode);
-      if (country) {
-        dialCode = country.dialCode;
-      }
-    }
+    const country = getCountryByCode(countryCode);
+    const dialCode = country?.dialCode || '1';
+    const formattedNumber = formatPhoneNumber(phone);
     
     return `+${dialCode} ${formattedNumber}`;
   } catch (error) {
@@ -82,8 +115,7 @@ export const getCountryCode = (user: User) => {
   const countryCode = user.user_metadata?.country_code;
   
   if (user.user_metadata?.country === 'United Kingdom' || 
-      user.user_metadata?.country === 'England' || 
-      user.user_metadata?.state === 'England') {
+      user.user_metadata?.country === 'England') {
     return 'GB';
   }
   

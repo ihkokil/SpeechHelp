@@ -1,5 +1,5 @@
 
-import { ButtonCustom } from '@/components/ui/button-custom';
+import { Button } from '@/components/ui/button'; 
 import { useNavigate } from 'react-router-dom';
 import { FilterOption } from './FilterBar';
 import Translate from '@/components/Translate';
@@ -17,36 +17,36 @@ const EmptyState = ({ searchQuery, filterType }: EmptyStateProps) => {
       {searchQuery ? (
         <div>
           <p className="text-gray-600 mb-4">No speeches found matching "{searchQuery}"</p>
-          <ButtonCustom 
-            variant="outline" 
+          <Button 
             onClick={() => navigate('/speech-lab')}
+            className="h-10 px-6 py-2 border border-pink-500 text-white hover:bg-pink-50 hover:text-pink-500 transition-colors rounded-md"
           >
             <Translate text="dashboard.createNewSpeech" />
-          </ButtonCustom>
+          </Button>
         </div>
       ) : filterType !== 'all' ? (
         <div>
           <p className="text-gray-600 mb-4">
             No speeches found for the selected filter
           </p>
-          <ButtonCustom 
-            variant="outline" 
+          <Button 
             onClick={() => navigate('/speech-lab')}
+            className="h-10 px-6 py-2 border border-pink-500 text-white hover:bg-pink-50 hover:text-pink-500 transition-colors rounded-md"
           >
             <Translate text="dashboard.createNewSpeech" />
-          </ButtonCustom>
+          </Button>
         </div>
       ) : (
         <div>
           <p className="text-gray-600 mb-4">
             <Translate text="dashboard.noSpeeches" />
           </p>
-          <ButtonCustom 
-            variant="outline" 
+          <Button 
             onClick={() => navigate('/speech-lab')}
+            className="h-10 px-6 py-2 border border-pink-500 text-white hover:bg-pink-50 hover:text-pink-500 transition-colors rounded-md"
           >
             <Translate text="dashboard.createFirstSpeech" />
-          </ButtonCustom>
+          </Button>
         </div>
       )}
     </div>

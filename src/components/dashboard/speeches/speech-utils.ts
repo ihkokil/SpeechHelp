@@ -19,11 +19,13 @@ export const getSpeechTypeLabel = (type: string): string => {
     case 'persuasive': return 'Persuasive';
     case 'motivational': return 'Motivational';
     case 'informative': return 'Informative';
-    case 'tedtalk': return 'TED Talk';
+    case 'tedtalk': return 'TED Talk';  // Updated from 'Tedtalk' to 'TED Talk'
     case 'keynote': return 'Keynote';
     case 'upcoming': return 'Upcoming';
-    default: return 'Other';
-  }
+    case 'farewell': return 'Farewell';
+    case 'other': return 'Other';
+    default: return type.charAt(0).toUpperCase() + type.slice(1);  // Capitalize first letter for any other types
+  };
 };
 
 export const getTypeColor = (type: string): string => {
@@ -49,8 +51,9 @@ export const getTypeColor = (type: string): string => {
     case 'informative': return `${baseClasses} bg-cyan-100 text-cyan-700`;
     case 'tedtalk': return `${baseClasses} bg-red-100 text-red-700`;
     case 'keynote': return `${baseClasses} bg-blue-100 text-blue-700`;
+    case 'farewell': return `${baseClasses} bg-amber-100 text-amber-700`;
     case 'upcoming': return `${baseClasses} bg-blue-100 text-blue-700`;
+    case 'other': return `${baseClasses} bg-gray-100 text-gray-700`;
     default: return `${baseClasses} bg-gray-100 text-gray-700`;
   }
 };
-

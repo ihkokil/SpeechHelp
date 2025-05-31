@@ -1,28 +1,46 @@
 
-import countryData from '@/data/countries';
-import statesProvinces, { StateProvince } from '@/data/statesProvinces';
+import countries from '@/data/countries';
+import statesProvinces from '@/data/statesProvinces';
 
-export const getCountryByCode = (code: string) => {
-  return countryData.find(c => c.code === code);
+export interface CountryEntry {
+  code: string;
+  name: string;
+  dialCode: string;
+}
+
+export interface StateEntry {
+  code: string;
+  name: string;
+  countryCode: string;
+}
+
+export const getCountryByCode = (code: string): CountryEntry | undefined => {
+  return countries.find(country => country.code === code);
 };
 
-export const getCountryByName = (name: string) => {
-  return countryData.find(c => c.name === name);
+export const getStatesForCountry = (countryCode: string): StateEntry[] => {
+  const statesForCountry = statesProvinces[countryCode] || [];
+  return statesForCountry.map(state => ({
+    code: state.code,
+    name: state.name,
+    countryCode: countryCode
+  }));
 };
 
-export const getStatesForCountry = (countryCode: string): StateProvince[] => {
-  return statesProvinces[countryCode] || [];
+export const getAllCountries = (): CountryEntry[] => {
+  return countries;
 };
 
-export const isStateValidForCountry = (stateName: string, states: StateProvince[]): boolean => {
-  // If there are no states for this country, any state value is valid
-  if (states.length === 0) return true;
-  
-  // Check if the state name exists in the available states
-  return states.some(s => s.name === stateName);
-};
-
-export const getStateCodeByName = (stateName: string, states: StateProvince[]): string => {
-  const state = states.find(s => s.name === stateName);
-  return state ? state.code : '';
+export const getAllStates = (): StateEntry[] => {
+  const allStates: StateEntry[] = [];
+  Object.entries(statesProvinces).forEach(([countryCode, states]) => {
+    states.forEach(state => {
+      allStates.push({
+        code: state.code,
+        name: state.name,
+        countryCode: countryCode
+      });
+    });
+  });
+  return allStates;
 };

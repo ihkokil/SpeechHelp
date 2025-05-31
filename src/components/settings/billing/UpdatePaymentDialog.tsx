@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
@@ -45,24 +46,31 @@ const UpdatePaymentDialog = ({
 
   useEffect(() => {
     if (open && paymentMethod) {
-      form.reset({
-        cardType: paymentMethod.brand,
-        cardNumber: '',
-        cardHolder: paymentMethod.cardHolder,
-        expiryMonth: paymentMethod.expiryMonth.toString(),
-        expiryYear: paymentMethod.expiryYear.toString(),
-        cvv: '',
+      console.log('Setting form values from payment method:', paymentMethod);
+      
+      // Format the payment method data to match the form structure
+      const formValues = {
+        cardType: paymentMethod.brand || '',
+        cardNumber: '', // Don't populate the full card number for security
+        cardHolder: paymentMethod.cardHolder || '',
+        expiryMonth: paymentMethod.expiryMonth ? paymentMethod.expiryMonth.toString().padStart(2, '0') : '',
+        expiryYear: paymentMethod.expiryYear ? paymentMethod.expiryYear.toString() : '',
+        cvv: '', // Don't populate CVV for security
         isDefault: paymentMethod.isDefault || false,
-        billingStreet: paymentMethod.billingAddress.street,
-        billingCity: paymentMethod.billingAddress.city,
-        billingState: paymentMethod.billingAddress.state,
-        billingZip: paymentMethod.billingAddress.zipCode,
-        billingCountry: paymentMethod.billingAddress.country,
-      });
+        billingStreet: paymentMethod.billingAddress?.street || '',
+        billingCity: paymentMethod.billingAddress?.city || '',
+        billingState: paymentMethod.billingAddress?.state || '',
+        billingZip: paymentMethod.billingAddress?.zipCode || '',
+        billingCountry: paymentMethod.billingAddress?.country || '',
+      };
+
+      console.log('Form values to set:', formValues);
+      form.reset(formValues);
     }
   }, [open, paymentMethod, form]);
 
   const handleSubmitForm = form.handleSubmit((data) => {
+    console.log('Submitting payment method update:', data);
     onSubmit(data);
   });
 

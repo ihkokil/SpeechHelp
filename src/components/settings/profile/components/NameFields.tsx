@@ -8,9 +8,10 @@ import { User } from 'lucide-react';
 interface NameFieldsProps {
   form: UseFormReturn<any>;
   isNameSingle?: boolean;
+  label?: string;
 }
 
-const NameFields = ({ form, isNameSingle = false }: NameFieldsProps) => {
+const NameFields = ({ form, isNameSingle = false, label }: NameFieldsProps) => {
   if (isNameSingle) {
     return (
       <FormField
@@ -18,7 +19,7 @@ const NameFields = ({ form, isNameSingle = false }: NameFieldsProps) => {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Name</FormLabel>
+            <FormLabel>{label || "Display Name"}</FormLabel>
             <FormControl>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
@@ -26,7 +27,7 @@ const NameFields = ({ form, isNameSingle = false }: NameFieldsProps) => {
                 </div>
                 <Input 
                   {...field} 
-                  placeholder="Full Name" 
+                  placeholder="Display Name" 
                   className="pl-10"
                 />
               </div>

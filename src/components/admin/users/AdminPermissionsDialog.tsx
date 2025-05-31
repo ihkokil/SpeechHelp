@@ -185,7 +185,7 @@ const AdminPermissionsDialog: React.FC<AdminPermissionsDialogProps> = ({
                         <SelectValue placeholder="Select a role" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No specific role</SelectItem>
+                        <SelectItem value="none">No specific role</SelectItem>
                         {roles.map(role => (
                           <SelectItem key={role.id} value={role.id}>
                             {role.name}
@@ -194,7 +194,7 @@ const AdminPermissionsDialog: React.FC<AdminPermissionsDialogProps> = ({
                       </SelectContent>
                     </Select>
                     
-                    {selectedRole && (
+                    {selectedRole && selectedRole !== "none" && (
                       <p className="text-sm text-muted-foreground">
                         {roles.find(r => r.id === selectedRole)?.description}
                       </p>
