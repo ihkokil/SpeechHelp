@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 // Import the new components
 import AuthContainer from '@/components/auth/AuthContainer';
@@ -53,6 +54,23 @@ const Auth = () => {
     
     return isPasswordResetLink;
   };
+
+  // Listen for Supabase auth state changes to detect PASSWORD_RECOVERY
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth: Supabase auth event detected:', event, session?.user?.id);
+      
+      if (event === 'PASSWORD_RECOVERY') {
+        console.log('Auth: PASSWORD_RECOVERY event detected, setting reset password mode');
+        setIsResetPassword(true);
+        setIsRecoveryFlowDetected(true);
+        setIsSignUp(false);
+        setIsForgotPassword(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Check for password reset flow FIRST - this must happen before any other logic
   useEffect(() => {
