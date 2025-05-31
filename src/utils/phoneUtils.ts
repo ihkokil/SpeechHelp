@@ -92,6 +92,19 @@ export const getCountryByDialCode = (dialCode: string): Country | undefined => {
   return result;
 };
 
+// New function to get the preferred country for dial code 1 (defaults to US)
+export const getPreferredCountryForDialCode = (dialCode: string): Country | undefined => {
+  const normalizedDialCode = dialCode.toString().replace('+', '').trim();
+  
+  // For dial code 1, prefer US over Canada
+  if (normalizedDialCode === '1') {
+    return countriesComplete.find(country => country.code === 'US');
+  }
+  
+  // For other dial codes, use the regular function
+  return getCountryByDialCode(dialCode);
+};
+
 export const getAllCountries = (): Country[] => {
   return countriesComplete;
 };
@@ -270,3 +283,4 @@ export const formatPhoneWithDialCode = (phone: string, user: any): string => {
     return phone; // Return the raw phone number as fallback
   }
 };
+
