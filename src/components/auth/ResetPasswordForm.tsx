@@ -16,48 +16,33 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [sessionEstablished, setSessionEstablished] = useState(false);
+  const [isValidResetLink, setIsValidResetLink] = useState(false);
+  const [isCheckingLink, setIsCheckingLink] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const establishSession = async () => {
+    const checkResetLink = async () => {
       try {
-        // Get tokens from URL parameters
+        // Check URL parameters for reset tokens
         const params = new URLSearchParams(location.search);
-        const access_token = params.get('access_token');
-        const refresh_token = params.get('refresh_token');
-        const type = params.get('type');
+        const hashParams = new URLSearchParams(location.hash.substring(1));
         
-        console.log('Password reset tokens from URL:', { 
-          hasAccessToken: !!access_token, 
-          hasRefreshToken: !!refresh_token,
+        const type = params.get('type') || hashParams.get('type');
+        
+        console.log('Password reset link check:', { 
+          pathname: location.pathname, 
+          search: location.search,
+          hash: location.hash,
           type: type
         });
         
-        if (type === 'recovery' && access_token && refresh_token) {
-          console.log('Setting session for password reset...');
-          
-          // Set the session using the tokens from the reset link
-          const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-            access_token: access_token,
-            refresh_token: refresh_token
-          });
-
-          if (sessionError) {
-            console.error('Session error:', sessionError);
-            toast({
-              title: "Reset link expired",
-              description: "This password reset link has expired. Please request a new one.",
-              variant: "destructive"
-            });
-            return;
-          }
-
-          console.log('Session established successfully:', sessionData);
-          setSessionEstablished(true);
+        if (type === 'recovery') {
+          console.log('Valid password reset link detected');
+          setIsValidResetLink(true);
         } else {
+          console.log('Invalid or missing reset type');
           toast({
             title: "Invalid reset link",
             description: "This password reset link is invalid or has expired. Please request a new one.",
@@ -65,25 +50,27 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
           });
         }
       } catch (error) {
-        console.error('Error establishing session:', error);
+        console.error('Error checking reset link:', error);
         toast({
           title: "Reset link error",
           description: "There was an error processing your reset link. Please try again.",
           variant: "destructive"
         });
+      } finally {
+        setIsCheckingLink(false);
       }
     };
 
-    establishSession();
-  }, [location.search, toast]);
+    checkResetLink();
+  }, [location, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!sessionEstablished) {
+    if (!isValidResetLink) {
       toast({
-        title: "Session not ready",
-        description: "Please wait for the reset link to be processed.",
+        title: "Invalid reset link",
+        description: "Please use a valid password reset link.",
         variant: "destructive"
       });
       return;
@@ -112,7 +99,7 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
     try {
       console.log('Updating password...');
 
-      // Update the password
+      // Update the password using Supabase's built-in method
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -134,7 +121,7 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
         description: "Your password has been updated successfully. You can now sign in with your new password.",
       });
 
-      // Sign out to clear the temporary session and redirect to login
+      // Sign out to clear the session and redirect to login
       await supabase.auth.signOut();
       
       // Navigate to login page
@@ -152,16 +139,38 @@ const ResetPasswordForm = ({ onBackToLogin }: ResetPasswordFormProps) => {
     }
   };
 
-  if (!sessionEstablished) {
+  if (isCheckingLink) {
     return (
       <>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Processing Reset Link</h1>
-          <p className="text-gray-600">Please wait while we process your password reset link...</p>
+          <p className="text-gray-600">Please wait while we verify your password reset link...</p>
         </div>
         
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600 mx-auto mb-4"></div>
+          <button
+            type="button"
+            onClick={onBackToLogin}
+            className="inline-flex items-center text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Sign In
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  if (!isValidResetLink) {
+    return (
+      <>
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Invalid Reset Link</h1>
+          <p className="text-gray-600">This password reset link is invalid or has expired.</p>
+        </div>
+        
+        <div className="text-center">
           <button
             type="button"
             onClick={onBackToLogin}
