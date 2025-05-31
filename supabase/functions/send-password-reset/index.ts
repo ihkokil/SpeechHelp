@@ -190,7 +190,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Generate password reset using Supabase Auth - but we'll extract the tokens manually
+    // Generate password reset using Supabase Auth
     const { data, error } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email: email,
@@ -223,20 +223,65 @@ serve(async (req) => {
       );
     }
 
-    // Extract tokens from the Supabase-generated URL
+    log('Generated action link:', resetLinkUrl);
+
+    // Parse the Supabase-generated URL to extract tokens
     const urlObj = new URL(resetLinkUrl);
-    const access_token = urlObj.searchParams.get('access_token') || urlObj.hash.match(/access_token=([^&]+)/)?.[1];
-    const refresh_token = urlObj.searchParams.get('refresh_token') || urlObj.hash.match(/refresh_token=([^&]+)/)?.[1];
+    let access_token = '';
+    let refresh_token = '';
+
+    // First try to get from URL parameters
+    access_token = urlObj.searchParams.get('access_token') || '';
+    refresh_token = urlObj.searchParams.get('refresh_token') || '';
+
+    // If not found in parameters, try to extract from hash
+    if (!access_token || !refresh_token) {
+      const hash = urlObj.hash.substring(1); // Remove the #
+      const hashParams = new URLSearchParams(hash);
+      access_token = hashParams.get('access_token') || access_token;
+      refresh_token = hashParams.get('refresh_token') || refresh_token;
+    }
+
+    // Log what we extracted
+    log('Extracted tokens:', { 
+      hasAccessToken: !!access_token, 
+      hasRefreshToken: !!refresh_token,
+      accessTokenLength: access_token.length,
+      refreshTokenLength: refresh_token.length
+    });
+
+    if (!access_token || !refresh_token) {
+      log('Failed to extract tokens from Supabase link:', {
+        fullUrl: resetLinkUrl,
+        searchParams: Array.from(urlObj.searchParams.entries()),
+        hash: urlObj.hash
+      });
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to extract authentication tokens',
+          debug: {
+            originalUrl: resetLinkUrl,
+            searchParams: Array.from(urlObj.searchParams.entries()),
+            hash: urlObj.hash
+          }
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
     
-    // Create our custom reset URL with tokens as parameters (not hash)
+    // Create our custom reset URL with tokens as parameters
     const customResetUrl = new URL(resetUrl);
     customResetUrl.searchParams.set('type', 'recovery');
-    customResetUrl.searchParams.set('access_token', access_token || '');
-    customResetUrl.searchParams.set('refresh_token', refresh_token || '');
+    customResetUrl.searchParams.set('access_token', access_token);
+    customResetUrl.searchParams.set('refresh_token', refresh_token);
     
     const finalResetUrl = customResetUrl.toString();
 
-    log('Custom reset URL generated successfully');
+    log('Final reset URL generated:', finalResetUrl);
 
     // Check SMTP configuration
     const smtpHost = Deno.env.get('SMTP_HOST');
