@@ -56,7 +56,9 @@ const Auth = () => {
       pathname: location.pathname, 
       search: location.search,
       hash: hash,
-      fullUrl: window.location.href
+      fullUrl: window.location.href,
+      allHashParams: Array.from(hashParams.entries()),
+      allSearchParams: Array.from(params.entries())
     });
     
     // Check if this is a password reset link - check both URL params and hash
@@ -64,9 +66,18 @@ const Auth = () => {
     const access_token = hashParams.get('access_token');
     const refresh_token = hashParams.get('refresh_token');
     
+    console.log('Auth: Token check:', { 
+      type, 
+      hasAccessToken: !!access_token,
+      hasRefreshToken: !!refresh_token,
+      accessTokenLength: access_token?.length,
+      refreshTokenLength: refresh_token?.length
+    });
+    
     // Handle password reset flow FIRST - this takes priority
-    if (type === 'recovery' && access_token && refresh_token) {
-      console.log('Auth: Password reset flow detected with valid tokens');
+    // Check for recovery type OR if we have both tokens (fallback)
+    if (type === 'recovery' || (access_token && refresh_token)) {
+      console.log('Auth: Password reset flow detected - setting isPasswordReset to true');
       setIsPasswordReset(true);
       setIsSignUp(false);
       setIsForgotPassword(false);
@@ -85,8 +96,14 @@ const Auth = () => {
       setIsSignUp(false);
       setIsPasswordReset(false);
       setIsForgotPassword(false);
+    } else {
+      // Default to sign in if no specific flow detected
+      console.log('Auth: No specific flow detected, defaulting to sign in');
+      setIsSignUp(false);
+      setIsPasswordReset(false);
+      setIsForgotPassword(false);
     }
-  }, [location]);
+  }, [location.search, location.hash]); // Also listen to hash changes
 
   // Redirect if user is logged in - but NOT during password reset
   useEffect(() => {
@@ -102,6 +119,17 @@ const Auth = () => {
     }
   }, [user, navigate, isLoading, isPasswordReset]);
 
+  // Add debug logging for state changes
+  useEffect(() => {
+    console.log('Auth: State changed:', {
+      isPasswordReset,
+      isSignUp,
+      isForgotPassword,
+      hasUser: !!user,
+      isLoading
+    });
+  }, [isPasswordReset, isSignUp, isForgotPassword, user, isLoading]);
+
   // Show loading state
   if (isLoading && !isPasswordReset) {
     return (
@@ -116,6 +144,7 @@ const Auth = () => {
 
   // For password reset, always show the form regardless of user state
   if (isPasswordReset) {
+    console.log('Auth: Rendering PasswordResetForm');
     return (
       <AuthContainer>
         <PasswordResetForm onBackToLogin={handleBackToLogin} />
@@ -125,9 +154,11 @@ const Auth = () => {
 
   // Don't render anything if user is logged in (will redirect)
   if (user) {
+    console.log('Auth: User logged in, rendering null (will redirect)');
     return null;
   }
 
+  console.log('Auth: Rendering main auth forms');
   return (
     <AuthContainer>
       {isForgotPassword ? (
