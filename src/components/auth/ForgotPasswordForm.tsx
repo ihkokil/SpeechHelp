@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, ArrowLeft, ArrowRight } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ForgotPasswordFormProps {
   onBackToLogin: () => void;
@@ -11,6 +12,7 @@ interface ForgotPasswordFormProps {
 const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,21 +20,89 @@ const ForgotPasswordForm = ({ onBackToLogin }: ForgotPasswordFormProps) => {
     setLoading(true);
 
     try {
-      // For now, just show a message that password reset is not available
+      // Use Supabase's built-in password reset functionality
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`
+      });
+
+      if (error) {
+        console.error('Password reset error:', error);
+        toast({
+          title: "Password reset failed",
+          description: error.message || "Unable to send password reset email. Please try again.",
+          variant: "destructive"
+        });
+      } else {
+        setEmailSent(true);
+        toast({
+          title: "Password reset email sent",
+          description: "Please check your email for password reset instructions.",
+        });
+      }
+    } catch (error: any) {
+      console.error('Password reset error:', error);
       toast({
-        title: "Feature not available",
-        description: "Password reset functionality is currently not available. Please contact support for assistance.",
+        title: "Password reset failed",
+        description: "Unable to send password reset email. Please try again.",
         variant: "destructive"
       });
-      
-      // Clear the form
-      setEmail('');
-    } catch (error) {
-      console.error('Password reset error:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  if (emailSent) {
+    return (
+      <>
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <Mail className="h-6 w-6 text-green-600" />
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Check Your Email</h1>
+          <p className="text-gray-600">We've sent password reset instructions to <strong>{email}</strong></p>
+        </div>
+        
+        <div className="space-y-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-blue-800 text-sm">
+              <strong>Next steps:</strong>
+            </p>
+            <ul className="text-blue-700 text-sm mt-2 space-y-1">
+              <li>• Check your email inbox for the reset link</li>
+              <li>• Click the link in the email to reset your password</li>
+              <li>• Check your spam folder if you don't see the email</li>
+            </ul>
+          </div>
+
+          <div className="text-center space-y-4">
+            <button
+              type="button"
+              onClick={() => {
+                setEmailSent(false);
+                setEmail('');
+              }}
+              className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
+            >
+              Try a different email address
+            </button>
+            
+            <div>
+              <button
+                type="button"
+                onClick={onBackToLogin}
+                className="inline-flex items-center text-gray-600 hover:text-gray-800 text-sm font-semibold transition-colors"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

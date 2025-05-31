@@ -8,10 +8,12 @@ import AuthContainer from '@/components/auth/AuthContainer';
 import SignInForm from '@/components/auth/SignInForm';
 import SignUpForm from '@/components/auth/SignUpForm';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
+import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isResetPassword, setIsResetPassword] = useState(false);
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,43 +23,62 @@ const Auth = () => {
   const handleSwitchToSignUp = () => {
     setIsSignUp(true);
     setIsForgotPassword(false);
+    setIsResetPassword(false);
   };
   
   const handleSwitchToSignIn = () => {
     setIsSignUp(false);
     setIsForgotPassword(false);
+    setIsResetPassword(false);
   };
   
   const handleSwitchToForgotPassword = () => {
     setIsForgotPassword(true);
     setIsSignUp(false);
+    setIsResetPassword(false);
   };
   
   const handleBackToLogin = () => {
     setIsForgotPassword(false);
     setIsSignUp(false);
+    setIsResetPassword(false);
   };
 
   // Check URL parameters for specific flows
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     
+    // Check for password reset flow first
+    if (location.hash) {
+      const hashParams = new URLSearchParams(location.hash.substring(1));
+      if (hashParams.get('type') === 'recovery') {
+        console.log('Auth: Password reset flow detected');
+        setIsResetPassword(true);
+        setIsSignUp(false);
+        setIsForgotPassword(false);
+        return;
+      }
+    }
+    
     if (params.get('signup') === 'true') {
       console.log('Auth: Signup flow detected');
       setIsSignUp(true);
       setAutoFocusFirstName(true);
       setIsForgotPassword(false);
+      setIsResetPassword(false);
     } else if (params.get('signin') === 'true') {
       console.log('Auth: Signin flow detected');
       setIsSignUp(false);
       setIsForgotPassword(false);
+      setIsResetPassword(false);
     } else {
       // Default to sign in if no specific flow detected
       console.log('Auth: No specific flow detected, defaulting to sign in');
       setIsSignUp(false);
       setIsForgotPassword(false);
+      setIsResetPassword(false);
     }
-  }, [location.search]);
+  }, [location.search, location.hash]);
 
   // Redirect if user is logged in
   useEffect(() => {
@@ -88,7 +109,9 @@ const Auth = () => {
   console.log('Auth: Rendering main auth forms');
   return (
     <AuthContainer>
-      {isForgotPassword ? (
+      {isResetPassword ? (
+        <ResetPasswordForm onBackToLogin={handleBackToLogin} />
+      ) : isForgotPassword ? (
         <ForgotPasswordForm onBackToLogin={handleBackToLogin} />
       ) : isSignUp ? (
         <SignUpForm 
