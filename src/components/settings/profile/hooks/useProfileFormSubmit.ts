@@ -66,28 +66,51 @@ export const useProfileFormSubmit = (
         first_name: data.firstName,
         last_name: data.lastName,
         phone: data.phone,
-        country_code: data.countryCode, // This is now the country code (US, CA, etc.)
+        country_code: data.countryCode,
         avatar_url: avatarUrl || null,
         updated_at: new Date().toISOString()
       };
 
       console.log('Updating profile with country code:', profileUpdateData);
 
-      // Use upsert to handle both insert and update cases
-      const { error: profileError } = await supabase
+      // First check if profile exists
+      const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
-        .upsert({
-          id: user.id,
-          ...profileUpdateData,
-          is_active: true,
-          created_at: new Date().toISOString(),
-        }, {
-          onConflict: 'id'
-        });
-      
-      if (profileError) {
-        console.error('Error upserting profile:', profileError);
-        throw profileError;
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error('Error checking existing profile:', fetchError);
+        throw fetchError;
+      }
+
+      if (existingProfile) {
+        // Profile exists, use UPDATE
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update(profileUpdateData)
+          .eq('id', user.id);
+        
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+          throw updateError;
+        }
+      } else {
+        // Profile doesn't exist, use INSERT
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            ...profileUpdateData,
+            is_active: true,
+            created_at: new Date().toISOString(),
+          });
+        
+        if (insertError) {
+          console.error('Error inserting profile:', insertError);
+          throw insertError;
+        }
       }
       
       console.log('Profile updated successfully in profiles table with country code:', data.countryCode);
@@ -97,7 +120,7 @@ export const useProfileFormSubmit = (
         first_name: data.firstName,
         last_name: data.lastName,
         phone: data.phone,
-        country_code: data.countryCode, // Store country code in metadata too
+        country_code: data.countryCode,
       };
       
       console.log('Updating user metadata with country code:', metadata);
