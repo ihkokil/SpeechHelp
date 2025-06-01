@@ -2,12 +2,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Speech } from '../../types';
+import { useToast } from '@/hooks/use-toast';
 
 export const useUserDetails = (user: User | null, open: boolean) => {
   const [speeches, setSpeeches] = useState<Speech[]>([]);
   const [isLoadingSpeeches, setIsLoadingSpeeches] = useState(false);
   const [userJoinedDays, setUserJoinedDays] = useState<number>(0);
   const [totalActivityTime, setTotalActivityTime] = useState<number>(0);
+  const { toast } = useToast();
 
   // Function to reset all states
   const resetState = useCallback(() => {
@@ -25,10 +27,10 @@ export const useUserDetails = (user: User | null, open: boolean) => {
       return;
     }
     
+    console.log('Starting to fetch speeches for user:', userId);
     setIsLoadingSpeeches(true);
+    
     try {
-      console.log('Fetching speeches for user:', userId);
-      
       const { data, error } = await supabase
         .from('speeches')
         .select('*')
@@ -37,20 +39,39 @@ export const useUserDetails = (user: User | null, open: boolean) => {
         
       if (error) {
         console.error('Error fetching user speeches:', error);
+        toast({
+          title: "Error loading speeches",
+          description: "Failed to load user speeches. Please try again.",
+          variant: "destructive"
+        });
         setSpeeches([]);
       } else {
-        console.log('Fetched speeches for user:', userId, 'Count:', data?.length || 0);
-        console.log('Speech data:', data);
-        setSpeeches(data || []);
-        calculateTotalActivityTime(data || []);
+        console.log('Successfully fetched speeches for user:', userId);
+        console.log('Speeches data:', data);
+        
+        // Process speeches to ensure proper formatting
+        const processedSpeeches = data?.map(speech => ({
+          ...speech,
+          created_at: speech.created_at || new Date().toISOString(),
+          updated_at: speech.updated_at || speech.created_at || new Date().toISOString()
+        })) || [];
+        
+        console.log('Processed speeches:', processedSpeeches);
+        setSpeeches(processedSpeeches);
+        calculateTotalActivityTime(processedSpeeches);
       }
     } catch (error) {
       console.error('Exception fetching user speeches:', error);
+      toast({
+        title: "Error loading speeches",
+        description: "An unexpected error occurred while loading speeches.",
+        variant: "destructive"
+      });
       setSpeeches([]);
     } finally {
       setIsLoadingSpeeches(false);
     }
-  }, []);
+  }, [toast]);
 
   // Calculate user statistics
   const calculateUserStats = useCallback((user: User) => {
@@ -121,6 +142,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
         calculateUserStats(user);
         
         // Fetch speeches for this user
+        console.log('About to fetch speeches for user:', user.id);
         fetchUserSpeeches(user.id);
       }
     } else if (!open) {
