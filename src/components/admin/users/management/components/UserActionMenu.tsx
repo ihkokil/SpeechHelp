@@ -10,15 +10,13 @@ import {
   Eye,
   UserCheck,
   Shield,
-  ShieldCheck,
-  ShieldX,
   BadgePercent,
 } from 'lucide-react';
 
 interface UserActionMenuProps {
   user: User;
   onViewDetails: (user: User) => void;
-  onToggleAdmin: (user: User) => void;
+  onManagePermissions: (user: User) => void;
   onToggleUserActive: (userId: string, isActive: boolean) => void;
   onDeleteUser: (userId: string) => void;
   onSendEmail?: (user: User) => void;
@@ -28,16 +26,12 @@ interface UserActionMenuProps {
 const UserActionMenu: React.FC<UserActionMenuProps> = ({
   user,
   onViewDetails,
-  onToggleAdmin,
+  onManagePermissions,
   onToggleUserActive,
   onDeleteUser,
   onSendEmail,
   onUpdateSubscription
 }) => {
-  // Check if user is the original admin that cannot be removed
-  const isProtectedAdmin = user.email === 'speechhelpmaster@example.com' || user.username === 'speechhelpmaster';
-  const isCurrentlyAdmin = user.is_admin === true;
-
   // Prevent default event behavior and propagation for all handlers
   const handleAction = (
     e: React.MouseEvent, 
@@ -60,20 +54,6 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     onToggleUserActive(user.id, user.is_active !== false);
   };
 
-  // Handler for admin toggle
-  const handleToggleAdmin = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (isProtectedAdmin && isCurrentlyAdmin) {
-      console.log('Cannot remove admin privileges from protected admin user');
-      return;
-    }
-    
-    console.log(`Toggle admin triggered for user ${user.id}, current admin state: ${isCurrentlyAdmin}`);
-    onToggleAdmin(user);
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -92,21 +72,11 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         </DropdownMenuItem>
         
         <DropdownMenuItem 
-          onClick={handleToggleAdmin}
-          disabled={isProtectedAdmin && isCurrentlyAdmin}
-          id={`toggle-admin-${user.id}`}
+          onClick={(e) => handleAction(e, onManagePermissions, user)} 
+          id={`manage-permissions-${user.id}`}
         >
-          {isCurrentlyAdmin ? (
-            <>
-              <ShieldX className="mr-2 h-4 w-4" />
-              <span>{isProtectedAdmin ? 'Protected Admin' : 'Remove from Admin'}</span>
-            </>
-          ) : (
-            <>
-              <ShieldCheck className="mr-2 h-4 w-4" />
-              <span>Make Admin</span>
-            </>
-          )}
+          <Shield className="mr-2 h-4 w-4" />
+          <span>Manage Permissions</span>
         </DropdownMenuItem>
         
         {onSendEmail && (

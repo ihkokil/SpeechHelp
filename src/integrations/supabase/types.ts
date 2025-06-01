@@ -679,18 +679,6 @@ export type Database = {
         }
         Returns: string
       }
-      toggle_user_admin_access: {
-        Args: { user_id_param: string; enable_admin: boolean }
-        Returns: Json
-      }
-      toggle_user_admin_status: {
-        Args: {
-          user_id_param: string
-          new_admin_status: boolean
-          new_admin_role?: string
-        }
-        Returns: Json
-      }
       update_user_admin_status: {
         Args: {
           user_id: string
