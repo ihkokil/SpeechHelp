@@ -87,10 +87,19 @@ export const formatUserDisplayName = (user: User) => {
 };
 
 export const getUserPhone = (user: User) => {
+  // Check both user_metadata.phone and direct phone field
   const phone = user.user_metadata?.phone || user.phone;
   if (!phone) return '—';
   
-  // Use the improved phone formatting function
+  // Use the enhanced phone formatting function with debug logging
+  console.log('📋 Getting phone for user in table:', {
+    userId: user.id,
+    email: user.email,
+    metadataPhone: user.user_metadata?.phone,
+    directPhone: user.phone,
+    selectedPhone: phone
+  });
+  
   return formatPhoneWithCountryCode(phone, user);
 };
 
@@ -106,7 +115,7 @@ export const getCountryCode = (user: User) => {
   return extractCountryCodeFromUser(user);
 };
 
-// New function to get country flag emoji
+// Function to get country flag emoji
 export const getCountryFlag = (user: User) => {
   const countryCode = extractCountryCodeFromUser(user);
   const country = getCountryByCode(countryCode);
