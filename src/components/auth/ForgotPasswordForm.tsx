@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
@@ -74,25 +73,27 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
           </div>
 
           <div className="text-center space-y-4">
-            <button
-              type="button"
-              onClick={() => {
-                setEmailSent(false);
-                setEmail('');
-              }}
-              className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
-            >
-              Try a different email
-            </button>
-            
-            <button
-              type="button"
-              onClick={onBackToSignIn}
-              className="text-pink-600 hover:text-pink-800 font-semibold transition-colors inline-flex items-center"
-            >
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              Back to Sign In
-            </button>
+            <div className="flex justify-center space-x-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmailSent(false);
+                  setEmail('');
+                }}
+                className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
+              >
+                Try a different email
+              </button>
+              
+              <button
+                type="button"
+                onClick={onBackToSignIn}
+                className="text-pink-600 hover:text-pink-800 font-semibold transition-colors inline-flex items-center"
+              >
+                <ArrowLeft className="mr-1 h-4 w-4" />
+                Back to Sign In
+              </button>
+            </div>
           </div>
         </div>
       </>
