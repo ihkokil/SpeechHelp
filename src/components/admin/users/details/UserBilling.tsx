@@ -14,8 +14,6 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
   console.log('UserBilling rendering for user:', {
     id: user.id,
     subscription_plan: user.subscription_plan,
-    subscription_period: user.subscription_period,
-    subscription_amount: user.subscription_amount,
     subscription_end_date: user.subscription_end_date,
     stripe_customer_id: user.stripe_customer_id,
     subscription_status: user.subscription_status
@@ -45,38 +43,6 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     
     // Capitalize first letter if no plan rule found
     return planType.charAt(0).toUpperCase() + planType.slice(1).replace('_', ' ');
-  };
-
-  // Get billing period display
-  const getBillingPeriod = () => {
-    if (!user.subscription_period) return 'N/A';
-    
-    switch (user.subscription_period.toLowerCase()) {
-      case 'monthly':
-        return 'Monthly';
-      case 'yearly':
-        return 'Yearly';
-      case 'annual':
-        return 'Yearly';
-      default:
-        return user.subscription_period;
-    }
-  };
-
-  // Get subscription amount display
-  const getSubscriptionAmount = () => {
-    // If no amount or amount is 0, check if it's a free plan
-    if (!user.subscription_amount || user.subscription_amount === 0) {
-      const planType = user.subscription_plan?.toLowerCase();
-      if (planType === 'free_trial' || planType === 'free' || !planType) {
-        return 'Free';
-      }
-      // If it's a paid plan but no amount, show N/A
-      return 'N/A';
-    }
-    
-    // Convert from cents to dollars and format
-    return `$${(user.subscription_amount / 100).toFixed(2)}`;
   };
 
   return (
@@ -122,11 +88,16 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Billing Period</p>
-              <p className="text-sm">{getBillingPeriod()}</p>
+              <p className="text-sm">{user.subscription_period || 'N/A'}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Amount</p>
-              <p className="text-sm">{getSubscriptionAmount()}</p>
+              <p className="text-sm">
+                {user.subscription_amount 
+                  ? `$${(user.subscription_amount / 100).toFixed(2)}` 
+                  : 'Free'
+                }
+              </p>
             </div>
           </div>
           
