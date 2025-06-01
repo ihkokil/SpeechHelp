@@ -53,15 +53,12 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get the origin from request headers
-    const origin = req.headers.get('origin') || 'https://preview--speech-helper-ai.lovable.app';
-    
-    // Send password reset email using Supabase auth with proper redirect
+    // Send password reset email using Supabase auth
     const { error: resetError } = await supabase.auth.admin.generateLink({
       type: 'recovery',
       email: email,
       options: {
-        redirectTo: `${origin}/auth?type=recovery`
+        redirectTo: `${Deno.env.get('SUPABASE_URL').replace('https://', 'https://').replace('.supabase.co', '')}.supabase.co/auth/v1/verify?redirect_to=${encodeURIComponent(`${req.headers.get('origin') || 'http://localhost:5173'}/auth?type=recovery`)}`
       }
     });
 
