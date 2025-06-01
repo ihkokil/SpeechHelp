@@ -4,14 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
 
-// Define the expected response type from the toggle_user_admin_status function
-interface ToggleAdminStatusResponse {
+// Define the expected response type from the toggle_user_admin_access function
+interface ToggleAdminAccessResponse {
   success: boolean;
   error?: string;
-  id?: string;
-  is_admin?: boolean;
-  admin_role?: string | null;
-  updated_at?: string;
+  message?: string;
+  admin_enabled?: boolean;
 }
 
 export const useSimpleAdminToggle = () => {
@@ -39,17 +37,16 @@ export const useSimpleAdminToggle = () => {
     const newAdminStatus = !user.is_admin;
     
     try {
-      console.log('Calling database function to toggle admin status for user:', user.id, 'New status:', newAdminStatus);
+      console.log('Calling database function to toggle admin access for user:', user.id, 'New status:', newAdminStatus);
       
-      // Use the new database function to safely toggle admin status
-      const { data, error } = await supabase.rpc('toggle_user_admin_status', {
+      // Use the new database function to safely toggle admin access
+      const { data, error } = await supabase.rpc('toggle_user_admin_access', {
         user_id_param: user.id,
-        new_admin_status: newAdminStatus,
-        new_admin_role: newAdminStatus ? 'admin' : null
+        enable_admin: newAdminStatus
       });
 
       if (error) {
-        console.error('Error calling toggle_user_admin_status function:', error);
+        console.error('Error calling toggle_user_admin_access function:', error);
         toast({
           title: 'Error',
           description: 'Failed to update admin status. Please try again.',
@@ -59,7 +56,7 @@ export const useSimpleAdminToggle = () => {
       }
 
       // Cast the data to our expected type using unknown first
-      const response = data as unknown as ToggleAdminStatusResponse;
+      const response = data as unknown as ToggleAdminAccessResponse;
 
       if (!response?.success) {
         console.error('Function returned error:', response?.error);
@@ -71,7 +68,7 @@ export const useSimpleAdminToggle = () => {
         return;
       }
 
-      console.log('Successfully updated admin status via database function:', response);
+      console.log('Successfully updated admin access via database function:', response);
 
       // Update the user in the local state
       const updatedUser = {
@@ -84,7 +81,7 @@ export const useSimpleAdminToggle = () => {
 
       toast({
         title: 'Success',
-        description: `${user.email} has been ${newAdminStatus ? 'granted' : 'removed from'} admin privileges.`,
+        description: response.message || `${user.email} has been ${newAdminStatus ? 'granted' : 'removed from'} admin privileges.`,
       });
 
     } catch (error) {
