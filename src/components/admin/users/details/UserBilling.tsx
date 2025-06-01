@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { format } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -48,34 +49,68 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
 
   // Get billing period display
   const getBillingPeriod = () => {
-    if (!user.subscription_period) return 'N/A';
+    // Handle undefined/null values more explicitly
+    if (!user.subscription_period || user.subscription_period === null || user.subscription_period === undefined) {
+      // If user has a paid plan but no period info, show default
+      const planType = user.subscription_plan?.toLowerCase();
+      if (planType && planType !== 'free_trial' && planType !== 'free') {
+        return 'Monthly (Default)';
+      }
+      return 'N/A';
+    }
     
-    switch (user.subscription_period.toLowerCase()) {
+    const period = String(user.subscription_period).toLowerCase();
+    switch (period) {
       case 'monthly':
         return 'Monthly';
       case 'yearly':
-        return 'Yearly';
       case 'annual':
         return 'Yearly';
       default:
-        return user.subscription_period;
+        return period.charAt(0).toUpperCase() + period.slice(1);
     }
   };
 
   // Get subscription amount display
   const getSubscriptionAmount = () => {
-    // If no amount or amount is 0, check if it's a free plan
-    if (!user.subscription_amount || user.subscription_amount === 0) {
+    // Handle undefined/null values more explicitly
+    const amount = user.subscription_amount;
+    
+    // Check for undefined, null, or 0 amount
+    if (amount === null || amount === undefined || amount === 0) {
       const planType = user.subscription_plan?.toLowerCase();
       if (planType === 'free_trial' || planType === 'free' || !planType) {
         return 'Free';
       }
-      // If it's a paid plan but no amount, show N/A
-      return 'N/A';
+      
+      // If it's a paid plan but amount is missing, try to show plan-based estimate
+      if (planType === 'pro') {
+        return '$29.99 (Est.)';
+      } else if (planType === 'premium') {
+        return '$49.99 (Est.)';
+      }
+      
+      return 'Amount not set';
     }
     
     // Convert from cents to dollars and format
-    return `$${(user.subscription_amount / 100).toFixed(2)}`;
+    const dollarAmount = Number(amount) / 100;
+    return `$${dollarAmount.toFixed(2)}`;
+  };
+
+  // Get payment method display
+  const getPaymentMethod = () => {
+    if (user.stripe_customer_id && user.stripe_customer_id !== null && user.stripe_customer_id !== undefined) {
+      return 'Stripe';
+    }
+    
+    // Check if it's a paid plan without payment method
+    const planType = user.subscription_plan?.toLowerCase();
+    if (planType && planType !== 'free_trial' && planType !== 'free') {
+      return 'Payment method not configured';
+    }
+    
+    return 'None required';
   };
 
   return (
@@ -117,7 +152,7 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Payment Method</p>
-              <p className="text-sm">{user.stripe_customer_id ? 'Stripe' : 'None on file'}</p>
+              <p className="text-sm">{getPaymentMethod()}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Billing Period</p>
