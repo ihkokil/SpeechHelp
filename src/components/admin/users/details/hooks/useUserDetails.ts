@@ -95,22 +95,29 @@ export const useUserDetails = (user: User | null, open: boolean) => {
   // Function to fetch speech data
   const fetchUserSpeeches = useCallback(async (userId: string) => {
     if (!userId) {
-      console.log('No userId provided for speech fetching');
+      console.log('❌ No userId provided for speech fetching');
       return;
     }
     
-    console.log('Fetching speeches for user:', userId);
+    console.log('🔍 Starting speech fetch for user:', userId);
     setIsLoadingSpeeches(true);
     
     try {
+      console.log('📡 Making Supabase query...');
       const { data: speechData, error } = await supabase
         .from('speeches')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
         
+      console.log('📊 Supabase query response:', {
+        error: error,
+        dataCount: speechData?.length || 0,
+        data: speechData
+      });
+        
       if (error) {
-        console.error('Error fetching user speeches:', error);
+        console.error('❌ Error fetching user speeches:', error);
         toast({
           title: "Error loading speeches",
           description: `Failed to load speeches: ${error.message}`,
@@ -120,18 +127,20 @@ export const useUserDetails = (user: User | null, open: boolean) => {
         return;
       }
 
-      console.log('Raw speech data from database:', speechData);
+      console.log('📝 Raw speech data from database:', speechData);
       
       if (!speechData || speechData.length === 0) {
-        console.log('No speeches found for user');
+        console.log('ℹ️ No speeches found for user');
         setSpeeches([]);
         calculateTotalActivityTime([]);
         return;
       }
 
+      console.log(`🔄 Processing ${speechData.length} speeches...`);
+      
       // Process speeches with proper content extraction
       const processedSpeeches = speechData.map((speech, index) => {
-        console.log(`Processing speech ${index + 1}:`, {
+        console.log(`🔍 Processing speech ${index + 1}:`, {
           id: speech.id,
           title: speech.title,
           contentType: typeof speech.content,
@@ -148,7 +157,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
             updated_at: speech.updated_at || speech.created_at || new Date().toISOString()
           };
 
-          console.log(`Successfully processed speech ${index + 1}:`, {
+          console.log(`✅ Successfully processed speech ${index + 1}:`, {
             id: processedSpeech.id,
             title: processedSpeech.title,
             contentLength: processedSpeech.content?.length || 0,
@@ -157,7 +166,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
 
           return processedSpeech;
         } catch (error) {
-          console.error(`Error processing speech ${index + 1}:`, error);
+          console.error(`❌ Error processing speech ${index + 1}:`, error);
           
           // Return speech with fallback content
           return {
@@ -169,7 +178,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
         }
       });
 
-      console.log('Final processed speeches:', {
+      console.log('🎉 Final processed speeches:', {
         count: processedSpeeches.length,
         speeches: processedSpeeches.map(s => ({
           id: s.id,
@@ -179,11 +188,12 @@ export const useUserDetails = (user: User | null, open: boolean) => {
         }))
       });
 
+      console.log('📱 Setting speeches state with:', processedSpeeches.length, 'speeches');
       setSpeeches(processedSpeeches);
       calculateTotalActivityTime(processedSpeeches);
       
     } catch (error) {
-      console.error('Exception fetching user speeches:', error);
+      console.error('💥 Exception fetching user speeches:', error);
       toast({
         title: "Error loading speeches",
         description: "An unexpected error occurred while loading speeches.",
@@ -191,6 +201,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
       });
       setSpeeches([]);
     } finally {
+      console.log('🏁 Speech fetching completed, setting loading to false');
       setIsLoadingSpeeches(false);
     }
   }, [toast, extractSpeechContent]);
@@ -227,7 +238,10 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     let isMounted = true;
     
     if (user && open) {
-      console.log('User details drawer opened for user:', user.id);
+      console.log('🎯 User details drawer opened for user:', {
+        userId: user.id,
+        userEmail: user.email
+      });
       
       if (isMounted) {
         // Reset state first
@@ -237,6 +251,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
         calculateUserStats(user);
         
         // Fetch speeches for this user
+        console.log('🚀 Triggering speech fetch...');
         fetchUserSpeeches(user.id);
       }
     } else if (!open) {
