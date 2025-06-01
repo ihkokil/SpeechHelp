@@ -68,7 +68,7 @@ export const useFetchUsers = () => {
             full_name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || '',
             email: authUser.email,
             phone: authUser.raw_user_meta_data?.phone || profile.phone || '',
-            country_code: authUser.raw_user_meta_data?.country_code || '',
+            country_code: authUser.raw_user_meta_data?.country_code || profile.country_code || '',
             street_address: authUser.raw_user_meta_data?.street_address || '',
             city: authUser.raw_user_meta_data?.city || '',
             state: authUser.raw_user_meta_data?.state || '',
@@ -83,6 +83,11 @@ export const useFetchUsers = () => {
           subscription_status: profile.subscription_plan ? 'active' : undefined,
           subscription_end_date: profile.subscription_end_date || undefined,
           subscription_plan: profile.subscription_plan || undefined,
+          // Add direct fields from profiles table for easier access
+          first_name: profile.first_name || authUser.raw_user_meta_data?.first_name || '',
+          last_name: profile.last_name || authUser.raw_user_meta_data?.last_name || '',
+          phone: profile.phone || authUser.raw_user_meta_data?.phone || '',
+          country_code: profile.country_code || authUser.raw_user_meta_data?.country_code || 'US',
         };
         
         return user;
@@ -111,7 +116,7 @@ export const useFetchUsers = () => {
         });
       }
       
-      console.log('Mapped users with admin status:', mappedUsers);
+      console.log('Mapped users with admin status and proper profile data:', mappedUsers);
       setUsers(mappedUsers);
       return mappedUsers;
     } catch (err) {

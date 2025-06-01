@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   email: string;
@@ -37,6 +36,7 @@ export interface User {
   last_name?: string;
   username?: string;
   phone?: string;
+  country_code?: string;
   // Stripe related fields
   stripe_customer_id?: string;
   stripe_subscription_id?: string;
