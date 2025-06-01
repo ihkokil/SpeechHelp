@@ -61,6 +61,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     const today = new Date();
     const diffTime = Math.abs(today.getTime() - createdDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    console.log('User joined days ago:', diffDays, 'from date:', user.created_at);
     setUserJoinedDays(diffDays);
   }, []);
   
@@ -95,6 +96,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
       return total + estimatedMinutes;
     }, 0);
     
+    console.log('Calculated total activity time:', totalTime, 'minutes for', speeches.length, 'speeches');
     setTotalActivityTime(totalTime);
   }, []);
 
@@ -104,13 +106,18 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     
     if (user && open) {
       console.log('User details drawer opened for user:', user.id);
-      console.log('User data:', user);
+      console.log('User data:', {
+        id: user.id,
+        email: user.email,
+        created_at: user.created_at,
+        subscription_plan: user.subscription_plan
+      });
       
       if (isMounted) {
         // Reset state first
         resetState();
         
-        // Calculate user stats
+        // Calculate user stats immediately
         calculateUserStats(user);
         
         // Fetch speeches for this user

@@ -11,6 +11,16 @@ interface UserBillingProps {
 }
 
 export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
+  console.log('UserBilling rendering for user:', {
+    id: user.id,
+    subscription_plan: user.subscription_plan,
+    subscription_period: user.subscription_period,
+    subscription_amount: user.subscription_amount,
+    subscription_end_date: user.subscription_end_date,
+    stripe_customer_id: user.stripe_customer_id,
+    subscription_status: user.subscription_status
+  });
+
   // Format the subscription end date for display
   const formattedEndDate = user.subscription_end_date 
     ? format(new Date(user.subscription_end_date), 'PPP') 
@@ -21,12 +31,11 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     ? 'Active'
     : 'Inactive';
   
-  // Get plan display name - check both subscription_plan and subscription_plan
+  // Get plan display name
   const getPlanDisplayName = (user: User) => {
-    // Use subscription_plan if available, otherwise use subscription_plan
-    const planType = user.subscription_plan || user.subscription_plan || '';
+    const planType = user.subscription_plan || 'free_trial';
     
-    if (!planType) return 'Free Plan';
+    if (!planType || planType === 'free_trial') return 'Free Trial';
     
     // Use the plan rules if available
     const planKey = planType as SubscriptionPlan;
@@ -34,7 +43,40 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
       return PLAN_RULES[planKey].displayName;
     }
     
-    return planType || 'Free Plan';
+    // Capitalize first letter if no plan rule found
+    return planType.charAt(0).toUpperCase() + planType.slice(1).replace('_', ' ');
+  };
+
+  // Get billing period display
+  const getBillingPeriod = () => {
+    if (!user.subscription_period) return 'N/A';
+    
+    switch (user.subscription_period.toLowerCase()) {
+      case 'monthly':
+        return 'Monthly';
+      case 'yearly':
+        return 'Yearly';
+      case 'annual':
+        return 'Yearly';
+      default:
+        return user.subscription_period;
+    }
+  };
+
+  // Get subscription amount display
+  const getSubscriptionAmount = () => {
+    // If no amount or amount is 0, check if it's a free plan
+    if (!user.subscription_amount || user.subscription_amount === 0) {
+      const planType = user.subscription_plan?.toLowerCase();
+      if (planType === 'free_trial' || planType === 'free' || !planType) {
+        return 'Free';
+      }
+      // If it's a paid plan but no amount, show N/A
+      return 'N/A';
+    }
+    
+    // Convert from cents to dollars and format
+    return `$${(user.subscription_amount / 100).toFixed(2)}`;
   };
 
   return (
@@ -71,12 +113,20 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Next Billing Date</p>
+              <p className="text-sm font-medium text-muted-foreground">End Date</p>
               <p className="text-sm">{formattedEndDate}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Payment Method</p>
               <p className="text-sm">{user.stripe_customer_id ? 'Stripe' : 'None on file'}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Billing Period</p>
+              <p className="text-sm">{getBillingPeriod()}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Amount</p>
+              <p className="text-sm">{getSubscriptionAmount()}</p>
             </div>
           </div>
           
@@ -90,11 +140,24 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Billing History</CardTitle>
+          <CardTitle>Account Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md bg-muted/50 p-6 text-center">
-            <p className="text-muted-foreground">No billing records available.</p>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">User ID:</span>
+              <span className="text-sm font-mono">{user.id}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Created:</span>
+              <span className="text-sm">
+                {user.created_at ? format(new Date(user.created_at), 'PPP') : 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Stripe Customer ID:</span>
+              <span className="text-sm font-mono">{user.stripe_customer_id || 'None'}</span>
+            </div>
           </div>
         </CardContent>
       </Card>
