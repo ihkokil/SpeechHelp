@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
-import { Lock, Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ResetPasswordFormProps {
@@ -19,7 +19,6 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
   const [loading, setLoading] = useState(false);
   const [userEmail, setUserEmail] = useState(email);
   const [hasValidSession, setHasValidSession] = useState(false);
-  const [resetSuccess, setResetSuccess] = useState(false);
   const { toast } = useToast();
 
   // Check for valid recovery session and get user email
@@ -100,19 +99,15 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
         throw error;
       }
 
-      setResetSuccess(true);
       toast({
         title: "Password updated successfully",
-        description: "Your password has been updated. You can now sign in with your new password.",
+        description: "Your password has been updated. Please sign in with your new password.",
       });
 
       // Sign out the user after successful password reset so they need to sign in again
       await supabase.auth.signOut();
       
-      // Wait a moment before calling the success callback
-      setTimeout(() => {
-        onResetSuccess();
-      }, 2000);
+      onResetSuccess();
 
     } catch (error: any) {
       console.error('Password reset error:', error);
@@ -134,40 +129,6 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
       setLoading(false);
     }
   };
-
-  if (resetSuccess) {
-    return (
-      <>
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <CheckCircle className="h-16 w-16 text-green-500" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Password Reset Successful</h1>
-          <p className="text-gray-600">
-            Your password has been updated successfully. You will be redirected to sign in.
-          </p>
-        </div>
-        
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <CheckCircle className="h-5 w-5 text-green-400" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-green-800">
-                Password updated successfully
-              </h3>
-              <div className="mt-2 text-sm text-green-700">
-                <p>
-                  You can now sign in with your new password.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  }
 
   return (
     <>
@@ -206,7 +167,6 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
               placeholder="Enter new password"
               autoFocus
               disabled={!hasValidSession}
-              minLength={6}
             />
             <button
               type="button"
@@ -220,7 +180,6 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
               )}
             </button>
           </div>
-          <p className="text-xs text-gray-500">Password must be at least 6 characters long</p>
         </div>
 
         <div className="space-y-2">
@@ -240,7 +199,6 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
               className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
               placeholder="Confirm new password"
               disabled={!hasValidSession}
-              minLength={6}
             />
             <button
               type="button"
