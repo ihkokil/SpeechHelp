@@ -12,6 +12,8 @@ export interface User {
   subscription_status?: string;
   subscription_plan?: string | null;
   subscription_end_date?: string | null;
+  subscription_period?: string | null;
+  subscription_amount?: number | null;
   app_metadata?: {
     provider?: string;
     providers?: string[];
