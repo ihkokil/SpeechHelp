@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +23,7 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
     setError(null);
 
     try {
-      // First check if email exists by calling our edge function
+      // Only call our edge function - this handles everything including the actual email sending
       const { data, error: functionError } = await supabase.functions.invoke('send-password-reset', {
         body: { email }
       });
@@ -31,31 +32,12 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
         throw new Error('Failed to send reset email. Please try again.');
       }
 
-      // Also use Supabase's built-in password reset for the actual email sending
-      const { error: supabaseError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?type=recovery`,
-      });
-
-      if (supabaseError) {
-        // Check if it's a user not found error
-        if (supabaseError.message.includes('User not found') || supabaseError.message.includes('Invalid email')) {
-          setError('No account found with this email address.');
-          toast({
-            title: "Email not found",
-            description: "No account found with this email address.",
-            variant: "destructive"
-          });
-          setLoading(false);
-          return;
-        }
-        throw supabaseError;
-      }
-
+      // The edge function always returns success for security reasons
       setEmailSent(true);
       onCodeSent(email);
       toast({
         title: "Reset link sent",
-        description: "Please check your email for the password reset link.",
+        description: "If an account with this email exists, a reset link has been sent.",
       });
 
     } catch (error: any) {
