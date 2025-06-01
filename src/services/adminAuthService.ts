@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -172,112 +173,26 @@ export const adminAuthService = {
         .from('profiles')
         .select('id, is_admin, first_name, last_name, username')
         .eq('is_admin', true)
-        .eq('id', (await supabase.auth.getUser()).data.user?.id || 'unknown')
+        .eq('username', credentials.username)
         .single();
 
       if (profileError) {
-        console.log('No admin profile found through user session');
-        
-        // Try alternative lookup using the username/email provided
-        let userEmail = credentials.username;
-        
-        // If username doesn't contain @, try to find the user by their name
-        if (!credentials.username.includes('@')) {
-          const { data: userProfiles } = await supabase
-            .from('profiles')
-            .select('id, first_name, last_name, username')
-            .eq('is_admin', true)
-            .or(`first_name.ilike.${credentials.username},last_name.ilike.${credentials.username},username.ilike.${credentials.username}`);
-          
-          if (userProfiles && userProfiles.length > 0) {
-            const matchedProfile = userProfiles[0];
-            
-            // Get the email from auth.users for this profile
-            const { data: authUser } = await supabase
-              .from('auth.users')
-              .select('email')
-              .eq('id', matchedProfile.id)
-              .single();
-              
-            if (authUser) {
-              userEmail = authUser.email;
-            }
-          } else {
-            console.log('No admin profile found for username:', credentials.username);
-            return { 
-              success: false, 
-              error: 'Invalid credentials.' 
-            };
-          }
-        }
-
-        // Try to authenticate with the email
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-          email: userEmail,
-          password: credentials.password,
-        });
-
-        if (authError || !authData.user) {
-          console.log('Password verification failed for user');
-          return { 
-            success: false, 
-            error: 'Invalid credentials.' 
-          };
-        }
-
-        // Get the profile for this authenticated user
-        const { data: userProfile } = await supabase
-          .from('profiles')
-          .select('id, is_admin, first_name, last_name, username')
-          .eq('id', authData.user.id)
-          .eq('is_admin', true)
-          .single();
-
-        if (!userProfile) {
-          await supabase.auth.signOut();
-          return { 
-            success: false, 
-            error: 'User does not have admin privileges.' 
-          };
-        }
-
-        // Sign out immediately to prevent auto-login to regular app
-        await supabase.auth.signOut();
-
-        // Create admin user object from profile data
-        const adminUser: AdminUser = {
-          id: userProfile.id,
-          username: userProfile.username || `${userProfile.first_name} ${userProfile.last_name}`,
-          email: authData.user.email || '',
-          is_active: true,
-          is_super_admin: false,
-          last_login: null,
-          allowed_ip_addresses: null
-        };
-
-        await this.logActivity({
-          adminUserId: adminUser.id,
-          action: 'LOGIN',
-          entityType: 'ADMIN_USER',
-          entityId: adminUser.id
-        });
-
+        console.log('No admin profile found for username:', credentials.username);
         return { 
-          success: true, 
-          user: adminUser
+          success: false, 
+          error: 'Invalid credentials.' 
         };
       }
 
       console.log('Found admin profile:', profileData);
 
-      // Try to authenticate the user with their regular account using email
-      const { data: authUser } = await supabase
-        .rpc('authenticate_user', {
-          user_email: credentials.username.includes('@') ? credentials.username : profileData.username,
-          user_password: credentials.password
-        });
+      // Try to authenticate with their regular account
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: credentials.username.includes('@') ? credentials.username : `${credentials.username}@example.com`,
+        password: credentials.password,
+      });
 
-      if (!authUser) {
+      if (authError || !authData.user) {
         console.log('Password verification failed for admin user');
         return { 
           success: false, 
@@ -285,11 +200,23 @@ export const adminAuthService = {
         };
       }
 
+      // Verify this user has admin privileges
+      if (authData.user.id !== profileData.id) {
+        await supabase.auth.signOut();
+        return { 
+          success: false, 
+          error: 'User authentication mismatch.' 
+        };
+      }
+
+      // Sign out immediately to prevent auto-login to regular app
+      await supabase.auth.signOut();
+
       // Create admin user object from profile data
       const adminUser: AdminUser = {
         id: profileData.id,
         username: profileData.username || `${profileData.first_name} ${profileData.last_name}`,
-        email: credentials.username.includes('@') ? credentials.username : '',
+        email: authData.user.email || '',
         is_active: true,
         is_super_admin: false,
         last_login: null,
