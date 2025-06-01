@@ -40,10 +40,22 @@ serve(async (req) => {
       throw new Error('Failed to fetch users from auth');
     }
     
-    // Get all profiles
+    // Get all profiles with complete subscription data
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('*');
+      .select(`
+        *,
+        subscription_plan,
+        subscription_period,
+        subscription_amount,
+        subscription_status,
+        subscription_start_date,
+        subscription_end_date,
+        subscription_price_id,
+        subscription_currency,
+        stripe_customer_id,
+        stripe_subscription_id
+      `);
     
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError);
@@ -102,8 +114,15 @@ serve(async (req) => {
         is_admin: profile.is_admin || false,
         admin_role: safeString(profile.admin_role) || null,
         permissions: profile.permissions || [],
+        // Complete subscription fields
         subscription_plan: safeString(profile.subscription_plan) || null,
+        subscription_period: safeString(profile.subscription_period) || null,
+        subscription_amount: profile.subscription_amount || null,
+        subscription_status: safeString(profile.subscription_status) || null,
+        subscription_start_date: profile.subscription_start_date || null,
         subscription_end_date: profile.subscription_end_date || null,
+        subscription_price_id: safeString(profile.subscription_price_id) || null,
+        subscription_currency: safeString(profile.subscription_currency) || 'usd',
         stripe_customer_id: safeString(profile.stripe_customer_id) || null,
         stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
         // Enhanced user_metadata with proper fallbacks
@@ -122,8 +141,15 @@ serve(async (req) => {
           is_admin: profile.is_admin || false,
           admin_role: safeString(profile.admin_role) || null,
           permissions: profile.permissions || [],
+          // Complete subscription data in profile object
           subscription_plan: safeString(profile.subscription_plan) || null,
+          subscription_period: safeString(profile.subscription_period) || null,
+          subscription_amount: profile.subscription_amount || null,
+          subscription_status: safeString(profile.subscription_status) || null,
+          subscription_start_date: profile.subscription_start_date || null,
           subscription_end_date: profile.subscription_end_date || null,
+          subscription_price_id: safeString(profile.subscription_price_id) || null,
+          subscription_currency: safeString(profile.subscription_currency) || 'usd',
           stripe_customer_id: safeString(profile.stripe_customer_id) || null,
           stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
           created_at: profile.created_at,
