@@ -20,7 +20,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     setTotalActivityTime(0);
   }, []);
 
-  // Function to fetch speech data
+  // Function to fetch speech data directly from database
   const fetchUserSpeeches = useCallback(async (userId: string) => {
     if (!userId) {
       console.log('No userId provided for speech fetching');
@@ -31,32 +31,40 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     setIsLoadingSpeeches(true);
     
     try {
-      const { data, error } = await supabase
+      // Direct query to speeches table with detailed logging
+      console.log('Querying speeches table for user_id:', userId);
+      
+      const { data, error, count } = await supabase
         .from('speeches')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
         
+      console.log('Raw query result:', { data, error, count });
+      console.log('Query executed successfully, found', count, 'speeches');
+        
       if (error) {
-        console.error('Error fetching user speeches:', error);
+        console.error('Supabase error fetching user speeches:', error);
         toast({
           title: "Error loading speeches",
-          description: "Failed to load user speeches. Please try again.",
+          description: `Database error: ${error.message}`,
           variant: "destructive"
         });
         setSpeeches([]);
       } else {
         console.log('Successfully fetched speeches for user:', userId);
-        console.log('Speeches data:', data);
+        console.log('Raw speeches data from database:', data);
         
         // Process speeches to ensure proper formatting
-        const processedSpeeches = data?.map(speech => ({
+        const processedSpeeches = (data || []).map(speech => ({
           ...speech,
           created_at: speech.created_at || new Date().toISOString(),
           updated_at: speech.updated_at || speech.created_at || new Date().toISOString()
-        })) || [];
+        }));
         
         console.log('Processed speeches:', processedSpeeches);
+        console.log('Total speeches processed:', processedSpeeches.length);
+        
         setSpeeches(processedSpeeches);
         calculateTotalActivityTime(processedSpeeches);
       }

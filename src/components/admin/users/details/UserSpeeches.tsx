@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, FileText, Calendar, Type, Eye, Clock } from 'lucide-react';
+import { Loader2, FileText, Calendar, Type, Eye, Clock, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface UserSpeechesProps {
@@ -26,8 +26,21 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
     userId: user.id,
     speechesLength: speeches?.length,
     isLoadingSpeeches,
-    speeches: speeches
+    speeches: speeches,
+    speechesDetails: speeches?.map(s => ({
+      id: s.id,
+      title: s.title,
+      speech_type: s.speech_type,
+      created_at: s.created_at,
+      contentLength: s.content?.length
+    }))
   });
+
+  // Manual refresh function for testing
+  const handleRefresh = () => {
+    console.log('Manual refresh triggered for user:', user.id);
+    window.location.reload(); // Simple refresh for debugging
+  };
 
   // Helper function to get speech type display name
   const getSpeechTypeDisplay = (speechType: string): string => {
@@ -174,9 +187,20 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <FileText className="h-5 w-5 mr-2" />
-            User Speeches
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <FileText className="h-5 w-5 mr-2" />
+              User Speeches
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
           </CardTitle>
           <CardDescription>Speeches created by this user</CardDescription>
         </CardHeader>
@@ -185,8 +209,14 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">No speeches found for this user</p>
             <p className="text-sm text-muted-foreground mt-2">
-              This user hasn't created any speeches yet.
+              This user hasn't created any speeches yet, or they may not be properly linked to this user ID.
             </p>
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
+              <p><strong>Debug Info:</strong></p>
+              <p>User ID: {user.id}</p>
+              <p>Speeches Array Length: {speeches?.length || 0}</p>
+              <p>Loading State: {isLoadingSpeeches ? 'Yes' : 'No'}</p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -197,9 +227,20 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <FileText className="h-5 w-5 mr-2" />
-            User Speeches ({speeches.length})
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <FileText className="h-5 w-5 mr-2" />
+              User Speeches ({speeches.length})
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
           </CardTitle>
           <CardDescription>Speeches created by this user</CardDescription>
         </CardHeader>
