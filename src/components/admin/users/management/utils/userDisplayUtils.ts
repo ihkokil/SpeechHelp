@@ -1,7 +1,7 @@
 
 import { User } from '../../types';
 import { format, formatDistanceToNow } from 'date-fns';
-import { formatPhoneWithCountryCode, getCountryByCode, extractCountryCodeFromUser } from '@/utils/phoneUtils';
+import { formatPhoneWithCountryCode, getCountryByCode, extractCountryCodeFromUser, getPhoneFromDatabase } from '@/utils/phoneUtils';
 
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Never';
@@ -86,27 +86,23 @@ export const formatUserDisplayName = (user: User) => {
   return getUserName(user);
 };
 
+// Enhanced function to get user phone from database fields
 export const getUserPhone = (user: User) => {
-  // Check both user_metadata.phone and direct phone field
-  const phone = user.user_metadata?.phone || user.phone;
-  if (!phone) return '—';
-  
-  // Skip formatting if phone is obviously incomplete or invalid
-  const cleanPhone = phone.replace(/\D/g, '');
-  if (cleanPhone.length < 7) {
-    console.log('📋 Phone too short, returning as-is:', phone);
-    return phone;
-  }
-  
-  // Use the enhanced phone formatting function with debug logging
-  console.log('📋 Getting phone for user in table:', {
+  console.log('📋 Getting phone for user in details/profile:', {
     userId: user.id,
     email: user.email,
-    metadataPhone: user.user_metadata?.phone,
-    directPhone: user.phone,
-    selectedPhone: phone
+    profilePhone: user.phone,
+    metadataPhone: user.user_metadata?.phone
   });
   
+  // Get phone directly from database fields
+  const phone = getPhoneFromDatabase(user);
+  if (!phone) {
+    console.log('📋 No phone found in database for user:', user.email);
+    return '—';
+  }
+  
+  // Use the enhanced phone formatting function with database-sourced data
   return formatPhoneWithCountryCode(phone, user);
 };
 

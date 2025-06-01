@@ -57,32 +57,31 @@ export const parsePhoneNumber = (phoneNumber: string, countryCode: string): {
   return { country, formattedNumber: formatted };
 };
 
-// Enhanced function to extract country code from user metadata with multiple fallbacks
+// Enhanced function to extract country code from database with proper fallback priority
 export const extractCountryCodeFromUser = (user: any): string => {
   console.log('🔍 Extracting country code for user:', {
     userId: user.id,
     email: user.email,
-    userMetadataCountryCode: user.user_metadata?.country_code,
     profileCountryCode: user.country_code,
-    userMetadataCountry: user.user_metadata?.country,
-    rawMetadata: user.user_metadata
+    userMetadataCountryCode: user.user_metadata?.country_code,
+    userMetadataCountry: user.user_metadata?.country
   });
 
-  // Priority 1: Check user_metadata.country_code
-  if (user.user_metadata?.country_code) {
-    console.log('✅ Found country code in user_metadata:', user.user_metadata.country_code);
-    return user.user_metadata.country_code;
-  }
-  
-  // Priority 2: Check profiles.country_code (from the profiles table)
-  if (user.country_code) {
+  // Priority 1: Check profiles.country_code (main database field)
+  if (user.country_code && user.country_code !== '') {
     console.log('✅ Found country code in profiles table:', user.country_code);
     return user.country_code;
   }
   
-  // Priority 3: Try to map country name to country code
+  // Priority 2: Check user_metadata.country_code (auth metadata)
+  if (user.user_metadata?.country_code && user.user_metadata.country_code !== '') {
+    console.log('✅ Found country code in user_metadata:', user.user_metadata.country_code);
+    return user.user_metadata.country_code;
+  }
+  
+  // Priority 3: Try to map country name to country code from user metadata
   const countryName = user.user_metadata?.country;
-  if (countryName) {
+  if (countryName && countryName !== '') {
     console.log('🔍 Trying to map country name to code:', countryName);
     
     // Handle special cases first
@@ -114,58 +113,37 @@ export const extractCountryCodeFromUser = (user: any): string => {
     }
   }
   
-  // Priority 4: Try to detect from phone number format
-  const phone = user.user_metadata?.phone || user.phone;
-  if (phone) {
-    const detectedCountry = detectCountryFromPhoneNumber(phone);
-    if (detectedCountry) {
-      console.log('✅ Detected country from phone number:', phone, '->', detectedCountry);
-      return detectedCountry;
-    }
-  }
-  
-  // Priority 5: Default to US only if no other information is available
+  // Priority 4: Default to US as final fallback
   console.log('⚠️ No country code found, defaulting to US for user:', user.email);
   return 'US';
 };
 
-// New function to detect country from phone number format
-export const detectCountryFromPhoneNumber = (phone: string): string | null => {
-  if (!phone) return null;
-  
-  // Remove all non-numeric characters
-  const cleanPhone = phone.replace(/\D/g, '');
-  
-  // Check for common international formats
-  if (cleanPhone.startsWith('81') && cleanPhone.length >= 11) {
-    return 'JP'; // Japan
+// Enhanced function to get phone number directly from database fields
+export const getPhoneFromDatabase = (user: any): string => {
+  console.log('📞 Getting phone from database for user:', {
+    userId: user.id,
+    email: user.email,
+    profilePhone: user.phone,
+    metadataPhone: user.user_metadata?.phone
+  });
+
+  // Priority 1: Check profiles.phone (main database field)
+  if (user.phone && user.phone !== '') {
+    console.log('✅ Found phone in profiles table:', user.phone);
+    return user.phone;
   }
-  if (cleanPhone.startsWith('44') && cleanPhone.length >= 11) {
-    return 'GB'; // UK
+
+  // Priority 2: Check user_metadata.phone (auth metadata fallback)
+  if (user.user_metadata?.phone && user.user_metadata.phone !== '') {
+    console.log('✅ Found phone in user_metadata:', user.user_metadata.phone);
+    return user.user_metadata.phone;
   }
-  if (cleanPhone.startsWith('49') && cleanPhone.length >= 11) {
-    return 'DE'; // Germany
-  }
-  if (cleanPhone.startsWith('33') && cleanPhone.length >= 10) {
-    return 'FR'; // France
-  }
-  if (cleanPhone.startsWith('86') && cleanPhone.length >= 11) {
-    return 'CN'; // China
-  }
-  if (cleanPhone.startsWith('91') && cleanPhone.length >= 10) {
-    return 'IN'; // India
-  }
-  // Add more patterns as needed
-  
-  // Check if it looks like a US/Canada number (10-11 digits, possibly starting with 1)
-  if ((cleanPhone.length === 10) || (cleanPhone.length === 11 && cleanPhone.startsWith('1'))) {
-    return 'US';
-  }
-  
-  return null;
+
+  console.log('❌ No phone found in database for user:', user.email);
+  return '';
 };
 
-// Enhanced function to format phone with proper country code and better error handling
+// Enhanced function to format phone with proper country code from database
 export const formatPhoneWithCountryCode = (phone: string, user: any): string => {
   if (!phone) return '—';
   
@@ -180,8 +158,14 @@ export const formatPhoneWithCountryCode = (phone: string, user: any): string => 
     const country = getCountryByCode(countryCode);
     const dialCode = country?.dialCode || '1';
     
-    // Clean the phone number
+    // Clean the phone number - remove all non-numeric characters
     let cleanPhone = phone.replace(/\D/g, '');
+    
+    // Skip formatting if phone is too short
+    if (cleanPhone.length < 7) {
+      console.log('📋 Phone too short, returning as-is:', phone);
+      return phone;
+    }
     
     // Remove leading country code if it exists
     if (cleanPhone.startsWith(dialCode) && cleanPhone.length > dialCode.length) {
