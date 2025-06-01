@@ -8,13 +8,6 @@ export interface AdminSetting {
   updated_at: string;
 }
 
-interface RpcResponse {
-  success: boolean;
-  error?: string;
-  setting_key?: string;
-  setting_value?: any;
-}
-
 // Helper function to get admin session
 const getAdminSession = () => {
   const adminSession = sessionStorage.getItem('adminSession') || localStorage.getItem('adminSession');
@@ -64,9 +57,10 @@ export const adminSettingsService = {
         return { success: false, error: error.message };
       }
 
-      if (data && !data.success) {
-        console.error('RPC function returned error:', data.error);
-        return { success: false, error: data.error };
+      // The RPC function returns a boolean value directly
+      if (data === false) {
+        console.error('RPC function returned false');
+        return { success: false, error: 'Failed to save setting' };
       }
 
       console.log(`Successfully saved admin setting: ${key}`);
