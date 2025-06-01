@@ -35,6 +35,7 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
         </TableHead>
         <TableHead className="px-2">Name</TableHead>
         <TableHead className="px-2">Email</TableHead>
+        <TableHead className="px-2">Phone</TableHead>
         <TableHead className="px-2 text-center">Status</TableHead>
         <TableHead className="px-2 text-center">Role</TableHead>
         <TableHead className="px-2 text-center">Plan</TableHead>
