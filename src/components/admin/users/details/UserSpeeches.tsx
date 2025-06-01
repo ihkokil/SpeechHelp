@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, FileText, Calendar, Type, Eye, Clock, RefreshCw, Database } from 'lucide-react';
+import { Loader2, FileText, Calendar, Type, Eye, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface UserSpeechesProps {
@@ -22,27 +22,12 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
 }) => {
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
 
-  console.log('🎭 UserSpeeches component rendering:', {
+  console.log('UserSpeeches component rendering:', {
     userId: user.id,
     userEmail: user.email,
     speechesLength: speeches?.length,
-    isLoadingSpeeches,
-    speeches: speeches,
-    speechesDetails: speeches?.map(s => ({
-      id: s.id,
-      title: s.title,
-      speech_type: s.speech_type,
-      created_at: s.created_at,
-      contentLength: s.content?.length,
-      user_id: s.user_id
-    }))
+    isLoadingSpeeches
   });
-
-  // Manual refresh function for testing
-  const handleRefresh = () => {
-    console.log('🔄 Manual refresh triggered for user:', user.id);
-    window.location.reload(); // Simple refresh for debugging
-  };
 
   // Helper function to get speech type display name
   const getSpeechTypeDisplay = (speechType: string): string => {
@@ -189,62 +174,16 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center">
-              <FileText className="h-5 w-5 mr-2" />
-              User Speeches
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleRefresh}
-              className="flex items-center gap-1"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
+          <CardTitle className="flex items-center">
+            <FileText className="h-5 w-5 mr-2" />
+            User Speeches
           </CardTitle>
           <CardDescription>Speeches created by this user</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-4">No speeches found for this user</p>
-            
-            <div className="space-y-3">
-              <div className="text-sm text-muted-foreground">
-                This could mean:
-              </div>
-              <div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Database className="h-3 w-3" />
-                  User hasn't created any speeches yet
-                </div>
-                <div className="flex items-center gap-2">
-                  <Database className="h-3 w-3" />
-                  Data consistency issue between auth and speeches table
-                </div>
-                <div className="flex items-center gap-2">
-                  <Database className="h-3 w-3" />
-                  User ID mismatch in the database
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600 space-y-2">
-              <div className="font-medium text-gray-700">🔍 Debug Information:</div>
-              <div className="space-y-1 text-left">
-                <div><strong>User ID:</strong> {user.id}</div>
-                <div><strong>User Email:</strong> {user.email}</div>
-                <div><strong>Speeches Array Length:</strong> {speeches?.length || 0}</div>
-                <div><strong>Loading State:</strong> {isLoadingSpeeches ? 'Yes' : 'No'}</div>
-                <div><strong>Created At:</strong> {user.created_at || 'Unknown'}</div>
-                <div><strong>Subscription:</strong> {user.subscription_plan || 'None'}</div>
-              </div>
-              <div className="mt-3 p-2 bg-blue-50 rounded text-blue-700 text-xs">
-                💡 If you see speeches when logged in as this user, there might be a data linking issue. Check the console for detailed query results.
-              </div>
-            </div>
+            <p className="text-muted-foreground">No speeches found for this user</p>
           </div>
         </CardContent>
       </Card>
@@ -255,20 +194,9 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center">
-              <FileText className="h-5 w-5 mr-2" />
-              User Speeches ({speeches.length})
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleRefresh}
-              className="flex items-center gap-1"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
+          <CardTitle className="flex items-center">
+            <FileText className="h-5 w-5 mr-2" />
+            User Speeches ({speeches.length})
           </CardTitle>
           <CardDescription>Speeches created by this user</CardDescription>
         </CardHeader>
