@@ -11,27 +11,30 @@ interface UserBillingProps {
 }
 
 export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
-  console.log('UserBilling rendering for user:', {
-    id: user.id,
+  console.log('=== UserBilling Debug Info ===');
+  console.log('User ID:', user.id);
+  console.log('User object keys:', Object.keys(user));
+  console.log('Complete user subscription data:', {
     subscription_plan: user.subscription_plan,
     subscription_period: user.subscription_period,
     subscription_amount: user.subscription_amount,
+    subscription_status: user.subscription_status,
+    subscription_start_date: user.subscription_start_date,
     subscription_end_date: user.subscription_end_date,
+    subscription_price_id: user.subscription_price_id,
+    subscription_currency: user.subscription_currency,
     stripe_customer_id: user.stripe_customer_id,
-    subscription_status: user.subscription_status
+    stripe_subscription_id: user.stripe_subscription_id
   });
-
-  // Add more detailed logging for debugging
-  console.log('Raw subscription data types:', {
-    subscription_period_type: typeof user.subscription_period,
-    subscription_period_value: user.subscription_period,
-    subscription_amount_type: typeof user.subscription_amount,
-    subscription_amount_value: user.subscription_amount,
-    is_period_null: user.subscription_period === null,
-    is_period_undefined: user.subscription_period === undefined,
-    is_amount_null: user.subscription_amount === null,
-    is_amount_undefined: user.subscription_amount === undefined
-  });
+  
+  // Check for undefined, null, and empty string values
+  console.log('Detailed field analysis:');
+  console.log('subscription_period === null:', user.subscription_period === null);
+  console.log('subscription_period === undefined:', user.subscription_period === undefined);
+  console.log('subscription_period === "":', user.subscription_period === '');
+  console.log('subscription_amount === null:', user.subscription_amount === null);
+  console.log('subscription_amount === undefined:', user.subscription_amount === undefined);
+  console.log('subscription_amount === 0:', user.subscription_amount === 0);
 
   // Format the subscription end date for display
   const formattedEndDate = user.subscription_end_date 
@@ -59,59 +62,89 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     return planType.charAt(0).toUpperCase() + planType.slice(1).replace('_', ' ');
   };
 
-  // Get billing period display - improved logic
+  // Get billing period display with more explicit debugging
   const getBillingPeriod = () => {
     const period = user.subscription_period;
     
-    console.log('getBillingPeriod - raw period value:', period, 'type:', typeof period);
+    console.log('getBillingPeriod analysis:');
+    console.log('Raw period value:', period);
+    console.log('Period type:', typeof period);
+    console.log('Period is null:', period === null);
+    console.log('Period is undefined:', period === undefined);
+    console.log('Period is empty string:', period === '');
+    console.log('Period truthiness:', !!period);
     
-    // Check if period exists and is not empty
-    if (period && period !== null && period !== undefined && String(period).trim() !== '') {
-      const periodStr = String(period).toLowerCase().trim();
-      console.log('Processing period string:', periodStr);
-      
-      switch (periodStr) {
-        case 'monthly':
-          return 'Monthly';
-        case 'yearly':
-        case 'annual':
-          return 'Yearly';
-        default:
-          return periodStr.charAt(0).toUpperCase() + periodStr.slice(1);
+    // Handle the case where period might be an empty string, null, or undefined
+    if (!period || period === null || period === undefined || String(period).trim() === '') {
+      console.log('Period is empty, using fallback logic');
+      const planType = user.subscription_plan?.toLowerCase();
+      if (planType && planType !== 'free_trial' && planType !== 'free') {
+        console.log('User has paid plan but no period, showing "Period not set"');
+        return 'Period not set';
       }
+      console.log('User has free plan, showing "N/A"');
+      return 'N/A';
     }
     
-    // Fallback logic
-    const planType = user.subscription_plan?.toLowerCase();
-    if (planType && planType !== 'free_trial' && planType !== 'free') {
-      console.log('No period found, using fallback for plan:', planType);
-      return 'Period not set';
-    }
+    const periodStr = String(period).toLowerCase().trim();
+    console.log('Processing period string:', periodStr);
     
-    return 'N/A';
+    switch (periodStr) {
+      case 'monthly':
+        return 'Monthly';
+      case 'yearly':
+      case 'annual':
+        return 'Yearly';
+      default:
+        return periodStr.charAt(0).toUpperCase() + periodStr.slice(1);
+    }
   };
 
-  // Get subscription amount display - improved logic
+  // Get subscription amount display with more explicit debugging
   const getSubscriptionAmount = () => {
     const amount = user.subscription_amount;
     
-    console.log('getSubscriptionAmount - raw amount value:', amount, 'type:', typeof amount);
+    console.log('getSubscriptionAmount analysis:');
+    console.log('Raw amount value:', amount);
+    console.log('Amount type:', typeof amount);
+    console.log('Amount is null:', amount === null);
+    console.log('Amount is undefined:', amount === undefined);
+    console.log('Amount is 0:', amount === 0);
+    console.log('Amount as number:', Number(amount));
+    console.log('Amount is NaN:', isNaN(Number(amount)));
     
-    // Check if amount exists and is a valid number
-    if (amount !== null && amount !== undefined && !isNaN(Number(amount)) && Number(amount) > 0) {
-      const dollarAmount = Number(amount) / 100;
-      console.log('Converting amount from cents to dollars:', amount, '->', dollarAmount);
-      return `$${dollarAmount.toFixed(2)}`;
+    // Handle the case where amount might be null, undefined, or 0
+    if (amount === null || amount === undefined) {
+      console.log('Amount is null/undefined, using fallback logic');
+      const planType = user.subscription_plan?.toLowerCase();
+      if (planType === 'free_trial' || planType === 'free' || !planType) {
+        console.log('User has free plan, showing "Free"');
+        return 'Free';
+      }
+      console.log('User has paid plan but no amount, showing "Amount not set"');
+      return 'Amount not set';
     }
     
-    // Fallback logic
-    const planType = user.subscription_plan?.toLowerCase();
-    if (planType === 'free_trial' || planType === 'free' || !planType) {
+    const numAmount = Number(amount);
+    if (isNaN(numAmount)) {
+      console.log('Amount is not a valid number');
+      return 'Invalid amount';
+    }
+    
+    if (numAmount === 0) {
+      console.log('Amount is 0, showing "Free"');
       return 'Free';
     }
     
-    console.log('No valid amount found, using fallback for plan:', planType);
-    return 'Amount not set';
+    if (numAmount > 0) {
+      // Convert from cents to dollars if the amount seems to be in cents
+      const dollarAmount = numAmount > 100 ? numAmount / 100 : numAmount;
+      console.log('Converting amount:', amount, '->', dollarAmount);
+      return `$${dollarAmount.toFixed(2)}`;
+    }
+    
+    console.log('Amount processing fallback');
+    return 'Amount not available';
   };
 
   // Get payment method display
@@ -128,6 +161,14 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     
     return 'None required';
   };
+
+  const billingPeriod = getBillingPeriod();
+  const subscriptionAmount = getSubscriptionAmount();
+  
+  console.log('Final display values:');
+  console.log('Billing period:', billingPeriod);
+  console.log('Subscription amount:', subscriptionAmount);
+  console.log('=== End UserBilling Debug ===');
 
   return (
     <>
@@ -172,11 +213,11 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Billing Period</p>
-              <p className="text-sm">{getBillingPeriod()}</p>
+              <p className="text-sm">{billingPeriod}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Amount</p>
-              <p className="text-sm">{getSubscriptionAmount()}</p>
+              <p className="text-sm">{subscriptionAmount}</p>
             </div>
           </div>
         </CardContent>
