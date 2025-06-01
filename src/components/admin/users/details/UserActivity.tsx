@@ -113,12 +113,14 @@ export const UserActivity: React.FC<UserActivityProps> = ({
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>User Activity</CardTitle>
-          <TabsList>
-            <TabsTrigger value="all" onClick={() => setTimePeriod('all')}>All time</TabsTrigger>
-            <TabsTrigger value="quarter" onClick={() => setTimePeriod('quarter')}>3 months</TabsTrigger>
-            <TabsTrigger value="month" onClick={() => setTimePeriod('month')}>30 days</TabsTrigger>
-            <TabsTrigger value="week" onClick={() => setTimePeriod('week')}>7 days</TabsTrigger>
-          </TabsList>
+          <Tabs value={timePeriod} onValueChange={(value) => setTimePeriod(value as 'week' | 'month' | 'quarter' | 'all')}>
+            <TabsList>
+              <TabsTrigger value="all">All time</TabsTrigger>
+              <TabsTrigger value="quarter">3 months</TabsTrigger>
+              <TabsTrigger value="month">30 days</TabsTrigger>
+              <TabsTrigger value="week">7 days</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </CardHeader>
       <CardContent>
