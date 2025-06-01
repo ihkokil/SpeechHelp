@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, FileText, Calendar, Type, Eye, Clock } from 'lucide-react';
 import { format } from 'date-fns';
-import { formatSpeechContent } from '@/components/speech/utils/speechFormattingUtils';
 
 interface UserSpeechesProps {
   user: User;
@@ -80,52 +79,56 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
     return colorMap[speechType?.toLowerCase()] || 'bg-gray-100 text-gray-800';
   };
 
-  // Helper function to truncate content for preview
-  const truncateContent = (content: string, maxLength: number = 100): string => {
+  // Helper function to extract and clean speech content
+  const extractSpeechContent = (content: string): string => {
     if (!content) return '';
     
-    // Format the content first to get clean text
-    const formattedContent = formatSpeechContent(content);
+    try {
+      // First, try to parse as JSON in case it's stored as structured data
+      if (content.trim().startsWith('{')) {
+        const parsed = JSON.parse(content);
+        return parsed.content || content;
+      }
+      
+      // If it's not JSON, return the content as-is
+      return content;
+    } catch (error) {
+      // If JSON parsing fails, return the raw content
+      return content;
+    }
+  };
+
+  // Helper function to truncate content for preview
+  const truncateContent = (content: string, maxLength: number = 150): string => {
+    const cleanContent = extractSpeechContent(content);
     
-    // Remove any HTML tags for preview
-    const cleanText = formattedContent.replace(/<[^>]*>/g, '');
+    if (!cleanContent) return 'No content available';
     
-    if (cleanText.length <= maxLength) return cleanText;
-    return cleanText.substring(0, maxLength) + '...';
+    // Remove any HTML tags and excessive whitespace
+    const textOnly = cleanContent
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    if (textOnly.length <= maxLength) return textOnly;
+    return textOnly.substring(0, maxLength) + '...';
   };
 
   // Helper function to format content for display in modal
   const formatContentForDisplay = (content: string): string => {
-    if (!content) return 'No content available';
+    const cleanContent = extractSpeechContent(content);
     
-    const formattedContent = formatSpeechContent(content);
+    if (!cleanContent) return 'No content available';
     
-    // Convert markdown-like formatting to HTML
-    let htmlContent = formattedContent;
-    
-    // Handle headings
-    htmlContent = htmlContent.replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold mb-4 text-purple-800">$1</h1>');
-    htmlContent = htmlContent.replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3 text-purple-700">$1</h2>');
-    htmlContent = htmlContent.replace(/^### (.+)$/gm, '<h3 class="text-lg font-bold mt-5 mb-2 text-purple-600">$1</h3>');
-    
-    // Handle bold text
-    htmlContent = htmlContent.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold">$1</strong>');
-    
-    // Handle italic text
-    htmlContent = htmlContent.replace(/\*(.+?)\*/g, '<em class="italic">$1</em>');
-    
-    // Handle line breaks
-    htmlContent = htmlContent.replace(/\n\n/g, '</p><p class="mb-4">');
-    htmlContent = htmlContent.replace(/\n/g, '<br>');
+    // Simple formatting - preserve line breaks and basic structure
+    let formattedContent = cleanContent
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
     
     // Wrap in paragraph tags
-    htmlContent = `<div class="prose prose-sm max-w-none"><p class="mb-4">${htmlContent}</p></div>`;
+    formattedContent = `<p>${formattedContent}</p>`;
     
-    // Fix any double paragraph tags
-    htmlContent = htmlContent.replace(/<p class="mb-4"><p class="mb-4">/g, '<p class="mb-4">');
-    htmlContent = htmlContent.replace(/<\/p><\/p>/g, '</p>');
-    
-    return htmlContent;
+    return formattedContent;
   };
 
   // Helper function to format time ago
@@ -255,7 +258,7 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
                       </DialogHeader>
                       <ScrollArea className="max-h-[60vh] pr-4">
                         <div 
-                          className="text-sm leading-relaxed"
+                          className="text-sm leading-relaxed prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{ 
                             __html: formatContentForDisplay(speech.content) 
                           }} 
@@ -265,11 +268,9 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
                   </Dialog>
                 </div>
                 
-                {speech.content && (
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                    {truncateContent(speech.content, 150)}
-                  </p>
-                )}
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                  {truncateContent(speech.content)}
+                </p>
                 
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center">
