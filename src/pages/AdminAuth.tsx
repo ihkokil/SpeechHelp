@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Navigate } from 'react-router-dom';
@@ -210,21 +209,6 @@ const AdminAuth = () => {
         </Alert>
       )}
 
-      {/* Information alert for admin users */}
-      <Alert className="mb-4 max-w-md bg-blue-50 border-blue-200">
-        <Info className="h-4 w-4 text-blue-600" />
-        <AlertTitle className="text-blue-700">Admin Access Information</AlertTitle>
-        <AlertDescription className="text-blue-700">
-          <div className="space-y-2">
-            <p>If you have been granted admin access:</p>
-            <ul className="list-disc pl-5 text-sm">
-              <li>Use your first name or username as the login</li>
-              <li>Use your regular account password</li>
-              <li>Contact your administrator if you need access</li>
-            </ul>
-          </div>
-        </AlertDescription>
-      </Alert>
       
       <Card className="w-full max-w-md shadow-xl border border-gray-200">
         <CardHeader className="space-y-1">
