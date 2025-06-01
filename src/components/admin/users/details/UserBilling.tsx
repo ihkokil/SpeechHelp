@@ -11,14 +11,6 @@ interface UserBillingProps {
 }
 
 export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
-  console.log('UserBilling rendering for user:', {
-    id: user.id,
-    subscription_plan: user.subscription_plan,
-    subscription_end_date: user.subscription_end_date,
-    stripe_customer_id: user.stripe_customer_id,
-    subscription_status: user.subscription_status
-  });
-
   // Format the subscription end date for display
   const formattedEndDate = user.subscription_end_date 
     ? format(new Date(user.subscription_end_date), 'PPP') 
@@ -29,11 +21,12 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
     ? 'Active'
     : 'Inactive';
   
-  // Get plan display name
+  // Get plan display name - check both subscription_plan and subscription_plan
   const getPlanDisplayName = (user: User) => {
-    const planType = user.subscription_plan || 'free_trial';
+    // Use subscription_plan if available, otherwise use subscription_plan
+    const planType = user.subscription_plan || user.subscription_plan || '';
     
-    if (!planType || planType === 'free_trial') return 'Free Trial';
+    if (!planType) return 'Free Plan';
     
     // Use the plan rules if available
     const planKey = planType as SubscriptionPlan;
@@ -41,8 +34,7 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
       return PLAN_RULES[planKey].displayName;
     }
     
-    // Capitalize first letter if no plan rule found
-    return planType.charAt(0).toUpperCase() + planType.slice(1).replace('_', ' ');
+    return planType || 'Free Plan';
   };
 
   return (
@@ -79,25 +71,12 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">End Date</p>
+              <p className="text-sm font-medium text-muted-foreground">Next Billing Date</p>
               <p className="text-sm">{formattedEndDate}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Payment Method</p>
               <p className="text-sm">{user.stripe_customer_id ? 'Stripe' : 'None on file'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Billing Period</p>
-              <p className="text-sm">{user.subscription_period || 'N/A'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Amount</p>
-              <p className="text-sm">
-                {user.subscription_amount 
-                  ? `$${(user.subscription_amount / 100).toFixed(2)}` 
-                  : 'Free'
-                }
-              </p>
             </div>
           </div>
           
@@ -111,24 +90,11 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Account Details</CardTitle>
+          <CardTitle>Billing History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">User ID:</span>
-              <span className="text-sm font-mono">{user.id}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Created:</span>
-              <span className="text-sm">
-                {user.created_at ? format(new Date(user.created_at), 'PPP') : 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Stripe Customer ID:</span>
-              <span className="text-sm font-mono">{user.stripe_customer_id || 'None'}</span>
-            </div>
+          <div className="rounded-md bg-muted/50 p-6 text-center">
+            <p className="text-muted-foreground">No billing records available.</p>
           </div>
         </CardContent>
       </Card>
