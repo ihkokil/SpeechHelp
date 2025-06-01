@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -186,85 +185,52 @@ export const adminAuthService = {
 
       console.log('Found admin profile:', profileData);
 
-      // Get the user's auth record to verify password
+      // Try to authenticate the user with their regular account
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: credentials.username.includes('@') ? credentials.username : `${credentials.username}@temp.com`,
         password: credentials.password,
       });
 
-      if (authError || !authData.user) {
-        // Try to find the user by their profile and then verify password
-        const { data: userData } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', profileData.id)
-          .single();
+      if (authError && credentials.username.includes('@')) {
+        // If it's an email, try direct authentication
+        const { data: emailAuthData, error: emailAuthError } = await supabase.auth.signInWithPassword({
+          email: credentials.username,
+          password: credentials.password,
+        });
 
-        if (userData) {
-          // Get the user's email from auth.users
-          const { data: authUser } = await supabase
-            .from('admin_users')
-            .select('*')
-            .eq('username', credentials.username)
-            .single();
+        if (!emailAuthError && emailAuthData.user) {
+          // Sign out immediately to prevent auto-login to regular app
+          await supabase.auth.signOut();
 
-          if (authUser && authUser.is_active) {
-            // Create admin session
-            const adminUser: AdminUser = {
-              id: authUser.id,
-              username: authUser.username,
-              email: authUser.email,
-              is_active: authUser.is_active,
-              is_super_admin: authUser.is_super_admin,
-              last_login: authUser.last_login,
-              allowed_ip_addresses: authUser.allowed_ip_addresses || null
-            };
+          // Create admin user object from profile data
+          const adminUser: AdminUser = {
+            id: profileData.id,
+            username: profileData.username || `${profileData.first_name} ${profileData.last_name}`,
+            email: emailAuthData.user.email || '',
+            is_active: true,
+            is_super_admin: false,
+            last_login: null,
+            allowed_ip_addresses: null
+          };
 
-            await this.logActivity({
-              adminUserId: adminUser.id,
-              action: 'LOGIN',
-              entityType: 'ADMIN_USER',
-              entityId: adminUser.id
-            });
+          await this.logActivity({
+            adminUserId: adminUser.id,
+            action: 'LOGIN',
+            entityType: 'ADMIN_USER',
+            entityId: adminUser.id
+          });
 
-            return { 
-              success: true, 
-              user: adminUser
-            };
-          }
+          return { 
+            success: true, 
+            user: adminUser
+          };
         }
-
-        console.log('Password verification failed for admin user');
-        return { 
-          success: false, 
-          error: 'Invalid credentials.' 
-        };
       }
 
-      // Sign out immediately to prevent auto-login to regular app
-      await supabase.auth.signOut();
-
-      // Create admin user object from profile data
-      const adminUser: AdminUser = {
-        id: profileData.id,
-        username: profileData.username || `${profileData.first_name} ${profileData.last_name}`,
-        email: authData.user.email || '',
-        is_active: true,
-        is_super_admin: false,
-        last_login: null,
-        allowed_ip_addresses: null
-      };
-
-      await this.logActivity({
-        adminUserId: adminUser.id,
-        action: 'LOGIN',
-        entityType: 'ADMIN_USER',
-        entityId: adminUser.id
-      });
-
+      console.log('Password verification failed for admin user');
       return { 
-        success: true, 
-        user: adminUser
+        success: false, 
+        error: 'Invalid credentials.' 
       };
 
     } catch (err: any) {
