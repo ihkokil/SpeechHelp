@@ -114,9 +114,55 @@ export const extractCountryCodeFromUser = (user: any): string => {
     }
   }
   
-  // Priority 4: Default to US
+  // Priority 4: Try to detect from phone number format
+  const phone = user.user_metadata?.phone || user.phone;
+  if (phone) {
+    const detectedCountry = detectCountryFromPhoneNumber(phone);
+    if (detectedCountry) {
+      console.log('✅ Detected country from phone number:', phone, '->', detectedCountry);
+      return detectedCountry;
+    }
+  }
+  
+  // Priority 5: Default to US only if no other information is available
   console.log('⚠️ No country code found, defaulting to US for user:', user.email);
   return 'US';
+};
+
+// New function to detect country from phone number format
+export const detectCountryFromPhoneNumber = (phone: string): string | null => {
+  if (!phone) return null;
+  
+  // Remove all non-numeric characters
+  const cleanPhone = phone.replace(/\D/g, '');
+  
+  // Check for common international formats
+  if (cleanPhone.startsWith('81') && cleanPhone.length >= 11) {
+    return 'JP'; // Japan
+  }
+  if (cleanPhone.startsWith('44') && cleanPhone.length >= 11) {
+    return 'GB'; // UK
+  }
+  if (cleanPhone.startsWith('49') && cleanPhone.length >= 11) {
+    return 'DE'; // Germany
+  }
+  if (cleanPhone.startsWith('33') && cleanPhone.length >= 10) {
+    return 'FR'; // France
+  }
+  if (cleanPhone.startsWith('86') && cleanPhone.length >= 11) {
+    return 'CN'; // China
+  }
+  if (cleanPhone.startsWith('91') && cleanPhone.length >= 10) {
+    return 'IN'; // India
+  }
+  // Add more patterns as needed
+  
+  // Check if it looks like a US/Canada number (10-11 digits, possibly starting with 1)
+  if ((cleanPhone.length === 10) || (cleanPhone.length === 11 && cleanPhone.startsWith('1'))) {
+    return 'US';
+  }
+  
+  return null;
 };
 
 // Enhanced function to format phone with proper country code and better error handling
@@ -134,23 +180,20 @@ export const formatPhoneWithCountryCode = (phone: string, user: any): string => 
     const country = getCountryByCode(countryCode);
     const dialCode = country?.dialCode || '1';
     
-    // Handle phone numbers that might already include country code
-    let cleanPhone = phone;
+    // Clean the phone number
+    let cleanPhone = phone.replace(/\D/g, '');
     
-    // If phone starts with +, remove it and any country code
-    if (phone.startsWith('+')) {
-      cleanPhone = phone.substring(1);
-      // Remove common dial codes if they exist at the start
-      if (cleanPhone.startsWith(dialCode)) {
-        cleanPhone = cleanPhone.substring(dialCode.length);
-      }
-    }
-    
-    // Remove any leading country codes that might be there
-    if (cleanPhone.startsWith(dialCode)) {
+    // Remove leading country code if it exists
+    if (cleanPhone.startsWith(dialCode) && cleanPhone.length > dialCode.length) {
       cleanPhone = cleanPhone.substring(dialCode.length);
     }
     
+    // Remove leading 1 for US/Canada numbers if present
+    if ((countryCode === 'US' || countryCode === 'CA') && cleanPhone.startsWith('1') && cleanPhone.length === 11) {
+      cleanPhone = cleanPhone.substring(1);
+    }
+    
+    // Format the clean phone number
     const formattedNumber = formatPhoneNumber(cleanPhone);
     const result = `+${dialCode} ${formattedNumber}`;
     
