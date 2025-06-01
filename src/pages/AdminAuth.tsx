@@ -5,7 +5,6 @@ import { Navigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,7 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
 
 const loginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
+  username: z.string().min(1, 'Username or email is required'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -198,15 +197,6 @@ const AdminAuth = () => {
             <div>
               The admin authentication service is not available. The Supabase Edge Function 'admin-auth' needs to be deployed.
             </div>
-            <div className="mt-2">
-              <strong>How to fix this:</strong>
-              <ul className="list-disc pl-5 mt-1 text-sm">
-                <li>Make sure the function is defined in <code>supabase/functions/admin-auth/index.ts</code></li>
-                <li>The <code>config.toml</code> file should have <code>name = "admin-auth"</code></li>
-                <li>Deploy your Supabase Functions using the Supabase CLI: <code>supabase functions deploy admin-auth</code></li>
-                <li>Or wait for the automatic deployment to complete if you're using a CI/CD pipeline</li>
-              </ul>
-            </div>
           </AlertDescription>
         </Alert>
       )}
@@ -219,6 +209,22 @@ const AdminAuth = () => {
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Information alert for admin users */}
+      <Alert className="mb-4 max-w-md bg-blue-50 border-blue-200">
+        <Info className="h-4 w-4 text-blue-600" />
+        <AlertTitle className="text-blue-700">Admin Access Information</AlertTitle>
+        <AlertDescription className="text-blue-700">
+          <div className="space-y-2">
+            <p>If you have been granted admin access:</p>
+            <ul className="list-disc pl-5 text-sm">
+              <li>Use your first name or username as the login</li>
+              <li>Use your regular account password</li>
+              <li>Contact your administrator if you need access</li>
+            </ul>
+          </div>
+        </AlertDescription>
+      </Alert>
       
       <Card className="w-full max-w-md shadow-xl border border-gray-200">
         <CardHeader className="space-y-1">
@@ -298,10 +304,10 @@ const AdminAuth = () => {
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>Username or Email</FormLabel>
                           <FormControl>
                             <Input 
-                              placeholder="Enter your username" 
+                              placeholder="Enter your username or email" 
                               {...field}
                               className="h-10" 
                             />
