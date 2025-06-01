@@ -50,6 +50,8 @@ const AdminProfileSettings = () => {
     setIsLoadingData(true);
     try {
       if (adminUser) {
+        console.log('Loading profile data for admin user:', adminUser);
+        
         // First, populate with data from the current admin user
         const nameParts = adminUser.username.split(' ');
         const firstName = nameParts[0] || '';
@@ -64,12 +66,17 @@ const AdminProfileSettings = () => {
         });
 
         // Then, load any additional settings from the database
+        console.log('Fetching admin settings from database...');
         const result = await adminSettingsService.getSettings('profile');
+        console.log('Admin settings result:', result);
+        
         if (result.success && result.data) {
           const settings = result.data.reduce((acc, setting) => {
             acc[setting.setting_key] = setting.setting_value;
             return acc;
           }, {} as any);
+
+          console.log('Loaded settings:', settings);
 
           // Update form with database values if they exist
           form.reset({
@@ -81,6 +88,8 @@ const AdminProfileSettings = () => {
           });
 
           setAvatar(settings.avatar || '');
+        } else if (result.error) {
+          console.warn('Failed to load admin settings:', result.error);
         }
       }
     } catch (error) {
@@ -120,6 +129,9 @@ const AdminProfileSettings = () => {
         throw new Error('No admin user found');
       }
 
+      console.log('Saving admin profile data:', data);
+      console.log('Current admin user:', adminUser);
+
       // Save each profile setting to the database
       const savePromises = [
         adminSettingsService.saveSetting('first_name', data.firstName, 'profile'),
@@ -130,14 +142,19 @@ const AdminProfileSettings = () => {
         adminSettingsService.saveSetting('avatar', avatar, 'profile')
       ];
 
+      console.log('Executing save promises...');
       const results = await Promise.all(savePromises);
+      console.log('Save results:', results);
+      
       const hasErrors = results.some(result => !result.success);
 
       if (hasErrors) {
         const errors = results.filter(r => !r.success).map(r => r.error).join(', ');
+        console.error('Save errors:', errors);
         throw new Error(errors);
       }
       
+      console.log('All settings saved successfully');
       toast({
         title: "Profile updated",
         description: "Your profile information has been saved successfully.",
