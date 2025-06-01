@@ -26,7 +26,13 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
     userId: user.id,
     userEmail: user.email,
     speechesLength: speeches?.length,
-    isLoadingSpeeches
+    isLoadingSpeeches,
+    speechesData: speeches?.map(s => ({
+      id: s.id,
+      title: s.title,
+      contentLength: s.content?.length || 0,
+      hasContent: !!s.content && s.content !== ''
+    }))
   });
 
   // Helper function to get speech type display name
@@ -79,33 +85,31 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
     return colorMap[speechType?.toLowerCase()] || 'bg-gray-100 text-gray-800';
   };
 
-  // Helper function to extract and clean speech content
-  const extractSpeechContent = (content: string): string => {
-    if (!content) return '';
-    
-    try {
-      // First, try to parse as JSON in case it's stored as structured data
-      if (content.trim().startsWith('{')) {
-        const parsed = JSON.parse(content);
-        return parsed.content || content;
-      }
-      
-      // If it's not JSON, return the content as-is
-      return content;
-    } catch (error) {
-      // If JSON parsing fails, return the raw content
-      return content;
+  // Helper function to safely get speech content
+  const getSpeechContent = (speech: Speech): string => {
+    if (!speech?.content) {
+      console.log('No content found for speech:', speech?.id);
+      return 'No content available';
     }
+
+    if (typeof speech.content === 'string') {
+      return speech.content;
+    }
+
+    console.log('Converting non-string content to string for speech:', speech.id, typeof speech.content);
+    return String(speech.content);
   };
 
   // Helper function to truncate content for preview
-  const truncateContent = (content: string, maxLength: number = 150): string => {
-    const cleanContent = extractSpeechContent(content);
+  const truncateContent = (speech: Speech, maxLength: number = 150): string => {
+    const content = getSpeechContent(speech);
     
-    if (!cleanContent) return 'No content available';
+    if (!content || content === 'No content available') {
+      return 'No content available';
+    }
     
     // Remove any HTML tags and excessive whitespace
-    const textOnly = cleanContent
+    const textOnly = content
       .replace(/<[^>]*>/g, '')
       .replace(/\s+/g, ' ')
       .trim();
@@ -115,13 +119,15 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
   };
 
   // Helper function to format content for display in modal
-  const formatContentForDisplay = (content: string): string => {
-    const cleanContent = extractSpeechContent(content);
+  const formatContentForDisplay = (speech: Speech): string => {
+    const content = getSpeechContent(speech);
     
-    if (!cleanContent) return 'No content available';
+    if (!content || content === 'No content available') {
+      return '<p>No content available</p>';
+    }
     
     // Simple formatting - preserve line breaks and basic structure
-    let formattedContent = cleanContent
+    let formattedContent = content
       .replace(/\n\n/g, '</p><p>')
       .replace(/\n/g, '<br>');
     
@@ -257,7 +263,7 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
                         <div 
                           className="text-sm leading-relaxed prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{ 
-                            __html: formatContentForDisplay(speech.content) 
+                            __html: formatContentForDisplay(speech) 
                           }} 
                         />
                       </ScrollArea>
@@ -266,7 +272,7 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({
                 </div>
                 
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                  {truncateContent(speech.content)}
+                  {truncateContent(speech)}
                 </p>
                 
                 <div className="flex items-center justify-between text-xs text-muted-foreground">

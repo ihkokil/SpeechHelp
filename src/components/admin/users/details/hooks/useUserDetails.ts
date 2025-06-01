@@ -20,6 +20,78 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     setTotalActivityTime(0);
   }, []);
 
+  // Helper function to extract content from JSON structure
+  const extractSpeechContent = useCallback((rawContent: any): string => {
+    console.log('Processing speech content:', typeof rawContent, rawContent);
+    
+    if (!rawContent) {
+      console.log('No content provided');
+      return '';
+    }
+
+    // If it's already a string, return it
+    if (typeof rawContent === 'string') {
+      try {
+        // Try to parse as JSON first
+        const parsed = JSON.parse(rawContent);
+        console.log('Parsed JSON content:', parsed);
+        
+        // Handle nested content structure
+        if (parsed && typeof parsed === 'object') {
+          // Check for common content keys
+          const contentValue = parsed.content || parsed.text || parsed.speech || parsed.body;
+          if (contentValue && typeof contentValue === 'string') {
+            console.log('Extracted content from JSON:', contentValue.substring(0, 100) + '...');
+            return contentValue;
+          }
+          
+          // If it's a nested object, try to extract from deeper levels
+          if (parsed.content && typeof parsed.content === 'object') {
+            const deepContent = parsed.content.content || parsed.content.text || parsed.content.speech;
+            if (deepContent && typeof deepContent === 'string') {
+              console.log('Extracted deep content from JSON:', deepContent.substring(0, 100) + '...');
+              return deepContent;
+            }
+          }
+          
+          // If no content field found, stringify the object
+          console.log('No content field found, returning stringified object');
+          return JSON.stringify(parsed);
+        }
+        
+        return rawContent;
+      } catch (error) {
+        console.log('Content is not valid JSON, treating as plain string:', error);
+        return rawContent;
+      }
+    }
+
+    // If it's an object, try to extract content
+    if (typeof rawContent === 'object' && rawContent !== null) {
+      console.log('Content is object, extracting...');
+      const contentValue = rawContent.content || rawContent.text || rawContent.speech || rawContent.body;
+      if (contentValue && typeof contentValue === 'string') {
+        console.log('Extracted content from object:', contentValue.substring(0, 100) + '...');
+        return contentValue;
+      }
+      
+      // Handle nested content
+      if (rawContent.content && typeof rawContent.content === 'object') {
+        const deepContent = rawContent.content.content || rawContent.content.text || rawContent.content.speech;
+        if (deepContent && typeof deepContent === 'string') {
+          console.log('Extracted deep content from object:', deepContent.substring(0, 100) + '...');
+          return deepContent;
+        }
+      }
+      
+      console.log('No recognizable content field, stringifying object');
+      return JSON.stringify(rawContent);
+    }
+
+    console.log('Fallback: converting to string');
+    return String(rawContent);
+  }, []);
+
   // Function to fetch speech data
   const fetchUserSpeeches = useCallback(async (userId: string) => {
     if (!userId) {
@@ -45,19 +117,71 @@ export const useUserDetails = (user: User | null, open: boolean) => {
           variant: "destructive"
         });
         setSpeeches([]);
-      } else {
-        console.log('Successfully fetched speeches:', speechData);
-        
-        // Process speeches to ensure proper formatting
-        const processedSpeeches = (speechData || []).map(speech => ({
-          ...speech,
-          created_at: speech.created_at || new Date().toISOString(),
-          updated_at: speech.updated_at || speech.created_at || new Date().toISOString()
-        }));
-        
-        setSpeeches(processedSpeeches);
-        calculateTotalActivityTime(processedSpeeches);
+        return;
       }
+
+      console.log('Raw speech data from database:', speechData);
+      
+      if (!speechData || speechData.length === 0) {
+        console.log('No speeches found for user');
+        setSpeeches([]);
+        calculateTotalActivityTime([]);
+        return;
+      }
+
+      // Process speeches with proper content extraction
+      const processedSpeeches = speechData.map((speech, index) => {
+        console.log(`Processing speech ${index + 1}:`, {
+          id: speech.id,
+          title: speech.title,
+          contentType: typeof speech.content,
+          contentPreview: speech.content ? String(speech.content).substring(0, 100) : 'No content'
+        });
+
+        try {
+          const extractedContent = extractSpeechContent(speech.content);
+          
+          const processedSpeech = {
+            ...speech,
+            content: extractedContent,
+            created_at: speech.created_at || new Date().toISOString(),
+            updated_at: speech.updated_at || speech.created_at || new Date().toISOString()
+          };
+
+          console.log(`Successfully processed speech ${index + 1}:`, {
+            id: processedSpeech.id,
+            title: processedSpeech.title,
+            contentLength: processedSpeech.content?.length || 0,
+            extractedContentPreview: processedSpeech.content?.substring(0, 100) || 'No content'
+          });
+
+          return processedSpeech;
+        } catch (error) {
+          console.error(`Error processing speech ${index + 1}:`, error);
+          
+          // Return speech with fallback content
+          return {
+            ...speech,
+            content: speech.content ? String(speech.content) : 'Content processing failed',
+            created_at: speech.created_at || new Date().toISOString(),
+            updated_at: speech.updated_at || speech.created_at || new Date().toISOString()
+          };
+        }
+      });
+
+      console.log('Final processed speeches:', {
+        count: processedSpeeches.length,
+        speeches: processedSpeeches.map(s => ({
+          id: s.id,
+          title: s.title,
+          contentLength: s.content?.length || 0,
+          hasContent: !!s.content && s.content !== ''
+        }))
+      });
+
+      setSpeeches(processedSpeeches);
+      calculateTotalActivityTime(processedSpeeches);
+      
     } catch (error) {
       console.error('Exception fetching user speeches:', error);
       toast({
@@ -69,7 +193,7 @@ export const useUserDetails = (user: User | null, open: boolean) => {
     } finally {
       setIsLoadingSpeeches(false);
     }
-  }, [toast]);
+  }, [toast, extractSpeechContent]);
 
   // Calculate user statistics
   const calculateUserStats = useCallback((user: User) => {
