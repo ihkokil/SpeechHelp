@@ -45,53 +45,23 @@ export const adminSettingsService = {
 
       console.log(`Attempting to save admin setting: ${key} = ${JSON.stringify(value)} (category: ${category})`);
 
-      // Check if this admin user exists in admin_users table
-      const { data: adminUserData, error: adminUserError } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('id', adminSession.user.id)
-        .single();
-
-      if (adminUserError) {
-        console.log('Admin user not found in admin_users table, creating entry...');
-        
-        // Create admin user entry if it doesn't exist
-        const { error: insertError } = await supabase
-          .from('admin_users')
-          .insert({
-            id: adminSession.user.id,
-            email: adminSession.user.email,
-            username: adminSession.user.username,
-            hashed_password: 'legacy_profile_admin', // Placeholder for profile-based admins
-            is_active: true,
-            is_super_admin: false
-          });
-
-        if (insertError) {
-          console.error('Error creating admin user entry:', insertError);
-          return { success: false, error: 'Failed to create admin user entry' };
-        }
-      }
-
-      // Now try to save the setting
-      const { data, error } = await supabase.rpc('upsert_admin_setting', {
-        setting_key_param: key,
-        setting_value_param: value,
-        setting_category_param: category
-      });
+      // For profile-based admins, we'll save settings directly to admin_settings table
+      // using the admin user's ID, bypassing the admin_users table requirement
+      const { data, error } = await supabase
+        .from('admin_settings')
+        .upsert({
+          admin_user_id: adminSession.user.id,
+          setting_key: key,
+          setting_value: value,
+          setting_category: category,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'admin_user_id,setting_key'
+        });
 
       if (error) {
         console.error('Error saving admin setting:', error);
         return { success: false, error: error.message };
-      }
-
-      // Check if the RPC function returned success
-      if (data && typeof data === 'object' && 'success' in data) {
-        if (!data.success) {
-          const errorMessage = data.error ? String(data.error) : 'Failed to save setting';
-          console.error('RPC function returned error:', errorMessage);
-          return { success: false, error: errorMessage };
-        }
       }
 
       console.log(`Successfully saved admin setting: ${key}`);
@@ -112,10 +82,16 @@ export const adminSettingsService = {
 
       console.log(`Fetching admin settings for category: ${category || 'all'}`);
 
-      // Use the get_admin_settings function
-      const { data, error } = await supabase.rpc('get_admin_settings', {
-        category_filter: category || null
-      });
+      let query = supabase
+        .from('admin_settings')
+        .select('setting_key, setting_value, setting_category, updated_at')
+        .eq('admin_user_id', adminSession.user.id);
+
+      if (category) {
+        query = query.eq('setting_category', category);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching admin settings:', error);
