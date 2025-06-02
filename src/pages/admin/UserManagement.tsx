@@ -32,7 +32,7 @@ const UserManagement = () => {
     fetchUsers,
     toggleUserSelection,
     toggleAllUsers: baseToggleAllUsers,
-    handleDeleteUsers,
+    handleDeleteUsers: baseHandleDeleteUsers,
     handleDeleteUser,
     handleToggleUserStatus,
     handleViewUserDetails,
@@ -104,6 +104,22 @@ const UserManagement = () => {
     }
   };
 
+  // Fixed delete users handler that properly executes deletion and closes dialog
+  const handleConfirmDelete = async () => {
+    console.log("Confirming deletion of", selectedUsers.length, "users");
+    try {
+      // Call the base delete handler which handles the actual deletion
+      await baseHandleDeleteUsers(selectedUsers, users, setUsers);
+      // Clear selection after successful deletion
+      setSelectedUsers([]);
+      // Close the dialog
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Error during deletion:", error);
+      // Dialog will remain open on error so user can retry
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
@@ -152,7 +168,7 @@ const UserManagement = () => {
       <DeleteUserDialog 
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={handleDeleteUsers}
+        onConfirm={handleConfirmDelete}
         isLoading={isActionLoading}
         selectedCount={selectedUsers.length}
       />
