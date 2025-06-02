@@ -1,9 +1,32 @@
-
 import { useState, useCallback, useRef } from 'react';
 import { User } from '../../types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
+
+// Define a type for the profile data from the database
+interface ProfileData {
+  id?: string;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  phone?: string;
+  country_code?: string;
+  is_active?: boolean;
+  is_admin?: boolean;
+  admin_role?: string;
+  permissions?: string[];
+  subscription_status?: string;
+  subscription_plan?: string;
+  subscription_period?: string;
+  subscription_amount?: number;
+  subscription_start_date?: string;
+  subscription_end_date?: string;
+  subscription_price_id?: string;
+  subscription_currency?: string;
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
+}
 
 export const useFetchUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -38,7 +61,8 @@ export const useFetchUsers = () => {
 
       // Map auth users with their profiles
       const mappedUsers: User[] = authUsers.users?.map((authUser: any) => {
-        const profile = profiles?.find(p => p.id === authUser.id) || {};
+        // Find the profile and provide a fallback with proper typing
+        const profile: ProfileData = profiles?.find((p: any) => p.id === authUser.id) || {};
         
         const user: User = {
           id: authUser.id,
