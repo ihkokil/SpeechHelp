@@ -13,8 +13,7 @@ export const useBulkActions = () => {
   const handleBulkDelete = useCallback(async (
     selectedUsers: User[], 
     users: User[], 
-    setUsers: (users: User[]) => void,
-    refreshUsers?: () => void
+    setUsers: (users: User[]) => void
   ) => {
     if (!selectedUsers.length) return;
     
@@ -42,11 +41,6 @@ export const useBulkActions = () => {
           title: 'Users Deleted',
           description: `${deletedCount} user(s) have been deleted successfully.`,
         });
-        
-        // Refresh data after successful deletion
-        if (refreshUsers) {
-          setTimeout(() => refreshUsers(), 500);
-        }
       }
       
       if (errors.length > 0) {
@@ -74,8 +68,7 @@ export const useBulkActions = () => {
   const handleBulkActivate = useCallback(async (
     selectedUsers: User[], 
     users: User[], 
-    setUsers: (users: User[]) => void,
-    refreshUsers?: () => void
+    setUsers: (users: User[]) => void
   ) => {
     if (!selectedUsers.length) return;
     
@@ -101,11 +94,6 @@ export const useBulkActions = () => {
         description: `${selectedUsers.length} user(s) have been activated.`,
       });
       
-      // Refresh data after successful activation
-      if (refreshUsers) {
-        setTimeout(() => refreshUsers(), 500);
-      }
-      
     } catch (error) {
       console.error('Error activating users:', error);
       toast({
@@ -122,8 +110,7 @@ export const useBulkActions = () => {
   const handleBulkDeactivate = useCallback(async (
     selectedUsers: User[], 
     users: User[], 
-    setUsers: (users: User[]) => void,
-    refreshUsers?: () => void
+    setUsers: (users: User[]) => void
   ) => {
     if (!selectedUsers.length) return;
     
@@ -148,11 +135,6 @@ export const useBulkActions = () => {
         title: 'Users Deactivated',
         description: `${selectedUsers.length} user(s) have been deactivated.`,
       });
-      
-      // Refresh data after successful deactivation
-      if (refreshUsers) {
-        setTimeout(() => refreshUsers(), 500);
-      }
       
     } catch (error) {
       console.error('Error deactivating users:', error);

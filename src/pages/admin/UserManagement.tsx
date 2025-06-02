@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -31,7 +30,6 @@ const UserManagement = () => {
     isDetailsOpen,
     filteredUsers,
     fetchUsers,
-    refreshUsers,
     toggleUserSelection,
     toggleAllUsers: baseToggleAllUsers,
     handleDeleteUsers: baseHandleDeleteUsers,
@@ -45,9 +43,7 @@ const UserManagement = () => {
     handleSendEmail,
     cleanup,
     addUser,
-    updateUser,
     handleUpdateSubscription,
-    lastFetchTime,
   } = useUserManagement();
   
   // New state for subscription dialog
@@ -74,8 +70,6 @@ const UserManagement = () => {
         title: "User added",
         description: `${newUser.email} has been added successfully.`
       });
-      // Refresh data after adding user
-      setTimeout(() => refreshUsers(), 500);
     }
   };
 
@@ -97,8 +91,6 @@ const UserManagement = () => {
   // Handler for admin toggle
   const handleToggleAdmin = (user: User) => {
     baseHandleToggleAdmin(user, users, setUsers);
-    // Refresh data after admin toggle
-    setTimeout(() => refreshUsers(), 500);
   };
 
   // Create a wrapped toggle all users function that handles filtered users
@@ -151,12 +143,10 @@ const UserManagement = () => {
             setSearchTerm={setSearchTerm}
             isLoading={isLoading}
             fetchUsers={fetchUsers}
-            refreshUsers={refreshUsers}
             selectedUsers={selectedUsers}
             isActionLoading={isActionLoading}
             setIsDeleteDialogOpen={setIsDeleteDialogOpen}
             setIsAddUserDialogOpen={setIsAddUserDialogOpen}
-            lastFetchTime={lastFetchTime}
           />
           
           <UserTable 
@@ -177,7 +167,6 @@ const UserManagement = () => {
             handleDeleteUser={handleDeleteUser}
             handleSendEmail={handleSendEmail}
             handleUpdateSubscription={handleOpenSubscriptionDialog}
-            lastFetchTime={lastFetchTime}
           />
         </CardContent>
       </Card>
