@@ -1,4 +1,3 @@
-
 import { useCallback, useState } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
@@ -19,10 +18,35 @@ export const useIndividualUserActions = () => {
     setIsActionLoading(true);
     
     try {
-      console.log('Deleting user:', userId);
+      console.log('Deleting user from database:', userId);
       
-      // Simulate API call - In a real app, this would be an actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // First delete the user's profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+      
+      if (profileError) {
+        console.error('Error deleting user profile:', profileError);
+        throw profileError;
+      }
+      
+      // Then delete the user from auth.users using the admin function
+      const { data, error: deleteError } = await supabase.functions.invoke('admin-delete-user', {
+        body: { userId }
+      });
+      
+      if (deleteError) {
+        console.error('Error calling admin-delete-user function:', deleteError);
+        throw deleteError;
+      }
+      
+      if (!data?.success) {
+        console.error('Function returned error:', data);
+        throw new Error(data?.error || 'Failed to delete user');
+      }
+      
+      console.log('User deleted successfully from database');
       
       // Remove deleted user from state if setUsers is provided
       if (setUsers && users.length > 0) {
@@ -31,14 +55,14 @@ export const useIndividualUserActions = () => {
       
       toast({
         title: 'User Deleted',
-        description: 'The user has been deleted successfully.',
+        description: 'The user has been deleted successfully from the database.',
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting user:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete user. Please try again.',
+        description: error.message || 'Failed to delete user. Please try again.',
         variant: 'destructive',
       });
     } finally {
