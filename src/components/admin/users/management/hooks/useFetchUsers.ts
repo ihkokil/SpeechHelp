@@ -5,158 +5,64 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
-// Define a type for the profile data from the database
-interface ProfileData {
-  id?: string;
-  first_name?: string;
-  last_name?: string;
-  username?: string;
-  phone?: string;
-  country_code?: string;
-  is_active?: boolean;
-  is_admin?: boolean;
-  admin_role?: string;
-  permissions?: any; // Changed from string[] to any to match Json type from database
-  subscription_status?: string;
-  subscription_plan?: string;
-  subscription_period?: string;
-  subscription_amount?: number;
-  subscription_start_date?: string;
-  subscription_end_date?: string;
-  subscription_price_id?: string;
-  subscription_currency?: string;
-  stripe_customer_id?: string;
-  stripe_subscription_id?: string;
-}
-
 export const useFetchUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [lastFetchTime, setLastFetchTime] = useState(0);
   const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
 
-  // Fallback function to fetch users directly from the database
-  const fetchUsersFromDB = useCallback(async () => {
-    console.log('Fetching users directly from database...');
-    
-    try {
-      // For now, if the admin auth system is in use, create a mock user list
-      if (adminUser && adminUser.is_super_admin) {
-        console.log('Creating mock admin user data...');
-        
-        const mockUsers: User[] = [
-          {
-            id: 'admin-user-id',
-            email: adminUser.email || 'admin@speechhelp.ai',
-            last_sign_in_at: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            app_metadata: {
-              provider: 'email',
-              providers: ['email'],
-            },
-            user_metadata: {
-              first_name: 'Admin',
-              last_name: 'User',
-              name: adminUser.username || 'Admin User',
-              full_name: adminUser.username || 'Admin User',
-              email: adminUser.email || 'admin@speechhelp.ai',
-              phone: '',
-              country_code: 'US',
-            },
-            is_active: true,
-            is_admin: true,
-            admin_role: 'Super Admin',
-            permissions: ['view_users', 'manage_users', 'view_speeches', 'manage_speeches', 'system_settings'],
-            subscription_status: 'active',
-            subscription_plan: 'enterprise',
-            subscription_period: null,
-            subscription_amount: null,
-            subscription_start_date: null,
-            subscription_end_date: null,
-            subscription_price_id: null,
-            subscription_currency: 'usd',
-            first_name: 'Admin',
-            last_name: 'User',
-            phone: '',
-            country_code: 'US',
-            stripe_customer_id: null,
-            stripe_subscription_id: null,
-          }
-        ];
-        
-        console.log('Successfully created mock users:', mockUsers.length);
-        return mockUsers;
-      }
-      
-      // If not an admin user, return empty array with appropriate message
-      console.log('No admin privileges detected, returning empty user list');
-      toast({
-        title: 'Access Limited',
-        description: 'Admin privileges required to view user list.',
-        variant: 'destructive',
-      });
-      return [];
-      
-    } catch (error) {
-      console.error('Error in fallback fetch:', error);
-      throw error;
-    }
-  }, [adminUser, toast]);
-
   const fetchUsers = useCallback(async (forceRefresh = false) => {
-    const now = Date.now();
-    // Remove debouncing when force refresh is requested
-    if (!forceRefresh && now - lastFetchTime < 1000) {
-      console.log('Debouncing fetch request');
-      return users; // Return current users instead of empty array
-    }
-    
-    setLastFetchTime(now);
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log('Fetching users from Supabase edge function with force refresh:', forceRefresh);
+      console.log('Fetching users from Supabase auth with force refresh:', forceRefresh);
       
-      // First try the edge function
+      // Add cache busting parameter
+      const cacheKey = forceRefresh ? `?_t=${Date.now()}` : '';
+      
+      // Fetch users from auth.users via a Supabase function
       const { data: authUsersData, error: authUsersError } = await supabase.functions.invoke('fetch-users', {
         method: 'GET',
-        headers: {
-          'Cache-Control': forceRefresh ? 'no-cache' : 'max-age=60'
-        }
+        headers: forceRefresh ? { 'Cache-Control': 'no-cache' } : {}
       });
       
       if (authUsersError) {
-        console.error('Edge function failed, trying fallback method:', authUsersError);
-        
-        // Try fallback method
-        const fallbackUsers = await fetchUsersFromDB();
-        console.log('Fallback successful, got', fallbackUsers.length, 'users');
-        setUsers(fallbackUsers);
-        
+        console.error('Error fetching auth users:', authUsersError);
+        setError(new Error(authUsersError.message || 'Failed to load users'));
         toast({
-          title: 'Users Loaded',
-          description: 'Users loaded using fallback method.',
+          title: 'Error',
+          description: 'Failed to load users. Please try again.',
+          variant: 'destructive',
         });
-        
-        return fallbackUsers;
+        setIsLoading(false);
+        return [];
       }
       
-      console.log('Edge function successful, processing data...');
+      console.log('Raw edge function response:', authUsersData);
+      console.log('First user raw data from edge function:', authUsersData?.users?.[0]);
       
-      // Helper function to safely extract permissions
-      const extractPermissions = (permissions: any): string[] => {
-        if (Array.isArray(permissions)) return permissions;
-        if (permissions && typeof permissions === 'object' && Array.isArray(permissions.value)) return permissions.value;
-        return [];
-      };
-      
-      // Map users from edge function response
+      // Map users with their profiles, prioritizing profile data over auth metadata
       const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
+        console.log('Processing user:', authUser.id);
+        
+        // Get the profile data from our enhanced structure
         const profile = authUser.profile || {};
+        console.log('Profile data:', profile);
+        
+        // Prioritize profile data over auth metadata
+        const firstName = profile.first_name || authUser.first_name || authUser.raw_user_meta_data?.first_name || '';
+        const lastName = profile.last_name || authUser.last_name || authUser.raw_user_meta_data?.last_name || '';
+        const phone = profile.phone || authUser.phone || authUser.raw_user_meta_data?.phone || '';
+        const countryCode = profile.country_code || authUser.country_code || authUser.raw_user_meta_data?.country_code || 'US';
+        
+        // Construct full name from profile or auth data
+        const fullName = firstName && lastName ? `${firstName} ${lastName}` : 
+                         profile.username || 
+                         authUser.raw_user_meta_data?.full_name || 
+                         authUser.raw_user_meta_data?.name || 
+                         authUser.email?.split('@')[0] || 'User';
         
         const user: User = {
           id: authUser.id,
@@ -169,18 +75,23 @@ export const useFetchUsers = () => {
             providers: authUser.app_metadata?.providers || ['email'],
           },
           user_metadata: {
-            first_name: authUser.raw_user_meta_data?.first_name || profile.first_name || authUser.first_name || '',
-            last_name: authUser.raw_user_meta_data?.last_name || profile.last_name || authUser.last_name || '',
-            name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || authUser.email?.split('@')[0] || 'User',
-            full_name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || '',
+            first_name: firstName,
+            last_name: lastName,
+            name: fullName,
+            full_name: fullName,
             email: authUser.email,
-            phone: authUser.raw_user_meta_data?.phone || profile.phone || authUser.phone || '',
-            country_code: authUser.raw_user_meta_data?.country_code || profile.country_code || '',
+            phone: phone,
+            country_code: countryCode,
+            street_address: authUser.raw_user_meta_data?.street_address || '',
+            city: authUser.raw_user_meta_data?.city || '',
+            state: authUser.raw_user_meta_data?.state || '',
+            zip_code: authUser.raw_user_meta_data?.zip_code || '',
+            country: authUser.raw_user_meta_data?.country || '',
           },
           is_active: authUser.is_active !== false,
           is_admin: authUser.is_admin === true,
           admin_role: authUser.admin_role || null,
-          permissions: extractPermissions(authUser.permissions),
+          permissions: authUser.permissions || [],
           subscription_status: authUser.subscription_status || 'inactive',
           subscription_plan: authUser.subscription_plan || 'free_trial',
           subscription_period: authUser.subscription_period || null,
@@ -189,13 +100,22 @@ export const useFetchUsers = () => {
           subscription_end_date: authUser.subscription_end_date || null,
           subscription_price_id: authUser.subscription_price_id || null,
           subscription_currency: authUser.subscription_currency || 'usd',
-          first_name: authUser.first_name || authUser.raw_user_meta_data?.first_name || '',
-          last_name: authUser.last_name || authUser.raw_user_meta_data?.last_name || '',
-          phone: authUser.phone || authUser.raw_user_meta_data?.phone || '',
-          country_code: authUser.country_code || authUser.raw_user_meta_data?.country_code || 'US',
+          // Store prioritized profile data as direct fields
+          first_name: firstName,
+          last_name: lastName,
+          phone: phone,
+          country_code: countryCode,
           stripe_customer_id: authUser.stripe_customer_id || null,
           stripe_subscription_id: authUser.stripe_subscription_id || null,
         };
+        
+        console.log('Final mapped user with prioritized profile data:', {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          phone: user.phone,
+          country_code: user.country_code
+        });
         
         return user;
       }) || [];
@@ -224,50 +144,29 @@ export const useFetchUsers = () => {
       }
       
       console.log('Final mapped users count:', mappedUsers.length);
+      console.log('Sample user with updated profile data:', mappedUsers.find(u => u.phone || u.first_name));
       setUsers(mappedUsers);
       return mappedUsers;
     } catch (err) {
-      console.error('All fetch methods failed:', err);
-      
-      // Last resort - try fallback method
-      try {
-        const fallbackUsers = await fetchUsersFromDB();
-        setUsers(fallbackUsers);
-        toast({
-          title: 'Using Fallback Data',
-          description: 'Showing admin user data. Limited functionality available.',
-          variant: 'default',
-        });
-        return fallbackUsers;
-      } catch (fallbackError) {
-        console.error('Fallback also failed:', fallbackError);
-        
-        const error = err instanceof Error ? err : new Error('Failed to load users');
-        setError(error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load users. Please check your connection and try again.',
-          variant: 'destructive',
-        });
-        return [];
-      }
+      console.error('Exception fetching users:', err);
+      const error = err instanceof Error ? err : new Error('Failed to load users');
+      setError(error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load users. Please check console for details.',
+        variant: 'destructive',
+      });
+      return [];
     } finally {
       setIsLoading(false);
     }
-  }, [adminUser, toast, lastFetchTime, users, fetchUsersFromDB]);
-
-  // Add a force refresh function
-  const forceRefresh = useCallback(async () => {
-    console.log('Force refreshing users data...');
-    return await fetchUsers(true);
-  }, [fetchUsers]);
+  }, [adminUser, toast]);
 
   return {
     users,
     setUsers,
     isLoading,
     fetchUsers,
-    forceRefresh,
     error
   };
 };

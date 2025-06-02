@@ -73,10 +73,8 @@ const UserManagement = () => {
         description: `${newUser.email} has been added successfully.`
       });
     }
-    // Refresh the data to ensure we have the latest
-    if (forceRefresh) {
-      setTimeout(() => forceRefresh(), 500);
-    }
+    // Force refresh to get the latest data
+    setTimeout(() => forceRefresh(), 500);
   };
 
   // Handler for opening the subscription dialog
@@ -92,19 +90,15 @@ const UserManagement = () => {
       handleUpdateSubscription(userId, tier, endDate, users, setUsers);
     }
     setIsSubscriptionDialogOpen(false);
-    // Refresh data after subscription update
-    if (forceRefresh) {
-      setTimeout(() => forceRefresh(), 500);
-    }
+    // Force refresh after subscription update
+    setTimeout(() => forceRefresh(), 1000);
   };
 
-  // Handler for admin toggle
+  // Handler for admin toggle with force refresh
   const handleToggleAdmin = (user: User) => {
     baseHandleToggleAdmin(user, users, setUsers);
-    // Refresh data after admin toggle
-    if (forceRefresh) {
-      setTimeout(() => forceRefresh(), 500);
-    }
+    // Force refresh after admin toggle
+    setTimeout(() => forceRefresh(), 1000);
   };
 
   // Create a wrapped toggle all users function that handles filtered users
@@ -130,10 +124,8 @@ const UserManagement = () => {
         description: `${selectedUsers.length} user(s) have been deleted successfully.`,
       });
       
-      // Refresh data after deletion
-      if (forceRefresh) {
-        setTimeout(() => forceRefresh(), 500);
-      }
+      // Force refresh after deletion
+      setTimeout(() => forceRefresh(), 1000);
     } catch (error) {
       console.error("Error during deletion:", error);
       toast({
