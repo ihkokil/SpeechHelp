@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -96,13 +95,9 @@ const UserManagement = () => {
 
   // Create a wrapped toggle all users function that handles filtered users
   const toggleAllUsersWithFilter = () => {
-    if (selectedUsers.length === filteredUsers.length) {
-      // If all filtered users are selected, deselect them all
-      setSelectedUsers([]);
-    } else {
-      // Otherwise, select all filtered users
-      setSelectedUsers([...filteredUsers]);
-    }
+    // This function will be handled by the UserTable component now
+    // since it needs access to the current page data
+    console.log("Toggle all users called - handled by UserTable component");
   };
 
   // Fixed delete users handler that properly executes deletion and closes dialog
