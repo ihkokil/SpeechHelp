@@ -27,14 +27,15 @@ export const useUserManagementData = () => {
       fetchError
     });
     
-    if (fetchedUsers && fetchedUsers.length > 0) {
-      console.log('useUserManagementData: Setting users and clearing loading');
+    // Always update the users state when fetchedUsers changes
+    if (fetchedUsers) {
+      console.log('useUserManagementData: Setting users from fetchedUsers');
       setUsers(fetchedUsers);
-      setIsLoading(false);
-    } else if (!isFetchLoading && !fetchError && (!fetchedUsers || fetchedUsers.length === 0)) {
-      // Handle case where fetch completed but no users returned
-      console.log('useUserManagementData: No users returned, clearing loading');
-      setUsers([]);
+    }
+    
+    // Clear loading when fetch is complete (success or error)
+    if (!isFetchLoading) {
+      console.log('useUserManagementData: Clearing loading state');
       setIsLoading(false);
     }
     
@@ -45,7 +46,6 @@ export const useUserManagementData = () => {
         description: "Failed to fetch users. Please try again.",
         variant: "destructive"
       });
-      setIsLoading(false);
     }
   }, [fetchedUsers, isFetchLoading, fetchError, toast]);
   
@@ -55,6 +55,7 @@ export const useUserManagementData = () => {
     setIsLoading(true);
     try {
       await apiFetchUsers();
+      // Don't set loading to false here, let the useEffect handle it
     } catch (error) {
       console.error("useUserManagementData: Error fetching users:", error);
       toast({
@@ -82,9 +83,8 @@ export const useUserManagementData = () => {
         description: "Failed to refresh users. Please try again.",
         variant: "destructive"
       });
-    } finally {
-      setIsLoading(false);
     }
+    // Don't set loading to false here, let the useEffect handle it when isFetchLoading changes
   }, [forceRefresh, toast]);
 
   // Add new user to list
@@ -104,7 +104,7 @@ export const useUserManagementData = () => {
   return {
     users,
     setUsers,
-    isLoading: isLoading || isFetchLoading,
+    isLoading: isFetchLoading, // Use only the fetch loading state
     fetchUsers,
     refreshUsers,
     addUser,
