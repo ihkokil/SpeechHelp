@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Calendar, Clock, Eye, Download } from 'lucide-react';
+import { FileText, Calendar, Clock, Eye, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { User } from '../types';
 import { useSpeechService } from '@/services/speechService';
@@ -20,12 +21,12 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
   const { fetchSpeeches } = useSpeechService();
 
   useEffect(() => {
-    const loadSpeeches = async () => {
+    const loadUserSpeeches = async () => {
       console.log('Loading speeches for user:', user.id);
       setIsLoading(true);
       try {
         const userSpeeches = await fetchSpeeches(user.id);
-        console.log('Fetched speeches:', userSpeeches);
+        console.log('Loaded speeches for user:', userSpeeches);
         setSpeeches(userSpeeches);
       } catch (error) {
         console.error('Error loading speeches:', error);
@@ -35,8 +36,8 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
       }
     };
 
-    loadSpeeches();
-  }, [user.id]);
+    loadUserSpeeches();
+  }, [user.id, fetchSpeeches]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -139,16 +140,19 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>User Speeches</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="h-5 w-5" />
+          User Speeches
+        </CardTitle>
         <div className="text-sm text-muted-foreground">
-          Total speeches: {speeches.length}
+          <div>This user has {speeches.length} speech{speeches.length !== 1 ? 'es' : ''}</div>
         </div>
       </CardHeader>
       <CardContent>
         {speeches.length === 0 ? (
           <div className="text-center py-8">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">This user hasn't created any speeches yet.</p>
+            <p className="text-muted-foreground mb-2">This user hasn't created any speeches yet.</p>
           </div>
         ) : (
           <ScrollArea className="h-96">
