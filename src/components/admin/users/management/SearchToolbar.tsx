@@ -19,10 +19,12 @@ interface SearchToolbarProps {
   setSearchTerm: (term: string) => void;
   isLoading: boolean;
   fetchUsers: () => void;
+  refreshUsers?: () => void;
   selectedUsers: User[];
   isActionLoading: boolean;
   setIsDeleteDialogOpen: (isOpen: boolean) => void;
   setIsAddUserDialogOpen: (isOpen: boolean) => void;
+  lastFetchTime?: number;
 }
 
 export const SearchToolbar: React.FC<SearchToolbarProps> = ({
@@ -30,10 +32,12 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
   setSearchTerm,
   isLoading,
   fetchUsers,
+  refreshUsers,
   selectedUsers,
   isActionLoading,
   setIsDeleteDialogOpen,
-  setIsAddUserDialogOpen
+  setIsAddUserDialogOpen,
+  lastFetchTime
 }) => {
   const handleAddUserClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -51,6 +55,26 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
     }
   };
 
+  const handleRefreshClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (refreshUsers) {
+      refreshUsers();
+    } else {
+      fetchUsers();
+    }
+  };
+
+  const formatLastUpdateTime = () => {
+    if (!lastFetchTime) return '';
+    const now = Date.now();
+    const diffSeconds = Math.floor((now - lastFetchTime) / 1000);
+    
+    if (diffSeconds < 60) return `Updated ${diffSeconds}s ago`;
+    if (diffSeconds < 3600) return `Updated ${Math.floor(diffSeconds / 60)}m ago`;
+    return `Updated ${Math.floor(diffSeconds / 3600)}h ago`;
+  };
+
   return (
     <div className="mb-4 flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
       <div className="flex w-full items-center space-x-2 sm:w-auto">
@@ -64,19 +88,27 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={fetchUsers}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4" />
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={handleRefreshClick}
+            disabled={isLoading}
+            title={refreshUsers ? "Force refresh data" : "Refresh data"}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            <span className="sr-only">Refresh</span>
+          </Button>
+          {lastFetchTime && (
+            <span className="text-xs text-gray-500 hidden sm:block">
+              {formatLastUpdateTime()}
+            </span>
           )}
-          <span className="sr-only">Refresh</span>
-        </Button>
+        </div>
       </div>
       
       <div className="flex items-center space-x-2">

@@ -14,7 +14,9 @@ export const useUserManagementData = () => {
     users: fetchedUsers, 
     isLoading: isFetchLoading, 
     fetchUsers: apiFetchUsers,
-    error: fetchError
+    forceRefresh,
+    error: fetchError,
+    lastFetchTime
   } = useFetchUsers();
   
   // Update users when fetchedUsers changes
@@ -51,9 +53,39 @@ export const useUserManagementData = () => {
     }
   }, [apiFetchUsers, toast]);
 
+  // Force refresh function
+  const refreshUsers = useCallback(async () => {
+    console.log("Force refreshing users...");
+    setIsLoading(true);
+    try {
+      const refreshedUsers = await forceRefresh();
+      if (refreshedUsers) {
+        setUsers(refreshedUsers);
+      }
+    } catch (error) {
+      console.error("Error refreshing users:", error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh users. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [forceRefresh, toast]);
+
   // Add new user to list
   const addUser = useCallback((newUser: User) => {
     setUsers(prevUsers => [...prevUsers, newUser]);
+  }, []);
+
+  // Update user in list
+  const updateUser = useCallback((updatedUser: User) => {
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
+        user.id === updatedUser.id ? updatedUser : user
+      )
+    );
   }, []);
 
   return {
@@ -61,7 +93,10 @@ export const useUserManagementData = () => {
     setUsers,
     isLoading: isLoading || isFetchLoading,
     fetchUsers,
+    refreshUsers,
     addUser,
-    error: fetchError
+    updateUser,
+    error: fetchError,
+    lastFetchTime
   };
 };
