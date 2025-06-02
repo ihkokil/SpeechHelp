@@ -108,8 +108,8 @@ const UserManagement = () => {
   const handleConfirmDelete = async () => {
     console.log("Confirming deletion of", selectedUsers.length, "users");
     try {
-      // Call the base delete handler which handles the actual deletion
-      await baseHandleDeleteUsers(selectedUsers, users, setUsers);
+      // Use the bulk delete handler which is designed for this purpose
+      await handleBulkDelete();
       // Clear selection after successful deletion
       setSelectedUsers([]);
       // Close the dialog
