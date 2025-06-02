@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Calendar, Clock, Eye, Download } from 'lucide-react';
+import { FileText, Calendar, Clock, Eye, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { User } from '../types';
 import { useSpeechService } from '@/services/speechService';
@@ -14,29 +15,36 @@ interface UserSpeechesProps {
 }
 
 export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
-  const [speeches, setSpeeches] = useState<Speech[]>([]);
+  const [allSpeeches, setAllSpeeches] = useState<Speech[]>([]);
+  const [userSpeeches, setUserSpeeches] = useState<Speech[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
-  const { fetchSpeeches } = useSpeechService();
+  const { fetchAllSpeeches } = useSpeechService();
 
   useEffect(() => {
-    const loadSpeeches = async () => {
-      console.log('Loading speeches for user:', user.id);
+    const loadAllSpeeches = async () => {
+      console.log('Loading all speeches for admin view');
       setIsLoading(true);
       try {
-        const userSpeeches = await fetchSpeeches(user.id);
-        console.log('Fetched speeches:', userSpeeches);
-        setSpeeches(userSpeeches);
+        const speeches = await fetchAllSpeeches();
+        console.log('Fetched all speeches:', speeches);
+        setAllSpeeches(speeches);
+        
+        // Filter speeches for the current user
+        const filteredSpeeches = speeches.filter(speech => speech.user_id === user.id);
+        console.log('Filtered speeches for user', user.id, ':', filteredSpeeches);
+        setUserSpeeches(filteredSpeeches);
       } catch (error) {
         console.error('Error loading speeches:', error);
-        setSpeeches([]);
+        setAllSpeeches([]);
+        setUserSpeeches([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadSpeeches();
-  }, [user.id]);
+    loadAllSpeeches();
+  }, [user.id, fetchAllSpeeches]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -139,21 +147,33 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>User Speeches</CardTitle>
-        <div className="text-sm text-muted-foreground">
-          Total speeches: {speeches.length}
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="h-5 w-5" />
+          User Speeches
+        </CardTitle>
+        <div className="text-sm text-muted-foreground space-y-1">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span>Total speeches in database: {allSpeeches.length}</span>
+          </div>
+          <div>This user's speeches: {userSpeeches.length}</div>
         </div>
       </CardHeader>
       <CardContent>
-        {speeches.length === 0 ? (
+        {userSpeeches.length === 0 ? (
           <div className="text-center py-8">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">This user hasn't created any speeches yet.</p>
+            <p className="text-muted-foreground mb-2">This user hasn't created any speeches yet.</p>
+            {allSpeeches.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                However, there {allSpeeches.length === 1 ? 'is' : 'are'} {allSpeeches.length} speech{allSpeeches.length !== 1 ? 'es' : ''} from other users in the database.
+              </p>
+            )}
           </div>
         ) : (
           <ScrollArea className="h-96">
             <div className="space-y-3">
-              {speeches.map((speech) => (
+              {userSpeeches.map((speech) => (
                 <div
                   key={speech.id}
                   className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
