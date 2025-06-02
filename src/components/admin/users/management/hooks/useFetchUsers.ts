@@ -13,6 +13,83 @@ export const useFetchUsers = () => {
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
 
+  // Fallback function to fetch users directly from the database
+  const fetchUsersFromDB = useCallback(async () => {
+    console.log('Fetching users directly from database...');
+    
+    try {
+      // First get auth users
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      
+      if (authError) {
+        console.error('Error fetching auth users:', authError);
+        throw new Error(authError.message);
+      }
+
+      // Then get profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*');
+      
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        // Continue without profiles if they fail to load
+      }
+
+      // Map auth users with their profiles
+      const mappedUsers: User[] = authUsers.users?.map((authUser: any) => {
+        const profile = profiles?.find(p => p.id === authUser.id) || {};
+        
+        const user: User = {
+          id: authUser.id,
+          email: authUser.email || 'No email',
+          last_sign_in_at: authUser.last_sign_in_at,
+          created_at: authUser.created_at,
+          updated_at: authUser.updated_at || null,
+          app_metadata: {
+            provider: authUser.app_metadata?.provider || 'email',
+            providers: authUser.app_metadata?.providers || ['email'],
+          },
+          user_metadata: {
+            first_name: authUser.user_metadata?.first_name || profile.first_name || '',
+            last_name: authUser.user_metadata?.last_name || profile.last_name || '',
+            name: authUser.user_metadata?.full_name || profile.username || authUser.email?.split('@')[0] || 'User',
+            full_name: authUser.user_metadata?.full_name || profile.username || '',
+            email: authUser.email,
+            phone: authUser.user_metadata?.phone || profile.phone || '',
+            country_code: authUser.user_metadata?.country_code || profile.country_code || 'US',
+          },
+          is_active: profile.is_active !== false,
+          is_admin: profile.is_admin === true,
+          admin_role: profile.admin_role || null,
+          permissions: profile.permissions || [],
+          subscription_status: profile.subscription_status || 'inactive',
+          subscription_plan: profile.subscription_plan || 'free_trial',
+          subscription_period: profile.subscription_period || null,
+          subscription_amount: profile.subscription_amount || null,
+          subscription_start_date: profile.subscription_start_date || null,
+          subscription_end_date: profile.subscription_end_date || null,
+          subscription_price_id: profile.subscription_price_id || null,
+          subscription_currency: profile.subscription_currency || 'usd',
+          first_name: profile.first_name || authUser.user_metadata?.first_name || '',
+          last_name: profile.last_name || authUser.user_metadata?.last_name || '',
+          phone: profile.phone || authUser.user_metadata?.phone || '',
+          country_code: profile.country_code || authUser.user_metadata?.country_code || 'US',
+          stripe_customer_id: profile.stripe_customer_id || null,
+          stripe_subscription_id: profile.stripe_subscription_id || null,
+        };
+        
+        return user;
+      }) || [];
+
+      console.log('Successfully fetched users from database:', mappedUsers.length);
+      return mappedUsers;
+    } catch (error) {
+      console.error('Error in fallback fetch:', error);
+      throw error;
+    }
+  }, []);
+
   const fetchUsers = useCallback(async (forceRefresh = false) => {
     const now = Date.now();
     // Remove debouncing when force refresh is requested
@@ -26,9 +103,9 @@ export const useFetchUsers = () => {
     setError(null);
     
     try {
-      console.log('Fetching users from Supabase auth with force refresh:', forceRefresh);
+      console.log('Fetching users from Supabase edge function with force refresh:', forceRefresh);
       
-      // Fetch users from auth.users via a Supabase function
+      // First try the edge function
       const { data: authUsersData, error: authUsersError } = await supabase.functions.invoke('fetch-users', {
         method: 'GET',
         headers: {
@@ -37,37 +114,26 @@ export const useFetchUsers = () => {
       });
       
       if (authUsersError) {
-        console.error('Error fetching auth users:', authUsersError);
-        setError(new Error(authUsersError.message || 'Failed to load users'));
+        console.error('Edge function failed, trying fallback method:', authUsersError);
+        
+        // Try fallback method
+        const fallbackUsers = await fetchUsersFromDB();
+        console.log('Fallback successful, got', fallbackUsers.length, 'users');
+        setUsers(fallbackUsers);
+        
         toast({
-          title: 'Error',
-          description: 'Failed to load users. Please try again.',
-          variant: 'destructive',
-        });
-        setIsLoading(false);
-        return users;
-      }
-      
-      console.log('Raw edge function response:', authUsersData);
-      console.log('First user raw data from edge function:', authUsersData?.users?.[0]);
-      
-      // Map users with their profiles, ensuring all subscription fields are properly retrieved
-      const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
-        console.log('Processing user:', authUser.id);
-        console.log('User subscription fields from edge function:', {
-          subscription_plan: authUser.subscription_plan,
-          subscription_period: authUser.subscription_period,
-          subscription_amount: authUser.subscription_amount,
-          subscription_status: authUser.subscription_status,
-          subscription_start_date: authUser.subscription_start_date,
-          subscription_end_date: authUser.subscription_end_date,
-          stripe_customer_id: authUser.stripe_customer_id,
-          stripe_subscription_id: authUser.stripe_subscription_id
+          title: 'Users Loaded',
+          description: 'Users loaded using fallback method.',
         });
         
-        // Get the profile data from our enhanced structure
+        return fallbackUsers;
+      }
+      
+      console.log('Edge function successful, processing data...');
+      
+      // Map users from edge function response
+      const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
         const profile = authUser.profile || {};
-        console.log('Profile data:', profile);
         
         const user: User = {
           id: authUser.id,
@@ -87,18 +153,11 @@ export const useFetchUsers = () => {
             email: authUser.email,
             phone: authUser.raw_user_meta_data?.phone || profile.phone || authUser.phone || '',
             country_code: authUser.raw_user_meta_data?.country_code || profile.country_code || '',
-            street_address: authUser.raw_user_meta_data?.street_address || '',
-            city: authUser.raw_user_meta_data?.city || '',
-            state: authUser.raw_user_meta_data?.state || '',
-            zip_code: authUser.raw_user_meta_data?.zip_code || '',
-            country: authUser.raw_user_meta_data?.country || '',
           },
           is_active: authUser.is_active !== false,
-          // Ensure admin status comes from the profile
           is_admin: authUser.is_admin === true,
           admin_role: authUser.admin_role || null,
           permissions: authUser.permissions || [],
-          // Map all subscription fields with extensive debugging
           subscription_status: authUser.subscription_status || 'inactive',
           subscription_plan: authUser.subscription_plan || 'free_trial',
           subscription_period: authUser.subscription_period || null,
@@ -107,24 +166,13 @@ export const useFetchUsers = () => {
           subscription_end_date: authUser.subscription_end_date || null,
           subscription_price_id: authUser.subscription_price_id || null,
           subscription_currency: authUser.subscription_currency || 'usd',
-          // Add direct fields from profiles table for easier access
           first_name: authUser.first_name || authUser.raw_user_meta_data?.first_name || '',
           last_name: authUser.last_name || authUser.raw_user_meta_data?.last_name || '',
           phone: authUser.phone || authUser.raw_user_meta_data?.phone || '',
           country_code: authUser.country_code || authUser.raw_user_meta_data?.country_code || 'US',
-          // Stripe related fields
           stripe_customer_id: authUser.stripe_customer_id || null,
           stripe_subscription_id: authUser.stripe_subscription_id || null,
         };
-        
-        console.log('Final mapped user subscription fields:', {
-          id: user.id,
-          subscription_plan: user.subscription_plan,
-          subscription_period: user.subscription_period,
-          subscription_amount: user.subscription_amount,
-          subscription_status: user.subscription_status,
-          stripe_customer_id: user.stripe_customer_id
-        });
         
         return user;
       }) || [];
@@ -153,23 +201,33 @@ export const useFetchUsers = () => {
       }
       
       console.log('Final mapped users count:', mappedUsers.length);
-      console.log('Sample user with subscription data:', mappedUsers.find(u => u.stripe_customer_id));
       setUsers(mappedUsers);
       return mappedUsers;
     } catch (err) {
-      console.error('Exception fetching users:', err);
+      console.error('All fetch methods failed:', err);
+      
+      // Last resort - try to show cached users if available
+      if (users.length > 0) {
+        toast({
+          title: 'Using Cached Data',
+          description: 'Showing previously loaded users. Network may be unavailable.',
+          variant: 'destructive',
+        });
+        return users;
+      }
+      
       const error = err instanceof Error ? err : new Error('Failed to load users');
       setError(error);
       toast({
         title: 'Error',
-        description: 'Failed to load users. Please check console for details.',
+        description: 'Failed to load users. Please check your connection and try again.',
         variant: 'destructive',
       });
       return users;
     } finally {
       setIsLoading(false);
     }
-  }, [adminUser, toast, lastFetchTime, users]);
+  }, [adminUser, toast, lastFetchTime, users, fetchUsersFromDB]);
 
   // Add a force refresh function
   const forceRefresh = useCallback(async () => {
