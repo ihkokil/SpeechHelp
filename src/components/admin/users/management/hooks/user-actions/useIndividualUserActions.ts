@@ -23,8 +23,7 @@ export const useIndividualUserActions = () => {
     try {
       console.log('Starting user deletion process for user:', userId);
       
-      // First, delete the user from auth.users using the admin function
-      // This is the primary deletion that should happen first
+      // Call the admin-delete-user function which handles all cleanup
       console.log('Calling admin-delete-user function...');
       const { data, error: deleteError } = await supabase.functions.invoke('admin-delete-user', {
         body: { 
@@ -40,69 +39,14 @@ export const useIndividualUserActions = () => {
       
       if (!data?.success) {
         console.error('Function returned error:', data);
-        throw new Error(data?.error || 'Failed to delete user from authentication system');
+        throw new Error(data?.error || 'Failed to delete user');
       }
       
-      console.log('User deleted successfully from auth.users via edge function');
+      console.log('User deletion successful:', data);
       
-      // The profile deletion should be handled by the database CASCADE constraint
-      // But let's explicitly delete it to be sure and handle any related data
-      console.log('Cleaning up user profile and related data...');
-      
-      // Delete user's speeches first (if any)
-      const { error: speechesError } = await supabase
-        .from('speeches')
-        .delete()
-        .eq('user_id', userId);
-      
-      if (speechesError) {
-        console.warn('Error deleting user speeches (non-critical):', speechesError);
-      }
-      
-      // Delete user's payment methods (if any)
-      const { error: paymentMethodsError } = await supabase
-        .from('payment_methods')
-        .delete()
-        .eq('user_id', userId);
-      
-      if (paymentMethodsError) {
-        console.warn('Error deleting user payment methods (non-critical):', paymentMethodsError);
-      }
-      
-      // Delete user's payment history (if any)
-      const { error: paymentHistoryError } = await supabase
-        .from('payment_history')
-        .delete()
-        .eq('user_id', userId);
-      
-      if (paymentHistoryError) {
-        console.warn('Error deleting user payment history (non-critical):', paymentHistoryError);
-      }
-      
-      // Delete user's 2FA settings (if any)
-      const { error: twoFAError } = await supabase
-        .from('user_2fa')
-        .delete()
-        .eq('user_id', userId);
-      
-      if (twoFAError) {
-        console.warn('Error deleting user 2FA settings (non-critical):', twoFAError);
-      }
-      
-      // Finally, delete the user's profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
-      
-      if (profileError) {
-        console.warn('Error deleting user profile (this might be expected if CASCADE worked):', profileError);
-      }
-      
-      console.log('User deletion process completed successfully');
-      
-      // Remove deleted user from state if setUsers is provided
+      // Update local state to remove the deleted user
       if (setUsers && users.length > 0) {
+        console.log('Updating local state to remove user:', userId);
         setUsers(users.filter(user => user.id !== userId));
       }
       
@@ -118,6 +62,7 @@ export const useIndividualUserActions = () => {
         description: error.message || 'Failed to delete user. Please try again.',
         variant: 'destructive',
       });
+      throw error; // Re-throw so parent components can handle it
     } finally {
       setIsActionLoading(false);
     }
