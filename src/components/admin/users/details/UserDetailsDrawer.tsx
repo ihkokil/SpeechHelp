@@ -17,10 +17,7 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
   onClose 
 }) => {
   const {
-    speeches,
-    isLoadingSpeeches,
     userJoinedDays,
-    totalActivityTime,
     resetState
   } = useUserDetails(user, open);
   
@@ -28,10 +25,7 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
   console.log("UserDetailsDrawer rendering:", { 
     userId: user?.id,
     open,
-    speechesCount: speeches?.length,
-    isLoadingSpeeches,
     userJoinedDays,
-    totalActivityTime,
     user: user ? {
       id: user.id,
       email: user.email,
@@ -70,10 +64,7 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
           <DrawerContent
             user={user}
             onClose={onClose}
-            speeches={speeches}
-            isLoadingSpeeches={isLoadingSpeeches}
             userJoinedDays={userJoinedDays}
-            totalActivityTime={totalActivityTime}
           />
         )}
       </SheetContent>

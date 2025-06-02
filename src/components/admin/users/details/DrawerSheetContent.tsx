@@ -2,33 +2,26 @@
 import React from 'react';
 import { SheetHeader, SheetTitle, SheetDescription, SheetClose } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { User as UserIcon, CreditCard, ScrollText, Clock, PieChart } from 'lucide-react';
+import { User as UserIcon, CreditCard, Clock, PieChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserHeader } from './UserHeader';
 import { UserProfile } from './UserProfile';
-import { UserSpeeches } from './UserSpeeches';
 import { UserBilling } from './UserBilling';
 import { UserStatistics } from './UserStatistics';
 import { UserActivity } from './UserActivity';
-import { User as UserType, Speech } from '../types';
+import { User as UserType } from '../types';
 import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
 
 interface DrawerSheetContentProps {
   user: UserType;
   onClose: (e: React.MouseEvent) => void;
-  speeches: Speech[];
-  isLoadingSpeeches: boolean;
   userJoinedDays: number;
-  totalActivityTime: number;
 }
 
 export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
   user,
   onClose,
-  speeches,
-  isLoadingSpeeches,
-  userJoinedDays,
-  totalActivityTime
+  userJoinedDays
 }) => {
   // Handler that takes and passes the event properly
   const handleCloseClick = (e: React.MouseEvent) => {
@@ -40,10 +33,7 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
   // Log the data being passed to the component
   console.log("DrawerSheetContent rendering with:", {
     userId: user.id,
-    speechesCount: speeches?.length,
-    isLoadingSpeeches,
-    userJoinedDays,
-    totalActivityTime
+    userJoinedDays
   });
 
   return (
@@ -66,14 +56,10 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
         <UserHeader user={user} />
         
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile">
               <UserIcon className="mr-1 h-4 w-4" />
               <span className="hidden sm:inline">Profile</span>
-            </TabsTrigger>
-            <TabsTrigger value="speeches">
-              <ScrollText className="mr-1 h-4 w-4" />
-              <span className="hidden sm:inline">Speeches</span>
             </TabsTrigger>
             <TabsTrigger value="billing">
               <CreditCard className="mr-1 h-4 w-4" />
@@ -93,14 +79,6 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
             <UserProfile user={user} />
           </TabsContent>
           
-          <TabsContent value="speeches" className="space-y-4 pt-4">
-            <UserSpeeches 
-              user={user} 
-              speeches={speeches} 
-              isLoadingSpeeches={isLoadingSpeeches}
-            />
-          </TabsContent>
-          
           <TabsContent value="billing" className="pt-4">
             <UserBilling user={user} />
           </TabsContent>
@@ -108,17 +86,13 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
           <TabsContent value="statistics" className="pt-4">
             <UserStatistics 
               user={user} 
-              speeches={speeches} 
-              isLoadingSpeeches={isLoadingSpeeches} 
             />
           </TabsContent>
 
           <TabsContent value="activity" className="pt-4">
             <UserActivity 
               user={user} 
-              speeches={speeches} 
               userJoinedDays={userJoinedDays}
-              totalActivityTime={totalActivityTime}
             />
           </TabsContent>
         </Tabs>
