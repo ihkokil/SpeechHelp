@@ -15,36 +15,29 @@ interface UserSpeechesProps {
 }
 
 export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
-  const [allSpeeches, setAllSpeeches] = useState<Speech[]>([]);
-  const [userSpeeches, setUserSpeeches] = useState<Speech[]>([]);
+  const [speeches, setSpeeches] = useState<Speech[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
-  const { fetchAllSpeeches } = useSpeechService();
+  const { fetchSpeeches } = useSpeechService();
 
   useEffect(() => {
-    const loadAllSpeeches = async () => {
-      console.log('Loading all speeches for admin view');
+    const loadUserSpeeches = async () => {
+      console.log('Loading speeches for user:', user.id);
       setIsLoading(true);
       try {
-        const speeches = await fetchAllSpeeches();
-        console.log('Fetched all speeches:', speeches);
-        setAllSpeeches(speeches);
-        
-        // Filter speeches for the current user
-        const filteredSpeeches = speeches.filter(speech => speech.user_id === user.id);
-        console.log('Filtered speeches for user', user.id, ':', filteredSpeeches);
-        setUserSpeeches(filteredSpeeches);
+        const userSpeeches = await fetchSpeeches(user.id);
+        console.log('Loaded speeches for user:', userSpeeches);
+        setSpeeches(userSpeeches);
       } catch (error) {
         console.error('Error loading speeches:', error);
-        setAllSpeeches([]);
-        setUserSpeeches([]);
+        setSpeeches([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadAllSpeeches();
-  }, [user.id, fetchAllSpeeches]);
+    loadUserSpeeches();
+  }, [user.id, fetchSpeeches]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -151,29 +144,20 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
           <FileText className="h-5 w-5" />
           User Speeches
         </CardTitle>
-        <div className="text-sm text-muted-foreground space-y-1">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            <span>Total speeches in database: {allSpeeches.length}</span>
-          </div>
-          <div>This user's speeches: {userSpeeches.length}</div>
+        <div className="text-sm text-muted-foreground">
+          <div>This user has {speeches.length} speech{speeches.length !== 1 ? 'es' : ''}</div>
         </div>
       </CardHeader>
       <CardContent>
-        {userSpeeches.length === 0 ? (
+        {speeches.length === 0 ? (
           <div className="text-center py-8">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground mb-2">This user hasn't created any speeches yet.</p>
-            {allSpeeches.length > 0 && (
-              <p className="text-xs text-muted-foreground">
-                However, there {allSpeeches.length === 1 ? 'is' : 'are'} {allSpeeches.length} speech{allSpeeches.length !== 1 ? 'es' : ''} from other users in the database.
-              </p>
-            )}
           </div>
         ) : (
           <ScrollArea className="h-96">
             <div className="space-y-3">
-              {userSpeeches.map((speech) => (
+              {speeches.map((speech) => (
                 <div
                   key={speech.id}
                   className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
