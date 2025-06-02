@@ -3,25 +3,31 @@ import React from 'react';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Loader2 } from 'lucide-react';
 
-export const LoadingState: React.FC = () => (
-  <TableRow>
-    <TableCell colSpan={9} className="h-24 text-center">
-      <div className="flex justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-      <div className="mt-2 text-sm text-muted-foreground">
-        Loading users...
-      </div>
-    </TableCell>
-  </TableRow>
-);
+export const LoadingState: React.FC = () => {
+  console.log('UserTableStates: Rendering LoadingState component');
+  return (
+    <TableRow>
+      <TableCell colSpan={9} className="h-24 text-center">
+        <div className="flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+        <div className="mt-2 text-sm text-muted-foreground">
+          Loading users...
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+};
 
-export const EmptyState: React.FC = () => (
-  <TableRow>
-    <TableCell colSpan={9} className="h-24 text-center">
-      <div className="text-sm text-muted-foreground">
-        No users found.
-      </div>
-    </TableCell>
-  </TableRow>
-);
+export const EmptyState: React.FC = () => {
+  console.log('UserTableStates: Rendering EmptyState component');
+  return (
+    <TableRow>
+      <TableCell colSpan={9} className="h-24 text-center">
+        <div className="text-sm text-muted-foreground">
+          No users found.
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+};
