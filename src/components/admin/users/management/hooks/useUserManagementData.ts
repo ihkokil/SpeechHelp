@@ -14,12 +14,14 @@ export const useUserManagementData = () => {
     users: fetchedUsers, 
     isLoading: isFetchLoading, 
     fetchUsers: apiFetchUsers,
+    forceRefresh: apiForceRefresh,
     error: fetchError
   } = useFetchUsers();
   
   // Update users when fetchedUsers changes
   useEffect(() => {
-    if (fetchedUsers && fetchedUsers.length > 0) {
+    if (fetchedUsers && fetchedUsers.length >= 0) { // Allow empty arrays
+      console.log('Updating users with fetched data:', fetchedUsers.length, 'users');
       setUsers(fetchedUsers);
       setIsLoading(false);
     }
@@ -39,7 +41,10 @@ export const useUserManagementData = () => {
     console.log("Fetching users...");
     setIsLoading(true);
     try {
-      await apiFetchUsers();
+      const freshUsers = await apiFetchUsers();
+      if (freshUsers) {
+        setUsers(freshUsers);
+      }
     } catch (error) {
       console.error("Error fetching users:", error);
       toast({
@@ -47,9 +52,35 @@ export const useUserManagementData = () => {
         description: "Failed to fetch users. Please try again.",
         variant: "destructive"
       });
+    } finally {
       setIsLoading(false);
     }
   }, [apiFetchUsers, toast]);
+
+  // Force refresh function
+  const forceRefresh = useCallback(async () => {
+    console.log("Force refreshing users...");
+    setIsLoading(true);
+    try {
+      const freshUsers = await apiForceRefresh();
+      if (freshUsers) {
+        setUsers(freshUsers);
+        toast({
+          title: "Users Refreshed",
+          description: "User data has been updated successfully.",
+        });
+      }
+    } catch (error) {
+      console.error("Error force refreshing users:", error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh users. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [apiForceRefresh, toast]);
 
   // Add new user to list
   const addUser = useCallback((newUser: User) => {
@@ -61,6 +92,7 @@ export const useUserManagementData = () => {
     setUsers,
     isLoading: isLoading || isFetchLoading,
     fetchUsers,
+    forceRefresh,
     addUser,
     error: fetchError
   };
