@@ -25,36 +25,27 @@ serve(async (req) => {
       }
     )
 
-    // Get the user ID from the request body instead of relying on JWT
-    const { userId, adminUserId } = await req.json()
+    // Verify the request is from an authenticated admin
+    const authHeader = req.headers.get('Authorization')!
+    const token = authHeader.replace('Bearer ', '')
     
-    if (!userId) {
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    if (authError || !user) {
+      console.error('Authentication failed:', authError)
       return new Response(
-        JSON.stringify({ success: false, error: 'User ID is required' }),
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
         { 
-          status: 400, 
+          status: 401, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
     }
 
-    if (!adminUserId) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Admin user ID is required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
-
-    console.log('Delete request from admin:', adminUserId, 'for user:', userId)
-
-    // Check if the requesting user is an admin using the admin user ID
+    // Check if the user is an admin
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('is_admin')
-      .eq('id', adminUserId)
+      .eq('id', user.id)
       .single()
 
     if (profileError || !profile?.is_admin) {
@@ -68,7 +59,19 @@ serve(async (req) => {
       )
     }
 
-    console.log('Admin verified, proceeding with user deletion:', userId)
+    const { userId } = await req.json()
+    
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'User ID is required' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    console.log('Deleting user:', userId)
 
     // Delete the user from auth.users using admin client
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
