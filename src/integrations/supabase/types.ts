@@ -9,53 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      activity_logs: {
-        Row: {
-          action: string
-          admin_id: string | null
-          created_at: string
-          details: Json | null
-          entity_id: string | null
-          entity_type: string
-          id: string
-          ip_address: string | null
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          admin_id?: string | null
-          created_at?: string
-          details?: Json | null
-          entity_id?: string | null
-          entity_type: string
-          id?: string
-          ip_address?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          admin_id?: string | null
-          created_at?: string
-          details?: Json | null
-          entity_id?: string | null
-          entity_type?: string
-          id?: string
-          ip_address?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "activity_logs_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "admin_users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       admin_2fa: {
         Row: {
           admin_user_id: string
@@ -131,36 +84,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      admin_settings: {
-        Row: {
-          admin_user_id: string
-          created_at: string
-          id: string
-          setting_category: string
-          setting_key: string
-          setting_value: Json
-          updated_at: string
-        }
-        Insert: {
-          admin_user_id: string
-          created_at?: string
-          id?: string
-          setting_category: string
-          setting_key: string
-          setting_value: Json
-          updated_at?: string
-        }
-        Update: {
-          admin_user_id?: string
-          created_at?: string
-          id?: string
-          setting_category?: string
-          setting_key?: string
-          setting_value?: Json
-          updated_at?: string
-        }
-        Relationships: []
       }
       admin_users: {
         Row: {
@@ -246,66 +169,6 @@ export type Database = {
           stripe_session_id?: string | null
           updated_at?: string | null
           user_id?: string | null
-        }
-        Relationships: []
-      }
-      payment_methods: {
-        Row: {
-          billing_city: string | null
-          billing_country: string | null
-          billing_state: string | null
-          billing_street: string | null
-          billing_zip: string | null
-          brand: string
-          card_holder: string
-          card_type: string
-          created_at: string
-          expiry_month: number
-          expiry_year: number
-          id: string
-          is_default: boolean
-          last4: string
-          stripe_payment_method_id: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          billing_city?: string | null
-          billing_country?: string | null
-          billing_state?: string | null
-          billing_street?: string | null
-          billing_zip?: string | null
-          brand: string
-          card_holder: string
-          card_type: string
-          created_at?: string
-          expiry_month: number
-          expiry_year: number
-          id?: string
-          is_default?: boolean
-          last4: string
-          stripe_payment_method_id?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          billing_city?: string | null
-          billing_country?: string | null
-          billing_state?: string | null
-          billing_street?: string | null
-          billing_zip?: string | null
-          brand?: string
-          card_holder?: string
-          card_type?: string
-          created_at?: string
-          expiry_month?: number
-          expiry_year?: number
-          id?: string
-          is_default?: boolean
-          last4?: string
-          stripe_payment_method_id?: string | null
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
