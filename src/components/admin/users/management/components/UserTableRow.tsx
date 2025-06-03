@@ -68,7 +68,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     }
   };
 
-  // Get user data using utility functions that handle dial codes
+  // Get user data using utility functions
   const userPhone = getUserPhone(user);
   const displayName = formatUserDisplayName(user);
 
@@ -79,7 +79,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     userPhone,
     profileData: {
       phone: user.phone,
-      country_code: user.country_code,
       first_name: user.first_name,
       last_name: user.last_name
     }
