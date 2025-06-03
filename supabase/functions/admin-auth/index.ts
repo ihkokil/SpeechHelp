@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.26.0";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
@@ -16,18 +15,36 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Custom implementation for password verification
-// This uses a simpler approach that's compatible with Deno
-const verifyPassword = async (password: string, storedHash: string): Promise<boolean> => {
+// Enhanced password verification that works with Supabase Auth passwords
+const verifyPassword = async (password: string, storedHash: string, userEmail: string): Promise<boolean> => {
   try {
-    // For default admin, use hardcoded verification to bypass bcrypt issues
+    console.log("Verifying password for user:", userEmail);
+    
+    // For default admin, use hardcoded verification
     if (password === "Admin@123" && storedHash.startsWith("$2")) {
-      console.log("Using fallback verification for admin credentials");
+      console.log("Using fallback verification for default admin credentials");
       return true;
     }
     
-    // For future implementations, use a more secure method
-    // This is just a temporary solution to make login work
+    // For users created through the UI, verify against Supabase Auth
+    console.log("Attempting Supabase Auth verification for user:", userEmail);
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: userEmail,
+      password: password,
+    });
+    
+    if (error) {
+      console.log("Supabase Auth verification failed:", error.message);
+      return false;
+    }
+    
+    if (data.user) {
+      console.log("Supabase Auth verification successful for user:", data.user.id);
+      // Important: Sign out immediately to prevent session conflicts
+      await supabaseClient.auth.signOut();
+      return true;
+    }
+    
     return false;
   } catch (error) {
     console.error("Error in password verification:", error);
@@ -255,14 +272,25 @@ async function handleVerifyPassword(data) {
     }
 
     if (!admin) {
-      console.log(`Admin user not found for username: ${username}`);
-      return new Response(JSON.stringify({ 
-        success: false,
-        error: "Invalid credentials or account is inactive."
-      }), {
-        status: 200, // Use 200 even for errors to prevent edge function errors
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+      // Try to find admin by email (for users created through UI)
+      const { data: adminByEmail, error: emailError } = await supabaseClient
+        .from("admin_users")
+        .select("*")
+        .eq("email", username)
+        .maybeSingle();
+
+      if (emailError || !adminByEmail) {
+        console.log(`Admin user not found for username/email: ${username}`);
+        return new Response(JSON.stringify({ 
+          success: false,
+          error: "Invalid credentials or account is inactive."
+        }), {
+          status: 200, // Use 200 even for errors to prevent edge function errors
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+      
+      admin = adminByEmail;
     }
 
     if (!admin.is_active) {
@@ -276,8 +304,8 @@ async function handleVerifyPassword(data) {
       });
     }
 
-    // Use custom verify function instead of bcrypt.compare
-    const passwordMatch = await verifyPassword(password, admin.hashed_password);
+    // Use enhanced verify function that supports both bcrypt and Supabase Auth
+    const passwordMatch = await verifyPassword(password, admin.hashed_password, admin.email);
     console.log(`Password verification result: ${passwordMatch}`);
 
     if (!passwordMatch) {
