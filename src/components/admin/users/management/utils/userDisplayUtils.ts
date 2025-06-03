@@ -1,4 +1,3 @@
-
 import { User } from '../../types';
 import { format, formatDistanceToNow } from 'date-fns';
 import { getCountryByCode } from '@/utils/phoneUtils';
@@ -86,41 +85,46 @@ export const formatUserDisplayName = (user: User) => {
   return getUserName(user);
 };
 
-// Enhanced function to get user phone from profiles table
+// Simplified phone number formatting using profiles table data
 export const getUserPhone = (user: User) => {
-  console.log('📋 Getting phone for user in admin table:', {
+  console.log('📱 Getting user phone from profiles table:', {
     userId: user.id,
     email: user.email,
     profilePhone: user.phone,
-    countryCode: user.country_code,
-    metadataPhone: user.user_metadata?.phone
+    profileCountryCode: user.country_code
   });
   
-  // Get phone and country code directly from profiles table fields
+  // Get phone directly from profiles table
   const phone = safeString(user.phone);
-  const countryCode = safeString(user.country_code);
   
   if (!phone) {
-    console.log('📋 No phone found in profiles for user:', user.email);
+    console.log('📱 No phone found for user:', user.email);
     return '—';
   }
   
-  // Format phone with country code if available
-  if (countryCode && countryCode !== '') {
-    // Get the country data to get the proper dial code
+  // Get country code from profiles table
+  const countryCode = safeString(user.country_code);
+  
+  if (countryCode) {
+    // Get country data for dial code
     const country = getCountryByCode(countryCode);
-    if (country && country.dialCode) {
+    if (country?.dialCode) {
+      console.log('📱 Formatting phone with country:', {
+        phone,
+        countryCode,
+        dialCode: country.dialCode,
+        result: `+${country.dialCode} ${phone}`
+      });
       return `+${country.dialCode} ${phone}`;
-    } else {
-      // If we can't find the country, still try to format with the raw country code
-      const formattedCountryCode = countryCode.startsWith('+') ? countryCode : `+${countryCode}`;
-      return `${formattedCountryCode} ${phone}`;
     }
   }
   
+  // Return phone as-is if no country code or country not found
+  console.log('📱 Returning phone without country code:', phone);
   return phone;
 };
 
+// Simple country flag URL getter (keeping this for potential future use)
 export const getCountryFlagUrl = (countryCode: string | undefined) => {
   if (!countryCode) return '';
   
@@ -129,44 +133,34 @@ export const getCountryFlagUrl = (countryCode: string | undefined) => {
   return `https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`;
 };
 
-// Function to get country code from profiles table
-export const getCountryCode = (user: User) => {
-  const countryCode = safeString(user.country_code);
-  console.log('🔍 Getting country code from profiles table:', {
+// Get country flag emoji from profiles table
+export const getCountryFlag = (user: User) => {
+  console.log('🏳️ Getting country flag for user:', {
     userId: user.id,
     email: user.email,
-    profileCountryCode: user.country_code,
-    cleanedCountryCode: countryCode
+    profileCountryCode: user.country_code
   });
-  return countryCode;
-};
-
-// Function to get country flag emoji from profiles table country_code
-export const getCountryFlag = (user: User) => {
+  
   // Get country code directly from profiles table
   const countryCode = safeString(user.country_code);
   
-  console.log('🏁 Getting country flag for user:', {
-    userId: user.id,
-    email: user.email,
-    profileCountryCode: user.country_code,
-    cleanedCountryCode: countryCode
-  });
-  
-  // If we have a country code from profiles table, try to get the flag
-  if (countryCode && countryCode !== '') {
-    const country = getCountryByCode(countryCode);
-    console.log('🏁 Country lookup result:', {
-      searchedCode: countryCode,
-      foundCountry: country ? country.name : 'not found',
-      flag: country?.flag
-    });
-    
-    if (country && country.flag) {
-      return country.flag;
-    }
+  if (!countryCode) {
+    console.log('🏳️ No country code found, using default flag');
+    return '🌍';
   }
   
-  // Default flag if no country code or country not found
+  // Look up country by code
+  const country = getCountryByCode(countryCode);
+  
+  if (country?.flag) {
+    console.log('🏳️ Found country flag:', {
+      countryCode,
+      countryName: country.name,
+      flag: country.flag
+    });
+    return country.flag;
+  }
+  
+  console.log('🏳️ Country not found in lookup, using default flag:', countryCode);
   return '🌍';
 };
