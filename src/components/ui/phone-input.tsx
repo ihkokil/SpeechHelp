@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Phone } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
-import { getAllCountries, getCountryByCode, formatPhoneNumber, stripNonNumeric } from '@/utils/phoneUtils';
+import { getAllCountries, getCountryByDialCode, formatPhoneNumber, stripNonNumeric } from '@/utils/phoneUtils';
 
 interface PhoneInputProps {
   form: UseFormReturn<any>;
@@ -28,7 +28,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   const countries = getAllCountries();
   
   const watchedPhone = form.watch(phoneFieldName);
-  const watchedCountry = form.watch(countryFieldName);
+  const watchedCountryCode = form.watch(countryFieldName);
   
   useEffect(() => {
     if (watchedPhone) {
@@ -46,11 +46,11 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
     setFormattedPhone(formatPhoneNumber(numericValue));
   };
   
-  const handleCountryChange = (countryCode: string) => {
-    form.setValue(countryFieldName, countryCode);
+  const handleCountryChange = (dialCode: string) => {
+    form.setValue(countryFieldName, dialCode);
   };
   
-  const selectedCountry = getCountryByCode(watchedCountry);
+  const selectedCountry = getCountryByDialCode(watchedCountryCode);
   const dialCode = selectedCountry?.dialCode || '1';
 
   return (
@@ -81,7 +81,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
               </FormControl>
               <SelectContent className="bg-white max-h-60 overflow-y-auto">
                 {countries.map((country) => (
-                  <SelectItem key={country.code} value={country.code}>
+                  <SelectItem key={country.code} value={country.dialCode}>
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{country.flag}</span>
                       <span>+{country.dialCode}</span>

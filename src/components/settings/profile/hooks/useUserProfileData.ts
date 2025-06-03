@@ -4,6 +4,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfileFormValues } from '../types';
+import { extractDialCodeFromUser } from '@/utils/phoneUtils';
 
 /**
  * Hook to load user profile data from the profiles table into the form
@@ -46,6 +47,12 @@ export const useUserProfileData = (
         setAvatarUrl(profile.avatar_url);
       }
       
+      // Extract dial code from user data (handles both dial codes and country codes)
+      const dialCode = extractDialCodeFromUser({
+        country_code: profile?.country_code,
+        user_metadata: user.user_metadata
+      });
+      
       // Reset form with profile data
       form.reset({
         firstName: profile?.first_name || '',
@@ -53,7 +60,7 @@ export const useUserProfileData = (
         email: user.email || '',
         password: '',
         phone: profile?.phone || '',
-        countryCode: profile?.country_code || 'US',
+        countryCode: dialCode, // Use extracted dial code
       });
       
       console.log('Form reset with profile values:', {
@@ -61,7 +68,7 @@ export const useUserProfileData = (
         lastName: profile?.last_name || '',
         email: user.email || '',
         phone: profile?.phone || '',
-        countryCode: profile?.country_code || 'US',
+        countryCode: dialCode,
         avatarUrl: profile?.avatar_url || ''
       });
       
