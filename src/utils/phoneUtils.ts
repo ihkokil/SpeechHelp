@@ -42,6 +42,9 @@ export const getCountryByCode = (code: string): Country | undefined => {
   const normalizedCode = code.toUpperCase().trim();
   console.log('🔍 Normalized code:', normalizedCode);
   
+  // Log all available country codes for debugging
+  console.log('📋 All available country codes:', countriesComplete.map(c => c.code));
+  
   const result = countriesComplete.find(country => {
     const countryCode = country.code.toUpperCase().trim();
     const match = countryCode === normalizedCode;
@@ -56,9 +59,18 @@ export const getCountryByCode = (code: string): Country | undefined => {
   
   if (!result) {
     console.log('❌ No country found for code:', normalizedCode);
-    console.log('📋 Available country codes (first 10):', 
-      countriesComplete.slice(0, 10).map(c => c.code)
+    console.log('🔍 Searching for partial matches...');
+    
+    // Try to find a partial match as fallback
+    const partialMatch = countriesComplete.find(country => 
+      country.code.toUpperCase().includes(normalizedCode) || 
+      country.name.toUpperCase().includes(normalizedCode)
     );
+    
+    if (partialMatch) {
+      console.log('⚠️ Found partial match:', partialMatch);
+      return partialMatch;
+    }
   }
   
   return result;
