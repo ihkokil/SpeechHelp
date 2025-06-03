@@ -8,24 +8,28 @@ import { useAdminAuth } from '@/contexts/AdminAuthContext';
 export const useFetchUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastFetchTime, setLastFetchTime] = useState(0);
   const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
 
-  const fetchUsers = useCallback(async (forceRefresh = false) => {
+  const fetchUsers = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastFetchTime < 1000) {
+      console.log('Debouncing fetch request');
+      return []; // Debounce fetch requests
+    }
+    
+    setLastFetchTime(now);
     setIsLoading(true);
     setError(null);
     
     try {
-      console.log('Fetching users from Supabase auth with force refresh:', forceRefresh);
-      
-      // Add cache busting parameter
-      const cacheKey = forceRefresh ? `?_t=${Date.now()}` : '';
+      console.log('Fetching users from Supabase auth');
       
       // Fetch users from auth.users via a Supabase function
       const { data: authUsersData, error: authUsersError } = await supabase.functions.invoke('fetch-users', {
-        method: 'GET',
-        headers: forceRefresh ? { 'Cache-Control': 'no-cache' } : {}
+        method: 'GET'
       });
       
       if (authUsersError) {
@@ -43,26 +47,23 @@ export const useFetchUsers = () => {
       console.log('Raw edge function response:', authUsersData);
       console.log('First user raw data from edge function:', authUsersData?.users?.[0]);
       
-      // Map users with their profiles, prioritizing profile data over auth metadata
+      // Map users with their profiles, ensuring all subscription fields are properly retrieved
       const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
         console.log('Processing user:', authUser.id);
+        console.log('User subscription fields from edge function:', {
+          subscription_plan: authUser.subscription_plan,
+          subscription_period: authUser.subscription_period,
+          subscription_amount: authUser.subscription_amount,
+          subscription_status: authUser.subscription_status,
+          subscription_start_date: authUser.subscription_start_date,
+          subscription_end_date: authUser.subscription_end_date,
+          stripe_customer_id: authUser.stripe_customer_id,
+          stripe_subscription_id: authUser.stripe_subscription_id
+        });
         
         // Get the profile data from our enhanced structure
         const profile = authUser.profile || {};
         console.log('Profile data:', profile);
-        
-        // Prioritize profile data over auth metadata
-        const firstName = profile.first_name || authUser.first_name || authUser.raw_user_meta_data?.first_name || '';
-        const lastName = profile.last_name || authUser.last_name || authUser.raw_user_meta_data?.last_name || '';
-        const phone = profile.phone || authUser.phone || authUser.raw_user_meta_data?.phone || '';
-        const countryCode = profile.country_code || authUser.country_code || authUser.raw_user_meta_data?.country_code || 'US';
-        
-        // Construct full name from profile or auth data
-        const fullName = firstName && lastName ? `${firstName} ${lastName}` : 
-                         profile.username || 
-                         authUser.raw_user_meta_data?.full_name || 
-                         authUser.raw_user_meta_data?.name || 
-                         authUser.email?.split('@')[0] || 'User';
         
         const user: User = {
           id: authUser.id,
@@ -75,13 +76,13 @@ export const useFetchUsers = () => {
             providers: authUser.app_metadata?.providers || ['email'],
           },
           user_metadata: {
-            first_name: firstName,
-            last_name: lastName,
-            name: fullName,
-            full_name: fullName,
+            first_name: authUser.raw_user_meta_data?.first_name || profile.first_name || authUser.first_name || '',
+            last_name: authUser.raw_user_meta_data?.last_name || profile.last_name || authUser.last_name || '',
+            name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || authUser.email?.split('@')[0] || 'User',
+            full_name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || '',
             email: authUser.email,
-            phone: phone,
-            country_code: countryCode,
+            phone: authUser.raw_user_meta_data?.phone || profile.phone || authUser.phone || '',
+            country_code: authUser.raw_user_meta_data?.country_code || profile.country_code || '',
             street_address: authUser.raw_user_meta_data?.street_address || '',
             city: authUser.raw_user_meta_data?.city || '',
             state: authUser.raw_user_meta_data?.state || '',
@@ -89,9 +90,11 @@ export const useFetchUsers = () => {
             country: authUser.raw_user_meta_data?.country || '',
           },
           is_active: authUser.is_active !== false,
+          // Ensure admin status comes from the profile
           is_admin: authUser.is_admin === true,
           admin_role: authUser.admin_role || null,
           permissions: authUser.permissions || [],
+          // Map all subscription fields with extensive debugging
           subscription_status: authUser.subscription_status || 'inactive',
           subscription_plan: authUser.subscription_plan || 'free_trial',
           subscription_period: authUser.subscription_period || null,
@@ -100,21 +103,23 @@ export const useFetchUsers = () => {
           subscription_end_date: authUser.subscription_end_date || null,
           subscription_price_id: authUser.subscription_price_id || null,
           subscription_currency: authUser.subscription_currency || 'usd',
-          // Store prioritized profile data as direct fields
-          first_name: firstName,
-          last_name: lastName,
-          phone: phone,
-          country_code: countryCode,
+          // Add direct fields from profiles table for easier access
+          first_name: authUser.first_name || authUser.raw_user_meta_data?.first_name || '',
+          last_name: authUser.last_name || authUser.raw_user_meta_data?.last_name || '',
+          phone: authUser.phone || authUser.raw_user_meta_data?.phone || '',
+          country_code: authUser.country_code || authUser.raw_user_meta_data?.country_code || 'US',
+          // Stripe related fields
           stripe_customer_id: authUser.stripe_customer_id || null,
           stripe_subscription_id: authUser.stripe_subscription_id || null,
         };
         
-        console.log('Final mapped user with prioritized profile data:', {
+        console.log('Final mapped user subscription fields:', {
           id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          phone: user.phone,
-          country_code: user.country_code
+          subscription_plan: user.subscription_plan,
+          subscription_period: user.subscription_period,
+          subscription_amount: user.subscription_amount,
+          subscription_status: user.subscription_status,
+          stripe_customer_id: user.stripe_customer_id
         });
         
         return user;
@@ -144,7 +149,7 @@ export const useFetchUsers = () => {
       }
       
       console.log('Final mapped users count:', mappedUsers.length);
-      console.log('Sample user with updated profile data:', mappedUsers.find(u => u.phone || u.first_name));
+      console.log('Sample user with subscription data:', mappedUsers.find(u => u.stripe_customer_id));
       setUsers(mappedUsers);
       return mappedUsers;
     } catch (err) {
@@ -160,7 +165,7 @@ export const useFetchUsers = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [adminUser, toast]);
+  }, [adminUser, toast, lastFetchTime]);
 
   return {
     users,

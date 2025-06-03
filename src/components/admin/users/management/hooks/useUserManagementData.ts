@@ -34,12 +34,12 @@ export const useUserManagementData = () => {
     }
   }, [fetchedUsers, fetchError, toast]);
   
-  // Fetch users with force refresh option
-  const fetchUsers = useCallback(async (forceRefresh = false) => {
-    console.log("Fetching users with force refresh:", forceRefresh);
+  // Fetch users
+  const fetchUsers = useCallback(async () => {
+    console.log("Fetching users...");
     setIsLoading(true);
     try {
-      await apiFetchUsers(forceRefresh);
+      await apiFetchUsers();
     } catch (error) {
       console.error("Error fetching users:", error);
       toast({
@@ -51,12 +51,6 @@ export const useUserManagementData = () => {
     }
   }, [apiFetchUsers, toast]);
 
-  // Force refresh function
-  const forceRefresh = useCallback(async () => {
-    console.log("Force refreshing user data...");
-    await fetchUsers(true);
-  }, [fetchUsers]);
-
   // Add new user to list
   const addUser = useCallback((newUser: User) => {
     setUsers(prevUsers => [...prevUsers, newUser]);
@@ -67,7 +61,6 @@ export const useUserManagementData = () => {
     setUsers,
     isLoading: isLoading || isFetchLoading,
     fetchUsers,
-    forceRefresh,
     addUser,
     error: fetchError
   };
