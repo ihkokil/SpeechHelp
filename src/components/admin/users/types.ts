@@ -36,7 +36,6 @@ export interface User {
   // Direct fields from profiles table
   first_name?: string;
   last_name?: string;
-  username?: string;
   phone?: string;
   country_code?: string;
   // Stripe related fields
