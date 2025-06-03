@@ -24,20 +24,26 @@ export const useProfileForm = () => {
     },
   });
 
-  // Load user data into form
-  const { isLoading } = useUserProfileData(
+  // Load user data into form and get avatar functionality
+  const { isLoading, avatarUrl, setAvatarUrl, refetchProfile } = useUserProfileData(
     form, 
     setOriginalEmail
   );
 
   // Handle form submission
-  const { isSubmitting, handleSubmit } = useProfileFormSubmit(refreshUserData);
+  const { isSubmitting, handleSubmit } = useProfileFormSubmit(
+    refreshUserData,
+    avatarUrl,
+    refetchProfile
+  );
 
   return {
     form,
     isLoading,
     isSubmitting,
     originalEmail,
+    avatarUrl,
+    setAvatarUrl,
     onSubmit: handleSubmit
   };
 };

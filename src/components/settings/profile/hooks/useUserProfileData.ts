@@ -2,10 +2,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { ProfileFormValues } from '../types';
 
 /**
- * Hook to load user profile data into the form
+ * Hook to load user profile data from the profiles table into the form
  */
 export const useUserProfileData = (
   form: UseFormReturn<ProfileFormValues>,
@@ -14,41 +15,60 @@ export const useUserProfileData = (
   const { user, isLoading: isAuthLoading } = useAuth();
   const [dataLoaded, setDataLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string>('');
 
   // Load user data into form
   const loadUserData = useCallback(async () => {
     if (!user || dataLoaded) return;
 
     try {
-      console.log('Loading user data for:', user.id);
-      const metadata = user.user_metadata || {};
+      console.log('Loading user profile data from profiles table for:', user.id);
+      
+      // Fetch profile data from the profiles table
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+      }
+
+      console.log('Profile data fetched:', profile);
       
       if (user.email && setOriginalEmail) {
         setOriginalEmail(user.email);
       }
       
-      // Reset form with user data
+      // Set avatar URL if available
+      if (profile?.avatar_url) {
+        setAvatarUrl(profile.avatar_url);
+      }
+      
+      // Reset form with profile data
       form.reset({
-        firstName: metadata.first_name || '',
-        lastName: metadata.last_name || '',
+        firstName: profile?.first_name || '',
+        lastName: profile?.last_name || '',
         email: user.email || '',
         password: '',
-        phone: metadata.phone || '',
-        countryCode: metadata.country_code || 'US',
+        phone: profile?.phone || '',
+        countryCode: profile?.country_code || 'US',
       });
       
-      console.log('Form reset with values:', {
-        firstName: metadata.first_name || '',
-        lastName: metadata.last_name || '',
+      console.log('Form reset with profile values:', {
+        firstName: profile?.first_name || '',
+        lastName: profile?.last_name || '',
         email: user.email || '',
-        phone: metadata.phone || '',
-        countryCode: metadata.country_code || 'US',
+        phone: profile?.phone || '',
+        countryCode: profile?.country_code || 'US',
+        avatarUrl: profile?.avatar_url || ''
       });
       
       setDataLoaded(true);
       setIsLoading(false);
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error('Error loading user profile data:', error);
       setIsLoading(false);
     }
   }, [user, dataLoaded, form, setOriginalEmail]);
@@ -62,5 +82,10 @@ export const useUserProfileData = (
     }
   }, [user, isAuthLoading, loadUserData]);
 
-  return { isLoading: isLoading || isAuthLoading };
+  return { 
+    isLoading: isLoading || isAuthLoading,
+    avatarUrl,
+    setAvatarUrl,
+    refetchProfile: loadUserData
+  };
 };
