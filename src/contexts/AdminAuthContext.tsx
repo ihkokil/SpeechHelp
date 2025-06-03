@@ -5,7 +5,7 @@ import { toast } from '@/hooks/use-toast';
 interface AdminUser {
   id: string;
   username: string;
-  displayName?: string; // Add displayName property
+  displayName?: string;
   email: string;
   is_active: boolean;
   is_super_admin: boolean;
@@ -20,7 +20,7 @@ interface AdminAuthContextType {
     success: boolean;
     requires2FA?: boolean;
     error?: string;
-    user?: AdminUser;  // This now includes displayName since it references the updated AdminUser interface
+    user?: AdminUser;
   }>;
   verify2FA: (code: string) => Promise<{
     success: boolean;
@@ -109,7 +109,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
         setAdminUser(result.user || null);
         
         // Use displayName if available, otherwise fall back to username
-        const welcomeName = result.user?.displayName || result.user?.username;
+        const welcomeName = result.user.displayName || result.user.username;
         toast({
           title: "Login successful",
           description: `Welcome back, ${welcomeName}!`,
