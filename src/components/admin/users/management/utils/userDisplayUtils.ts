@@ -51,14 +51,14 @@ const constructFullName = (firstName: string, lastName: string): string => {
 };
 
 export const getUserName = (user: User) => {
-  // Always prioritize first_name and last_name from the user object (profile data)
+  // Prioritize profiles table first_name and last_name
   const firstName = safeString(user.first_name);
   const lastName = safeString(user.last_name);
   
   // Try to construct from profile first_name and last_name
   let fullName = constructFullName(firstName, lastName);
   
-  // If no profile data, try user_metadata
+  // If no profile data, try user_metadata as fallback
   if (!fullName) {
     const metaFirstName = safeString(user.user_metadata?.first_name);
     const metaLastName = safeString(user.user_metadata?.last_name);
@@ -86,24 +86,33 @@ export const formatUserDisplayName = (user: User) => {
   return getUserName(user);
 };
 
-// Enhanced function to get user phone from database fields
+// Enhanced function to get user phone from profiles table
 export const getUserPhone = (user: User) => {
-  console.log('📋 Getting phone for user in details/profile:', {
+  console.log('📋 Getting phone for user in admin table:', {
     userId: user.id,
     email: user.email,
     profilePhone: user.phone,
+    countryCode: user.country_code,
     metadataPhone: user.user_metadata?.phone
   });
   
-  // Get phone directly from database fields
-  const phone = getPhoneFromDatabase(user);
+  // Get phone and country code directly from profiles table fields
+  const phone = safeString(user.phone);
+  const countryCode = safeString(user.country_code);
+  
   if (!phone) {
-    console.log('📋 No phone found in database for user:', user.email);
+    console.log('📋 No phone found in profiles for user:', user.email);
     return '—';
   }
   
-  // Use the enhanced phone formatting function with database-sourced data
-  return formatPhoneWithCountryCode(phone, user);
+  // Format phone with country code if available
+  if (countryCode && countryCode !== '') {
+    // If country code doesn't start with +, add it
+    const formattedCountryCode = countryCode.startsWith('+') ? countryCode : `+${countryCode}`;
+    return `${formattedCountryCode} ${phone}`;
+  }
+  
+  return phone;
 };
 
 export const getCountryFlagUrl = (countryCode: string | undefined) => {
@@ -115,12 +124,18 @@ export const getCountryFlagUrl = (countryCode: string | undefined) => {
 };
 
 export const getCountryCode = (user: User) => {
-  return extractCountryCodeFromUser(user);
+  return safeString(user.country_code);
 };
 
 // Function to get country flag emoji
 export const getCountryFlag = (user: User) => {
-  const countryCode = extractCountryCodeFromUser(user);
-  const country = getCountryByCode(countryCode);
-  return country?.flag || '🌍';
+  const countryCode = safeString(user.country_code);
+  
+  // If we have a country code, try to get the flag
+  if (countryCode) {
+    const country = getCountryByCode(countryCode);
+    return country?.flag || '🌍';
+  }
+  
+  return '🌍';
 };

@@ -68,9 +68,23 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     }
   };
 
-  // Get user phone and country flag
+  // Get user phone and country flag from profiles table data
   const userPhone = getUserPhone(user);
   const countryFlag = getCountryFlag(user);
+
+  // Get display name from profiles table data
+  const displayName = formatUserDisplayName(user);
+
+  console.log('UserTableRow - User data:', {
+    id: user.id,
+    email: user.email,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    displayName,
+    phone: user.phone,
+    country_code: user.country_code,
+    userPhone
+  });
 
   return (
     <TableRow 
@@ -81,13 +95,13 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
         <Checkbox
           checked={isSelected}
           onClick={handleCheckboxClick}
-          aria-label={`Select ${formatUserDisplayName(user)}`}
+          aria-label={`Select ${displayName}`}
         />
       </TableCell>
       
       <TableCell className="px-2">
         <div className="flex flex-col">
-          <span className="text-sm font-medium text-gray-900">{formatUserDisplayName(user)}</span>
+          <span className="text-sm font-medium text-gray-900">{displayName}</span>
         </div>
       </TableCell>
       
@@ -97,7 +111,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       
       <TableCell className="px-2">
         <div className="flex items-center text-sm text-gray-600">
-          {userPhone !== '—' && <span className="mr-1">{countryFlag}</span>}
+          {userPhone !== '—' && countryFlag && <span className="mr-1">{countryFlag}</span>}
           {userPhone}
         </div>
       </TableCell>
