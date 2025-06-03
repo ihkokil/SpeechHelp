@@ -132,84 +132,6 @@ export type Database = {
           },
         ]
       }
-      admin_permissions: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
-      admin_role_permissions: {
-        Row: {
-          created_at: string
-          permission_id: string
-          role_id: string
-        }
-        Insert: {
-          created_at?: string
-          permission_id: string
-          role_id: string
-        }
-        Update: {
-          created_at?: string
-          permission_id?: string
-          role_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "admin_role_permissions_permission_id_fkey"
-            columns: ["permission_id"]
-            isOneToOne: false
-            referencedRelation: "admin_permissions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "admin_role_permissions_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "admin_roles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      admin_roles: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       admin_settings: {
         Row: {
           admin_user_id: string
@@ -239,39 +161,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      admin_user_roles: {
-        Row: {
-          admin_user_id: string
-          created_at: string
-          role_id: string
-        }
-        Insert: {
-          admin_user_id: string
-          created_at?: string
-          role_id: string
-        }
-        Update: {
-          admin_user_id?: string
-          created_at?: string
-          role_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "admin_user_roles_admin_user_id_fkey"
-            columns: ["admin_user_id"]
-            isOneToOne: false
-            referencedRelation: "admin_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "admin_user_roles_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "admin_roles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       admin_users: {
         Row: {
@@ -312,33 +201,6 @@ export type Database = {
           last_login?: string | null
           updated_at?: string
           username?: string
-        }
-        Relationships: []
-      }
-      password_reset_otps: {
-        Row: {
-          created_at: string
-          email: string
-          expires_at: string
-          id: string
-          is_used: boolean
-          otp_code: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          expires_at: string
-          id?: string
-          is_used?: boolean
-          otp_code: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          expires_at?: string
-          id?: string
-          is_used?: boolean
-          otp_code?: string
         }
         Relationships: []
       }
