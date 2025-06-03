@@ -1,3 +1,4 @@
+
 import { User } from '../../types';
 import { format, formatDistanceToNow } from 'date-fns';
 import { getCountryByCode } from '@/utils/phoneUtils';
@@ -85,7 +86,7 @@ export const formatUserDisplayName = (user: User) => {
   return getUserName(user);
 };
 
-// Simplified phone number formatting using profiles table data
+// Enhanced phone number formatting using profiles table data
 export const getUserPhone = (user: User) => {
   console.log('📱 Getting user phone from profiles table:', {
     userId: user.id,
@@ -102,20 +103,30 @@ export const getUserPhone = (user: User) => {
     return '—';
   }
   
-  // Get country code from profiles table
-  const countryCode = safeString(user.country_code);
+  // Get country code from profiles table and ensure it's uppercase
+  const countryCode = safeString(user.country_code).toUpperCase();
+  
+  console.log('📱 Processing country code:', {
+    originalCountryCode: user.country_code,
+    processedCountryCode: countryCode
+  });
   
   if (countryCode) {
     // Get country data for dial code
     const country = getCountryByCode(countryCode);
+    console.log('📱 Country lookup result:', {
+      countryCode,
+      country,
+      dialCode: country?.dialCode,
+      flag: country?.flag
+    });
+    
     if (country?.dialCode) {
-      console.log('📱 Formatting phone with country:', {
-        phone,
-        countryCode,
-        dialCode: country.dialCode,
-        result: `+${country.dialCode} ${phone}`
-      });
-      return `+${country.dialCode} ${phone}`;
+      const formattedPhone = `+${country.dialCode} ${phone}`;
+      console.log('📱 Final formatted phone:', formattedPhone);
+      return formattedPhone;
+    } else {
+      console.log('📱 No country found for code:', countryCode);
     }
   }
   
@@ -141,8 +152,13 @@ export const getCountryFlag = (user: User) => {
     profileCountryCode: user.country_code
   });
   
-  // Get country code directly from profiles table
-  const countryCode = safeString(user.country_code);
+  // Get country code directly from profiles table and ensure it's uppercase
+  const countryCode = safeString(user.country_code).toUpperCase();
+  
+  console.log('🏳️ Processing country code for flag:', {
+    originalCountryCode: user.country_code,
+    processedCountryCode: countryCode
+  });
   
   if (!countryCode) {
     console.log('🏳️ No country code found, using default flag');
@@ -151,6 +167,12 @@ export const getCountryFlag = (user: User) => {
   
   // Look up country by code
   const country = getCountryByCode(countryCode);
+  
+  console.log('🏳️ Country flag lookup result:', {
+    countryCode,
+    country,
+    flag: country?.flag
+  });
   
   if (country?.flag) {
     console.log('🏳️ Found country flag:', {

@@ -31,7 +31,37 @@ export const stripNonNumeric = (value: string): string => {
 };
 
 export const getCountryByCode = (code: string): Country | undefined => {
-  return countriesComplete.find(country => country.code === code);
+  console.log('🔍 getCountryByCode called with:', { code, type: typeof code });
+  
+  if (!code) {
+    console.log('❌ No code provided to getCountryByCode');
+    return undefined;
+  }
+  
+  // Ensure code is uppercase for consistent matching
+  const normalizedCode = code.toUpperCase().trim();
+  console.log('🔍 Normalized code:', normalizedCode);
+  
+  const result = countriesComplete.find(country => {
+    const countryCode = country.code.toUpperCase().trim();
+    const match = countryCode === normalizedCode;
+    if (match) {
+      console.log('✅ Found matching country:', {
+        searchCode: normalizedCode,
+        foundCountry: country
+      });
+    }
+    return match;
+  });
+  
+  if (!result) {
+    console.log('❌ No country found for code:', normalizedCode);
+    console.log('📋 Available country codes (first 10):', 
+      countriesComplete.slice(0, 10).map(c => c.code)
+    );
+  }
+  
+  return result;
 };
 
 export const getCountryByDialCode = (dialCode: string): Country | undefined => {
