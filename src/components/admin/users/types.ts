@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   email: string;
@@ -36,6 +35,7 @@ export interface User {
   // Direct fields from profiles table
   first_name?: string;
   last_name?: string;
+  username?: string;
   phone?: string;
   country_code?: string;
   // Stripe related fields
@@ -56,4 +56,16 @@ export interface Speech {
 export interface SpeechTypeStats {
   type: string;
   count: number;
+}
+
+export interface AdminRole {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface AdminPermission {
+  id: string;
+  name: string;
+  description: string;
 }

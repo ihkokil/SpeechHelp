@@ -1,6 +1,7 @@
+
 import { User } from '../../types';
 import { format, formatDistanceToNow } from 'date-fns';
-import { getCountryByDialCode, getAllCountries } from '@/utils/phoneUtils';
+import { formatPhoneWithCountryCode, getCountryByCode, extractCountryCodeFromUser, getPhoneFromDatabase } from '@/utils/phoneUtils';
 
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Never';
@@ -50,14 +51,14 @@ const constructFullName = (firstName: string, lastName: string): string => {
 };
 
 export const getUserName = (user: User) => {
-  // Prioritize profiles table first_name and last_name
+  // Always prioritize first_name and last_name from the user object (profile data)
   const firstName = safeString(user.first_name);
   const lastName = safeString(user.last_name);
   
   // Try to construct from profile first_name and last_name
   let fullName = constructFullName(firstName, lastName);
   
-  // If no profile data, try user_metadata as fallback
+  // If no profile data, try user_metadata
   if (!fullName) {
     const metaFirstName = safeString(user.user_metadata?.first_name);
     const metaLastName = safeString(user.user_metadata?.last_name);
@@ -85,27 +86,26 @@ export const formatUserDisplayName = (user: User) => {
   return getUserName(user);
 };
 
-// Simplified phone number formatting - just return the raw phone number
+// Enhanced function to get user phone from database fields
 export const getUserPhone = (user: User) => {
-  console.log('📱 Getting user phone (simplified):', {
+  console.log('📋 Getting phone for user in details/profile:', {
     userId: user.id,
     email: user.email,
-    profilePhone: user.phone
+    profilePhone: user.phone,
+    metadataPhone: user.user_metadata?.phone
   });
   
-  // Get phone directly from profiles table
-  const phone = safeString(user.phone);
-  
+  // Get phone directly from database fields
+  const phone = getPhoneFromDatabase(user);
   if (!phone) {
-    console.log('📱 No phone found for user:', user.email);
+    console.log('📋 No phone found in database for user:', user.email);
     return '—';
   }
   
-  console.log('📱 Returning raw phone:', phone);
-  return phone;
+  // Use the enhanced phone formatting function with database-sourced data
+  return formatPhoneWithCountryCode(phone, user);
 };
 
-// Simple country flag URL getter (keeping this for potential future use)
 export const getCountryFlagUrl = (countryCode: string | undefined) => {
   if (!countryCode) return '';
   
@@ -114,48 +114,13 @@ export const getCountryFlagUrl = (countryCode: string | undefined) => {
   return `https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`;
 };
 
-// Get country flag emoji from profiles table using dial codes
+export const getCountryCode = (user: User) => {
+  return extractCountryCodeFromUser(user);
+};
+
+// Function to get country flag emoji
 export const getCountryFlag = (user: User) => {
-  console.log('🏳️ Getting country flag for user:', {
-    userId: user.id,
-    email: user.email,
-    profileCountryCode: user.country_code
-  });
-  
-  // Get dial code directly from profiles table
-  const dialCode = safeString(user.country_code);
-  
-  console.log('🏳️ Processing dial code for flag:', {
-    originalValue: user.country_code,
-    processedValue: dialCode
-  });
-  
-  if (!dialCode) {
-    console.log('🏳️ No dial code found, using default flag');
-    return '🌍';
-  }
-  
-  // Clean the dial code (remove any + prefix)
-  const cleanDialCode = dialCode.replace('+', '');
-  
-  // Look up the country by dial code
-  const country = getCountryByDialCode(cleanDialCode);
-  
-  console.log('🏳️ Dial code lookup result:', {
-    dialCode: cleanDialCode,
-    country,
-    flag: country?.flag
-  });
-  
-  if (country?.flag) {
-    console.log('🏳️ Found country flag:', {
-      dialCode: cleanDialCode,
-      countryName: country.name,
-      flag: country.flag
-    });
-    return country.flag;
-  }
-  
-  console.log('🏳️ Country not found in lookup, using default flag:', cleanDialCode);
-  return '🌍';
+  const countryCode = extractCountryCodeFromUser(user);
+  const country = getCountryByCode(countryCode);
+  return country?.flag || '🌍';
 };

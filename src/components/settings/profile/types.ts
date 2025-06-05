@@ -7,7 +7,7 @@ export const profileFormSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().optional(),
   phone: z.string().optional(),
-  countryCode: z.string().default('1'), // Changed default to dial code
+  countryCode: z.string().default('US'),
 });
 
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;

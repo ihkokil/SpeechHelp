@@ -19,7 +19,7 @@ const adminProfileSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Please enter a valid email address'),
   phone: z.string().optional(),
-  countryCode: z.string().default('1'), // Changed default to dial code
+  countryCode: z.string().default('US'),
 });
 
 type AdminProfileFormValues = z.infer<typeof adminProfileSchema>;
@@ -37,7 +37,7 @@ const AdminProfileSettings = () => {
       lastName: '',
       email: '',
       phone: '',
-      countryCode: '1', // Default to US dial code
+      countryCode: 'US',
     },
   });
 
@@ -62,7 +62,7 @@ const AdminProfileSettings = () => {
           lastName,
           email: adminUser.email,
           phone: '',
-          countryCode: '1', // Default to US dial code
+          countryCode: 'US',
         });
 
         // Then, load any additional settings from the database
@@ -84,7 +84,7 @@ const AdminProfileSettings = () => {
             lastName: settings.last_name || lastName,
             email: settings.email || adminUser.email,
             phone: settings.phone || '',
-            countryCode: settings.country_code || '1', // Will be dial code from database
+            countryCode: settings.country_code || 'US',
           });
 
           setAvatar(settings.avatar || '');
@@ -129,16 +129,16 @@ const AdminProfileSettings = () => {
         throw new Error('No admin user found');
       }
 
-      console.log('Saving admin profile data with dial code:', data);
+      console.log('Saving admin profile data:', data);
       console.log('Current admin user:', adminUser);
 
-      // Save each profile setting to the database (country_code is now dial code)
+      // Save each profile setting to the database
       const savePromises = [
         adminSettingsService.saveSetting('first_name', data.firstName, 'profile'),
         adminSettingsService.saveSetting('last_name', data.lastName, 'profile'),
         adminSettingsService.saveSetting('email', data.email, 'profile'),
         adminSettingsService.saveSetting('phone', data.phone || '', 'profile'),
-        adminSettingsService.saveSetting('country_code', data.countryCode, 'profile'), // Save dial code
+        adminSettingsService.saveSetting('country_code', data.countryCode, 'profile'),
         adminSettingsService.saveSetting('avatar', avatar, 'profile')
       ];
 
@@ -154,7 +154,7 @@ const AdminProfileSettings = () => {
         throw new Error(errors);
       }
       
-      console.log('All settings saved successfully with dial code');
+      console.log('All settings saved successfully');
       toast({
         title: "Profile updated",
         description: "Your profile information has been saved successfully.",

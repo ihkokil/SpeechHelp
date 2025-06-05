@@ -219,10 +219,9 @@ export const signUp = async (
 			password,
 			options: {
 				data: {
-					first_name: firstName || '',
-					last_name: lastName || '',
-					full_name: firstName && lastName ? `${firstName} ${lastName}` : '',
-					name: firstName && lastName ? `${firstName} ${lastName}` : '',
+					first_name: firstName,
+					last_name: lastName,
+					is_active: false,
 					subscription_plan: SubscriptionPlan.FREE_TRIAL,
 					subscription_start_date: new Date().toISOString(),
 					subscription_end_date: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -254,55 +253,11 @@ export const signUp = async (
 			}
 		}
 
-		// If user was created successfully, ensure profile is created
+		// If user was created successfully, send confirmation email
 		if (res.data.user && !res.error) {
-			console.log('SignUp: User created successfully, ensuring profile exists...');
-			
-			// Wait a bit for the trigger to complete
-			await new Promise(resolve => setTimeout(resolve, 2000));
-			
-			// Check if profile was created by trigger
-			const { data: existingProfile, error: profileCheckError } = await supabase
-				.from('profiles')
-				.select('id')
-				.eq('id', res.data.user.id)
-				.maybeSingle();
-
-			if (profileCheckError) {
-				console.error('Error checking profile:', profileCheckError);
-			}
-
-			if (!existingProfile) {
-				console.log('SignUp: Profile not found, creating manually...');
-				// Create profile manually if trigger failed
-				const { error: profileInsertError } = await supabase
-					.from('profiles')
-					.upsert({
-						id: res.data.user.id,
-						first_name: firstName || '',
-						last_name: lastName || '',
-						country_code: '1', // Default to US dial code
-						subscription_plan: SubscriptionPlan.FREE_TRIAL,
-						subscription_start_date: new Date().toISOString(),
-						subscription_end_date: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-						is_active: true
-					}, {
-						onConflict: 'id'
-					});
-
-				if (profileInsertError) {
-					console.error('Error creating profile manually:', profileInsertError);
-					// Don't throw error here as user was created successfully
-				} else {
-					console.log('Profile created manually successfully');
-				}
-			} else {
-				console.log('Profile already exists from trigger');
-			}
-
-			// Send confirmation email
+			console.log('SignUp: User created successfully, sending confirmation email...');
 			try {
-				console.log('SignUp: Sending confirmation email...');
+				// Call the send-confirmation edge function
 				const { data: emailData, error: emailError } = await supabase.functions.invoke('send-confirmation', {
 					body: {
 						email: email,
@@ -314,6 +269,7 @@ export const signUp = async (
 
 				if (emailError) {
 					console.error('Error sending confirmation email:', emailError);
+					// Don't throw here, just log the error as signup was successful
 					showToast({
 						title: "Account created",
 						description: "Your account was created but we couldn't send the confirmation email. Please contact support.",
@@ -328,6 +284,7 @@ export const signUp = async (
 				}
 			} catch (emailErr) {
 				console.error('Exception sending confirmation email:', emailErr);
+				// Don't throw here, just log the error as signup was successful
 				showToast({
 					title: "Account created",
 					description: "Your account was created but we couldn't send the confirmation email. Please contact support.",
@@ -380,4 +337,3 @@ export const signOut = async (showToast: ShowToastFunction) => {
 		throw error;
 	}
 };
-

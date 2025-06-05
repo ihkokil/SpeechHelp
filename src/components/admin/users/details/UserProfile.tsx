@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Mail, Phone, Calendar } from 'lucide-react';
-import { formatUserDisplayName, getUserPhone } from '../management/utils/userDisplayUtils';
+import { formatUserDisplayName, getUserPhone, getCountryFlag } from '../management/utils/userDisplayUtils';
 
 interface UserProfileProps {
   user: User;
@@ -13,6 +13,7 @@ interface UserProfileProps {
 
 export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
   const userPhone = getUserPhone(user);
+  const countryFlag = getCountryFlag(user);
 
   return (
     <Card>
@@ -55,6 +56,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
             <h3 className="text-sm font-medium text-muted-foreground">Phone</h3>
             <p className="flex items-center">
               <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+              {userPhone !== '—' && <span className="mr-1">{countryFlag}</span>}
               {userPhone}
             </p>
           </div>

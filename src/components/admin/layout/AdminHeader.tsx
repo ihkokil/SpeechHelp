@@ -19,7 +19,7 @@ interface AdminHeaderProps {
 }
 
 const AdminHeader = ({ navItems, mobileMenuOpen, setMobileMenuOpen }: AdminHeaderProps) => {
-  const logoPath = "SpeechHelp_Logo.svg";
+  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
   
   return (
     <header className="flex h-16 w-full items-center justify-between border-b bg-white px-4 lg:px-6">

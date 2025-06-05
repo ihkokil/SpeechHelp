@@ -28,7 +28,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   const countries = getAllCountries();
   
   const watchedPhone = form.watch(phoneFieldName);
-  const watchedCountryCode = form.watch(countryFieldName);
+  const watchedCountry = form.watch(countryFieldName);
   
   useEffect(() => {
     if (watchedPhone) {
@@ -50,8 +50,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
     form.setValue(countryFieldName, countryCode);
   };
   
-  // Get selected country by country code (US, CA, etc.)
-  const selectedCountry = getCountryByCode(watchedCountryCode);
+  const selectedCountry = getCountryByCode(watchedCountry);
   const dialCode = selectedCountry?.dialCode || '1';
 
   return (

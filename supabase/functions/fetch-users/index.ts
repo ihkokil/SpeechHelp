@@ -133,6 +133,7 @@ serve(async (req) => {
           phone: safeString(metadata.phone) || safeString(profile.phone),
         },
         profile: {
+          username: safeString(profile.username) || fullName || authUser.email?.split('@')[0] || '',
           phone: safeString(profile.phone) || safeString(metadata.phone),
           is_active: profile.is_active !== false,
           is_admin: profile.is_admin || false,
