@@ -13,7 +13,7 @@ export type Database = {
         Row: {
           action: string
           admin_id: string | null
-          created_at: string
+          created_at: string | null
           details: Json | null
           entity_id: string | null
           entity_type: string
@@ -25,7 +25,7 @@ export type Database = {
         Insert: {
           action: string
           admin_id?: string | null
-          created_at?: string
+          created_at?: string | null
           details?: Json | null
           entity_id?: string | null
           entity_type: string
@@ -37,7 +37,7 @@ export type Database = {
         Update: {
           action?: string
           admin_id?: string | null
-          created_at?: string
+          created_at?: string | null
           details?: Json | null
           entity_id?: string | null
           entity_type?: string
@@ -134,19 +134,19 @@ export type Database = {
       }
       admin_permissions: {
         Row: {
-          created_at: string
+          created_at: string | null
           description: string | null
           id: string
           name: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           name: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           name?: string
@@ -155,17 +155,17 @@ export type Database = {
       }
       admin_role_permissions: {
         Row: {
-          created_at: string
+          created_at: string | null
           permission_id: string
           role_id: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           permission_id: string
           role_id: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           permission_id?: string
           role_id?: string
         }
@@ -188,72 +188,72 @@ export type Database = {
       }
       admin_roles: {
         Row: {
-          created_at: string
+          created_at: string | null
           description: string | null
           id: string
           name: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           name: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           description?: string | null
           id?: string
           name?: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
       admin_settings: {
         Row: {
           admin_user_id: string
-          created_at: string
+          created_at: string | null
           id: string
           setting_category: string
           setting_key: string
           setting_value: Json
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           admin_user_id: string
-          created_at?: string
+          created_at?: string | null
           id?: string
           setting_category: string
           setting_key: string
           setting_value: Json
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           admin_user_id?: string
-          created_at?: string
+          created_at?: string | null
           id?: string
           setting_category?: string
           setting_key?: string
           setting_value?: Json
-          updated_at?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
       admin_user_roles: {
         Row: {
           admin_user_id: string
-          created_at: string
+          created_at: string | null
           role_id: string
         }
         Insert: {
           admin_user_id: string
-          created_at?: string
+          created_at?: string | null
           role_id: string
         }
         Update: {
           admin_user_id?: string
-          created_at?: string
+          created_at?: string | null
           role_id?: string
         }
         Relationships: [
@@ -317,27 +317,27 @@ export type Database = {
       }
       password_reset_otps: {
         Row: {
-          created_at: string
+          created_at: string | null
           email: string
           expires_at: string
           id: string
-          is_used: boolean
+          is_used: boolean | null
           otp_code: string
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           email: string
           expires_at: string
           id?: string
-          is_used?: boolean
+          is_used?: boolean | null
           otp_code: string
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           email?: string
           expires_at?: string
           id?: string
-          is_used?: boolean
+          is_used?: boolean | null
           otp_code?: string
         }
         Relationships: []
@@ -397,14 +397,14 @@ export type Database = {
           brand: string
           card_holder: string
           card_type: string
-          created_at: string
+          created_at: string | null
           expiry_month: number
           expiry_year: number
           id: string
-          is_default: boolean
+          is_default: boolean | null
           last4: string
           stripe_payment_method_id: string | null
-          updated_at: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -416,14 +416,14 @@ export type Database = {
           brand: string
           card_holder: string
           card_type: string
-          created_at?: string
+          created_at?: string | null
           expiry_month: number
           expiry_year: number
           id?: string
-          is_default?: boolean
+          is_default?: boolean | null
           last4: string
           stripe_payment_method_id?: string | null
-          updated_at?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -435,14 +435,14 @@ export type Database = {
           brand?: string
           card_holder?: string
           card_type?: string
-          created_at?: string
+          created_at?: string | null
           expiry_month?: number
           expiry_year?: number
           id?: string
-          is_default?: boolean
+          is_default?: boolean | null
           last4?: string
           stripe_payment_method_id?: string | null
-          updated_at?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []

@@ -82,6 +82,11 @@ export const useSpeechGeneration = ({
 				};
 				const contentToSave = JSON.stringify(speechWithMetadata);
 				
+				// Check if user is still authenticated before saving
+				if (!user) {
+					throw new Error('User session expired during speech generation');
+				}
+				
 				await saveSpeech(speechTitle, contentToSave, speechType);
 				
 				// Refresh speeches list to include the new speech
@@ -97,13 +102,23 @@ export const useSpeechGeneration = ({
 			} catch (saveError) {
 				console.error('Error auto-saving speech:', saveError);
 				
-				// Even if save fails, still show success for generation and keep the speech in localStorage
-				toast({
-					title: "Speech Generated",
-					description: "Your speech was generated successfully. You can manually save it in the next step.",
-				});
-				
-				setShowConfetti(true);
+				// Check if it's an auth error
+				if (saveError instanceof Error && saveError.message.includes('session expired')) {
+					toast({
+						title: "Session Expired",
+						description: "Your session expired during speech generation. Please sign in again to save your speech.",
+						variant: "destructive",
+					});
+					setError('Session expired - please sign in again');
+				} else {
+					// Even if save fails, still show success for generation and keep the speech in localStorage
+					toast({
+						title: "Speech Generated",
+						description: "Your speech was generated successfully. You can manually save it in the next step.",
+					});
+					
+					setShowConfetti(true);
+				}
 			}
 
 		} catch (error) {
@@ -114,6 +129,7 @@ export const useSpeechGeneration = ({
 				description: error instanceof Error ? error.message : "Failed to generate speech. Please try again.",
 				variant: "destructive",
 			});
+		} finally {
 			setGenerating(false);
 		}
 	};
