@@ -265,22 +265,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     getInitialSession();
 
-    // Listen for auth changes
+    // Listen for auth changes with improved error handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id || 'No user');
+        
+        // Handle session updates synchronously first
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
 
+        // Handle auth events
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           if (session?.user) {
+            // Defer data fetching to prevent blocking the auth state change
             setTimeout(() => {
               fetchSpeeches();
-            }, 0);
+            }, 100);
           }
         } else if (event === 'SIGNED_OUT') {
           setSpeeches([]);
+        } else if (event === 'USER_UPDATED') {
+          // Handle user metadata updates
+          console.log('User updated:', session?.user?.id);
         }
       }
     );
@@ -291,13 +298,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  // Fetch speeches when user changes (but not on initial load)
-  useEffect(() => {
-    if (user && !isLoading) {
-      console.log('User changed, fetching speeches for:', user.id);
-      fetchSpeeches();
-    }
-  }, [user, isLoading]);
+  // Remove the separate effect for fetching speeches since it can cause issues
+  // The fetchSpeeches call is now handled in the onAuthStateChange callback
 
   const value = {
     user,
