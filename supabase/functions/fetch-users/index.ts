@@ -19,6 +19,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     
     if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing environment variables');
       throw new Error('Missing environment variables');
     }
     
@@ -30,39 +31,52 @@ serve(async (req) => {
       }
     });
     
-    console.log('Fetching users from auth and profiles...');
+    console.log('Starting fresh user data fetch...');
     
-    // Get all users from auth.users
-    const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+    // Get all users from auth.users with pagination to handle large datasets
+    let allAuthUsers: any[] = [];
+    let page = 1;
+    const perPage = 1000;
     
-    if (authError) {
-      console.error('Error fetching auth users:', authError);
-      throw new Error('Failed to fetch users from auth');
+    while (true) {
+      console.log(`Fetching auth users page ${page}...`);
+      const { data: authUsersPage, error: authError } = await supabase.auth.admin.listUsers({
+        page,
+        perPage
+      });
+      
+      if (authError) {
+        console.error('Error fetching auth users page:', page, authError);
+        throw new Error(`Failed to fetch auth users: ${authError.message}`);
+      }
+      
+      if (!authUsersPage.users || authUsersPage.users.length === 0) {
+        break;
+      }
+      
+      allAuthUsers = allAuthUsers.concat(authUsersPage.users);
+      page++;
+      
+      // Safety break to prevent infinite loops
+      if (page > 100) {
+        console.warn('Hit safety limit for user pagination');
+        break;
+      }
     }
     
-    // Get all profiles with complete subscription data
+    console.log(`Fetched ${allAuthUsers.length} auth users total`);
+    
+    // Get all profiles with complete data
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select(`
-        *,
-        subscription_plan,
-        subscription_period,
-        subscription_amount,
-        subscription_status,
-        subscription_start_date,
-        subscription_end_date,
-        subscription_price_id,
-        subscription_currency,
-        stripe_customer_id,
-        stripe_subscription_id
-      `);
+      .select('*');
     
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError);
-      throw new Error('Failed to fetch user profiles');
+      throw new Error(`Failed to fetch user profiles: ${profilesError.message}`);
     }
     
-    console.log(`Found ${authUsers.users.length} auth users and ${profiles?.length || 0} profiles`);
+    console.log(`Found ${profiles?.length || 0} profiles`);
     
     // Helper function to safely extract string values
     const safeString = (value: any): string => {
@@ -89,17 +103,19 @@ serve(async (req) => {
       profileMap.set(profile.id, profile);
     });
     
-    // Combine auth users with their profiles
-    const usersWithProfiles = authUsers.users.map(authUser => {
+    // Combine auth users with their profiles - prioritizing profile data
+    const usersWithProfiles = allAuthUsers.map(authUser => {
       // Get the profile data
       const profile = profileMap.get(authUser.id) || {};
       
-      // Extract metadata safely
+      // Extract metadata safely as fallback
       const metadata = authUser.raw_user_meta_data || {};
       
-      // Get first and last names with priority: profile table > metadata > empty
+      // PRIORITIZE PROFILE DATA over auth metadata
       const firstName = safeString(profile.first_name) || safeString(metadata.first_name);
       const lastName = safeString(profile.last_name) || safeString(metadata.last_name);
+      const phone = safeString(profile.phone) || safeString(metadata.phone);
+      const countryCode = safeString(profile.country_code) || safeString(metadata.country_code) || 'US';
       
       // Construct full name from first and last name components
       const fullName = constructFullName(firstName, lastName);
@@ -107,9 +123,11 @@ serve(async (req) => {
       
       return {
         ...authUser,
-        // Direct fields from profiles table
+        // Direct fields from profiles table (PRIORITIZED)
         first_name: firstName,
         last_name: lastName,
+        phone: phone,
+        country_code: countryCode,
         is_active: profile.is_active !== false,
         is_admin: profile.is_admin || false,
         admin_role: safeString(profile.admin_role) || null,
@@ -132,11 +150,13 @@ serve(async (req) => {
           full_name: fullName,
           name: fullName,
           email: safeString(authUser.email),
-          phone: safeString(metadata.phone) || safeString(profile.phone),
+          phone: phone,
+          country_code: countryCode,
         },
         profile: {
           username: safeString(profile.username) || fullName || authUser.email?.split('@')[0] || '',
-          phone: safeString(profile.phone) || safeString(metadata.phone),
+          phone: phone,
+          country_code: countryCode,
           is_active: profile.is_active !== false,
           is_admin: profile.is_admin || false,
           admin_role: safeString(profile.admin_role) || null,
@@ -158,13 +178,20 @@ serve(async (req) => {
       };
     });
     
-    console.log('Successfully combined users with profiles');
+    console.log(`Successfully processed ${usersWithProfiles.length} users with profile data`);
     
     return new Response(
-      JSON.stringify({ users: usersWithProfiles }),
+      JSON.stringify({ 
+        users: usersWithProfiles,
+        total: usersWithProfiles.length,
+        timestamp: new Date().toISOString()
+      }),
       { 
         headers: { 
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
           ...corsHeaders
         } 
       }
@@ -174,7 +201,9 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to fetch users'
+        error: error.message || 'Failed to fetch users',
+        details: error.toString(),
+        timestamp: new Date().toISOString()
       }),
       { 
         status: 500,
