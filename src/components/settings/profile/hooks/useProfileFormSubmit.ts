@@ -61,68 +61,46 @@ export const useProfileFormSubmit = (
           description: "Please check your new email address for a verification link.",
         });
       }
-      
-      // First check if profile exists
-      const { data: existingProfile, error: checkError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .single();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        // PGRST116 is "not found" error, which is ok
-        console.error('Error checking existing profile:', checkError);
-        throw new Error('Failed to check existing profile');
-      }
 
       const profileUpdateData = {
         first_name: data.firstName,
         last_name: data.lastName,
         phone: data.phone,
-        country_code: data.countryCode, // This is now the dial code
+        country_code: data.countryCode, // This is now the country code (US, CA, etc.)
         avatar_url: avatarUrl || null,
         updated_at: new Date().toISOString()
       };
 
-      if (existingProfile) {
-        // Update existing profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update(profileUpdateData)
-          .eq('id', user.id);
-        
-        if (profileError) {
-          console.error('Error updating profiles table:', profileError);
-          throw profileError;
-        }
-      } else {
-        // Create new profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            ...profileUpdateData,
-            is_active: true,
-            created_at: new Date().toISOString(),
-          });
-        
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-          throw profileError;
-        }
+      console.log('Updating profile with country code:', profileUpdateData);
+
+      // Use upsert to handle both insert and update cases
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          ...profileUpdateData,
+          is_active: true,
+          created_at: new Date().toISOString(),
+        }, {
+          onConflict: 'id'
+        });
+      
+      if (profileError) {
+        console.error('Error upserting profile:', profileError);
+        throw profileError;
       }
       
-      console.log('Profile updated successfully in profiles table with dial code:', data.countryCode);
+      console.log('Profile updated successfully in profiles table with country code:', data.countryCode);
       
       // Also update user metadata for backward compatibility
       const metadata = {
         first_name: data.firstName,
         last_name: data.lastName,
         phone: data.phone,
-        country_code: data.countryCode, // Store dial code in metadata too
+        country_code: data.countryCode, // Store country code in metadata too
       };
       
-      console.log('Updating user metadata with dial code:', metadata);
+      console.log('Updating user metadata with country code:', metadata);
       
       const { error: metadataError } = await supabase.auth.updateUser({
         data: metadata
