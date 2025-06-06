@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Phone } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
-import { getAllCountries, getCountryByDialCode, formatPhoneNumber, stripNonNumeric } from '@/utils/phoneUtils';
+import { getAllCountries, getPreferredCountryForDialCode, formatPhoneNumber, stripNonNumeric } from '@/utils/phoneUtils';
 
 interface PhoneInputProps {
   form: UseFormReturn<any>;
@@ -50,7 +50,8 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
     form.setValue(countryFieldName, dialCode);
   };
   
-  const selectedCountry = getCountryByDialCode(watchedCountryCode);
+  // Use the preferred country function to handle US/Canada conflict
+  const selectedCountry = getPreferredCountryForDialCode(watchedCountryCode);
   const dialCode = selectedCountry?.dialCode || '1';
 
   return (
@@ -81,7 +82,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
               </FormControl>
               <SelectContent className="bg-white max-h-60 overflow-y-auto">
                 {countries.map((country) => (
-                  <SelectItem key={country.code} value={country.dialCode}>
+                  <SelectItem key={`${country.code}-${country.dialCode}`} value={country.dialCode}>
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{country.flag}</span>
                       <span>+{country.dialCode}</span>
@@ -130,3 +131,4 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
 };
 
 export default PhoneInput;
+

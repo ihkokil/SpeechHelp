@@ -67,22 +67,24 @@ serve(async (req) => {
       .from('profiles')
       .select('id')
       .eq('id', authData.user.id)
-      .single();
+      .maybeSingle();
 
     if (profileCheckError || !existingProfile) {
       console.log('Profile not found, creating manually for user:', authData.user.id);
-      // Create profile manually if trigger failed
+      // Create profile manually if trigger failed using upsert to avoid duplicates
       const { error: profileInsertError } = await supabase
         .from('profiles')
-        .insert({
+        .upsert({
           id: authData.user.id,
           first_name: firstName || '',
           last_name: lastName || '',
-          username: `${firstName || ''} ${lastName || ''}`.trim() || email.split('@')[0],
+          country_code: '1', // Default to US dial code
           is_active: isActive,
           subscription_plan: 'free_trial',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'id'
         });
 
       if (profileInsertError) {
@@ -164,3 +166,4 @@ serve(async (req) => {
     );
   }
 });
+

@@ -259,29 +259,35 @@ export const signUp = async (
 			console.log('SignUp: User created successfully, ensuring profile exists...');
 			
 			// Wait a bit for the trigger to complete
-			await new Promise(resolve => setTimeout(resolve, 1000));
+			await new Promise(resolve => setTimeout(resolve, 2000));
 			
-			// Check if profile was created by trigger, if not create it manually
+			// Check if profile was created by trigger
 			const { data: existingProfile, error: profileCheckError } = await supabase
 				.from('profiles')
 				.select('id')
 				.eq('id', res.data.user.id)
-				.single();
+				.maybeSingle();
 
-			if (profileCheckError || !existingProfile) {
+			if (profileCheckError) {
+				console.error('Error checking profile:', profileCheckError);
+			}
+
+			if (!existingProfile) {
 				console.log('SignUp: Profile not found, creating manually...');
 				// Create profile manually if trigger failed
 				const { error: profileInsertError } = await supabase
 					.from('profiles')
-					.insert({
+					.upsert({
 						id: res.data.user.id,
 						first_name: firstName || '',
 						last_name: lastName || '',
-						username: firstName && lastName ? `${firstName} ${lastName}` : email.split('@')[0],
+						country_code: '1', // Default to US dial code
 						subscription_plan: SubscriptionPlan.FREE_TRIAL,
 						subscription_start_date: new Date().toISOString(),
 						subscription_end_date: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
 						is_active: true
+					}, {
+						onConflict: 'id'
 					});
 
 				if (profileInsertError) {
@@ -374,3 +380,4 @@ export const signOut = async (showToast: ShowToastFunction) => {
 		throw error;
 	}
 };
+
