@@ -9,7 +9,7 @@ import { LogoutButton } from './sidebar/components/LogoutButton';
 
 const DashboardSidebar = () => {
   const { isOpen, setIsOpen, toggleSidebar, isMobile } = useSidebarState();
-  const logoPath = "https://preview--speech-helper-ai.lovable.app/SpeechHelp_Logo.svg";
+  const logoPath = "SpeechHelpLogo.svg";
 
   return (
     <>

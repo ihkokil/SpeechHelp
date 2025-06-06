@@ -15,7 +15,7 @@ import { AlertCircle, LockKeyhole, Shield, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 
-const logoPath = "https://preview--speech-helper-ai.lovable.app/SpeechHelp_Logo.svg";
+const logoPath = "SpeechHelpLogo.svg";
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username or email is required'),

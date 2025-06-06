@@ -36,8 +36,8 @@ const AdminPermissionsDialog: React.FC<AdminPermissionsDialogProps> = ({
       loadRolesAndPermissions();
       // Set initial values based on user
       setIsAdmin(user.is_admin || false);
-      setSelectedRole(''); // No more admin_role field
-      setSelectedPermissions([]); // No more permissions field
+      setSelectedRole(user.admin_role || '');
+      setSelectedPermissions(user.permissions || []);
     }
   }, [open, user]);
 
@@ -110,7 +110,9 @@ const AdminPermissionsDialog: React.FC<AdminPermissionsDialogProps> = ({
       
       const updatedUser: User = {
         ...user,
-        is_admin: isAdmin
+        is_admin: isAdmin,
+        admin_role: selectedRole,
+        permissions: selectedPermissions
       };
       
       onPermissionsUpdated(updatedUser);

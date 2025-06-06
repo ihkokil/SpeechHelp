@@ -19,7 +19,7 @@ interface AdminHeaderProps {
 }
 
 const AdminHeader = ({ navItems, mobileMenuOpen, setMobileMenuOpen }: AdminHeaderProps) => {
-  const logoPath = "https://preview--speech-helper-ai.lovable.app/SpeechHelp_Logo.svg";
+  const logoPath = "SpeechHelpLogo.svg";
   
   return (
     <header className="flex h-16 w-full items-center justify-between border-b bg-white px-4 lg:px-6">

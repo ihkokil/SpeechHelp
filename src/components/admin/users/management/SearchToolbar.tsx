@@ -1,28 +1,20 @@
 
 import React from 'react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { 
-  Search, 
-  RefreshCw, 
-  Loader2, 
-  UserMinus, 
-  Mail, 
-  Download, 
-  FileUp,
-  UserPlus 
-} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Search, RefreshCw, UserPlus, Trash2 } from 'lucide-react';
 import { User } from '../types';
 
 interface SearchToolbarProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   isLoading: boolean;
-  fetchUsers: () => void;
+  fetchUsers: (forceRefresh?: boolean) => Promise<User[]>;
+  forceRefresh: () => Promise<void>;
   selectedUsers: User[];
   isActionLoading: boolean;
-  setIsDeleteDialogOpen: (isOpen: boolean) => void;
-  setIsAddUserDialogOpen: (isOpen: boolean) => void;
+  setIsDeleteDialogOpen: (open: boolean) => void;
+  setIsAddUserDialogOpen: (open: boolean) => void;
 }
 
 export const SearchToolbar: React.FC<SearchToolbarProps> = ({
@@ -30,81 +22,88 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
   setSearchTerm,
   isLoading,
   fetchUsers,
+  forceRefresh,
   selectedUsers,
   isActionLoading,
   setIsDeleteDialogOpen,
-  setIsAddUserDialogOpen
+  setIsAddUserDialogOpen,
 }) => {
-  const handleAddUserClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("Add User button clicked, opening dialog");
-    setIsAddUserDialogOpen(true);
+  const handleRefresh = async () => {
+    try {
+      await forceRefresh();
+    } catch (error) {
+      console.error('Error refreshing users:', error);
+    }
   };
 
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("Delete button clicked, selected users:", selectedUsers.length);
-    if (selectedUsers.length > 0) {
-      setIsDeleteDialogOpen(true);
+  const handleForceRefresh = async () => {
+    try {
+      console.log('Force refreshing user data...');
+      await fetchUsers(true);
+    } catch (error) {
+      console.error('Error force refreshing users:', error);
     }
   };
 
   return (
-    <div className="mb-4 flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-      <div className="flex w-full items-center space-x-2 sm:w-auto">
-        <div className="relative flex-1 sm:w-64">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+    <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-6">
+      <div className="flex flex-1 items-center space-x-2">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
-            type="search"
-            placeholder="Search users..."
-            className="pl-8"
+            placeholder="Search users by name, email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
           />
         </div>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={fetchUsers}
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
           disabled={isLoading}
+          className="flex items-center gap-2"
         >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4" />
-          )}
-          <span className="sr-only">Refresh</span>
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleForceRefresh}
+          disabled={isLoading}
+          className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Force Refresh
         </Button>
       </div>
       
       <div className="flex items-center space-x-2">
-        {selectedUsers.length > 0 && (
-          <>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleDeleteClick}
-              disabled={isActionLoading}
-            >
-              <UserMinus className="mr-2 h-4 w-4" />
-              Delete ({selectedUsers.length})
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              disabled={isActionLoading}
-            >
-              <Mail className="mr-2 h-4 w-4" />
-              Email
-            </Button>
-          </>
-        )}
-        <Button onClick={handleAddUserClick} type="button">
-          <UserPlus className="mr-2 h-4 w-4" />
+        <Button
+          size="sm"
+          onClick={() => setIsAddUserDialogOpen(true)}
+          disabled={isLoading}
+          className="flex items-center gap-2"
+        >
+          <UserPlus className="h-4 w-4" />
           Add User
         </Button>
+        
+        {selectedUsers.length > 0 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            disabled={isActionLoading}
+            className="flex items-center gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete ({selectedUsers.length})
+          </Button>
+        )}
       </div>
     </div>
   );

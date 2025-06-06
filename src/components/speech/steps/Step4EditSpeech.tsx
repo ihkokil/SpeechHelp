@@ -30,8 +30,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 	const [title, setTitle] = useState(speechTitle);
 	const [content, setContent] = useState('');
 	const [hasRecoveredSpeech, setHasRecoveredSpeech] = useState(false);
-	const [wasAutoSaved, setWasAutoSaved] = useState(false);
-	const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+	const [isAutoSaved, setIsAutoSaved] = useState(false);
 
 	const { isSaving, handleSave, speechId } = useSpeechSave({
 		title,
@@ -80,8 +79,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 		if (recoveredContent) {
 			setContent(recoveredContent);
 			setHasRecoveredSpeech(true);
-			setWasAutoSaved(true);
-			setHasUnsavedChanges(false);
+			setIsAutoSaved(true); // Assume it was auto-saved during generation
 			
 			toast({
 				title: "Speech Ready!",
@@ -91,7 +89,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 			// Fallback to placeholder if no recovery possible
 			const placeholderSpeech = createPlaceholderSpeech(title, speechDetails);
 			setContent(placeholderSpeech);
-			setWasAutoSaved(false);
 			
 			toast({
 				title: "No Saved Speech Found",
@@ -104,9 +101,6 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setTitle(e.target.value);
 		onTitleChange(e.target.value);
-		if (wasAutoSaved) {
-			setHasUnsavedChanges(true);
-		}
 	};
 
 	const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -116,58 +110,42 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 		// Auto-backup content as user edits
 		localStorage.setItem('speechBackup', newContent);
 		
-		// Mark as having unsaved changes if this was auto-saved
-		if (wasAutoSaved) {
-			setHasUnsavedChanges(true);
+		// If content changes from the auto-saved version, mark as needing save
+		if (isAutoSaved) {
+			setIsAutoSaved(false);
 		}
 	};
 
-	const handleSaveWithStatus = async () => {
+	const handleSaveWithBackup = async () => {
+		// Save the speech (either create new or update existing)
 		await handleSave();
 		if (!isSaving) {
-			setHasUnsavedChanges(false);
-			setWasAutoSaved(false); // Now it's manually saved
+			setIsAutoSaved(true);
+			// Clear recovery data after successful manual save
+			localStorage.removeItem('generatedSpeech');
+			localStorage.removeItem('speechBackup');
+			localStorage.removeItem('tempGeneratedSpeech');
 		}
 	};
-
-	const getStatusMessage = () => {
-		if (hasRecoveredSpeech && wasAutoSaved && !hasUnsavedChanges) {
-			return {
-				type: 'success',
-				message: 'Speech automatically saved! You can edit and save again if needed.'
-			};
-		}
-		if (hasUnsavedChanges) {
-			return {
-				type: 'warning',
-				message: 'You have unsaved changes. Click Save to update your speech.'
-			};
-		}
-		return null;
-	};
-
-	const statusMessage = getStatusMessage();
 
 	return (
 		<Card>
 			<CardHeader>
 				<CardTitle><Translate text="speechLab.editTitle" /></CardTitle>
 				<CardDescription><Translate text="speechLab.editDesc" /></CardDescription>
-				{statusMessage && (
-					<div className={`flex items-center gap-2 p-3 rounded-md ${
-						statusMessage.type === 'success' 
-							? 'bg-green-50 border border-green-200' 
-							: 'bg-yellow-50 border border-yellow-200'
-					}`}>
-						{statusMessage.type === 'success' ? (
-							<CheckCircle className="h-4 w-4 text-green-600" />
-						) : (
-							<AlertCircle className="h-4 w-4 text-yellow-600" />
-						)}
-						<span className={`text-sm ${
-							statusMessage.type === 'success' ? 'text-green-700' : 'text-yellow-700'
-						}`}>
-							{statusMessage.message}
+				{hasRecoveredSpeech && isAutoSaved && (
+					<div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
+						<CheckCircle className="h-4 w-4 text-green-600" />
+						<span className="text-sm text-green-700">
+							Speech automatically saved! You can edit and save again if needed.
+						</span>
+					</div>
+				)}
+				{hasRecoveredSpeech && !isAutoSaved && (
+					<div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+						<AlertCircle className="h-4 w-4 text-yellow-600" />
+						<span className="text-sm text-yellow-700">
+							You have unsaved changes. Remember to save your edits.
 						</span>
 					</div>
 				)}
@@ -189,7 +167,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 				</ButtonCustom>
 				<ButtonCustom
 					variant="magenta"
-					onClick={handleSaveWithStatus}
+					onClick={handleSaveWithBackup}
 					disabled={isSaving || !title.trim() || !content.trim()}
 				>
 					{isSaving ? (
@@ -200,7 +178,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 							</svg>
 							<Translate text="common.saving" fallback="Saving..." />
 						</span>
-					) : hasUnsavedChanges ? (
+					) : isAutoSaved ? (
 						<>
 							<Save className="mr-2 h-4 w-4" />
 							<Translate text="speechLab.saveChanges" fallback="Save Changes" />

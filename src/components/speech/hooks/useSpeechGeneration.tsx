@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generateSpeechFromDetails } from '../utils/speechGenerator';
@@ -19,12 +18,11 @@ export const useSpeechGeneration = ({
 	onSuccess
 }: UseSpeechGenerationProps) => {
 	const { toast } = useToast();
-	const { user, saveSpeech } = useAuth();
+	const { user, saveSpeech, fetchSpeeches } = useAuth();
 	const [generating, setGenerating] = useState(false);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [generatedSpeech, setGeneratedSpeech] = useState('');
 	const [error, setError] = useState<string | null>(null);
-	const [autoSavedSpeechId, setAutoSavedSpeechId] = useState<string | null>(null);
 
 	useEffect(() => {
 		let timer: NodeJS.Timeout;
@@ -32,7 +30,7 @@ export const useSpeechGeneration = ({
 			timer = setTimeout(() => {
 				setShowConfetti(false);
 				onSuccess();
-			}, 5000);
+			}, 5000); // Show confetti for 5 seconds before moving to next step
 		}
 		return () => {
 			if (timer) clearTimeout(timer);
@@ -51,23 +49,6 @@ export const useSpeechGeneration = ({
 		return true;
 	};
 
-	const autoSaveSpeech = async (speech: string) => {
-		if (!user) return;
-
-		try {
-			console.log('Auto-saving generated speech...');
-			await saveSpeech(speechTitle, speech, speechType);
-			
-			toast({
-				title: "Speech Auto-Saved",
-				description: "Your generated speech has been automatically saved to your account.",
-			});
-		} catch (error) {
-			console.error('Error auto-saving speech:', error);
-			// Don't show error toast for auto-save failures - user can still manually save
-		}
-	};
-
 	const generateSpeech = async () => {
 		if (!validateTitle()) {
 			return;
@@ -76,7 +57,7 @@ export const useSpeechGeneration = ({
 		if (!user) {
 			toast({
 				title: "Authentication Required",
-				description: "Please sign in to generate speeches",
+				description: "Please sign in to generate and save your speech",
 				variant: "destructive",
 			});
 			return;
@@ -90,20 +71,40 @@ export const useSpeechGeneration = ({
 			const speech = await generateSpeechFromDetails(speechTitle, speechDetails, speechType);
 			setGeneratedSpeech(speech);
 
-			// Save the generated speech to localStorage for recovery
+			// Save the generated speech to localStorage (for backup/recovery)
 			localStorage.setItem('generatedSpeech', speech);
-			localStorage.setItem('speechBackup', speech);
-			localStorage.setItem('tempGeneratedSpeech', speech);
 
-			// Auto-save the speech to database
-			await autoSaveSpeech(speech);
+			// Automatically save the speech to the database
+			try {
+				const speechWithMetadata = {
+					content: speech,
+					details: speechDetails || {}
+				};
+				const contentToSave = JSON.stringify(speechWithMetadata);
+				
+				await saveSpeech(speechTitle, contentToSave, speechType);
+				
+				// Refresh speeches list to include the new speech
+				await fetchSpeeches();
 
-			toast({
-				title: "Speech Generated Successfully",
-				description: "Your AI-powered speech has been created and automatically saved.",
-			});
+				toast({
+					title: "Speech Generated & Saved",
+					description: "Your AI-powered speech has been created and automatically saved to your account",
+				});
 
-			setShowConfetti(true);
+				setShowConfetti(true);
+
+			} catch (saveError) {
+				console.error('Error auto-saving speech:', saveError);
+				
+				// Even if save fails, still show success for generation and keep the speech in localStorage
+				toast({
+					title: "Speech Generated",
+					description: "Your speech was generated successfully. You can manually save it in the next step.",
+				});
+				
+				setShowConfetti(true);
+			}
 
 		} catch (error) {
 			console.error('Error generating speech:', error);
@@ -113,7 +114,6 @@ export const useSpeechGeneration = ({
 				description: error instanceof Error ? error.message : "Failed to generate speech. Please try again.",
 				variant: "destructive",
 			});
-		} finally {
 			setGenerating(false);
 		}
 	};
@@ -123,7 +123,6 @@ export const useSpeechGeneration = ({
 		showConfetti,
 		generatedSpeech,
 		error,
-		autoSavedSpeechId,
 		generateSpeech
 	};
 };

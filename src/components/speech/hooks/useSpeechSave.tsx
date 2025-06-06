@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { useSpeechService } from '@/services/speechService';
 
 interface UseSpeechSaveProps {
 	title: string;
@@ -20,7 +20,8 @@ export const useSpeechSave = ({
 	const [isSaving, setIsSaving] = useState(false);
 	const [speechId, setSpeechId] = useState<string | null>(null);
 	const { toast } = useToast();
-	const { user, session, refreshUser } = useAuth();
+	const { user } = useAuth();
+	const speechService = useSpeechService();
 
 	const validateInputs = () => {
 		if (!title.trim()) {
@@ -49,32 +50,9 @@ export const useSpeechSave = ({
 			return;
 		}
 
-		if (!user || !session) {
-			toast({
-				title: "Authentication Required",
-				description: "Please sign in to save your speech.",
-				variant: "destructive",
-			});
-			return;
-		}
-
 		setIsSaving(true);
 
 		try {
-			// Check if session is still valid before proceeding
-			const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-			
-			if (sessionError || !currentSession) {
-				console.error('Session validation failed:', sessionError);
-				await refreshUser();
-				toast({
-					title: "Session Expired",
-					description: "Please try saving again.",
-					variant: "destructive",
-				});
-				return;
-			}
-
 			const speechWithMetadata = {
 				content: content,
 				details: speechDetails || {}
@@ -82,91 +60,48 @@ export const useSpeechSave = ({
 
 			const contentToSave = JSON.stringify(speechWithMetadata);
 
-			// Check if there's already a speech with the same title (auto-saved version)
-			const { data: existingSpeeches, error: fetchError } = await supabase
-				.from('speeches')
-				.select('id')
-				.eq('user_id', user.id)
-				.eq('title', title)
-				.eq('speech_type', speechType);
-
-			if (fetchError) {
-				console.error('Error checking for existing speech:', fetchError);
-				// Continue with insert if we can't check
-			}
-
-			if (existingSpeeches && existingSpeeches.length > 0) {
-				// Update existing speech (overwrite auto-saved version)
-				const existingSpeechId = existingSpeeches[0].id;
-				const { error: updateError } = await supabase
-					.from('speeches')
-					.update({
-						title,
-						content: contentToSave,
-						updated_at: new Date().toISOString(),
-					})
-					.eq('id', existingSpeechId)
-					.eq('user_id', user.id);
-
-				if (updateError) {
-					console.error('Error updating speech:', updateError);
-					if (updateError.code === 'PGRST301') {
-						await refreshUser();
-						throw new Error('Session expired. Please try again.');
-					}
-					throw updateError;
-				}
-
-				setSpeechId(existingSpeechId);
+			if (speechId) {
+				await speechService.updateSpeech(user.id, speechId, title, contentToSave);
 				toast({
 					title: "Speech Updated",
 					description: "Your speech has been updated successfully.",
 				});
 			} else {
-				// Create new speech
-				const { data: speechData, error: insertError } = await supabase
-					.from('speeches')
-					.insert({
-						user_id: user.id,
-						title,
-						content: contentToSave,
-						speech_type: speechType,
-					})
-					.select()
-					.single();
-
-				if (insertError) {
-					console.error('Error creating speech:', insertError);
-					if (insertError.code === 'PGRST301') {
-						await refreshUser();
-						throw new Error('Session expired. Please try again.');
+				if (user) {
+					// Extract the speech ID correctly from the response
+					const speechResponse = await speechService.saveSpeech(user.id, title, contentToSave, speechType);
+					
+					// Fix: Properly handle different response formats with type checking
+					if (Array.isArray(speechResponse) && speechResponse.length > 0) {
+						// If the response is an array, get the first item's ID
+						const firstItem = speechResponse[0];
+						if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
+							setSpeechId(firstItem.id as string);
+						}
+					} else if (speechResponse && typeof speechResponse === 'object' && 'id' in speechResponse) {
+						// If it's a single object with an ID property
+						setSpeechId(speechResponse.id as string);
 					}
-					throw insertError;
+					
+					toast({
+						title: "Speech Saved",
+						description: "Your speech has been saved successfully.",
+					});
+				} else {
+					toast({
+						title: "Authentication Required",
+						description: "Please sign in to save your speech.",
+						variant: "destructive",
+					});
 				}
-
-				if (speechData) {
-					setSpeechId(speechData.id);
-				}
-
-				toast({
-					title: "Speech Saved",
-					description: "Your speech has been saved successfully.",
-				});
 			}
-
-			// Clear localStorage backup after successful save
-			localStorage.removeItem('generatedSpeech');
-			localStorage.removeItem('speechBackup');
-			localStorage.removeItem('tempGeneratedSpeech');
-
-		} catch (error: any) {
-			console.error("Error saving speech:", error);
-			
+		} catch (error) {
 			toast({
-				title: "Save Failed",
-				description: error.message || "Failed to save speech. Please try again.",
+				title: "Error",
+				description: "Failed to save speech. Please try again.",
 				variant: "destructive",
 			});
+			console.error("Error saving speech:", error);
 		} finally {
 			setIsSaving(false);
 		}
