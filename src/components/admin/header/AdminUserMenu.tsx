@@ -23,9 +23,6 @@ const AdminUserMenu = () => {
     navigate('/admin/auth');
   };
 
-  // Use displayName if available, otherwise fall back to username
-  const displayName = adminUser?.displayName || adminUser?.username || 'Admin';
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -33,16 +30,16 @@ const AdminUserMenu = () => {
           <Avatar>
             <AvatarImage 
               src={adminUser?.email ? `https://gravatar.com/avatar/${btoa(adminUser.email)}?d=mp` : undefined} 
-              alt={displayName} 
+              alt={adminUser?.username || 'Admin'} 
             />
-            <AvatarFallback>{displayName.charAt(0).toUpperCase()}</AvatarFallback>
+            <AvatarFallback>{adminUser?.username?.charAt(0).toUpperCase() || 'A'}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" forceMount>
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
-            <p className="font-medium">{displayName}</p>
+            <p className="font-medium">{adminUser?.username}</p>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

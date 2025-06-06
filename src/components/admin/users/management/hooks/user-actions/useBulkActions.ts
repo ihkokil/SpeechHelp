@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react';
 import { User } from '../../../types';
 import { useToast } from '@/hooks/use-toast';
 import { useIndividualUserActions } from './useIndividualUserActions';
-import { getUserName } from '../../utils/userDisplayUtils';
 
 export const useBulkActions = () => {
   const { toast } = useToast();
@@ -33,7 +32,7 @@ export const useBulkActions = () => {
           deletedCount++;
         } catch (error) {
           console.error(`Failed to delete user ${user.id}:`, error);
-          errors.push(`${getUserName(user) || user.id}: ${error.message}`);
+          errors.push(`${user.username || user.id}: ${error.message}`);
         }
       }
       

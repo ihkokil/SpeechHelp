@@ -1,202 +1,278 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { adminAuthService } from '@/services/adminAuthService';
+import { toast } from '@/hooks/use-toast';
 
-export interface AdminUser {
+interface AdminUser {
   id: string;
-  email: string;
   username: string;
-  displayName?: string;
-  is_super_admin?: boolean;
+  email: string;
+  is_active: boolean;
+  is_super_admin: boolean;
+  last_login: string | null;
 }
 
 interface AdminAuthContextType {
   adminUser: AdminUser | null;
-  isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signIn: (username: string, password: string) => Promise<{ success: boolean; error?: string; requires2FA?: boolean; user?: AdminUser }>;
+  isLoading: boolean;
+  signIn: (username: string, password: string) => Promise<{
+    success: boolean;
+    requires2FA?: boolean;
+    error?: string;
+    user?: AdminUser;  // Add user to the return type
+  }>;
+  verify2FA: (code: string) => Promise<{
+    success: boolean;
+    error?: string;
+  }>;
   signOut: () => Promise<void>;
-  logout: () => Promise<void>;
-  verify2FA: (code: string) => Promise<{ success: boolean; error?: string }>;
-  requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string }>;
-  refreshAdminUser: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<{
+    success: boolean;
+    error?: string;
+  }>;
+  createDefaultAdmin: () => Promise<{
+    success: boolean;
+    error?: string;
+  }>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
 
-export const useAdminAuth = () => {
-  const context = useContext(AdminAuthContext);
-  if (context === undefined) {
-    throw new Error('useAdminAuth must be used within an AdminAuthProvider');
-  }
-  return context;
-};
-
-interface AdminAuthProviderProps {
-  children: ReactNode;
-}
-
-export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }) => {
+export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Check if user is authenticated
-  const checkAuth = async () => {
-    console.log('Setting up auth state listeners');
-    try {
-      // Check if we have admin user data in session storage
-      const storedUser = sessionStorage.getItem('adminSession') || localStorage.getItem('adminSession');
-      if (storedUser) {
-        try {
-          const user = JSON.parse(storedUser);
-          console.log('Found stored admin session:', user);
-          setAdminUser({
-            ...user,
-            displayName: user.username || user.email
-          });
-        } catch (parseError) {
-          console.error('Error parsing stored admin session:', parseError);
-          // Clear invalid session data
-          sessionStorage.removeItem('adminSession');
-          localStorage.removeItem('adminSession');
-        }
-      } else {
-        console.log('Initial session: No user');
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      setAdminUser(null);
-      // Clear any corrupt session data
-      sessionStorage.removeItem('adminSession');
-      localStorage.removeItem('adminSession');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Login function (alias for signIn)
-  const login = async (email: string, password: string) => {
-    return await signIn(email, password);
-  };
-
-  // Sign in function
-  const signIn = async (username: string, password: string) => {
-    try {
-      setIsLoading(true);
-      console.log(`Attempting to sign in with username: ${username}`);
-      
-      const result = await adminAuthService.signIn({ username, password });
-      
-      if (result.success && result.user) {
-        const userWithDisplayName = {
-          ...result.user,
-          displayName: result.user.username || result.user.email
-        };
-        setAdminUser(userWithDisplayName);
-        
-        // Store session data
-        sessionStorage.setItem('adminSession', JSON.stringify(userWithDisplayName));
-        
-        return { 
-          success: true, 
-          requires2FA: result.requires2FA,
-          user: userWithDisplayName
-        };
-      } else {
-        return { success: false, error: result.error || 'Login failed' };
-      }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      return { success: false, error: error.message || 'Login failed' };
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Sign out function
-  const signOut = async () => {
-    try {
-      if (adminUser?.id) {
-        await adminAuthService.signOut(adminUser.id);
-      }
-      setAdminUser(null);
-      sessionStorage.removeItem('adminSession');
-      localStorage.removeItem('adminSession');
-    } catch (error) {
-      console.error('Logout error:', error);
-      setAdminUser(null);
-      sessionStorage.removeItem('adminSession');
-      localStorage.removeItem('adminSession');
-    }
-  };
-
-  // Logout function (alias for signOut)
-  const logout = async () => {
-    await signOut();
-  };
-
-  // Verify 2FA function
-  const verify2FA = async (code: string) => {
-    try {
-      if (!adminUser?.id) {
-        return { success: false, error: 'No user session found' };
-      }
-      
-      const result = await adminAuthService.verify2FA(adminUser.id, code);
-      return result;
-    } catch (error: any) {
-      return { success: false, error: error.message || '2FA verification failed' };
-    }
-  };
-
-  // Request password reset function
-  const requestPasswordReset = async (email: string) => {
-    try {
-      const result = await adminAuthService.requestPasswordReset(email);
-      return result;
-    } catch (error: any) {
-      return { success: false, error: error.message || 'Password reset request failed' };
-    }
-  };
-
-  // Refresh admin user data
-  const refreshAdminUser = async () => {
-    try {
-      // For now, just reload from session storage
-      const storedUser = sessionStorage.getItem('adminSession') || localStorage.getItem('adminSession');
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        setAdminUser({
-          ...user,
-          displayName: user.username || user.email
-        });
-      }
-    } catch (error) {
-      console.error('Failed to refresh admin user:', error);
-    }
-  };
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    checkAuth();
+    // Check for existing admin session
+    const checkSession = () => {
+      setIsLoading(true);
+      
+      try {
+        const storedSession = sessionStorage.getItem('adminSession') || localStorage.getItem('adminSession');
+        
+        if (storedSession) {
+          const session = JSON.parse(storedSession);
+          const now = new Date().getTime();
+          
+          // Check if session is still valid (24 hour expiry)
+          if (session.expiresAt && session.expiresAt > now) {
+            setAdminUser(session.user);
+            console.log("Found valid admin session", session.user);
+          } else {
+            // Clear expired session
+            console.log("Clearing expired admin session");
+            sessionStorage.removeItem('adminSession');
+            localStorage.removeItem('adminSession');
+          }
+        } else {
+          console.log("No admin session found");
+        }
+      } catch (error) {
+        console.error('Error checking admin session:', error);
+        // Clear potentially corrupted session
+        sessionStorage.removeItem('adminSession');
+        localStorage.removeItem('adminSession');
+      }
+      
+      setIsLoading(false);
+    };
+
+    checkSession();
   }, []);
 
-  const value: AdminAuthContextType = {
-    adminUser,
-    isLoading,
-    isAuthenticated: !!adminUser,
-    login,
-    signIn,
-    signOut,
-    logout,
-    verify2FA,
-    requestPasswordReset,
-    refreshAdminUser,
+  const createDefaultAdmin = async () => {
+    console.log('Creating default admin user from context');
+    return await adminAuthService.createDefaultAdmin();
+  };
+
+  const signIn = async (username: string, password: string) => {
+    setIsLoading(true);
+    
+    try {
+      console.log(`Attempting sign in for username: ${username}`);
+      const result = await adminAuthService.signIn({ username, password });
+      console.log("Sign in result:", result);
+      
+      if (result.success && !result.requires2FA && result.user) {
+        // Set admin session
+        const expiresAt = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 hours
+        const sessionData = {
+          user: result.user,
+          expiresAt
+        };
+        
+        sessionStorage.setItem('adminSession', JSON.stringify(sessionData));
+        localStorage.setItem('adminSession', JSON.stringify(sessionData));
+        
+        setAdminUser(result.user || null);
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${result.user?.username}!`,
+        });
+      } else if (result.success && result.requires2FA && result.user) {
+        // Set pending user for 2FA verification
+        setPendingUserId(result.user?.id || null);
+        
+        // Store user data temporarily for after 2FA verification
+        if (result.user) {
+          sessionStorage.setItem('tempAdminUser', JSON.stringify(result.user));
+        }
+      } else if (!result.success) {
+        toast({
+          title: "Login failed",
+          description: result.error || "Invalid credentials. Please try again.",
+          variant: "destructive",
+        });
+      }
+      
+      setIsLoading(false);
+      return result;
+    } catch (error) {
+      console.error('Admin sign in error:', error);
+      setIsLoading(false);
+      return { 
+        success: false, 
+        error: 'An unexpected error occurred. Please try again.' 
+      };
+    }
+  };
+
+  const verify2FA = async (code: string) => {
+    if (!pendingUserId) {
+      return { 
+        success: false, 
+        error: 'No pending authentication. Please sign in again.' 
+      };
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      console.log(`Verifying 2FA code for user ID: ${pendingUserId}`);
+      const result = await adminAuthService.verify2FA(pendingUserId, code);
+      
+      if (result.success) {
+        // Retrieve user information
+        const storedData = sessionStorage.getItem('tempAdminUser');
+        let user = null;
+        
+        if (storedData) {
+          user = JSON.parse(storedData);
+          sessionStorage.removeItem('tempAdminUser');
+        }
+        
+        // Set admin session
+        const expiresAt = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 hours
+        const sessionData = {
+          user,
+          expiresAt
+        };
+        
+        sessionStorage.setItem('adminSession', JSON.stringify(sessionData));
+        localStorage.setItem('adminSession', JSON.stringify(sessionData));
+        
+        setAdminUser(user);
+        setPendingUserId(null);
+        
+        toast({
+          title: "Verification successful",
+          description: `Welcome back, ${user?.username}!`,
+        });
+      } else {
+        toast({
+          title: "Verification failed",
+          description: result.error || "Invalid verification code. Please try again.",
+          variant: "destructive",
+        });
+      }
+      
+      setIsLoading(false);
+      return result;
+    } catch (error) {
+      console.error('2FA verification error:', error);
+      setIsLoading(false);
+      return { 
+        success: false, 
+        error: 'An unexpected error occurred. Please try again.' 
+      };
+    }
+  };
+
+  const signOut = async () => {
+    setIsLoading(true);
+    
+    try {
+      if (adminUser) {
+        await adminAuthService.signOut(adminUser.id);
+      }
+      
+      // Clear session
+      sessionStorage.removeItem('adminSession');
+      localStorage.removeItem('adminSession');
+      
+      setAdminUser(null);
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully.",
+      });
+    } catch (error) {
+      console.error('Admin sign out error:', error);
+    }
+    
+    setIsLoading(false);
+  };
+
+  const requestPasswordReset = async (email: string) => {
+    setIsLoading(true);
+    
+    try {
+      const result = await adminAuthService.requestPasswordReset(email);
+      
+      if (result.success) {
+        toast({
+          title: "Password reset link sent",
+          description: "Please check your email for instructions to reset your password.",
+        });
+      }
+      
+      setIsLoading(false);
+      return result;
+    } catch (error) {
+      console.error('Password reset request error:', error);
+      setIsLoading(false);
+      return { 
+        success: false, 
+        error: 'An unexpected error occurred. Please try again.' 
+      };
+    }
   };
 
   return (
-    <AdminAuthContext.Provider value={value}>
+    <AdminAuthContext.Provider
+      value={{
+        adminUser,
+        isAuthenticated: !!adminUser,
+        isLoading,
+        signIn,
+        verify2FA,
+        signOut,
+        requestPasswordReset,
+        createDefaultAdmin
+      }}
+    >
       {children}
     </AdminAuthContext.Provider>
   );
+};
+
+export const useAdminAuth = () => {
+  const context = useContext(AdminAuthContext);
+  
+  if (context === undefined) {
+    throw new Error('useAdminAuth must be used within an AdminAuthProvider');
+  }
+  
+  return context;
 };

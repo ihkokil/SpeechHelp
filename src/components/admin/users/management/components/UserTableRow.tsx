@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { User } from '../../types';
 import UserActionMenu from './UserActionMenu';
-import { formatUserDisplayName, getUserPhone } from '../utils/userDisplayUtils';
+import { formatUserDisplayName, getUserPhone, getCountryFlag } from '../utils/userDisplayUtils';
 import { format } from 'date-fns';
 
 interface UserTableRowProps {
@@ -68,21 +68,9 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     }
   };
 
-  // Get user data using utility functions
+  // Get user phone and country flag
   const userPhone = getUserPhone(user);
-  const displayName = formatUserDisplayName(user);
-
-  console.log('🔍 UserTableRow rendering user:', {
-    id: user.id,
-    email: user.email,
-    displayName,
-    userPhone,
-    profileData: {
-      phone: user.phone,
-      first_name: user.first_name,
-      last_name: user.last_name
-    }
-  });
+  const countryFlag = getCountryFlag(user);
 
   return (
     <TableRow 
@@ -93,13 +81,13 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
         <Checkbox
           checked={isSelected}
           onClick={handleCheckboxClick}
-          aria-label={`Select ${displayName}`}
+          aria-label={`Select ${formatUserDisplayName(user)}`}
         />
       </TableCell>
       
       <TableCell className="px-2">
         <div className="flex flex-col">
-          <span className="text-sm font-medium text-gray-900">{displayName}</span>
+          <span className="text-sm font-medium text-gray-900">{formatUserDisplayName(user)}</span>
         </div>
       </TableCell>
       
@@ -109,6 +97,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       
       <TableCell className="px-2">
         <div className="flex items-center text-sm text-gray-600">
+          {userPhone !== '—' && <span className="mr-1">{countryFlag}</span>}
           {userPhone}
         </div>
       </TableCell>

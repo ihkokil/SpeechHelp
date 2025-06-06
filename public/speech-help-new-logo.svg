@@ -1,0 +1,19 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="195" height="70" viewBox="0 0 195 70">
+  <g>
+    <g>
+      <path d="M1,17.5h8.7v5.2c0,1.7-0.5,2.7-2.2,2.7c-1.8,0-2.2-1-2.2-2.7v-0.5H0.7v0.5c0,6.2,5,7.8,10.5,7.8c5.2,0,10.8-1.7,10.8-7.7V10h-21V17.5z
+      M9.7,16.5V15h12v5h-12V16.5z" fill="#000"/>
+      <path d="M25,10h8v6h8v-6h8v20h-8V22h-8v8h-8V10z" fill="#000"/>
+      <path d="M53,10h8v20h-8V10z" fill="#000"/>
+      <path d="M64,10h8v15h11v5H64V10z" fill="#000"/>
+      <path d="M93,10h8v15h11v5H93V10z" fill="#000"/>
+      <rect x="114" y="7" width="80" height="55" rx="8" fill="#a94b9a"/>
+      <path d="M123,17.5h8.7v5.2c0,1.7-0.5,2.7-2.2,2.7c-1.8,0-2.2-1-2.2-2.7v-0.5h-4.6v0.5c0,6.2,5,7.8,10.5,7.8c5.2,0,10.8-1.7,10.8-7.7V10h-21V17.5z
+      M131.7,16.5V15h12v5h-12V16.5z" fill="#fff"/>
+      <path d="M147,10h8v20h-8V10z" fill="#fff"/>
+      <path d="M158,10h8v15h11v5h-19V10z" fill="#fff"/>
+      <path d="M179,10h8v20h-8V10z" fill="#fff"/>
+    </g>
+  </g>
+</svg>

@@ -40,10 +40,10 @@ serve(async (req) => {
       password: password,
       email_confirm: true, // Auto-confirm email
       user_metadata: {
-        first_name: firstName || '',
-        last_name: lastName || '',
-        full_name: `${firstName || ''} ${lastName || ''}`.trim(),
-        name: `${firstName || ''} ${lastName || ''}`.trim(),
+        first_name: firstName,
+        last_name: lastName,
+        full_name: `${firstName} ${lastName}`,
+        name: `${firstName} ${lastName}`,
         phone: ''
       }
     });
@@ -60,42 +60,7 @@ serve(async (req) => {
     console.log('User created in auth successfully:', authData.user.id);
     
     // Wait a moment for the trigger to complete
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check if profile was created by trigger, if not create it manually
-    const { data: existingProfile, error: profileCheckError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', authData.user.id)
-      .maybeSingle();
-
-    if (profileCheckError || !existingProfile) {
-      console.log('Profile not found, creating manually for user:', authData.user.id);
-      // Create profile manually if trigger failed using upsert to avoid duplicates
-      const { error: profileInsertError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: authData.user.id,
-          first_name: firstName || '',
-          last_name: lastName || '',
-          country_code: '1', // Default to US dial code
-          is_active: isActive,
-          subscription_plan: 'free_trial',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'id'
-        });
-
-      if (profileInsertError) {
-        console.error('Error creating profile manually:', profileInsertError);
-        // Don't throw error here as user was created successfully
-      } else {
-        console.log('Profile created manually successfully');
-      }
-    } else {
-      console.log('Profile already exists from trigger');
-    }
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Update admin status if needed
     if (role !== 'user') {
@@ -115,16 +80,14 @@ serve(async (req) => {
       }
     }
     
-    // Set user active status if different from default
-    if (!isActive) {
-      const { error: statusError } = await supabase
-        .from('profiles')
-        .update({ is_active: isActive })
-        .eq('id', authData.user.id);
-      
-      if (statusError) {
-        console.error('Error updating user status:', statusError);
-      }
+    // Set user active status
+    const { error: statusError } = await supabase
+      .from('profiles')
+      .update({ is_active: isActive })
+      .eq('id', authData.user.id);
+    
+    if (statusError) {
+      console.error('Error updating user status:', statusError);
     }
     
     // Return the created user data
@@ -166,4 +129,3 @@ serve(async (req) => {
     );
   }
 });
-

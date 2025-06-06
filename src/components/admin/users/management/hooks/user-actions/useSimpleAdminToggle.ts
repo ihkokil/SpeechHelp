@@ -23,7 +23,7 @@ export const useSimpleAdminToggle = () => {
     console.log('Toggling admin status for user:', user.id, 'Current admin status:', user.is_admin);
     
     // Check if user is protected admin
-    const isProtectedAdmin = user.email === 'speechhelpmaster@example.com';
+    const isProtectedAdmin = user.email === 'speechhelpmaster@example.com' || user.username === 'speechhelpmaster';
     
     if (isProtectedAdmin && user.is_admin) {
       toast({
@@ -70,10 +70,11 @@ export const useSimpleAdminToggle = () => {
 
       console.log('Successfully updated admin access via database function:', response);
 
-      // Update the user in the local state - only update is_admin, remove admin_role
+      // Update the user in the local state
       const updatedUser = {
         ...user,
-        is_admin: newAdminStatus
+        is_admin: newAdminStatus,
+        admin_role: newAdminStatus ? 'admin' : null
       };
 
       setUsers(users.map(u => u.id === user.id ? updatedUser : u));
