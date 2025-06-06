@@ -10,8 +10,8 @@ const Footer = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   
-  // Using Supabase hosted SVG file
-  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
+  // Using the correct local SVG logo file
+  const logoPath = "/Speech Help - Logo.svg";
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
