@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generateSpeechFromDetails } from '../utils/speechGenerator';
@@ -18,7 +19,7 @@ export const useSpeechGeneration = ({
 	onSuccess
 }: UseSpeechGenerationProps) => {
 	const { toast } = useToast();
-	const { user, saveSpeech, fetchSpeeches } = useAuth();
+	const { user } = useAuth();
 	const [generating, setGenerating] = useState(false);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [generatedSpeech, setGeneratedSpeech] = useState('');
@@ -30,7 +31,7 @@ export const useSpeechGeneration = ({
 			timer = setTimeout(() => {
 				setShowConfetti(false);
 				onSuccess();
-			}, 5000); // Show confetti for 5 seconds before moving to next step
+			}, 5000);
 		}
 		return () => {
 			if (timer) clearTimeout(timer);
@@ -71,55 +72,17 @@ export const useSpeechGeneration = ({
 			const speech = await generateSpeechFromDetails(speechTitle, speechDetails, speechType);
 			setGeneratedSpeech(speech);
 
-			// Save the generated speech to localStorage (for backup/recovery)
+			// Save the generated speech to localStorage for backup/recovery
 			localStorage.setItem('generatedSpeech', speech);
+			localStorage.setItem('speechBackup', speech);
+			localStorage.setItem('tempGeneratedSpeech', speech);
 
-			// Automatically save the speech to the database
-			try {
-				const speechWithMetadata = {
-					content: speech,
-					details: speechDetails || {}
-				};
-				const contentToSave = JSON.stringify(speechWithMetadata);
-				
-				// Check if user is still authenticated before saving
-				if (!user) {
-					throw new Error('User session expired during speech generation');
-				}
-				
-				await saveSpeech(speechTitle, contentToSave, speechType);
-				
-				// Refresh speeches list to include the new speech
-				await fetchSpeeches();
+			toast({
+				title: "Speech Generated Successfully",
+				description: "Your AI-powered speech has been created. You can now edit and manually save it.",
+			});
 
-				toast({
-					title: "Speech Generated & Saved",
-					description: "Your AI-powered speech has been created and automatically saved to your account",
-				});
-
-				setShowConfetti(true);
-
-			} catch (saveError) {
-				console.error('Error auto-saving speech:', saveError);
-				
-				// Check if it's an auth error
-				if (saveError instanceof Error && saveError.message.includes('session expired')) {
-					toast({
-						title: "Session Expired",
-						description: "Your session expired during speech generation. Please sign in again to save your speech.",
-						variant: "destructive",
-					});
-					setError('Session expired - please sign in again');
-				} else {
-					// Even if save fails, still show success for generation and keep the speech in localStorage
-					toast({
-						title: "Speech Generated",
-						description: "Your speech was generated successfully. You can manually save it in the next step.",
-					});
-					
-					setShowConfetti(true);
-				}
-			}
+			setShowConfetti(true);
 
 		} catch (error) {
 			console.error('Error generating speech:', error);
