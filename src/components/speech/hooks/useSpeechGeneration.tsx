@@ -58,7 +58,7 @@ export const useSpeechGeneration = ({
 		if (!user) {
 			toast({
 				title: "Authentication Required",
-				description: "Please sign in to generate and save your speech",
+				description: "Please sign in to generate speeches",
 				variant: "destructive",
 			});
 			return;
@@ -72,14 +72,14 @@ export const useSpeechGeneration = ({
 			const speech = await generateSpeechFromDetails(speechTitle, speechDetails, speechType);
 			setGeneratedSpeech(speech);
 
-			// Save the generated speech to localStorage for backup/recovery
+			// Save the generated speech to localStorage for recovery
 			localStorage.setItem('generatedSpeech', speech);
 			localStorage.setItem('speechBackup', speech);
 			localStorage.setItem('tempGeneratedSpeech', speech);
 
 			toast({
 				title: "Speech Generated Successfully",
-				description: "Your AI-powered speech has been created. You can now edit and manually save it.",
+				description: "Your AI-powered speech has been created. You can now edit and save it manually.",
 			});
 
 			setShowConfetti(true);

@@ -1,143 +1,117 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTranslation } from '@/translations';
+import { ButtonCustom } from '@/components/ui/button-custom';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Translate from '@/components/Translate';
-import { getSpeechTypeLabel } from '@/components/dashboard/speeches/speech-utils';
-import { questionnaires, QuestionItem } from '../questionnaires';
-import SpeechQuestionnaire from './questionnaire/SpeechQuestionnaire';
+import { SpeechType } from '../data/speechTypesData';
+import { getSpeechQuestions } from '../data/speechQuestionsData';
+import { SpeechDetails } from '../hooks/useSpeechLabState';
+import DynamicFormComponent from '../components/DynamicFormComponent';
 
 interface Step2Props {
   nextStep: () => void;
   prevStep: () => void;
   selectedSpeechType: string;
-  onDetailsChange: (details: Record<string, string>) => void;
+  speechTypes: SpeechType[];
+  speechDetails: SpeechDetails;
+  setSpeechDetails: (details: SpeechDetails) => void;
 }
 
-const Step2SpeechDetails: React.FC<Step2Props> = ({ 
-  nextStep, 
-  prevStep, 
+const Step2SpeechDetails: React.FC<Step2Props> = ({
+  nextStep,
+  prevStep,
   selectedSpeechType,
-  onDetailsChange 
+  speechTypes,
+  speechDetails,
+  setSpeechDetails
 }) => {
-  const { currentLanguage } = useLanguage();
-  const { t } = useTranslation();
-  const [formData, setFormData] = useState<Record<string, string>>({});
-  const [filteredQuestions, setFilteredQuestions] = useState<QuestionItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // Get questionnaire based on speech type
-  const getQuestionnaire = useCallback(() => {
-    const questionnaire = questionnaires[selectedSpeechType] || questionnaires.other;
-    console.log(`Got ${questionnaire.length} questions for speech type: ${selectedSpeechType}`);
-    return questionnaire;
+  const [localFormData, setLocalFormData] = useState<SpeechDetails>(speechDetails);
+
+  // Memoize questions to prevent unnecessary recalculations
+  const questions = useMemo(() => {
+    console.log('Got', getSpeechQuestions(selectedSpeechType).length, 'questions for speech type:', selectedSpeechType);
+    return getSpeechQuestions(selectedSpeechType);
   }, [selectedSpeechType]);
 
-  // Filter questions based on conditions
-  const updateFilteredQuestions = useCallback(() => {
-    try {
-      const allQuestions = getQuestionnaire();
+  // Memoize filtered questions
+  const filteredQuestions = useMemo(() => {
+    console.log('Filtering questions with formData:', localFormData);
+    
+    const filtered = questions.filter(question => {
+      if (!question.showIf) return true;
       
-      console.log('Filtering questions with formData:', formData);
+      const { field, value } = question.showIf;
+      const formValue = localFormData[field];
       
-      // Use a Map to track questions by ID and prevent duplicates
-      const questionMap = new Map<string, QuestionItem>();
+      if (Array.isArray(value)) {
+        return value.includes(formValue);
+      }
       
-      // First add all questions without conditions (basic questions)
-      allQuestions.filter(question => !question.condition)
-        .forEach(question => {
-          questionMap.set(question.question, question);
-        });
-      
-      // Then add conditional questions if they match their conditions
-      allQuestions.forEach(question => {
-        if (question.condition) {
-          const { condition } = question;
-          const conditionValue = formData[condition.question];
-          
-          if (conditionValue === condition.value) {
-            // Only add if not already present
-            if (!questionMap.has(question.question)) {
-              questionMap.set(question.question, question);
-            }
-          } else {
-            // If the condition is not met, and this question is in the map, remove it
-            if (questionMap.has(question.question)) {
-              questionMap.delete(question.question);
-            }
-          }
-        }
-      });
-      
-      // Convert map back to array and sort to maintain original order
-      const sortedQuestions = Array.from(questionMap.values())
-        .sort((a, b) => {
-          return allQuestions.findIndex(q => q.question === a.question) - 
-                 allQuestions.findIndex(q => q.question === b.question);
-        });
-      
-      console.log('Filtered questions count:', sortedQuestions.length);
-      console.log('Filtered questions:', sortedQuestions.map(q => q.question));
-      setFilteredQuestions(sortedQuestions);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error updating filtered questions:', error);
-      setIsLoading(false);
-    }
-  }, [formData, getQuestionnaire]);
+      return formValue === value;
+    });
+    
+    console.log('Filtered questions count:', filtered.length);
+    return filtered;
+  }, [questions, localFormData]);
 
-  // Initialize questions on first load
+  // Debounced update to prevent infinite loops
+  const debouncedUpdate = useCallback((newData: SpeechDetails) => {
+    const timer = setTimeout(() => {
+      setSpeechDetails(newData);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [setSpeechDetails]);
+
+  const handleFormDataChange = useCallback((newData: SpeechDetails) => {
+    setLocalFormData(newData);
+    debouncedUpdate(newData);
+  }, [debouncedUpdate]);
+
+  // Sync with parent only when speechDetails changes externally
   useEffect(() => {
-    try {
-      const initialQuestions = getQuestionnaire().filter(q => !q.condition);
-      console.log('Initial questions on load:', initialQuestions.length);
-      setFilteredQuestions(initialQuestions);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error loading initial questions:', error);
-      setIsLoading(false);
+    if (JSON.stringify(speechDetails) !== JSON.stringify(localFormData)) {
+      setLocalFormData(speechDetails);
     }
-  }, [getQuestionnaire]);
+  }, [speechDetails]);
 
-  // Update filtered questions when form data changes
-  useEffect(() => {
-    updateFilteredQuestions();
-  }, [formData, updateFilteredQuestions]);
-
-  // Handle form data changes
-  const handleFormDataChange = useCallback((newFormData: Record<string, string>) => {
-    console.log('Form data changed:', newFormData);
-    setFormData(newFormData);
-    onDetailsChange(newFormData);
-  }, [onDetailsChange]);
+  const selectedSpeechTypeData = speechTypes.find(type => type.id === selectedSpeechType);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{getSpeechTypeLabel(selectedSpeechType)} <Translate text="speechLab.detailsTitle" /></CardTitle>
-        <CardDescription><Translate text="speechLab.detailsDesc" /></CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex justify-center items-center p-8">
-            <p>Loading questions...</p>
-          </div>
-        ) : filteredQuestions.length > 0 ? (
-          <SpeechQuestionnaire
+    <div className="max-w-2xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <Translate text="speechLab.speechDetails" fallback="Speech Details" />
+          </CardTitle>
+          <CardDescription>
+            <Translate 
+              text="speechLab.speechDetailsDesc" 
+              fallback={`Tell us more about your ${selectedSpeechTypeData?.title || selectedSpeechType} speech`}
+            />
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DynamicFormComponent
             questions={filteredQuestions}
-            formData={formData}
+            formData={localFormData}
             onFormDataChange={handleFormDataChange}
-            onNext={nextStep}
-            onPrev={prevStep}
           />
-        ) : (
-          <div className="flex justify-center items-center p-8">
-            <p>No questions available for this speech type.</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-between mt-6">
+        <ButtonCustom onClick={prevStep} variant="outline">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          <Translate text="speechLab.backButton" />
+        </ButtonCustom>
+        
+        <ButtonCustom onClick={nextStep} variant="magenta">
+          <Translate text="speechLab.nextButton" />
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </ButtonCustom>
+      </div>
+    </div>
   );
 };
 

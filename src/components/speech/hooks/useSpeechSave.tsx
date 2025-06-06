@@ -20,7 +20,7 @@ export const useSpeechSave = ({
 	const [isSaving, setIsSaving] = useState(false);
 	const [speechId, setSpeechId] = useState<string | null>(null);
 	const { toast } = useToast();
-	const { user, fetchSpeeches } = useAuth();
+	const { user, session, refreshUser } = useAuth();
 
 	const validateInputs = () => {
 		if (!title.trim()) {
@@ -49,7 +49,7 @@ export const useSpeechSave = ({
 			return;
 		}
 
-		if (!user) {
+		if (!user || !session) {
 			toast({
 				title: "Authentication Required",
 				description: "Please sign in to save your speech.",
@@ -61,6 +61,20 @@ export const useSpeechSave = ({
 		setIsSaving(true);
 
 		try {
+			// Check if session is still valid before proceeding
+			const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+			
+			if (sessionError || !currentSession) {
+				console.error('Session validation failed:', sessionError);
+				await refreshUser();
+				toast({
+					title: "Session Expired",
+					description: "Please try saving again.",
+					variant: "destructive",
+				});
+				return;
+			}
+
 			const speechWithMetadata = {
 				content: content,
 				details: speechDetails || {}
@@ -82,6 +96,10 @@ export const useSpeechSave = ({
 
 				if (updateError) {
 					console.error('Error updating speech:', updateError);
+					if (updateError.code === 'PGRST301') {
+						await refreshUser();
+						throw new Error('Session expired. Please try again.');
+					}
 					throw updateError;
 				}
 
@@ -104,6 +122,10 @@ export const useSpeechSave = ({
 
 				if (insertError) {
 					console.error('Error creating speech:', insertError);
+					if (insertError.code === 'PGRST301') {
+						await refreshUser();
+						throw new Error('Session expired. Please try again.');
+					}
 					throw insertError;
 				}
 
@@ -116,9 +138,6 @@ export const useSpeechSave = ({
 					description: "Your speech has been saved successfully.",
 				});
 			}
-
-			// Refresh speeches list
-			await fetchSpeeches();
 
 		} catch (error: any) {
 			console.error("Error saving speech:", error);

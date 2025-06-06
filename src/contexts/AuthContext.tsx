@@ -53,17 +53,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error fetching speeches:', error);
+        if (error.code === 'PGRST301') {
+          console.error('Authentication error - user may be logged out');
+          await refreshUser();
+        }
         return;
       }
 
       console.info('Successfully fetched', data?.length || 0, 'speeches from database');
-      const processedSpeeches = data?.map(speech => ({
-        ...speech,
-        created_at: speech.created_at,
-        updated_at: speech.updated_at
-      })) || [];
-
-      setSpeeches(processedSpeeches);
+      setSpeeches(data || []);
     } catch (error) {
       console.error('Error in fetchSpeeches:', error);
     }
@@ -71,24 +69,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUser = async () => {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error('Error refreshing user:', error);
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('Error refreshing user:', userError);
+        setUser(null);
+        setSession(null);
         return;
       }
       
-      setUser(user);
-      
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) {
         console.error('Error refreshing session:', sessionError);
         return;
       }
       
-      setSession(session);
-      console.log('User refreshed successfully:', user?.id);
+      setUser(currentUser);
+      setSession(currentSession);
+      console.log('User refreshed successfully:', currentUser?.id);
     } catch (error) {
       console.error('Error in refreshUser:', error);
+      setUser(null);
+      setSession(null);
     }
   };
 
@@ -145,11 +146,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const saveSpeech = async (title: string, content: string, speechType: string) => {
-    if (!user) {
+    if (!user || !session) {
+      console.error('Cannot save speech: User not authenticated');
       throw new Error('User must be logged in to save speech');
     }
 
     try {
+      console.log('Attempting to save speech for user:', user.id);
       const { data, error } = await supabase
         .from('speeches')
         .insert({
@@ -162,18 +165,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error) {
+        console.error('Error saving speech:', error);
+        if (error.code === 'PGRST301') {
+          console.error('Authentication error during save - refreshing session');
+          await refreshUser();
+          throw new Error('Session expired. Please try again.');
+        }
         throw error;
       }
 
       console.log('Speech saved successfully:', data.id);
-      await fetchSpeeches();
+      // Don't automatically fetch speeches to avoid auth loops
+      // await fetchSpeeches();
+      
+      toast({
+        title: "Speech saved",
+        description: "Your speech has been saved successfully.",
+      });
     } catch (error) {
       console.error('Error saving speech:', error);
+      toast({
+        title: "Save failed",
+        description: error instanceof Error ? error.message : "Failed to save speech",
+        variant: "destructive"
+      });
       throw error;
     }
   };
 
   const updateSpeech = async (id: string, title: string, content: string) => {
+    if (!user || !session) {
+      throw new Error('User must be logged in to update speech');
+    }
+
     try {
       const { error } = await supabase
         .from('speeches')
@@ -182,9 +206,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           content,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) {
+        if (error.code === 'PGRST301') {
+          await refreshUser();
+          throw new Error('Session expired. Please try again.');
+        }
         throw error;
       }
 
@@ -197,13 +226,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteSpeech = async (id: string) => {
+    if (!user || !session) {
+      throw new Error('User must be logged in to delete speech');
+    }
+
     try {
       const { error } = await supabase
         .from('speeches')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) {
+        if (error.code === 'PGRST301') {
+          await refreshUser();
+          throw new Error('Session expired. Please try again.');
+        }
         throw error;
       }
 
@@ -267,21 +305,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id || 'No user');
         
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
 
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          if (session?.user) {
-            // Defer data fetching to prevent blocking
-            setTimeout(() => {
-              fetchSpeeches();
-            }, 100);
-          }
-        } else if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT') {
           setSpeeches([]);
         }
       }
