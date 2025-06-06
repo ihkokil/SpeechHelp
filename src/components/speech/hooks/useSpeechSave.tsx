@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
-import { useSpeechService } from '@/services/speechService';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UseSpeechSaveProps {
 	title: string;
@@ -20,8 +20,7 @@ export const useSpeechSave = ({
 	const [isSaving, setIsSaving] = useState(false);
 	const [speechId, setSpeechId] = useState<string | null>(null);
 	const { toast } = useToast();
-	const { user } = useAuth();
-	const speechService = useSpeechService();
+	const { user, fetchSpeeches } = useAuth();
 
 	const validateInputs = () => {
 		if (!title.trim()) {
@@ -50,6 +49,15 @@ export const useSpeechSave = ({
 			return;
 		}
 
+		if (!user) {
+			toast({
+				title: "Authentication Required",
+				description: "Please sign in to save your speech.",
+				variant: "destructive",
+			});
+			return;
+		}
+
 		setIsSaving(true);
 
 		try {
@@ -61,47 +69,65 @@ export const useSpeechSave = ({
 			const contentToSave = JSON.stringify(speechWithMetadata);
 
 			if (speechId) {
-				await speechService.updateSpeech(user.id, speechId, title, contentToSave);
+				// Update existing speech
+				const { error: updateError } = await supabase
+					.from('speeches')
+					.update({
+						title,
+						content: contentToSave,
+						updated_at: new Date().toISOString(),
+					})
+					.eq('id', speechId)
+					.eq('user_id', user.id);
+
+				if (updateError) {
+					console.error('Error updating speech:', updateError);
+					throw updateError;
+				}
+
 				toast({
 					title: "Speech Updated",
 					description: "Your speech has been updated successfully.",
 				});
 			} else {
-				if (user) {
-					// Extract the speech ID correctly from the response
-					const speechResponse = await speechService.saveSpeech(user.id, title, contentToSave, speechType);
-					
-					// Fix: Properly handle different response formats with type checking
-					if (Array.isArray(speechResponse) && speechResponse.length > 0) {
-						// If the response is an array, get the first item's ID
-						const firstItem = speechResponse[0];
-						if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
-							setSpeechId(firstItem.id as string);
-						}
-					} else if (speechResponse && typeof speechResponse === 'object' && 'id' in speechResponse) {
-						// If it's a single object with an ID property
-						setSpeechId(speechResponse.id as string);
-					}
-					
-					toast({
-						title: "Speech Saved",
-						description: "Your speech has been saved successfully.",
-					});
-				} else {
-					toast({
-						title: "Authentication Required",
-						description: "Please sign in to save your speech.",
-						variant: "destructive",
-					});
+				// Create new speech
+				const { data: speechData, error: insertError } = await supabase
+					.from('speeches')
+					.insert({
+						user_id: user.id,
+						title,
+						content: contentToSave,
+						speech_type: speechType,
+					})
+					.select()
+					.single();
+
+				if (insertError) {
+					console.error('Error creating speech:', insertError);
+					throw insertError;
 				}
+
+				if (speechData) {
+					setSpeechId(speechData.id);
+				}
+
+				toast({
+					title: "Speech Saved",
+					description: "Your speech has been saved successfully.",
+				});
 			}
-		} catch (error) {
+
+			// Refresh speeches list
+			await fetchSpeeches();
+
+		} catch (error: any) {
+			console.error("Error saving speech:", error);
+			
 			toast({
-				title: "Error",
-				description: "Failed to save speech. Please try again.",
+				title: "Save Failed",
+				description: error.message || "Failed to save speech. Please try again.",
 				variant: "destructive",
 			});
-			console.error("Error saving speech:", error);
 		} finally {
 			setIsSaving(false);
 		}
