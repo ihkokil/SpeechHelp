@@ -180,6 +180,6 @@ html {
 
 /* Hero section background */
 .hero-bg {
-  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/SpeechHelp-Hero-Section-Main-Image.jpg') no-repeat center center;
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('/Speech Help - Hero Section Main Image.jpg') no-repeat center center;
   background-size: cover;
 }
