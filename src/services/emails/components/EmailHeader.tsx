@@ -11,7 +11,7 @@ export const EmailHeader = ({ username = 'there' }: EmailHeaderProps) => {
 	return (
 		<Section style={styles.logoSection}>
 			<Img
-				src="/Speech Help - Logo.svg"
+				src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg"
 				width="150"
 				height="44"
 				alt="SpeechHelp"

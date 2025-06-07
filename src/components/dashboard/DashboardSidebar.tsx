@@ -9,7 +9,7 @@ import { LogoutButton } from './sidebar/components/LogoutButton';
 
 const DashboardSidebar = () => {
   const { isOpen, setIsOpen, toggleSidebar, isMobile } = useSidebarState();
-  const logoPath = "/Speech Help - Logo.svg";
+  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg";
 
   return (
     <>
