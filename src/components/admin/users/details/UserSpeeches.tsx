@@ -3,21 +3,27 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FileText, Calendar, Clock, Eye, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { User } from '../types';
 import { adminSpeechService } from '@/services/adminSpeechService';
 import { Speech } from '@/types/speech';
+import SpeechDetailView from '@/components/admin/speeches/SpeechDetailView';
+
+interface SpeechWithUser extends Speech {
+  user_email?: string;
+  user_name?: string;
+}
 
 interface UserSpeechesProps {
   user: User;
 }
 
 export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
-  const [speeches, setSpeeches] = useState<Speech[]>([]);
+  const [speeches, setSpeeches] = useState<SpeechWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
+  const [selectedSpeech, setSelectedSpeech] = useState<SpeechWithUser | null>(null);
 
   useEffect(() => {
     const loadUserSpeeches = async () => {
@@ -25,9 +31,20 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
       setIsLoading(true);
       
       try {
+        // Use the admin speech service to fetch speeches by user ID
         const userSpeeches = await adminSpeechService.fetchSpeechesByUserId(user.id);
         console.log('Loaded speeches:', userSpeeches);
-        setSpeeches(userSpeeches);
+        
+        // Enhance speeches with user information since we know the user
+        const enhancedSpeeches: SpeechWithUser[] = userSpeeches.map(speech => ({
+          ...speech,
+          user_email: user.email,
+          user_name: user.first_name && user.last_name 
+            ? `${user.first_name} ${user.last_name}`
+            : user.username || user.email
+        }));
+        
+        setSpeeches(enhancedSpeeches);
       } catch (error) {
         console.error('Error loading speeches:', error);
         setSpeeches([]);
@@ -39,23 +56,15 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
     if (user.id) {
       loadUserSpeeches();
     }
-  }, [user.id]);
+  }, [user.id, user.email, user.first_name, user.last_name, user.username]);
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'PPP');
+      return format(new Date(dateString), 'PPP p');
     } catch (e) {
       console.error('Error formatting date:', dateString, e);
       return 'Invalid date';
     }
-  };
-
-  const handleViewSpeech = (speech: Speech) => {
-    setSelectedSpeech(speech);
-  };
-
-  const handleCloseSpeechView = () => {
-    setSelectedSpeech(null);
   };
 
   const getSpeechTypeColor = (speechType: string) => {
@@ -85,58 +94,37 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
     return speechType.charAt(0).toUpperCase() + speechType.slice(1);
   };
 
+  const handleViewSpeech = (speech: SpeechWithUser) => {
+    setSelectedSpeech(speech);
+  };
+
+  const handleCloseSpeechView = () => {
+    setSelectedSpeech(null);
+  };
+
+  if (selectedSpeech) {
+    return (
+      <SpeechDetailView
+        speech={selectedSpeech}
+        onBack={handleCloseSpeechView}
+      />
+    );
+  }
+
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Speeches</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Speeches
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
               <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-spin" />
               <p className="text-muted-foreground">Loading speeches...</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (selectedSpeech) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Speech Details</CardTitle>
-            <Button variant="ghost" size="sm" onClick={handleCloseSpeechView}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to List
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold">{selectedSpeech.title}</h3>
-              <div className="flex items-center space-x-4 mt-2">
-                <Badge className={getSpeechTypeColor(selectedSpeech.speech_type)}>
-                  {getSpeechTypeLabel(selectedSpeech.speech_type)}
-                </Badge>
-                <span className="text-sm text-muted-foreground flex items-center">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  Created on {formatDate(selectedSpeech.created_at)}
-                </span>
-              </div>
-            </div>
-            
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-2">Content</h4>
-              <ScrollArea className="h-64 w-full border rounded-md p-4">
-                <div className="whitespace-pre-wrap text-sm">
-                  {selectedSpeech.content}
-                </div>
-              </ScrollArea>
             </div>
           </div>
         </CardContent>
@@ -162,49 +150,44 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
             <p className="text-sm text-muted-foreground">This user hasn't created any speeches yet.</p>
           </div>
         ) : (
-          <ScrollArea className="h-96">
-            <div className="space-y-3">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Modified</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {speeches.map((speech) => (
-                <div
-                  key={speech.id}
-                  className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
-                  onClick={() => handleViewSpeech(speech)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm mb-2 hover:text-primary">{speech.title}</h4>
-                      <div className="flex items-center space-x-3 mb-2">
-                        <Badge className={getSpeechTypeColor(speech.speech_type)}>
-                          {getSpeechTypeLabel(speech.speech_type)}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground flex items-center">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          {formatDate(speech.created_at)}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {speech.content.substring(0, 100)}...
-                      </p>
-                    </div>
-                    <div className="flex space-x-1 ml-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewSpeech(speech);
-                        }}
-                        className="h-8 w-8 p-0"
-                        title="View speech"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                <TableRow key={speech.id}>
+                  <TableCell className="font-medium max-w-xs truncate" title={speech.title}>
+                    {speech.title}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getSpeechTypeColor(speech.speech_type)}>
+                      {getSpeechTypeLabel(speech.speech_type)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{formatDate(speech.created_at)}</TableCell>
+                  <TableCell>{formatDate(speech.updated_at)}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleViewSpeech(speech)}
+                      className="h-8 w-8 p-0"
+                      title="View speech"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </div>
-          </ScrollArea>
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>
