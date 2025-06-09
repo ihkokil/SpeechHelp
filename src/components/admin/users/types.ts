@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   email: string;
@@ -6,6 +7,8 @@ export interface User {
   last_sign_in_at?: string | null;
   is_active?: boolean;
   is_admin?: boolean;
+  admin_role?: string;
+  permissions?: string[];
   subscription_status?: string;
   subscription_plan?: string | null;
   subscription_end_date?: string | null;

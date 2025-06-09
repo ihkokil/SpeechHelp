@@ -17,7 +17,7 @@ interface MobileMenuProps {
 }
 
 const MobileMenu = ({ open, setOpen, navItems }: MobileMenuProps) => {
-  const logoPath = "https://preview--speech-helper-ai.lovable.app/SpeechHelp_Logo.svg";
+  const logoPath = "SpeechHelpLogo.svg";
   
   return (
     <Sheet open={open} onOpenChange={setOpen}>

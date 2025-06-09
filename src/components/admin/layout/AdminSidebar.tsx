@@ -18,7 +18,7 @@ interface AdminSidebarProps {
 
 const AdminSidebar = ({ navItems, onSignOut }: AdminSidebarProps) => {
   const location = useLocation();
-  const logoPath = "https://preview--speech-helper-ai.lovable.app/SpeechHelp_Logo.svg";
+  const logoPath = "SpeechHelpLogo.svg";
   
   return (
     <Sidebar className="bg-white shadow-md z-30">

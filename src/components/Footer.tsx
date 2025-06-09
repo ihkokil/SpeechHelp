@@ -11,7 +11,7 @@ const Footer = () => {
   const { t } = useTranslation();
   
   // Using Supabase hosted SVG file
-  const logoPath = "https://preview--speech-helper-ai.lovable.app/SpeechHelp_Logo.svg";
+  const logoPath = "SpeechHelpLogo.svg";
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">

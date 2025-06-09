@@ -85,6 +85,7 @@ export const useAddUserForm = ({ onOpenChange, onUserAdded, toast }: UseAddUserF
         email: functionData.user.email || values.email,
         is_active: values.isActive,
         is_admin: values.role !== 'user',
+        admin_role: values.role !== 'user' ? values.role : undefined,
         created_at: functionData.user.created_at,
         updated_at: functionData.user.updated_at || functionData.user.created_at,
         last_sign_in_at: null,

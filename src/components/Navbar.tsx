@@ -39,7 +39,7 @@ const Navbar = () => {
   if (usesSidebar) return null;
   
   // Using the correct SVG logo file for better visibility and sharpness
-  const logoPath = "https://preview--speech-helper-ai.lovable.app/SpeechHelp_Logo.svg";
+  const logoPath = "SpeechHelpLogo.svg";
 
   return (
     <nav
