@@ -26,21 +26,14 @@ serve(async (req) => {
     if (getAllSpeeches) {
       console.log('Fetching all speeches for admin view');
       
-      // Fetch all speeches with user information
+      // First, fetch all speeches
       const { data: speeches, error: speechesError } = await supabaseAdmin
         .from('speeches')
-        .select(`
-          *,
-          profiles:user_id (
-            first_name,
-            last_name,
-            username
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (speechesError) {
-        console.error('Error fetching all speeches:', speechesError);
+        console.error('Error fetching speeches:', speechesError);
         return new Response(JSON.stringify({
           success: false,
           error: speechesError.message
@@ -50,17 +43,36 @@ serve(async (req) => {
         });
       }
 
-      // Get user emails from auth.users for speeches where profile data might be missing
-      const userIds = speeches?.map(speech => speech.user_id) || [];
+      console.log('Fetched speeches count:', speeches?.length || 0);
+
+      // Get unique user IDs from speeches
+      const userIds = [...new Set(speeches?.map(speech => speech.user_id) || [])];
+      console.log('Unique user IDs:', userIds.length);
+
+      // Fetch profiles for these users
+      const { data: profiles, error: profilesError } = await supabaseAdmin
+        .from('profiles')
+        .select('id, first_name, last_name, username')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+
+      console.log('Fetched profiles count:', profiles?.length || 0);
+
+      // Get user emails from auth.users
       const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers();
       
       if (authError) {
         console.error('Error fetching auth users:', authError);
       }
 
+      console.log('Fetched auth users count:', authUsers?.users?.length || 0);
+
       // Enhance speeches with user information
       const enhancedSpeeches = speeches?.map(speech => {
-        const profile = speech.profiles;
+        const profile = profiles?.find(p => p.id === speech.user_id);
         const authUser = authUsers?.users?.find(user => user.id === speech.user_id);
         
         return {
@@ -72,7 +84,7 @@ serve(async (req) => {
         };
       }) || [];
 
-      console.log('Successfully fetched all speeches:', enhancedSpeeches.length);
+      console.log('Successfully enhanced speeches:', enhancedSpeeches.length);
       
       return new Response(JSON.stringify({
         success: true,
