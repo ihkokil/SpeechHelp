@@ -1,9 +1,8 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AdminAuthProvider } from "@/contexts/AdminAuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -23,43 +22,49 @@ import AdminLayout from "./components/layouts/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AllSpeeches from './pages/admin/AllSpeeches';
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <AdminAuthProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/speech-lab" element={<SpeechLab />} />
-                <Route path="/my-speeches" element={<MySpeeches />} />
-                <Route path="/writing-tips" element={<WritingTips />} />
-                <Route path="/help" element={<HelpSupport />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/test" element={<Test />} />
-                <Route path="/admin/auth" element={<AdminAuth />} />
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route path="dashboard" element={<AdminDashboard />} />
-                  <Route path="users" element={<UserManagement />} />
-                  <Route path="settings" element={<AdminSettings />} />
-                </Route>
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </AdminAuthProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <AdminAuthProvider>
+              <Toaster />
+              <Sonner />
+              <Router>
+                <div className="min-h-screen bg-background">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/speech-lab" element={<SpeechLab />} />
+                    <Route path="/my-speeches" element={<MySpeeches />} />
+                    <Route path="/writing-tips" element={<WritingTips />} />
+                    <Route path="/help" element={<HelpSupport />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/test" element={<Test />} />
+                    <Route path="/admin/auth" element={<AdminAuth />} />
+                    <Route path="/admin" element={<AdminLayout />}>
+                      <Route path="dashboard" element={<AdminDashboard />} />
+                      <Route path="users" element={<UserManagement />} />
+                      <Route path="speeches" element={<AllSpeeches />} />
+                      <Route path="settings" element={<AdminSettings />} />
+                    </Route>
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </div>
+              </Router>
+            </AdminAuthProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;

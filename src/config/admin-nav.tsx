@@ -3,7 +3,7 @@ import {
   BarChart4, 
   Users, 
   Settings, 
-  Database,
+  FileText,
   Shield,
   Home,
   Activity,
@@ -13,7 +13,7 @@ import {
 export const adminNavItems = [
   { icon: Home, label: 'Dashboard', href: '/admin/dashboard' },
   { icon: Users, label: 'User Management', href: '/admin/users' },
-  { icon: Database, label: 'Data Management', href: '/admin/data' },
+  { icon: FileText, label: 'All Speeches', href: '/admin/speeches' },
   { icon: BarChart4, label: 'Analytics', href: '/admin/analytics' },
   { icon: Activity, label: 'Activity Logs', href: '/admin/logs' },
   { icon: Shield, label: 'Security', href: '/admin/security' },
