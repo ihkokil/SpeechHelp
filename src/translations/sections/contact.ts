@@ -1,4 +1,5 @@
-export const contact = {
+
+export const contactTranslations = {
   // Contact Section
   'contact.title': 'Who We Are & How We Help',
   'contact.getInTouch': 'Get in Touch',

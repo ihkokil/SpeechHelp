@@ -1,5 +1,5 @@
 
-export const settings = {
+export const settingsTranslations = {
   // Settings
   'settings.title': 'Account Settings',
   'settings.subtitle': 'Manage your account settings and preferences',

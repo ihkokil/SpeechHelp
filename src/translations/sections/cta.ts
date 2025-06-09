@@ -1,5 +1,5 @@
 
-export const cta = {
+export const ctaTranslations = {
   // CTA Section
   'cta.title': 'Ready to Transform Your Public Speaking?',
   'cta.subtitle': 'Join thousands of professionals who use SpeechHelp to create and deliver impactful presentations. Start your journey today.',

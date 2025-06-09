@@ -16,7 +16,7 @@ export const adminSpeechService = {
         throw new Error('Failed to fetch user data');
       }
 
-      const user = authUser.users.find(u => u.email === userEmail);
+      const user = authUser.users.find((u: any) => u.email === userEmail);
       if (!user) {
         console.log('User not found with email:', userEmail);
         return [];

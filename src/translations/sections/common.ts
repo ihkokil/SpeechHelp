@@ -1,5 +1,5 @@
 
-export const common = {
+export const commonTranslations = {
   // Common
   'common.title': 'Title',
   'common.content': 'Content',

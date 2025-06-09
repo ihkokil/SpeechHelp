@@ -1,5 +1,5 @@
 
-export const footer = {
+export const footerTranslations = {
   // Footer
   'footer.about': 'About Us',
   'footer.features': 'Features',
