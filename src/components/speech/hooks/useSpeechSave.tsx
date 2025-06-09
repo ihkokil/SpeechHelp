@@ -82,8 +82,22 @@ export const useSpeechSave = ({
 
 			const contentToSave = JSON.stringify(speechWithMetadata);
 
-			if (speechId) {
-				// Update existing speech
+			// Check if there's already a speech with the same title (auto-saved version)
+			const { data: existingSpeeches, error: fetchError } = await supabase
+				.from('speeches')
+				.select('id')
+				.eq('user_id', user.id)
+				.eq('title', title)
+				.eq('speech_type', speechType);
+
+			if (fetchError) {
+				console.error('Error checking for existing speech:', fetchError);
+				// Continue with insert if we can't check
+			}
+
+			if (existingSpeeches && existingSpeeches.length > 0) {
+				// Update existing speech (overwrite auto-saved version)
+				const existingSpeechId = existingSpeeches[0].id;
 				const { error: updateError } = await supabase
 					.from('speeches')
 					.update({
@@ -91,7 +105,7 @@ export const useSpeechSave = ({
 						content: contentToSave,
 						updated_at: new Date().toISOString(),
 					})
-					.eq('id', speechId)
+					.eq('id', existingSpeechId)
 					.eq('user_id', user.id);
 
 				if (updateError) {
@@ -103,6 +117,7 @@ export const useSpeechSave = ({
 					throw updateError;
 				}
 
+				setSpeechId(existingSpeechId);
 				toast({
 					title: "Speech Updated",
 					description: "Your speech has been updated successfully.",
@@ -138,6 +153,11 @@ export const useSpeechSave = ({
 					description: "Your speech has been saved successfully.",
 				});
 			}
+
+			// Clear localStorage backup after successful save
+			localStorage.removeItem('generatedSpeech');
+			localStorage.removeItem('speechBackup');
+			localStorage.removeItem('tempGeneratedSpeech');
 
 		} catch (error: any) {
 			console.error("Error saving speech:", error);

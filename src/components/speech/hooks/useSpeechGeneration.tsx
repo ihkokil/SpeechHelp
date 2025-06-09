@@ -19,11 +19,12 @@ export const useSpeechGeneration = ({
 	onSuccess
 }: UseSpeechGenerationProps) => {
 	const { toast } = useToast();
-	const { user } = useAuth();
+	const { user, saveSpeech } = useAuth();
 	const [generating, setGenerating] = useState(false);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [generatedSpeech, setGeneratedSpeech] = useState('');
 	const [error, setError] = useState<string | null>(null);
+	const [autoSavedSpeechId, setAutoSavedSpeechId] = useState<string | null>(null);
 
 	useEffect(() => {
 		let timer: NodeJS.Timeout;
@@ -48,6 +49,23 @@ export const useSpeechGeneration = ({
 			return false;
 		}
 		return true;
+	};
+
+	const autoSaveSpeech = async (speech: string) => {
+		if (!user) return;
+
+		try {
+			console.log('Auto-saving generated speech...');
+			await saveSpeech(speechTitle, speech, speechType);
+			
+			toast({
+				title: "Speech Auto-Saved",
+				description: "Your generated speech has been automatically saved to your account.",
+			});
+		} catch (error) {
+			console.error('Error auto-saving speech:', error);
+			// Don't show error toast for auto-save failures - user can still manually save
+		}
 	};
 
 	const generateSpeech = async () => {
@@ -77,9 +95,12 @@ export const useSpeechGeneration = ({
 			localStorage.setItem('speechBackup', speech);
 			localStorage.setItem('tempGeneratedSpeech', speech);
 
+			// Auto-save the speech to database
+			await autoSaveSpeech(speech);
+
 			toast({
 				title: "Speech Generated Successfully",
-				description: "Your AI-powered speech has been created. You can now edit and save it manually.",
+				description: "Your AI-powered speech has been created and automatically saved.",
 			});
 
 			setShowConfetti(true);
@@ -102,6 +123,7 @@ export const useSpeechGeneration = ({
 		showConfetti,
 		generatedSpeech,
 		error,
+		autoSavedSpeechId,
 		generateSpeech
 	};
 };
