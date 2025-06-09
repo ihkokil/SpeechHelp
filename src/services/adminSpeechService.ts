@@ -29,19 +29,40 @@ export const adminSpeechService = {
 
       console.log('Found user with ID:', user.id);
 
-      // Now fetch speeches using the correct user ID
-      const { data: speeches, error: speechesError } = await supabase
+      // Now fetch speeches using the correct user ID with detailed debugging
+      console.log('About to query speeches table with user_id:', user.id);
+      console.log('Query details: SELECT * FROM speeches WHERE user_id = ?', user.id);
+      
+      const { data: speeches, error: speechesError, count } = await supabase
         .from('speeches')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
+      console.log('Speech query result:');
+      console.log('- Error:', speechesError);
+      console.log('- Data:', speeches);
+      console.log('- Count:', count);
+      console.log('- Data length:', speeches?.length || 0);
+
       if (speechesError) {
         console.error('Error fetching speeches:', speechesError);
+        console.error('Speech error details:', JSON.stringify(speechesError, null, 2));
         throw new Error('Failed to fetch user speeches');
       }
 
       console.log('Found speeches:', speeches?.length || 0);
+      
+      // Let's also try a raw query to see if there are any speeches at all
+      const { data: allSpeeches, error: allSpeechesError } = await supabase
+        .from('speeches')
+        .select('user_id, title, id')
+        .limit(5);
+      
+      console.log('Sample of all speeches in database:');
+      console.log('- Error:', allSpeechesError);
+      console.log('- Sample data:', allSpeeches);
+      
       return speeches || [];
     } catch (error) {
       console.error('Exception in fetchUserSpeeches:', error);
