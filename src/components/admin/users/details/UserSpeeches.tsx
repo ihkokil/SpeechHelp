@@ -7,8 +7,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText, Calendar, Clock, Eye, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { User } from '../types';
-import { useSpeechService } from '@/services/speechService';
+import { adminSpeechService } from '@/services/adminSpeechService';
 import { Speech } from '@/types/speech';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface UserSpeechesProps {
   user: User;
@@ -18,14 +19,25 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
   const [speeches, setSpeeches] = useState<Speech[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
-  const { fetchSpeeches } = useSpeechService();
+  const { translate } = useTranslatedContent();
 
   useEffect(() => {
     const loadUserSpeeches = async () => {
-      console.log('Loading speeches for user:', user.id);
+      console.log('Loading speeches for user:', user.id, user.email);
       setIsLoading(true);
       try {
-        const userSpeeches = await fetchSpeeches(user.id);
+        let userSpeeches: Speech[] = [];
+        
+        // Try fetching by email first (more reliable for admin)
+        if (user.email) {
+          userSpeeches = await adminSpeechService.fetchUserSpeeches(user.email);
+        }
+        
+        // If no speeches found and we have a user ID, try that too
+        if (userSpeeches.length === 0 && user.id) {
+          userSpeeches = await adminSpeechService.fetchSpeechesByUserId(user.id);
+        }
+        
         console.log('Loaded speeches for user:', userSpeeches);
         setSpeeches(userSpeeches);
       } catch (error) {
@@ -37,14 +49,14 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
     };
 
     loadUserSpeeches();
-  }, [user.id, fetchSpeeches]);
+  }, [user.id, user.email]);
 
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'PPP');
     } catch (e) {
       console.error('Error formatting date:', dateString, e);
-      return 'Invalid date';
+      return translate('admin.userDetails.invalidDate');
     }
   };
 
@@ -81,17 +93,21 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
     return colors[speechType as keyof typeof colors] || colors.other;
   };
 
+  const getSpeechTypeLabel = (speechType: string) => {
+    return translate(`admin.speechTypes.${speechType}`);
+  };
+
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>User Speeches</CardTitle>
+          <CardTitle>{translate('admin.userDetails.speeches')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
               <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-spin" />
-              <p className="text-muted-foreground">Loading speeches...</p>
+              <p className="text-muted-foreground">{translate('admin.userDetails.loadingSpeeches')}</p>
             </div>
           </div>
         </CardContent>
@@ -104,10 +120,10 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Speech Details</CardTitle>
+            <CardTitle>{translate('admin.userDetails.speechDetails')}</CardTitle>
             <Button variant="ghost" size="sm" onClick={handleCloseSpeechView}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to List
+              {translate('admin.userDetails.backToList')}
             </Button>
           </div>
         </CardHeader>
@@ -117,17 +133,17 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
               <h3 className="text-lg font-semibold">{selectedSpeech.title}</h3>
               <div className="flex items-center space-x-4 mt-2">
                 <Badge className={getSpeechTypeColor(selectedSpeech.speech_type)}>
-                  {selectedSpeech.speech_type.replace('_', ' ').toUpperCase()}
+                  {getSpeechTypeLabel(selectedSpeech.speech_type)}
                 </Badge>
                 <span className="text-sm text-muted-foreground flex items-center">
                   <Calendar className="h-4 w-4 mr-1" />
-                  {formatDate(selectedSpeech.created_at)}
+                  {translate('admin.userDetails.createdOn', { date: formatDate(selectedSpeech.created_at) })}
                 </span>
               </div>
             </div>
             
             <div className="border-t pt-4">
-              <h4 className="font-medium mb-2">Content:</h4>
+              <h4 className="font-medium mb-2">{translate('admin.userDetails.content')}</h4>
               <ScrollArea className="h-64 w-full border rounded-md p-4">
                 <div className="whitespace-pre-wrap text-sm">
                   {selectedSpeech.content}
@@ -140,22 +156,28 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
     );
   }
 
+  const speechCount = speeches.length;
+  const isPlural = speechCount !== 1 ? 'es' : '';
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
-          User Speeches
+          {translate('admin.userDetails.speeches')}
         </CardTitle>
         <div className="text-sm text-muted-foreground">
-          <div>This user has {speeches.length} speech{speeches.length !== 1 ? 'es' : ''}</div>
+          <div>{translate('admin.userDetails.speechesDescription', { 
+            count: speechCount.toString(), 
+            plural: isPlural 
+          })}</div>
         </div>
       </CardHeader>
       <CardContent>
         {speeches.length === 0 ? (
           <div className="text-center py-8">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-2">This user hasn't created any speeches yet.</p>
+            <p className="text-muted-foreground mb-2">{translate('admin.userDetails.noSpeeches')}</p>
           </div>
         ) : (
           <ScrollArea className="h-96">
@@ -171,7 +193,7 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
                       <h4 className="font-medium text-sm mb-2 hover:text-primary">{speech.title}</h4>
                       <div className="flex items-center space-x-3 mb-2">
                         <Badge className={getSpeechTypeColor(speech.speech_type)}>
-                          {speech.speech_type.replace('_', ' ')}
+                          {getSpeechTypeLabel(speech.speech_type)}
                         </Badge>
                         <span className="text-xs text-muted-foreground flex items-center">
                           <Calendar className="h-3 w-3 mr-1" />
@@ -191,6 +213,7 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
                           handleViewSpeech(speech);
                         }}
                         className="h-8 w-8 p-0"
+                        title={translate('admin.common.view')}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>

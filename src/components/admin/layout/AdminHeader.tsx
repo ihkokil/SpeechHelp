@@ -7,6 +7,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import SearchBar from '../header/SearchBar';
 import MobileMenu from '../header/MobileMenu';
 import AdminUserMenu from '../header/AdminUserMenu';
+import { getLogoPath } from '@/config/logo';
 
 interface AdminHeaderProps {
   navItems: Array<{
@@ -19,7 +20,7 @@ interface AdminHeaderProps {
 }
 
 const AdminHeader = ({ navItems, mobileMenuOpen, setMobileMenuOpen }: AdminHeaderProps) => {
-  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg";
+  const logoPath = getLogoPath();
   
   return (
     <header className="flex h-16 w-full items-center justify-between border-b bg-white px-4 lg:px-6">

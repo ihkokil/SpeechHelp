@@ -5,6 +5,7 @@ import { Menu, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import NavItem from '../navigation/NavItem';
+import { getLogoPath } from '@/config/logo';
 
 interface MobileMenuProps {
   open: boolean;
@@ -17,7 +18,7 @@ interface MobileMenuProps {
 }
 
 const MobileMenu = ({ open, setOpen, navItems }: MobileMenuProps) => {
-  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg";
+  const logoPath = getLogoPath();
   
   return (
     <Sheet open={open} onOpenChange={setOpen}>

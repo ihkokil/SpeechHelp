@@ -1,37 +1,18 @@
 
-import { general } from './general';
-import { navigation } from './navigation';
-import { footer } from './footer';
-import { dashboard } from './dashboard';
-import { common } from './common';
-import { speechTypes } from './speechTypes';
-import { hero } from './hero';
-import { features } from './features';
-import { howItWorks } from './howItWorks';
-import { testimonials } from './testimonials';
-import { cta } from './cta';
-import { contact } from './contact';
-import { speechLab } from './speechLab';
-import { settings } from './settings';
-import { headers } from './headers';
-import { gallery } from './gallery';
-
-export const enUSTranslations = {
-  ...general,
-  ...navigation,
-  ...footer,
-  ...dashboard,
-  ...common,
-  ...speechTypes,
-  ...hero,
-  ...features,
-  ...howItWorks,
-  ...testimonials,
-  ...cta,
-  ...contact,
-  ...speechLab,
-  ...settings,
-  ...headers,
-  ...gallery
-};
-
+export * from './common';
+export * from './navigation';
+export * from './hero';
+export * from './features';
+export * from './howItWorks';
+export * from './testimonials';
+export * from './gallery';
+export * from './cta';
+export * from './contact';
+export * from './footer';
+export * from './headers';
+export * from './general';
+export * from './dashboard';
+export * from './speechLab';
+export * from './speechTypes';
+export * from './settings';
+export * from './admin';
