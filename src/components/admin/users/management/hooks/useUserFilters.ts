@@ -1,6 +1,6 @@
 
 import { useState, useMemo } from 'react';
-import { User } from '../types';
+import { User } from '../../types';
 
 export const useUserFilters = (users: User[]) => {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
