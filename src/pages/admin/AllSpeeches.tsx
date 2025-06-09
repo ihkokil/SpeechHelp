@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,17 +8,25 @@ import { FileText, Search, Eye, Calendar, Clock, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { adminSpeechService } from '@/services/adminSpeechService';
 import { Speech } from '@/types/speech';
+import SpeechPagination from '@/components/admin/speeches/SpeechPagination';
+import SpeechFilters from '@/components/admin/speeches/SpeechFilters';
+import SpeechDetailView from '@/components/admin/speeches/SpeechDetailView';
 
 interface SpeechWithUser extends Speech {
   user_email?: string;
   user_name?: string;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 const AllSpeeches: React.FC = () => {
   const [speeches, setSpeeches] = useState<SpeechWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpeech, setSelectedSpeech] = useState<SpeechWithUser | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedType, setSelectedType] = useState('all');
+  const [selectedUser, setSelectedUser] = useState('all');
 
   useEffect(() => {
     loadAllSpeeches();
@@ -38,6 +46,48 @@ const AllSpeeches: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  // Get unique users for filter
+  const uniqueUsers = useMemo(() => {
+    const users = speeches.reduce((acc, speech) => {
+      const userId = speech.user_id;
+      const userName = speech.user_name;
+      const userEmail = speech.user_email;
+      
+      if (!acc.find(u => u.id === userId)) {
+        acc.push({
+          id: userId,
+          name: userName || userEmail || 'Unknown User',
+          email: userEmail || ''
+        });
+      }
+      return acc;
+    }, [] as Array<{ id: string; name: string; email: string }>);
+    
+    return users.sort((a, b) => a.name.localeCompare(b.name));
+  }, [speeches]);
+
+  // Filter and search speeches
+  const filteredSpeeches = useMemo(() => {
+    return speeches.filter(speech => {
+      const matchesSearch = (
+        speech.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        speech.speech_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (speech.user_email && speech.user_email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (speech.user_name && speech.user_name.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      
+      const matchesType = selectedType === 'all' || speech.speech_type === selectedType;
+      const matchesUser = selectedUser === 'all' || speech.user_id === selectedUser;
+      
+      return matchesSearch && matchesType && matchesUser;
+    });
+  }, [speeches, searchTerm, selectedType, selectedUser]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredSpeeches.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedSpeeches = filteredSpeeches.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const formatDate = (dateString: string) => {
     try {
@@ -83,75 +133,28 @@ const AllSpeeches: React.FC = () => {
     setSelectedSpeech(null);
   };
 
-  const filteredSpeeches = speeches.filter(speech =>
-    speech.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    speech.speech_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (speech.user_email && speech.user_email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (speech.user_name && speech.user_name.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleClearFilters = () => {
+    setSelectedType('all');
+    setSelectedUser('all');
+    setSearchTerm('');
+    setCurrentPage(1);
+  };
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedType, selectedUser, searchTerm]);
 
   if (selectedSpeech) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" onClick={handleCloseView}>
-              ← Back to All Speeches
-            </Button>
-          </div>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Speech Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold">{selectedSpeech.title}</h3>
-                <div className="flex items-center space-x-4 mt-2">
-                  <Badge className={getSpeechTypeColor(selectedSpeech.speech_type)}>
-                    {getSpeechTypeLabel(selectedSpeech.speech_type)}
-                  </Badge>
-                  <span className="text-sm text-muted-foreground flex items-center">
-                    <User className="h-4 w-4 mr-1" />
-                    {selectedSpeech.user_name || selectedSpeech.user_email || 'Unknown User'}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 py-4 border-t">
-                <div>
-                  <p className="text-sm font-medium flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    Created
-                  </p>
-                  <p className="text-sm text-muted-foreground">{formatDate(selectedSpeech.created_at)}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium flex items-center">
-                    <Clock className="h-4 w-4 mr-1" />
-                    Modified
-                  </p>
-                  <p className="text-sm text-muted-foreground">{formatDate(selectedSpeech.updated_at)}</p>
-                </div>
-              </div>
-              
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-2">Content</h4>
-                <div className="bg-gray-50 rounded-md p-4 max-h-64 overflow-y-auto">
-                  <div className="whitespace-pre-wrap text-sm">
-                    {selectedSpeech.content}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <SpeechDetailView
+        speech={selectedSpeech}
+        onBack={handleCloseView}
+      />
     );
   }
 
@@ -172,11 +175,25 @@ const AllSpeeches: React.FC = () => {
         </div>
       </div>
 
+      <SpeechFilters
+        selectedType={selectedType}
+        selectedUser={selectedUser}
+        users={uniqueUsers}
+        onTypeChange={setSelectedType}
+        onUserChange={setSelectedUser}
+        onClearFilters={handleClearFilters}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
             All Speeches ({filteredSpeeches.length})
+            {filteredSpeeches.length !== speeches.length && (
+              <span className="text-sm text-muted-foreground">
+                of {speeches.length} total
+              </span>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -192,50 +209,67 @@ const AllSpeeches: React.FC = () => {
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-2">No speeches found</p>
               <p className="text-sm text-muted-foreground">
-                {searchTerm ? 'Try adjusting your search criteria.' : 'No speeches have been created yet.'}
+                {searchTerm || selectedType !== 'all' || selectedUser !== 'all' 
+                  ? 'Try adjusting your search criteria or filters.' 
+                  : 'No speeches have been created yet.'
+                }
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Modified</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredSpeeches.map((speech) => (
-                  <TableRow key={speech.id}>
-                    <TableCell className="font-medium">{speech.title}</TableCell>
-                    <TableCell>
-                      <Badge className={getSpeechTypeColor(speech.speech_type)}>
-                        {getSpeechTypeLabel(speech.speech_type)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {speech.user_name || speech.user_email || 'Unknown User'}
-                    </TableCell>
-                    <TableCell>{formatDate(speech.created_at)}</TableCell>
-                    <TableCell>{formatDate(speech.updated_at)}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewSpeech(speech)}
-                        className="h-8 w-8 p-0"
-                        title="View speech"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Modified</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedSpeeches.map((speech) => (
+                    <TableRow key={speech.id}>
+                      <TableCell className="font-medium max-w-xs truncate" title={speech.title}>
+                        {speech.title}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getSpeechTypeColor(speech.speech_type)}>
+                          {getSpeechTypeLabel(speech.speech_type)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate" title={speech.user_name || speech.user_email}>
+                        {speech.user_name || speech.user_email || 'Unknown User'}
+                      </TableCell>
+                      <TableCell>{formatDate(speech.created_at)}</TableCell>
+                      <TableCell>{formatDate(speech.updated_at)}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewSpeech(speech)}
+                          className="h-8 w-8 p-0"
+                          title="View speech"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              
+              {totalPages > 1 && (
+                <div className="mt-6 flex justify-center">
+                  <SpeechPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
