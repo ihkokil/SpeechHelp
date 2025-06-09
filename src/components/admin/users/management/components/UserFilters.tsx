@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -27,10 +26,8 @@ const roleOptions = [
 
 const planOptions = [
   { value: 'free_trial', label: 'Free Trial' },
-  { value: 'basic', label: 'Basic' },
   { value: 'premium', label: 'Premium' },
   { value: 'pro', label: 'Pro' },
-  { value: 'enterprise', label: 'Enterprise' },
 ];
 
 const UserFilters: React.FC<UserFiltersProps> = ({
