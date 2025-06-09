@@ -151,11 +151,8 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
-          Speeches
+          Speeches ({speechCount})
         </CardTitle>
-        <div className="text-sm text-muted-foreground">
-          <div>{speechCount} speech{speechCount !== 1 ? 'es' : ''} found</div>
-        </div>
       </CardHeader>
       <CardContent>
         {speeches.length === 0 ? (
