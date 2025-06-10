@@ -17,7 +17,7 @@ interface MobileMenuProps {
 }
 
 const MobileMenu = ({ open, setOpen, navItems }: MobileMenuProps) => {
-  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/svg_files//Speech%20Help%20Logo.svg";
+  const logoPath = "/Speech Help - Logo.svg";
   
   return (
     <Sheet open={open} onOpenChange={setOpen}>

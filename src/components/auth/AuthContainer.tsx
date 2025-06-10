@@ -19,7 +19,7 @@ const AuthContainer = ({ children }: AuthContainerProps) => {
           className="inline-block transition-transform duration-200 hover:scale-105"
         >
           <img 
-            src="/public/Speech Help - Logo.svg"
+            src="/Speech Help - Logo.svg"
             alt="SpeechHelp Logo" 
             className={`${isMobile ? "h-12" : "h-16"} w-auto drop-shadow-lg`}
           />
