@@ -18,7 +18,7 @@ interface AdminSidebarProps {
 
 const AdminSidebar = ({ navItems, onSignOut }: AdminSidebarProps) => {
   const location = useLocation();
-  const logoPath = "/Speech Help - Logo.svg";
+  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg";
   
   return (
     <Sidebar className="bg-white shadow-md z-30">

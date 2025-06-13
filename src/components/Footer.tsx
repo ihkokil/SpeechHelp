@@ -11,7 +11,7 @@ const Footer = () => {
   const { t } = useTranslation();
   
   // Using the correct local SVG logo file
-  const logoPath = "/Speech Help - Logo.svg";
+  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg";
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
