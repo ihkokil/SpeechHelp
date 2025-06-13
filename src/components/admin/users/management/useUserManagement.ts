@@ -98,7 +98,7 @@ export const useUserManagement = () => {
       prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user)
     );
     setIsPermissionsDialogOpen(false);
-    // Force refresh to ensure data consistency
+    // Force refresh after permissions update
     setTimeout(() => forceRefresh(), 500);
   }, [setUsers, setIsPermissionsDialogOpen, forceRefresh]);
   
@@ -115,27 +115,29 @@ export const useUserManagement = () => {
     });
   }, [setSelectedUser, setIsEmailDialogOpen, toast]);
   
-  // Wrapper functions to include users and setUsers with force refresh
-  const handleToggleUserStatus = useCallback(async (userId: string, isActive: boolean) => {
+  // Wrapper functions to include users and setUsers
+  const handleToggleUserStatus = useCallback((userId: string, isActive: boolean) => {
     console.log("useUserManagement: Toggle user status called for user:", userId, isActive);
-    await baseHandleToggleUserStatus(userId, isActive, users, setUsers);
+    const result = baseHandleToggleUserStatus(userId, isActive, users, setUsers);
     // Force refresh after status change
-    setTimeout(() => forceRefresh(), 1000);
+    setTimeout(() => forceRefresh(), 500);
+    return result;
   }, [baseHandleToggleUserStatus, users, setUsers, forceRefresh]);
 
-  // Handle update subscription with force refresh
-  const handleUpdateSubscription = useCallback(async (userId: string, subscriptionTier: string, subscriptionEndDate: Date, users: User[], setUsers: (users: User[]) => void) => {
+  // Handle update subscription
+  const handleUpdateSubscription = useCallback((userId: string, subscriptionTier: string, subscriptionEndDate: Date, users: User[], setUsers: (users: User[]) => void) => {
     console.log("useUserManagement: Update subscription called for user:", userId);
-    await baseHandleUpdateSubscription(userId, subscriptionTier, subscriptionEndDate, users, setUsers);
+    const result = baseHandleUpdateSubscription(userId, subscriptionTier, subscriptionEndDate, users, setUsers);
     // Force refresh after subscription update
-    setTimeout(() => forceRefresh(), 1000);
+    setTimeout(() => forceRefresh(), 500);
+    return result;
   }, [baseHandleUpdateSubscription, forceRefresh]);
   
   const handleDeleteUsers = useCallback(() => {
     baseHandleDeleteUsers(selectedUsers, users, setUsers);
     setIsDeleteDialogOpen(false);
     // Force refresh after deletion
-    setTimeout(() => forceRefresh(), 1000);
+    setTimeout(() => forceRefresh(), 500);
   }, [baseHandleDeleteUsers, selectedUsers, users, setUsers, setIsDeleteDialogOpen, forceRefresh]);
   
   const handleDeleteUser = useCallback((userId: string) => {
@@ -146,20 +148,26 @@ export const useUserManagement = () => {
     }
   }, [users, setSelectedUsers, setIsDeleteDialogOpen]);
   
-  // Bulk actions with force refresh
-  const handleBulkDelete = useCallback(async () => {
-    await baseHandleBulkDelete(selectedUsers, users, setUsers);
-    setTimeout(() => forceRefresh(), 1000);
+  // Bulk actions
+  const handleBulkDelete = useCallback(() => {
+    const result = baseHandleBulkDelete(selectedUsers, users, setUsers);
+    // Force refresh after bulk delete
+    setTimeout(() => forceRefresh(), 500);
+    return result;
   }, [baseHandleBulkDelete, selectedUsers, users, setUsers, forceRefresh]);
   
-  const handleBulkActivate = useCallback(async () => {
-    await baseHandleBulkActivate(selectedUsers, users, setUsers);
-    setTimeout(() => forceRefresh(), 1000);
+  const handleBulkActivate = useCallback(() => {
+    const result = baseHandleBulkActivate(selectedUsers, users, setUsers);
+    // Force refresh after bulk activate
+    setTimeout(() => forceRefresh(), 500);
+    return result;
   }, [baseHandleBulkActivate, selectedUsers, users, setUsers, forceRefresh]);
   
-  const handleBulkDeactivate = useCallback(async () => {
-    await baseHandleBulkDeactivate(selectedUsers, users, setUsers);
-    setTimeout(() => forceRefresh(), 1000);
+  const handleBulkDeactivate = useCallback(() => {
+    const result = baseHandleBulkDeactivate(selectedUsers, users, setUsers);
+    // Force refresh after bulk deactivate
+    setTimeout(() => forceRefresh(), 500);
+    return result;
   }, [baseHandleBulkDeactivate, selectedUsers, users, setUsers, forceRefresh]);
   
   // Cleanup function for component unmount
