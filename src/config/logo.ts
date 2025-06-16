@@ -1,8 +1,8 @@
 
 // Centralized logo configuration
 export const LOGO_CONFIG = {
-  main: "/speech-help-new-logo.svg",
-  fallback: "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg"
+  main: "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg",
+  fallback: "/speech-help-new-logo.svg"
 };
 
 export const getLogoPath = () => {

@@ -1,5 +1,5 @@
 
-export const general = {
+export const generalTranslations = {
   // General
   'app.name': 'SpeechHelp',
   'loading': 'Loading...',

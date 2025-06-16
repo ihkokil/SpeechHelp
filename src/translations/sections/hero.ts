@@ -1,5 +1,5 @@
 
-export const hero = {
+export const heroTranslations = {
   // Hero Section
   'hero.headline': 'Need a creative speech?',
   'hero.subheadline': 'We can help!',

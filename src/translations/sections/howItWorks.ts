@@ -1,5 +1,5 @@
 
-export const howItWorks = {
+export const howItWorksTranslations = {
   // How It Works Section
   'howItWorks.title': 'How It Works',
   'howItWorks.subtitle': 'Our streamlined process makes it easy to create powerful speeches',
