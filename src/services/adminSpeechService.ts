@@ -8,15 +8,20 @@ export const adminSpeechService = {
     try {
       console.log('Fetching speeches for user email:', userEmail);
       
-      // First, get the user ID from auth.users table using the email
-      const { data: authUser, error: authError } = await supabase.auth.admin.listUsers();
+      // Use the fetch-users edge function to get user data with service role access
+      const { data: usersData, error: usersError } = await supabase.functions.invoke('fetch-users', {
+        method: 'GET'
+      });
       
-      if (authError) {
-        console.error('Error fetching auth users:', authError);
+      if (usersError) {
+        console.error('Error fetching users from edge function:', usersError);
         throw new Error('Failed to fetch user data');
       }
 
-      const user = authUser.users.find((u: any) => u.email === userEmail);
+      console.log('Users data from edge function:', usersData);
+      
+      // Find the user by email
+      const user = usersData?.users?.find((u: any) => u.email === userEmail);
       if (!user) {
         console.log('User not found with email:', userEmail);
         return [];
