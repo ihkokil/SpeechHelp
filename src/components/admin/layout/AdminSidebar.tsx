@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu } from '@/components/ui/sidebar';
 import NavItem from '../navigation/NavItem';
+import { getLogoPath } from '@/config/logo';
 
 interface AdminSidebarProps {
   navItems: Array<{
@@ -18,7 +19,7 @@ interface AdminSidebarProps {
 
 const AdminSidebar = ({ navItems, onSignOut }: AdminSidebarProps) => {
   const location = useLocation();
-  const logoPath = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg";
+  const logoPath = getLogoPath();
   
   return (
     <Sidebar className="bg-white shadow-md z-30">
