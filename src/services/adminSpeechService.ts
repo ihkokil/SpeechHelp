@@ -3,94 +3,27 @@ import { supabase } from '@/integrations/supabase/client';
 import { Speech } from '@/types/speech';
 
 export const adminSpeechService = {
-  // Fetch speeches for a user by email (for admin use)
-  fetchUserSpeeches: async (userEmail: string): Promise<Speech[]> => {
-    try {
-      console.log('Fetching speeches for user email:', userEmail);
-      
-      // Use the fetch-users edge function to get user data with service role access
-      const { data: usersData, error: usersError } = await supabase.functions.invoke('fetch-users', {
-        method: 'GET'
-      });
-      
-      if (usersError) {
-        console.error('Error fetching users from edge function:', usersError);
-        throw new Error('Failed to fetch user data');
-      }
-
-      console.log('Users data from edge function:', usersData);
-      
-      // Find the user by email
-      const user = usersData?.users?.find((u: any) => u.email === userEmail);
-      if (!user) {
-        console.log('User not found with email:', userEmail);
-        return [];
-      }
-
-      console.log('Found user with ID:', user.id);
-
-      // Now fetch speeches using the correct user ID with detailed debugging
-      console.log('About to query speeches table with user_id:', user.id);
-      console.log('Query details: SELECT * FROM speeches WHERE user_id = ?', user.id);
-      
-      const { data: speeches, error: speechesError, count } = await supabase
-        .from('speeches')
-        .select('*', { count: 'exact' })
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      console.log('Speech query result:');
-      console.log('- Error:', speechesError);
-      console.log('- Data:', speeches);
-      console.log('- Count:', count);
-      console.log('- Data length:', speeches?.length || 0);
-
-      if (speechesError) {
-        console.error('Error fetching speeches:', speechesError);
-        console.error('Speech error details:', JSON.stringify(speechesError, null, 2));
-        throw new Error('Failed to fetch user speeches');
-      }
-
-      console.log('Found speeches:', speeches?.length || 0);
-      
-      // Let's also try a raw query to see if there are any speeches at all
-      const { data: allSpeeches, error: allSpeechesError } = await supabase
-        .from('speeches')
-        .select('user_id, title, id')
-        .limit(5);
-      
-      console.log('Sample of all speeches in database:');
-      console.log('- Error:', allSpeechesError);
-      console.log('- Sample data:', allSpeeches);
-      
-      return speeches || [];
-    } catch (error) {
-      console.error('Exception in fetchUserSpeeches:', error);
-      throw error;
-    }
-  },
-
-  // Fetch speeches by user ID directly (if we already have the UUID)
+  // Simple direct fetch of speeches by user ID
   fetchSpeechesByUserId: async (userId: string): Promise<Speech[]> => {
     try {
       console.log('Fetching speeches for user ID:', userId);
       
-      const { data: speeches, error: speechesError } = await supabase
+      const { data: speeches, error } = await supabase
         .from('speeches')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      if (speechesError) {
-        console.error('Error fetching speeches:', speechesError);
-        throw new Error('Failed to fetch user speeches');
+      if (error) {
+        console.error('Error fetching speeches:', error);
+        return [];
       }
 
-      console.log('Found speeches:', speeches?.length || 0);
+      console.log('Successfully fetched speeches:', speeches?.length || 0);
       return speeches || [];
     } catch (error) {
       console.error('Exception in fetchSpeechesByUserId:', error);
-      throw error;
+      return [];
     }
   }
 };

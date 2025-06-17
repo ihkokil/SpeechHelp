@@ -9,7 +9,6 @@ import { format } from 'date-fns';
 import { User } from '../types';
 import { adminSpeechService } from '@/services/adminSpeechService';
 import { Speech } from '@/types/speech';
-import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface UserSpeechesProps {
   user: User;
@@ -19,26 +18,15 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
   const [speeches, setSpeeches] = useState<Speech[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSpeech, setSelectedSpeech] = useState<Speech | null>(null);
-  const { translate } = useTranslatedContent();
 
   useEffect(() => {
     const loadUserSpeeches = async () => {
-      console.log('Loading speeches for user:', user.id, user.email);
+      console.log('Loading speeches for user ID:', user.id);
       setIsLoading(true);
+      
       try {
-        let userSpeeches: Speech[] = [];
-        
-        // Try fetching by email first (more reliable for admin)
-        if (user.email) {
-          userSpeeches = await adminSpeechService.fetchUserSpeeches(user.email);
-        }
-        
-        // If no speeches found and we have a user ID, try that too
-        if (userSpeeches.length === 0 && user.id) {
-          userSpeeches = await adminSpeechService.fetchSpeechesByUserId(user.id);
-        }
-        
-        console.log('Loaded speeches for user:', userSpeeches);
+        const userSpeeches = await adminSpeechService.fetchSpeechesByUserId(user.id);
+        console.log('Loaded speeches:', userSpeeches);
         setSpeeches(userSpeeches);
       } catch (error) {
         console.error('Error loading speeches:', error);
@@ -48,25 +36,25 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
       }
     };
 
-    loadUserSpeeches();
-  }, [user.id, user.email]);
+    if (user.id) {
+      loadUserSpeeches();
+    }
+  }, [user.id]);
 
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'PPP');
     } catch (e) {
       console.error('Error formatting date:', dateString, e);
-      return translate('admin.userDetails.invalidDate');
+      return 'Invalid date';
     }
   };
 
   const handleViewSpeech = (speech: Speech) => {
-    console.log('Viewing speech:', speech.id);
     setSelectedSpeech(speech);
   };
 
   const handleCloseSpeechView = () => {
-    console.log('Closing speech view');
     setSelectedSpeech(null);
   };
 
@@ -94,20 +82,20 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
   };
 
   const getSpeechTypeLabel = (speechType: string) => {
-    return translate(`admin.speechTypes.${speechType}`);
+    return speechType.charAt(0).toUpperCase() + speechType.slice(1);
   };
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{translate('admin.userDetails.speeches')}</CardTitle>
+          <CardTitle>Speeches</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
             <div className="text-center">
               <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-2 animate-spin" />
-              <p className="text-muted-foreground">{translate('admin.userDetails.loadingSpeeches')}</p>
+              <p className="text-muted-foreground">Loading speeches...</p>
             </div>
           </div>
         </CardContent>
@@ -120,10 +108,10 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>{translate('admin.userDetails.speechDetails')}</CardTitle>
+            <CardTitle>Speech Details</CardTitle>
             <Button variant="ghost" size="sm" onClick={handleCloseSpeechView}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              {translate('admin.userDetails.backToList')}
+              Back to List
             </Button>
           </div>
         </CardHeader>
@@ -137,13 +125,13 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
                 </Badge>
                 <span className="text-sm text-muted-foreground flex items-center">
                   <Calendar className="h-4 w-4 mr-1" />
-                  {translate('admin.userDetails.createdOn', { date: formatDate(selectedSpeech.created_at) })}
+                  Created on {formatDate(selectedSpeech.created_at)}
                 </span>
               </div>
             </div>
             
             <div className="border-t pt-4">
-              <h4 className="font-medium mb-2">{translate('admin.userDetails.content')}</h4>
+              <h4 className="font-medium mb-2">Content</h4>
               <ScrollArea className="h-64 w-full border rounded-md p-4">
                 <div className="whitespace-pre-wrap text-sm">
                   {selectedSpeech.content}
@@ -157,27 +145,24 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
   }
 
   const speechCount = speeches.length;
-  const isPlural = speechCount !== 1 ? 'es' : '';
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
-          {translate('admin.userDetails.speeches')}
+          Speeches
         </CardTitle>
         <div className="text-sm text-muted-foreground">
-          <div>{translate('admin.userDetails.speechesDescription', { 
-            count: speechCount.toString(), 
-            plural: isPlural 
-          })}</div>
+          <div>{speechCount} speech{speechCount !== 1 ? 'es' : ''} found</div>
         </div>
       </CardHeader>
       <CardContent>
         {speeches.length === 0 ? (
           <div className="text-center py-8">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-2">{translate('admin.userDetails.noSpeeches')}</p>
+            <p className="text-muted-foreground mb-2">No speeches found</p>
+            <p className="text-sm text-muted-foreground">This user hasn't created any speeches yet.</p>
           </div>
         ) : (
           <ScrollArea className="h-96">
@@ -213,7 +198,7 @@ export const UserSpeeches: React.FC<UserSpeechesProps> = ({ user }) => {
                           handleViewSpeech(speech);
                         }}
                         className="h-8 w-8 p-0"
-                        title={translate('admin.common.view')}
+                        title="View speech"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
