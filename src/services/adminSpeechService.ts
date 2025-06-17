@@ -3,24 +3,27 @@ import { supabase } from '@/integrations/supabase/client';
 import { Speech } from '@/types/speech';
 
 export const adminSpeechService = {
-  // Simple direct fetch of speeches by user ID
+  // Simple direct fetch of speeches by user ID using admin edge function
   fetchSpeechesByUserId: async (userId: string): Promise<Speech[]> => {
     try {
-      console.log('Fetching speeches for user ID:', userId);
+      console.log('Fetching speeches for user ID via admin function:', userId);
       
-      const { data: speeches, error } = await supabase
-        .from('speeches')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.functions.invoke('admin-speeches', {
+        body: { userId }
+      });
 
       if (error) {
-        console.error('Error fetching speeches:', error);
+        console.error('Error calling admin-speeches function:', error);
         return [];
       }
 
-      console.log('Successfully fetched speeches:', speeches?.length || 0);
-      return speeches || [];
+      if (!data.success) {
+        console.error('Admin-speeches function returned error:', data.error);
+        return [];
+      }
+
+      console.log('Successfully fetched speeches via admin function:', data.speeches?.length || 0);
+      return data.speeches || [];
     } catch (error) {
       console.error('Exception in fetchSpeechesByUserId:', error);
       return [];
