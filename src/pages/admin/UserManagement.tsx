@@ -1,12 +1,15 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
+import { useUserFilters } from '@/components/admin/users/management/hooks/useUserFilters';
 import { SearchToolbar } from '@/components/admin/users/management/SearchToolbar';
 import { UserTable } from '@/components/admin/users/management/UserTable';
 import { DeleteUserDialog } from '@/components/admin/users/management/DeleteUserDialog';
 import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawer';
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
 import UpdateSubscriptionDialog from '@/components/admin/users/management/components/UpdateSubscriptionDialog';
+import UserFilters from '@/components/admin/users/management/components/UserFilters';
 import { useSimpleAdminToggle } from '@/components/admin/users/management/hooks/user-actions/useSimpleAdminToggle';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/components/admin/users/types';
@@ -45,6 +48,18 @@ const UserManagement = () => {
     addUser,
     handleUpdateSubscription,
   } = useUserManagement();
+  
+  // Add user filters
+  const {
+    selectedStatus,
+    selectedRole,
+    selectedPlan,
+    filteredUsers: filteredByFilters,
+    setSelectedStatus,
+    setSelectedRole,
+    setSelectedPlan,
+    clearFilters,
+  } = useUserFilters(filteredUsers);
   
   // New state for subscription dialog
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
@@ -149,8 +164,18 @@ const UserManagement = () => {
             setIsAddUserDialogOpen={setIsAddUserDialogOpen}
           />
           
+          <UserFilters
+            selectedStatus={selectedStatus}
+            selectedRole={selectedRole}
+            selectedPlan={selectedPlan}
+            onStatusChange={setSelectedStatus}
+            onRoleChange={setSelectedRole}
+            onPlanChange={setSelectedPlan}
+            onClearFilters={clearFilters}
+          />
+          
           <UserTable 
-            users={filteredUsers}
+            users={filteredByFilters}
             isLoading={isLoading}
             selectedUsers={selectedUsers}
             toggleUserSelection={toggleUserSelection}
