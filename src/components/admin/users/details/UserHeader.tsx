@@ -4,37 +4,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { User } from '../types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { formatUserDisplayName } from '../management/utils/userDisplayUtils';
+import { formatUserDisplayName, getUserInitials } from '../management/utils/userDisplayUtils';
 
 interface UserHeaderProps {
   user: User;
 }
 
 export const UserHeader: React.FC<UserHeaderProps> = ({ user }) => {
-  const getUserInitials = (user: User) => {
-    if (user.user_metadata?.full_name) {
-      return user.user_metadata.full_name
-        .split(' ')
-        .map(n => n[0])
-        .join('')
-        .toUpperCase();
-    }
-    
-    if (user.user_metadata?.name) {
-      return user.user_metadata.name.charAt(0).toUpperCase();
-    }
-
-    if (user.user_metadata?.first_name && user.user_metadata?.last_name) {
-      return (user.user_metadata.first_name.charAt(0) + user.user_metadata.last_name.charAt(0)).toUpperCase();
-    }
-    
-    if (user.email) {
-      return user.email.charAt(0).toUpperCase();
-    }
-    
-    return 'U';
-  };
-
+  const defaultAvatarUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//user-account.svg";
+  
   const getEmailHash = (email: string) => {
     // This is not a real MD5 hash, just for demo purposes
     return btoa(email).replace(/[/+=]/g, '');
@@ -43,7 +21,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ user }) => {
   return (
     <div className="flex items-center space-x-4">
       <Avatar className="h-16 w-16">
-        <AvatarImage src={`https://gravatar.com/avatar/${getEmailHash(user.email)}?d=mp`} />
+        <AvatarImage src={user.avatar_url || defaultAvatarUrl} />
         <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
       </Avatar>
       <div>

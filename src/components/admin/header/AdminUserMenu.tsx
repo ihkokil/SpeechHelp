@@ -17,6 +17,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 const AdminUserMenu = () => {
   const { adminUser, signOut } = useAdminAuth();
   const navigate = useNavigate();
+  
+  const defaultAvatarUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//user-account.svg";
 
   const handleSignOut = async () => {
     await signOut();
@@ -29,7 +31,7 @@ const AdminUserMenu = () => {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar>
             <AvatarImage 
-              src={adminUser?.email ? `https://gravatar.com/avatar/${btoa(adminUser.email)}?d=mp` : undefined} 
+              src={defaultAvatarUrl} 
               alt={adminUser?.username || 'Admin'} 
             />
             <AvatarFallback>{adminUser?.username?.charAt(0).toUpperCase() || 'A'}</AvatarFallback>

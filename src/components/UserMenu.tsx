@@ -19,8 +19,10 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const UserMenu = () => {
-  const { user, signOut, isLoading } = useAuth();
+  const { user, profile, signOut, isLoading } = useAuth();
   const navigate = useNavigate();
+  
+  const defaultAvatarUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//user-account.svg";
 
   const handleSignOut = async () => {
     console.log('UserMenu: Handling sign out');
@@ -75,24 +77,39 @@ const UserMenu = () => {
     return '';
   };
 
-  // Get user's name from metadata - always prioritize first + last name construction
-  const metadata = user.user_metadata || {};
-  const firstName = safeString(metadata.first_name);
-  const lastName = safeString(metadata.last_name);
+  // Get user's name - prioritize profile data over auth metadata
+  const firstName = profile?.first_name || safeString(user.user_metadata?.first_name);
+  const lastName = profile?.last_name || safeString(user.user_metadata?.last_name);
   
   // Construct full name from components
   const fullName = constructFullName(firstName, lastName);
   
-  // Display name preference: constructed full name > email username
+  // Display name preference: first name > email username
   const emailUsername = user.email?.split('@')[0] || '';
   const displayName = firstName || emailUsername;
   const displayFullName = fullName || displayName;
+
+  // Get avatar URL
+  const avatarUrl = profile?.avatar_url || defaultAvatarUrl;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-gray-100">
-          <UserCircle className="h-8 w-8 text-pink-600" />
+          <div className="h-8 w-8 rounded-full overflow-hidden">
+            <img 
+              src={avatarUrl} 
+              alt="User avatar" 
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                // Fallback to default if image fails to load
+                const target = e.target as HTMLImageElement;
+                if (target.src !== defaultAvatarUrl) {
+                  target.src = defaultAvatarUrl;
+                }
+              }}
+            />
+          </div>
           <span className="text-sm font-medium hidden md:block">
             {displayName}
           </span>

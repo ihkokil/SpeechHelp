@@ -14,6 +14,12 @@ export const UserProfile = () => {
     ? `${profile.first_name} ${profile.last_name}`
     : displayName;
 
+  // Default avatar URL
+  const defaultAvatarUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//user-account.svg";
+  
+  // Get avatar URL from profile or use default
+  const avatarUrl = profile?.avatar_url || defaultAvatarUrl;
+
   // Add debug logging for the current user's profile data
   if (user) {
     console.log('👤 Current user profile data:', {
@@ -21,15 +27,27 @@ export const UserProfile = () => {
       email: user.email,
       profile: profile,
       displayName,
-      fullName
+      fullName,
+      avatarUrl
     });
   }
 
   return (
     <div className="px-6 py-4 border-b border-gray-100">
       <div className="flex items-center">
-        <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-medium">
-          {user?.email ? user.email[0].toUpperCase() : '?'}
+        <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center">
+          <img 
+            src={avatarUrl} 
+            alt="User avatar" 
+            className="h-full w-full object-cover"
+            onError={(e) => {
+              // Fallback to default if image fails to load
+              const target = e.target as HTMLImageElement;
+              if (target.src !== defaultAvatarUrl) {
+                target.src = defaultAvatarUrl;
+              }
+            }}
+          />
         </div>
         <div className="ml-3">
           <p className="text-sm font-medium text-gray-900 truncate">{fullName}</p>
