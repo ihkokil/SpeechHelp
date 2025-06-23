@@ -4,10 +4,12 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Speech } from '@/types/speech';
 import { useToast } from '@/hooks/use-toast';
+import { profileService, UserProfile } from '@/services/profileService';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  profile: UserProfile | null;
   isLoading: boolean;
   speeches: Speech[];
   signOut: () => Promise<void>;
@@ -33,6 +35,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [speeches, setSpeeches] = useState<Speech[]>([]);
   const { toast } = useToast();
@@ -69,6 +72,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const userProfile = await profileService.getCurrentUserProfile();
+      setProfile(userProfile);
+      
+      // If no profile exists, sync from auth metadata
+      if (!userProfile && user) {
+        console.log('No profile found, syncing from auth metadata');
+        await profileService.syncAuthToProfile(user);
+        const newProfile = await profileService.getCurrentUserProfile();
+        setProfile(newProfile);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
   const refreshUser = async () => {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
@@ -86,6 +106,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       setSession(session);
+      
+      if (user) {
+        await fetchUserProfile(user.id);
+      }
+      
       console.log('User refreshed successfully:', user?.id);
     } catch (error) {
       console.error('Error in refreshUser:', error);
@@ -231,6 +256,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Successfully signed out');
         setUser(null);
         setSession(null);
+        setProfile(null);
         setSpeeches([]);
         toast({
           title: "Signed out",
@@ -255,6 +281,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log('Initial session:', session?.user?.id || 'No user');
           setSession(session);
           setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            setTimeout(() => {
+              fetchUserProfile(session.user.id);
+            }, 0);
+          }
         }
       } catch (error) {
         console.error('Error in getInitialSession:', error);
@@ -276,10 +308,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           if (session?.user) {
             setTimeout(() => {
+              fetchUserProfile(session.user.id);
               fetchSpeeches();
             }, 0);
           }
         } else if (event === 'SIGNED_OUT') {
+          setProfile(null);
           setSpeeches([]);
         }
       }
@@ -302,6 +336,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     user,
     session,
+    profile,
     isLoading,
     speeches,
     signOut,

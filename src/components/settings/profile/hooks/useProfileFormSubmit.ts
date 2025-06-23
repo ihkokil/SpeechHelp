@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ProfileFormValues } from '../types';
 import { supabase } from '@/integrations/supabase/client';
+import { profileService } from '@/services/profileService';
 
 export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
   const { user } = useAuth();
@@ -58,27 +59,24 @@ export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
         });
       }
       
-      // Update user metadata
-      const metadata = {
+      // Update user profile in profiles table (single source of truth)
+      const profileUpdates = {
         first_name: data.firstName,
         last_name: data.lastName,
         phone: data.phone,
         country_code: data.countryCode,
+        username: `${data.firstName} ${data.lastName}`.trim() || data.firstName || user.email?.split('@')[0] || 'User'
       };
       
-      console.log('Updating user metadata:', metadata);
+      console.log('Updating user profile:', profileUpdates);
       
-      // Update the user's metadata in Supabase
-      const { data: userData, error } = await supabase.auth.updateUser({
-        data: metadata
-      });
+      const result = await profileService.updateUserProfile(user.id, profileUpdates);
       
-      if (error) {
-        console.error('Error updating profile:', error);
-        throw error;
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update profile');
       }
       
-      console.log('Profile update response:', userData);
+      console.log('Profile updated successfully');
       
       // Refresh the user data in AuthContext
       if (refreshUserData) {

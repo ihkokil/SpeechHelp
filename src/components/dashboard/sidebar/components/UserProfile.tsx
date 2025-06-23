@@ -1,24 +1,26 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { profileService } from '@/services/profileService';
 
 export const UserProfile = () => {
-  const { user } = useAuth();
-  const metadata = user?.user_metadata || {};
-  const firstName = metadata.first_name;
-  const lastName = metadata.last_name;
-  const emailUsername = user?.email?.split('@')[0] || '';
-  const displayName = firstName || emailUsername;
-  const fullName = firstName && lastName ? `${firstName} ${lastName}` : displayName;
+  const { user, profile } = useAuth();
+  
+  // Use profile service to get consistent display name
+  const displayName = profileService.getDisplayName(profile, user || undefined);
+  
+  // Use profile first, fallback to user metadata
+  const fullName = profile?.first_name && profile?.last_name 
+    ? `${profile.first_name} ${profile.last_name}`
+    : displayName;
 
-  // Add debug logging for the current user's data
+  // Add debug logging for the current user's profile data
   if (user) {
     console.log('👤 Current user profile data:', {
       userId: user.id,
       email: user.email,
-      metadata: user.user_metadata,
-      firstName,
-      lastName,
+      profile: profile,
+      displayName,
       fullName
     });
   }

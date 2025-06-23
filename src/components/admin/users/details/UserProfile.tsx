@@ -18,66 +18,66 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle>Profile Information</CardTitle>
-        <CardDescription>
-          Personal details and account information
-        </CardDescription>
+        <CardTitle className="flex items-center justify-between">
+          <span>Profile Information</span>
+          <Badge variant={user.is_active ? "default" : "secondary"}>
+            {user.is_active ? "Active" : "Inactive"}
+          </Badge>
+        </CardTitle>
+        <CardDescription>User account details and contact information</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-1">
-          <h3 className="text-sm font-medium text-muted-foreground">Account Status</h3>
-          <div>
-            <Badge className={user.is_active !== false ? 'bg-green-500' : ''}>
-              {user.is_active !== false ? 'Active' : 'Inactive'}
-            </Badge>
-            {user.is_admin && (
-              <Badge variant="outline" className="ml-2 bg-purple-100 text-purple-800 border-purple-300">
-                Admin
-              </Badge>
-            )}
-          </div>
-        </div>
-
+      <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <h3 className="text-sm font-medium text-muted-foreground">Full Name</h3>
-            <p className="font-medium">{formatUserDisplayName(user)}</p>
-          </div>
-          
-          <div className="space-y-1">
-            <h3 className="text-sm font-medium text-muted-foreground">Email</h3>
-            <p className="flex items-center">
-              <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-              {user.email || user.user_metadata?.email || 'Not provided'}
-            </p>
-          </div>
-          
-          <div className="space-y-1">
-            <h3 className="text-sm font-medium text-muted-foreground">Phone</h3>
-            <p className="flex items-center">
-              <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-              {userPhone !== '—' && <span className="mr-1">{countryFlag}</span>}
-              {userPhone}
-            </p>
-          </div>
-        </div>
-
-        <div className="pt-2 border-t border-border space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium text-muted-foreground">Account Created</h3>
-              <p className="flex items-center">
-                <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                {user.created_at ? format(new Date(user.created_at), 'PPP') : 'Unknown'}
-              </p>
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-medium text-gray-500 mb-1">Full Name</h4>
+              <p className="text-sm">{formatUserDisplayName(user)}</p>
             </div>
             
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium text-muted-foreground">Last Sign In</h3>
-              <p className="flex items-center">
-                <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                {user.last_sign_in_at ? format(new Date(user.last_sign_in_at), 'PPP p') : 'Never'}
-              </p>
+            <div className="flex items-center space-x-2">
+              <Mail className="h-4 w-4 text-gray-400" />
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Email</h4>
+                <p className="text-sm">{user.email}</p>
+              </div>
+            </div>
+            
+            {userPhone && (
+              <div className="flex items-center space-x-2">
+                <Phone className="h-4 w-4 text-gray-400" />
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Phone</h4>
+                  <p className="text-sm">
+                    {countryFlag} {userPhone}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-4 w-4 text-gray-400" />
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Joined</h4>
+                <p className="text-sm">
+                  {format(new Date(user.created_at), 'PPP')}
+                </p>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-medium text-gray-500 mb-1">Role</h4>
+              <Badge variant={user.is_admin ? "destructive" : "outline"}>
+                {user.is_admin ? "Admin" : "User"}
+              </Badge>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-medium text-gray-500 mb-1">Subscription</h4>
+              <Badge variant="outline">
+                {user.subscription_plan || 'Free Trial'}
+              </Badge>
             </div>
           </div>
         </div>

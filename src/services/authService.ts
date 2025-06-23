@@ -256,6 +256,13 @@ export const signUp = async (
 		// If user was created successfully, send confirmation email
 		if (res.data.user && !res.error) {
 			console.log('SignUp: User created successfully, sending confirmation email...');
+			
+			// Show immediate success message
+			showToast({
+				title: "Account created successfully",
+				description: "Please check your email to confirm your account and complete the setup.",
+			});
+
 			try {
 				// Call the send-confirmation edge function
 				const { data: emailData, error: emailError } = await supabase.functions.invoke('send-confirmation', {
@@ -269,27 +276,15 @@ export const signUp = async (
 
 				if (emailError) {
 					console.error('Error sending confirmation email:', emailError);
-					// Don't throw here, just log the error as signup was successful
-					showToast({
-						title: "Account created",
-						description: "Your account was created but we couldn't send the confirmation email. Please contact support.",
-						variant: "destructive"
-					});
+					// Don't show error to user since account was created successfully
+					// Just log for debugging
 				} else {
 					console.log('Confirmation email sent successfully:', emailData);
-					showToast({
-						title: "Account created successfully",
-						description: "Please check your email to confirm your account and complete the setup.",
-					});
 				}
 			} catch (emailErr) {
 				console.error('Exception sending confirmation email:', emailErr);
-				// Don't throw here, just log the error as signup was successful
-				showToast({
-					title: "Account created",
-					description: "Your account was created but we couldn't send the confirmation email. Please contact support.",
-					variant: "destructive"
-				});
+				// Don't show error to user since account was created successfully
+				// Just log for debugging
 			}
 		}
 	} catch (error: any) {

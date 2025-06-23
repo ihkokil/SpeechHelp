@@ -1,126 +1,98 @@
 
 import { User } from '../../types';
-import { format, formatDistanceToNow } from 'date-fns';
-import { formatPhoneWithCountryCode, getCountryByCode, extractCountryCodeFromUser, getPhoneFromDatabase } from '@/utils/phoneUtils';
 
-export const formatDate = (dateString: string | null) => {
-  if (!dateString) return 'Never';
-  try {
-    return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
-  } catch (error) {
-    return 'Invalid date';
-  }
-};
-
-export const formatDateRelative = (dateString: string | null) => {
-  if (!dateString) return 'Never';
-  try {
-    return formatDistanceToNow(new Date(dateString), { addSuffix: true });
-  } catch (error) {
-    return 'Invalid date';
-  }
-};
-
-// New function for detailed date-time formatting
-export const formatDateTimeDetailed = (dateString: string | null) => {
-  if (!dateString) return 'Never';
-  try {
-    return format(new Date(dateString), 'MMM dd, yyyy • HH:mm');
-  } catch (error) {
-    return 'Invalid date';
-  }
-};
-
-// Helper function to safely extract string values
-const safeString = (value: any): string => {
-  if (typeof value === 'string') return value.trim();
-  if (value === null || value === undefined) return '';
-  return String(value).trim();
-};
-
-// Helper function to construct full name from first and last name
-const constructFullName = (firstName: string, lastName: string): string => {
-  const first = safeString(firstName);
-  const last = safeString(lastName);
-  if (first && last) {
-    return `${first} ${last}`;
-  }
-  if (first) return first;
-  if (last) return last;
-  return '';
-};
-
-export const getUserName = (user: User) => {
-  // Always prioritize first_name and last_name from the user object (profile data)
-  const firstName = safeString(user.first_name);
-  const lastName = safeString(user.last_name);
-  
-  // Try to construct from profile first_name and last_name
-  let fullName = constructFullName(firstName, lastName);
-  
-  // If no profile data, try user_metadata
-  if (!fullName) {
-    const metaFirstName = safeString(user.user_metadata?.first_name);
-    const metaLastName = safeString(user.user_metadata?.last_name);
-    fullName = constructFullName(metaFirstName, metaLastName);
+/**
+ * Format user display name prioritizing profiles table data
+ */
+export const formatUserDisplayName = (user: User): string => {
+  // Prioritize first_name and last_name from profiles table
+  if (user.first_name && user.last_name) {
+    return `${user.first_name} ${user.last_name}`;
   }
   
-  // If still no name, fallback to user_metadata full_name or name
-  if (!fullName && user.user_metadata?.full_name) {
-    fullName = safeString(user.user_metadata.full_name);
+  if (user.first_name) {
+    return user.first_name;
   }
   
-  if (!fullName && user.user_metadata?.name) {
-    fullName = safeString(user.user_metadata.name);
+  if (user.username) {
+    return user.username;
   }
   
-  // Final fallback to email
-  if (!fullName && user.email) {
-    return user.email.split('@')[0];
+  // Fallback to email username
+  return user.email?.split('@')[0] || 'Unknown User';
+};
+
+/**
+ * Get user phone with proper formatting
+ */
+export const getUserPhone = (user: User): string | null => {
+  return user.phone || null;
+};
+
+/**
+ * Get country flag emoji based on country code
+ */
+export const getCountryFlag = (user: User): string => {
+  const countryCode = user.country_code || 'US';
+  
+  const flagMap: Record<string, string> = {
+    'US': '🇺🇸',
+    'CA': '🇨🇦',
+    'GB': '🇬🇧',
+    'AU': '🇦🇺',
+    'DE': '🇩🇪',
+    'FR': '🇫🇷',
+    'ES': '🇪🇸',
+    'IT': '🇮🇹',
+    'JP': '🇯🇵',
+    'KR': '🇰🇷',
+    'CN': '🇨🇳',
+    'IN': '🇮🇳',
+    'BR': '🇧🇷',
+    'MX': '🇲🇽',
+    'NL': '🇳🇱',
+    'SE': '🇸🇪',
+    'NO': '🇳🇴',
+    'DK': '🇩🇰',
+    'FI': '🇫🇮',
+  };
+  
+  return flagMap[countryCode] || '🌍';
+};
+
+/**
+ * Get user initials for avatar
+ */
+export const getUserInitials = (user: User): string => {
+  if (user.first_name && user.last_name) {
+    return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
   }
   
-  return fullName || 'Unknown User';
-};
-
-export const formatUserDisplayName = (user: User) => {
-  return getUserName(user);
-};
-
-// Enhanced function to get user phone from database fields
-export const getUserPhone = (user: User) => {
-  console.log('📋 Getting phone for user in details/profile:', {
-    userId: user.id,
-    email: user.email,
-    profilePhone: user.phone,
-    metadataPhone: user.user_metadata?.phone
-  });
-  
-  // Get phone directly from database fields
-  const phone = getPhoneFromDatabase(user);
-  if (!phone) {
-    console.log('📋 No phone found in database for user:', user.email);
-    return '—';
+  if (user.first_name) {
+    return user.first_name[0].toUpperCase();
   }
   
-  // Use the enhanced phone formatting function with database-sourced data
-  return formatPhoneWithCountryCode(phone, user);
-};
-
-export const getCountryFlagUrl = (countryCode: string | undefined) => {
-  if (!countryCode) return '';
+  if (user.email) {
+    return user.email[0].toUpperCase();
+  }
   
-  if (countryCode === 'England') return 'https://flagcdn.com/w20/gb.png';
+  return 'U';
+};
+
+/**
+ * Format subscription status with proper styling
+ */
+export const formatSubscriptionStatus = (user: User): { text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } => {
+  const plan = user.subscription_plan || 'free_trial';
   
-  return `https://flagcdn.com/w20/${countryCode.toLowerCase()}.png`;
-};
-
-export const getCountryCode = (user: User) => {
-  return extractCountryCodeFromUser(user);
-};
-
-// Function to get country flag emoji
-export const getCountryFlag = (user: User) => {
-  const countryCode = extractCountryCodeFromUser(user);
-  const country = getCountryByCode(countryCode);
-  return country?.flag || '🌍';
+  switch (plan.toLowerCase()) {
+    case 'premium':
+      return { text: 'Premium', variant: 'default' };
+    case 'pro':
+      return { text: 'Pro', variant: 'default' };
+    case 'free_trial':
+      return { text: 'Free Trial', variant: 'outline' };
+    default:
+      return { text: plan, variant: 'secondary' };
+  }
 };
