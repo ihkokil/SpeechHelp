@@ -41,6 +41,7 @@ export interface User {
   username?: string;
   phone?: string;
   country_code?: string;
+  avatar_url?: string;
   // Stripe related fields
   stripe_customer_id?: string;
   stripe_subscription_id?: string;
