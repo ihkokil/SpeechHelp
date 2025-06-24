@@ -26,15 +26,16 @@ export const formatUserDisplayName = (user: User): string => {
  * Get user phone with proper formatting including country code
  */
 export const getUserPhone = (user: User): string => {
+  // Get phone directly from user object (already fetched from database)
   const phone = user.phone;
-  const countryCode = user.country_code;
+  const countryCode = user.country_code || 'US';
   
-  if (!phone) {
+  if (!phone || phone.trim() === '') {
     return '—';
   }
   
   // Get the dial code based on country code
-  const dialCode = getDialCodeFromCountryCode(countryCode || 'US');
+  const dialCode = getDialCodeFromCountryCode(countryCode);
   
   // Format the phone number
   const cleanPhone = phone.replace(/\D/g, ''); // Remove non-digits

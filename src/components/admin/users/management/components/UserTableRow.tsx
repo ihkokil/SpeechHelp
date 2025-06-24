@@ -87,10 +87,21 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
     }
   };
 
+  // Debug phone data and get formatted phone
+  console.log('🔍 UserTableRow phone debug for user:', {
+    userId: user.id,
+    email: user.email,
+    phone: user.phone,
+    country_code: user.country_code,
+    user_metadata_phone: user.user_metadata?.phone
+  });
+
   // Get user phone and country flag
   const userPhone = getUserPhone(user);
   const countryFlag = getCountryFlag(user);
   const subscriptionPlan = formatSubscriptionPlan(user.subscription_plan);
+
+  console.log('📞 Formatted phone result:', userPhone);
 
   return (
     <TableRow 
