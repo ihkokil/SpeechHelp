@@ -10,6 +10,7 @@ import { useSpeechReset } from '../hooks/useSpeechReset';
 import { useSpeechDownload } from '../hooks/useSpeechDownload';
 import { createPlaceholderSpeech } from '../utils/speechContentUtils';
 import { useToast } from "@/hooks/use-toast";
+import { useSpeechWorkPreservation } from '@/hooks/useSpeechWorkPreservation';
 
 interface Step4Props {
 	prevStep: () => void;
@@ -50,6 +51,21 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 		title,
 		content,
 		speechType
+	});
+
+	// Initialize work preservation
+	const { 
+		autoSaveToLocalStorage, 
+		clearSavedWork,
+		updateLastSaveTime 
+	} = useSpeechWorkPreservation({
+		speechData: {
+			title,
+			content,
+			speechType,
+			speechDetails
+		},
+		hasUnsavedChanges: !isAutoSaved && Boolean(content)
 	});
 
 	useEffect(() => {
@@ -101,6 +117,14 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setTitle(e.target.value);
 		onTitleChange(e.target.value);
+		
+		// Auto-save on title change
+		autoSaveToLocalStorage();
+		
+		// Mark as having unsaved changes
+		if (isAutoSaved) {
+			setIsAutoSaved(false);
+		}
 	};
 
 	const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -109,6 +133,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 		
 		// Auto-backup content as user edits
 		localStorage.setItem('speechBackup', newContent);
+		autoSaveToLocalStorage();
 		
 		// If content changes from the auto-saved version, mark as needing save
 		if (isAutoSaved) {
@@ -121,10 +146,12 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 		await handleSave();
 		if (!isSaving) {
 			setIsAutoSaved(true);
+			updateLastSaveTime();
 			// Clear recovery data after successful manual save
 			localStorage.removeItem('generatedSpeech');
 			localStorage.removeItem('speechBackup');
 			localStorage.removeItem('tempGeneratedSpeech');
+			clearSavedWork();
 		}
 	};
 
@@ -145,7 +172,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 					<div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
 						<AlertCircle className="h-4 w-4 text-yellow-600" />
 						<span className="text-sm text-yellow-700">
-							You have unsaved changes. Remember to save your edits.
+							You have unsaved changes. Your work is being auto-saved, but remember to save manually.
 						</span>
 					</div>
 				)}

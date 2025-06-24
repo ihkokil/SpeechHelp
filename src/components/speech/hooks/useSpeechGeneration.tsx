@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generateSpeechFromDetails } from '../utils/speechGenerator';
 import { SpeechDetails } from './useSpeechLabState';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSpeechWorkPreservation } from '@/hooks/useSpeechWorkPreservation';
 
 interface UseSpeechGenerationProps {
 	speechTitle: string;
@@ -24,18 +26,47 @@ export const useSpeechGeneration = ({
 	const [generatedSpeech, setGeneratedSpeech] = useState('');
 	const [error, setError] = useState<string | null>(null);
 
+	// Initialize work preservation
+	const { 
+		autoSaveToLocalStorage, 
+		clearSavedWork,
+		recoverWorkFromLocalStorage 
+	} = useSpeechWorkPreservation({
+		speechData: {
+			title: speechTitle,
+			content: generatedSpeech,
+			speechType,
+			speechDetails
+		},
+		isGenerating: generating,
+		hasUnsavedChanges: Boolean(generatedSpeech && !showConfetti)
+	});
+
+	// Recovery on component mount
+	useEffect(() => {
+		const recoveredWork = recoverWorkFromLocalStorage();
+		if (recoveredWork && recoveredWork.content && !generatedSpeech) {
+			setGeneratedSpeech(recoveredWork.content);
+			toast({
+				title: "Work Recovered",
+				description: "We recovered your previous speech generation session.",
+			});
+		}
+	}, [recoverWorkFromLocalStorage, generatedSpeech, toast]);
+
 	useEffect(() => {
 		let timer: NodeJS.Timeout;
 		if (showConfetti) {
 			timer = setTimeout(() => {
 				setShowConfetti(false);
+				clearSavedWork(); // Clear saved work after successful completion
 				onSuccess();
 			}, 5000); // Show confetti for 5 seconds before moving to next step
 		}
 		return () => {
 			if (timer) clearTimeout(timer);
 		};
-	}, [showConfetti, onSuccess]);
+	}, [showConfetti, onSuccess, clearSavedWork]);
 
 	const validateTitle = () => {
 		if (!speechTitle.trim()) {
@@ -66,6 +97,9 @@ export const useSpeechGeneration = ({
 		setGenerating(true);
 		setError(null);
 
+		// Immediately save work state before starting generation
+		autoSaveToLocalStorage();
+
 		try {
 			// Generate the speech with OpenAI integration
 			const speech = await generateSpeechFromDetails(speechTitle, speechDetails, speechType);
@@ -73,6 +107,9 @@ export const useSpeechGeneration = ({
 
 			// Save the generated speech to localStorage (for backup/recovery)
 			localStorage.setItem('generatedSpeech', speech);
+
+			// Auto-save the current state
+			autoSaveToLocalStorage();
 
 			// Automatically save the speech to the database
 			try {
@@ -114,6 +151,7 @@ export const useSpeechGeneration = ({
 				description: error instanceof Error ? error.message : "Failed to generate speech. Please try again.",
 				variant: "destructive",
 			});
+		} finally {
 			setGenerating(false);
 		}
 	};

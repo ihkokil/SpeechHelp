@@ -8,6 +8,7 @@ import Step3GenerateSpeech from './steps/Step3GenerateSpeech';
 import Step4EditSpeech from './steps/Step4EditSpeech';
 import { useSpeechLabState } from './hooks/useSpeechLabState';
 import { speechTypesData } from './data/speechTypesData';
+import { useSpeechWorkPreservation } from '@/hooks/useSpeechWorkPreservation';
 
 const SpeechLabContent: React.FC = () => {
   const {
@@ -22,6 +23,25 @@ const SpeechLabContent: React.FC = () => {
     handleSpeechTitleChange,
     handleSpeechDetailsChange
   } = useSpeechLabState();
+
+  // Initialize work preservation for the entire Speech Lab session
+  const { autoSaveToLocalStorage } = useSpeechWorkPreservation({
+    speechData: {
+      title: speechTitle,
+      content: '',
+      speechType: selectedSpeechType,
+      speechDetails,
+      currentStep
+    },
+    hasUnsavedChanges: Boolean(speechTitle || selectedSpeechType || Object.keys(speechDetails).length > 0)
+  });
+
+  // Auto-save when important state changes
+  React.useEffect(() => {
+    if (speechTitle || selectedSpeechType || Object.keys(speechDetails).length > 0) {
+      autoSaveToLocalStorage();
+    }
+  }, [speechTitle, selectedSpeechType, speechDetails, currentStep, autoSaveToLocalStorage]);
 
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8">
