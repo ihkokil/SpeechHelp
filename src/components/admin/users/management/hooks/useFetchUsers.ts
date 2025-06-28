@@ -63,7 +63,22 @@ export const useFetchUsers = () => {
         
         // Get the profile data from our enhanced structure
         const profile = authUser.profile || {};
-        console.log('Profile data:', profile);
+        console.log('Profile data for user', authUser.id, ':', profile);
+        
+        // Debug phone number extraction
+        const profilePhone = profile.phone || authUser.phone || '';
+        const metadataPhone = authUser.raw_user_meta_data?.phone || '';
+        const profileCountryCode = profile.country_code || authUser.country_code || '';
+        const metadataCountryCode = authUser.raw_user_meta_data?.country_code || '';
+        
+        console.log('📞 Phone debug for user', authUser.id, ':', {
+          profilePhone,
+          metadataPhone,
+          profileCountryCode,
+          metadataCountryCode,
+          finalPhone: profilePhone || metadataPhone,
+          finalCountryCode: profileCountryCode || metadataCountryCode || 'US'
+        });
         
         const user: User = {
           id: authUser.id,
@@ -81,8 +96,8 @@ export const useFetchUsers = () => {
             name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || authUser.email?.split('@')[0] || 'User',
             full_name: authUser.raw_user_meta_data?.full_name || authUser.raw_user_meta_data?.name || profile.username || '',
             email: authUser.email,
-            phone: authUser.raw_user_meta_data?.phone || profile.phone || authUser.phone || '',
-            country_code: authUser.raw_user_meta_data?.country_code || profile.country_code || '',
+            phone: profilePhone || metadataPhone,
+            country_code: profileCountryCode || metadataCountryCode || 'US',
             street_address: authUser.raw_user_meta_data?.street_address || '',
             city: authUser.raw_user_meta_data?.city || '',
             state: authUser.raw_user_meta_data?.state || '',
@@ -103,23 +118,21 @@ export const useFetchUsers = () => {
           subscription_end_date: authUser.subscription_end_date || null,
           subscription_price_id: authUser.subscription_price_id || null,
           subscription_currency: authUser.subscription_currency || 'usd',
-          // Add direct fields from profiles table for easier access
-          first_name: authUser.first_name || authUser.raw_user_meta_data?.first_name || '',
-          last_name: authUser.last_name || authUser.raw_user_meta_data?.last_name || '',
-          phone: authUser.phone || authUser.raw_user_meta_data?.phone || '',
-          country_code: authUser.country_code || authUser.raw_user_meta_data?.country_code || 'US',
+          // Add direct fields from profiles table for easier access - prioritize profiles table data
+          first_name: profile.first_name || authUser.first_name || authUser.raw_user_meta_data?.first_name || '',
+          last_name: profile.last_name || authUser.last_name || authUser.raw_user_meta_data?.last_name || '',
+          phone: profilePhone || metadataPhone,
+          country_code: profileCountryCode || metadataCountryCode || 'US',
           // Stripe related fields
           stripe_customer_id: authUser.stripe_customer_id || null,
           stripe_subscription_id: authUser.stripe_subscription_id || null,
         };
         
-        console.log('Final mapped user subscription fields:', {
+        console.log('Final mapped user phone fields for', authUser.id, ':', {
           id: user.id,
-          subscription_plan: user.subscription_plan,
-          subscription_period: user.subscription_period,
-          subscription_amount: user.subscription_amount,
-          subscription_status: user.subscription_status,
-          stripe_customer_id: user.stripe_customer_id
+          phone: user.phone,
+          country_code: user.country_code,
+          user_metadata_phone: user.user_metadata?.phone
         });
         
         return user;
@@ -149,7 +162,7 @@ export const useFetchUsers = () => {
       }
       
       console.log('Final mapped users count:', mappedUsers.length);
-      console.log('Sample user with subscription data:', mappedUsers.find(u => u.stripe_customer_id));
+      console.log('Sample user with phone data:', mappedUsers.find(u => u.phone && u.phone !== ''));
       setUsers(mappedUsers);
       return mappedUsers;
     } catch (err) {
