@@ -13,7 +13,15 @@ export function useTranslation() {
       return translations['en-US'][key];
     }
     
-    // Return the key itself if no translation is found
+    // If still not found, try to format the key in a user-friendly way
+    if (key.includes('.')) {
+      const parts = key.split('.');
+      const lastPart = parts[parts.length - 1];
+      // Convert camelCase to readable text
+      return lastPart.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+    }
+    
+    // Return the key itself as last resort
     return key;
   };
 
