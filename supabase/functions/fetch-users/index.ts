@@ -40,7 +40,7 @@ serve(async (req) => {
       throw new Error('Failed to fetch users from auth');
     }
     
-    // Get all profiles with complete subscription data
+    // Get all profiles with complete subscription data AND country_code
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select(`
@@ -54,7 +54,8 @@ serve(async (req) => {
         subscription_price_id,
         subscription_currency,
         stripe_customer_id,
-        stripe_subscription_id
+        stripe_subscription_id,
+        country_code
       `);
     
     if (profilesError) {
@@ -125,6 +126,9 @@ serve(async (req) => {
         subscription_currency: safeString(profile.subscription_currency) || 'usd',
         stripe_customer_id: safeString(profile.stripe_customer_id) || null,
         stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
+        // Include phone and country_code from profiles table
+        phone: safeString(profile.phone) || safeString(metadata.phone),
+        country_code: safeString(profile.country_code) || safeString(metadata.country_code) || 'US',
         // Enhanced user_metadata with proper fallbacks
         user_metadata: {
           first_name: firstName,
@@ -133,10 +137,12 @@ serve(async (req) => {
           name: fullName,
           email: safeString(authUser.email),
           phone: safeString(metadata.phone) || safeString(profile.phone),
+          country_code: safeString(metadata.country_code) || safeString(profile.country_code) || 'US',
         },
         profile: {
           username: safeString(profile.username) || fullName || authUser.email?.split('@')[0] || '',
           phone: safeString(profile.phone) || safeString(metadata.phone),
+          country_code: safeString(profile.country_code) || safeString(metadata.country_code) || 'US',
           is_active: profile.is_active !== false,
           is_admin: profile.is_admin || false,
           admin_role: safeString(profile.admin_role) || null,
