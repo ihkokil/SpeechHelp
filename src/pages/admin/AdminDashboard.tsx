@@ -10,6 +10,7 @@ import RecentActivity from '@/components/admin/dashboard/RecentActivity';
 import DashboardCharts from '@/components/admin/dashboard/DashboardCharts';
 import LoadingSpinner from '@/components/admin/layout/LoadingSpinner';
 import { RefreshCw, Download, Settings, Users } from 'lucide-react';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 export interface DashboardData {
   totalUsers: number;
@@ -36,6 +37,7 @@ export interface DashboardData {
 }
 
 const AdminDashboard = () => {
+  const { translate } = useTranslatedContent();
   const { adminUser } = useAdminAuth();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -132,8 +134,8 @@ const AdminDashboard = () => {
       
       if (showRefreshIndicator) {
         toast({
-          title: "Dashboard Updated",
-          description: "Latest data has been loaded successfully.",
+          title: translate('admin.dashboard.dataUpdated'),
+          description: translate('admin.dashboard.dataUpdatedDesc'),
         });
       }
     } catch (error) {
@@ -189,8 +191,8 @@ const AdminDashboard = () => {
     linkElement.click();
     
     toast({
-      title: "Data Exported",
-      description: "Dashboard data has been exported successfully.",
+      title: translate('admin.dashboard.dataExported'),
+      description: translate('admin.dashboard.dataExportedDesc'),
     });
   };
 
@@ -220,13 +222,13 @@ const AdminDashboard = () => {
       {/* Header */}
       <div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <h2 className="text-3xl font-bold tracking-tight">{translate('admin.dashboard.title')}</h2>
           <p className="text-muted-foreground">
-            Welcome back! Here's what's happening with your platform.
+            {translate('admin.dashboard.welcome')}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">Last update:</span>
+          <span className="text-sm font-medium">{translate('admin.dashboard.lastUpdate')}</span>
           <span className="text-sm text-gray-500">{lastUpdated.toLocaleString()}</span>
           <Button
             variant="outline"
@@ -236,7 +238,7 @@ const AdminDashboard = () => {
             className="ml-4"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
+            {translate('admin.dashboard.refresh')}
           </Button>
           <Button
             variant="outline"
@@ -244,7 +246,7 @@ const AdminDashboard = () => {
             onClick={handleExportData}
           >
             <Download className="h-4 w-4 mr-2" />
-            Export
+            {translate('admin.dashboard.export')}
           </Button>
         </div>
       </div>
@@ -266,27 +268,27 @@ const AdminDashboard = () => {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Settings className="h-5 w-5 mr-2" />
-            Quick Actions
+            {translate('admin.dashboard.quickActions')}
           </CardTitle>
-          <CardDescription>Common administrative tasks</CardDescription>
+          <CardDescription>{translate('admin.dashboard.commonTasks')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Button variant="outline" className="h-20 flex-col">
               <Users className="h-6 w-6 mb-2" />
-              User Management
+              {translate('admin.dashboard.userManagement')}
             </Button>
             <Button variant="outline" className="h-20 flex-col">
               <Settings className="h-6 w-6 mb-2" />
-              System Settings
+              {translate('admin.dashboard.systemSettings')}
             </Button>
             <Button variant="outline" className="h-20 flex-col">
               <Download className="h-6 w-6 mb-2" />
-              Export Reports
+              {translate('admin.dashboard.exportReports')}
             </Button>
             <Button variant="outline" className="h-20 flex-col">
               <RefreshCw className="h-6 w-6 mb-2" />
-              Sync Data
+              {translate('admin.dashboard.syncData')}
             </Button>
           </div>
         </CardContent>

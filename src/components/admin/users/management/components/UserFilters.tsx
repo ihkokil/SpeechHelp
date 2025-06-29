@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface UserFiltersProps {
   selectedStatus: string;
@@ -14,22 +16,6 @@ interface UserFiltersProps {
   onClearFilters: () => void;
 }
 
-const statusOptions = [
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
-];
-
-const roleOptions = [
-  { value: 'admin', label: 'Admin' },
-  { value: 'user', label: 'User' },
-];
-
-const planOptions = [
-  { value: 'free_trial', label: 'Free Trial' },
-  { value: 'premium', label: 'Premium' },
-  { value: 'pro', label: 'Pro' },
-];
-
 const UserFilters: React.FC<UserFiltersProps> = ({
   selectedStatus,
   selectedRole,
@@ -39,6 +25,24 @@ const UserFilters: React.FC<UserFiltersProps> = ({
   onPlanChange,
   onClearFilters,
 }) => {
+  const { translate } = useTranslatedContent();
+
+  const statusOptions = [
+    { value: 'active', label: translate('admin.status.active') },
+    { value: 'inactive', label: translate('admin.status.inactive') },
+  ];
+
+  const roleOptions = [
+    { value: 'admin', label: translate('admin.role.admin') },
+    { value: 'user', label: translate('admin.role.user') },
+  ];
+
+  const planOptions = [
+    { value: 'free_trial', label: translate('admin.plan.freeTrial') },
+    { value: 'premium', label: translate('admin.plan.premium') },
+    { value: 'pro', label: translate('admin.plan.pro') },
+  ];
+
   const hasActiveFilters = selectedStatus !== 'all' || selectedRole !== 'all' || selectedPlan !== 'all';
 
   return (
@@ -48,10 +52,10 @@ const UserFilters: React.FC<UserFiltersProps> = ({
           <div className="flex-1 min-w-[150px]">
             <Select value={selectedStatus} onValueChange={onStatusChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={translate('admin.filters.filterByStatus')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">{translate('admin.filters.allStatus')}</SelectItem>
                 {statusOptions.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
                     {status.label}
@@ -64,10 +68,10 @@ const UserFilters: React.FC<UserFiltersProps> = ({
           <div className="flex-1 min-w-[150px]">
             <Select value={selectedRole} onValueChange={onRoleChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by role" />
+                <SelectValue placeholder={translate('admin.filters.filterByRole')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="all">{translate('admin.filters.allRoles')}</SelectItem>
                 {roleOptions.map((role) => (
                   <SelectItem key={role.value} value={role.value}>
                     {role.label}
@@ -80,10 +84,10 @@ const UserFilters: React.FC<UserFiltersProps> = ({
           <div className="flex-1 min-w-[150px]">
             <Select value={selectedPlan} onValueChange={onPlanChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by plan" />
+                <SelectValue placeholder={translate('admin.filters.filterByPlan')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Plans</SelectItem>
+                <SelectItem value="all">{translate('admin.filters.allPlans')}</SelectItem>
                 {planOptions.map((plan) => (
                   <SelectItem key={plan.value} value={plan.value}>
                     {plan.label}
@@ -101,7 +105,7 @@ const UserFilters: React.FC<UserFiltersProps> = ({
               className="flex items-center gap-2"
             >
               <X className="h-4 w-4" />
-              Clear Filters
+              {translate('admin.filters.clearFilters')}
             </Button>
           )}
         </div>
