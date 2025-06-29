@@ -14,7 +14,6 @@ import {
   ShieldX,
   BadgePercent,
 } from 'lucide-react';
-import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface UserActionMenuProps {
   user: User;
@@ -35,8 +34,6 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onSendEmail,
   onUpdateSubscription
 }) => {
-  const { translate } = useTranslatedContent();
-  
   // Check if user is the original admin that cannot be removed
   const isProtectedAdmin = user.email === 'speechhelpmaster@example.com' || user.username === 'speechhelpmaster';
   const isCurrentlyAdmin = user.is_admin === true;
@@ -80,9 +77,9 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <Button variant="ghost" size="icon" className="h-8 w-8 p-0" aria-label={translate('admin.userActions.openMenu')}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 p-0" aria-label="User actions">
           <MoreVertical className="h-4 w-4" />
-          <span className="sr-only">{translate('admin.userActions.openMenu')}</span>
+          <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
@@ -91,7 +88,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
           id={`view-details-${user.id}`}
         >
           <Eye className="mr-2 h-4 w-4" />
-          <span>{translate('admin.userActions.viewDetails')}</span>
+          <span>View Details</span>
         </DropdownMenuItem>
         
         <DropdownMenuItem 
@@ -102,12 +99,12 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
           {isCurrentlyAdmin ? (
             <>
               <ShieldX className="mr-2 h-4 w-4" />
-              <span>{isProtectedAdmin ? translate('admin.userRoles.protectedAdmin') : translate('admin.userRoles.removeFromAdmin')}</span>
+              <span>{isProtectedAdmin ? 'Protected Admin' : 'Remove from Admin'}</span>
             </>
           ) : (
             <>
               <ShieldCheck className="mr-2 h-4 w-4" />
-              <span>{translate('admin.userRoles.makeAdmin')}</span>
+              <span>Make Admin</span>
             </>
           )}
         </DropdownMenuItem>
@@ -118,7 +115,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
             id={`send-email-${user.id}`}
           >
             <Mail className="mr-2 h-4 w-4" />
-            <span>{translate('admin.userActions.sendEmail')}</span>
+            <span>Send Email</span>
           </DropdownMenuItem>
         )}
 
@@ -128,7 +125,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
             id={`update-subscription-${user.id}`}
           >
             <BadgePercent className="mr-2 h-4 w-4" />
-            <span>{translate('admin.userActions.updateSubscription')}</span>
+            <span>Update Subscription</span>
           </DropdownMenuItem>
         )}
 
@@ -141,12 +138,12 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
           {user.is_active !== false ? (
             <>
               <UserMinus className="mr-2 h-4 w-4" />
-              <span>{translate('admin.userActions.deactivateUser')}</span>
+              <span>Deactivate User</span>
             </>
           ) : (
             <>
               <UserCheck className="mr-2 h-4 w-4" />
-              <span>{translate('admin.userActions.activateUser')}</span>
+              <span>Activate User</span>
             </>
           )}
         </DropdownMenuItem>
@@ -159,7 +156,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
           id={`delete-user-${user.id}`}
         >
           <UserMinus className="mr-2 h-4 w-4" />
-          <span>{translate('admin.userActions.deleteUser')}</span>
+          <span>Delete User</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

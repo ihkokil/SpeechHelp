@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -12,11 +13,8 @@ import UserFilters from '@/components/admin/users/management/components/UserFilt
 import { useSimpleAdminToggle } from '@/components/admin/users/management/hooks/user-actions/useSimpleAdminToggle';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/components/admin/users/types';
-import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 const UserManagement = () => {
-  const { translate } = useTranslatedContent();
-  
   const {
     searchTerm,
     setSearchTerm,
@@ -146,13 +144,13 @@ const UserManagement = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0">
-        <h2 className="text-3xl font-bold tracking-tight">{translate('admin.userManagement.title')}</h2>
+        <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
       </div>
       
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle>{translate('admin.userManagement.users')}</CardTitle>
-          <CardDescription>{translate('admin.userManagement.description')}</CardDescription>
+          <CardTitle>Users</CardTitle>
+          <CardDescription>Manage your application users, their roles, and permissions.</CardDescription>
         </CardHeader>
         <CardContent>
           <SearchToolbar 

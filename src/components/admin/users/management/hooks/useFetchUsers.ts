@@ -4,7 +4,6 @@ import { User } from '../../types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 export const useFetchUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -13,7 +12,6 @@ export const useFetchUsers = () => {
   const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
   const { adminUser } = useAdminAuth();
-  const { translate } = useTranslatedContent();
 
   const fetchUsers = useCallback(async () => {
     const now = Date.now();
@@ -36,10 +34,10 @@ export const useFetchUsers = () => {
       
       if (authUsersError) {
         console.error('Error fetching auth users:', authUsersError);
-        setError(new Error(authUsersError.message || translate('admin.messages.loadUsersError')));
+        setError(new Error(authUsersError.message || 'Failed to load users'));
         toast({
-          title: translate('common.error'),
-          description: translate('admin.messages.loadUsersError'),
+          title: 'Error',
+          description: 'Failed to load users. Please try again.',
           variant: 'destructive',
         });
         setIsLoading(false);
@@ -169,18 +167,18 @@ export const useFetchUsers = () => {
       return mappedUsers;
     } catch (err) {
       console.error('Exception fetching users:', err);
-      const error = err instanceof Error ? err : new Error(translate('admin.messages.loadUsersError'));
+      const error = err instanceof Error ? err : new Error('Failed to load users');
       setError(error);
       toast({
-        title: translate('common.error'),
-        description: translate('admin.messages.loadUsersErrorDetails'),
+        title: 'Error',
+        description: 'Failed to load users. Please check console for details.',
         variant: 'destructive',
       });
       return [];
     } finally {
       setIsLoading(false);
     }
-  }, [adminUser, toast, lastFetchTime, translate]);
+  }, [adminUser, toast, lastFetchTime]);
 
   return {
     users,

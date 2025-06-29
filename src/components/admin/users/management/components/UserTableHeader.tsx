@@ -2,7 +2,6 @@
 import React from 'react';
 import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface UserTableHeaderProps {
   onToggleAll: () => void;
@@ -17,8 +16,6 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
   disabled = false,
   selectedCount
 }) => {
-  const { translate } = useTranslatedContent();
-  
   const handleCheckboxChange = () => {
     if (!disabled) {
       onToggleAll();
@@ -33,18 +30,18 @@ const UserTableHeader: React.FC<UserTableHeaderProps> = ({
             checked={isAllSelected}
             onCheckedChange={handleCheckboxChange}
             disabled={disabled}
-            aria-label={translate('admin.userTable.selectAll')}
+            aria-label="Select all users"
           />
         </TableHead>
-        <TableHead className="px-2">{translate('admin.userTable.name')}</TableHead>
-        <TableHead className="px-2">{translate('admin.userTable.email')}</TableHead>
-        <TableHead className="px-2">{translate('admin.userTable.phone')}</TableHead>
-        <TableHead className="px-2 text-center">{translate('admin.userTable.status')}</TableHead>
-        <TableHead className="px-2 text-center">{translate('admin.userTable.role')}</TableHead>
-        <TableHead className="px-2 text-center">{translate('admin.userTable.plan')}</TableHead>
-        <TableHead className="px-2">{translate('admin.userTable.joined')}</TableHead>
-        <TableHead className="px-2">{translate('admin.userTable.lastLogin')}</TableHead>
-        <TableHead className="px-2 text-right">{translate('admin.userTable.actions')}</TableHead>
+        <TableHead className="px-2">Name</TableHead>
+        <TableHead className="px-2">Email</TableHead>
+        <TableHead className="px-2">Phone</TableHead>
+        <TableHead className="px-2 text-center">Status</TableHead>
+        <TableHead className="px-2 text-center">Role</TableHead>
+        <TableHead className="px-2 text-center">Plan</TableHead>
+        <TableHead className="px-2">Joined</TableHead>
+        <TableHead className="px-2">Last Login</TableHead>
+        <TableHead className="px-2 text-right">Actions</TableHead>
       </TableRow>
     </TableHeader>
   );

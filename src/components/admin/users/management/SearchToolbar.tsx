@@ -13,7 +13,6 @@ import {
   UserPlus 
 } from 'lucide-react';
 import { User } from '../types';
-import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface SearchToolbarProps {
   searchTerm: string;
@@ -36,8 +35,6 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
   setIsDeleteDialogOpen,
   setIsAddUserDialogOpen
 }) => {
-  const { translate } = useTranslatedContent();
-  
   const handleAddUserClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -61,7 +58,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             type="search"
-            placeholder={translate('admin.search.placeholder')}
+            placeholder="Search users..."
             className="pl-8"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -78,7 +75,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
           ) : (
             <RefreshCw className="h-4 w-4" />
           )}
-          <span className="sr-only">{translate('admin.search.refresh')}</span>
+          <span className="sr-only">Refresh</span>
         </Button>
       </div>
       
@@ -92,7 +89,7 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
               disabled={isActionLoading}
             >
               <UserMinus className="mr-2 h-4 w-4" />
-              {translate('admin.toolbar.delete')} ({selectedUsers.length})
+              Delete ({selectedUsers.length})
             </Button>
             <Button 
               variant="outline" 
@@ -100,13 +97,13 @@ export const SearchToolbar: React.FC<SearchToolbarProps> = ({
               disabled={isActionLoading}
             >
               <Mail className="mr-2 h-4 w-4" />
-              {translate('admin.toolbar.email')}
+              Email
             </Button>
           </>
         )}
         <Button onClick={handleAddUserClick} type="button">
           <UserPlus className="mr-2 h-4 w-4" />
-          {translate('admin.toolbar.addUser')}
+          Add User
         </Button>
       </div>
     </div>

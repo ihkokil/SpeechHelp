@@ -3,7 +3,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
-import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface DeleteUserDialogProps {
   isOpen: boolean;
@@ -20,15 +19,13 @@ export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
   isLoading,
   selectedCount
 }) => {
-  const { translate } = useTranslatedContent();
-  
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{translate('admin.deleteDialog.title')}</DialogTitle>
+          <DialogTitle>Delete Users</DialogTitle>
           <DialogDescription>
-            {translate('admin.deleteDialog.description', { count: selectedCount.toString() })}
+            Are you sure you want to delete {selectedCount} selected users? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -37,7 +34,7 @@ export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            {translate('admin.deleteDialog.cancel')}
+            Cancel
           </Button>
           <Button 
             variant="destructive" 
@@ -47,10 +44,10 @@ export const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {translate('admin.deleteDialog.deleting')}
+                Deleting...
               </>
             ) : (
-              translate('admin.deleteDialog.delete')
+              'Delete'
             )}
           </Button>
         </DialogFooter>

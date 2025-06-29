@@ -7,7 +7,6 @@ import { User } from '../../types';
 import UserActionMenu from './UserActionMenu';
 import { formatUserDisplayName, getUserPhone, getCountryFlag } from '../utils/userDisplayUtils';
 import { format } from 'date-fns';
-import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface UserTableRowProps {
   user: User;
@@ -32,8 +31,6 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   onSendEmail,
   onUpdateSubscription
 }) => {
-  const { translate } = useTranslatedContent();
-  
   // Handle checkbox click without triggering row selection
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -48,21 +45,8 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   // Format subscription plan for display with proper colors
   const formatSubscriptionPlan = (plan: string | null | undefined) => {
     const planType = plan || 'free_trial';
-    let planName = '';
-    
-    switch (planType.toLowerCase()) {
-      case 'free_trial':
-        planName = translate('admin.subscriptionPlans.freeTrial');
-        break;
-      case 'premium':
-        planName = translate('admin.subscriptionPlans.premium');
-        break;
-      case 'pro':
-        planName = translate('admin.subscriptionPlans.pro');
-        break;
-      default:
-        planName = translate('admin.subscriptionPlans.freeTrial');
-    }
+    const planName = planType === 'free_trial' ? 'Free Trial' : 
+                     planType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     
     // Define colors for each plan
     let badgeClasses = '';
@@ -85,21 +69,21 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
 
   // Format last sign in date with time
   const formatLastSignIn = (dateString: string | null | undefined) => {
-    if (!dateString) return translate('admin.userStatus.never');
+    if (!dateString) return 'Never';
     try {
       return format(new Date(dateString), 'MMM d, yyyy HH:mm');
     } catch (error) {
-      return translate('admin.userStatus.invalidDate');
+      return 'Invalid date';
     }
   };
 
   // Format joined date with time
   const formatJoinedDate = (dateString: string | null | undefined) => {
-    if (!dateString) return translate('admin.userStatus.unknown');
+    if (!dateString) return 'Unknown';
     try {
       return format(new Date(dateString), 'MMM d, yyyy HH:mm');
     } catch (error) {
-      return translate('admin.userStatus.invalidDate');
+      return 'Invalid date';
     }
   };
 
@@ -154,18 +138,18 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
           variant={user.is_active !== false ? "default" : "secondary"}
           className={user.is_active !== false ? "bg-green-100 text-green-800 border-green-200" : "bg-gray-100 text-gray-800 border-gray-200"}
         >
-          {user.is_active !== false ? translate('admin.userStatus.active') : translate('admin.userStatus.inactive')}
+          {user.is_active !== false ? 'Active' : 'Inactive'}
         </Badge>
       </TableCell>
       
       <TableCell className="px-2 text-center">
         {user.is_admin ? (
           <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-            {translate('admin.userRoles.admin')}
+            Admin
           </Badge>
         ) : (
           <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-            {translate('admin.userRoles.user')}
+            User
           </Badge>
         )}
       </TableCell>
