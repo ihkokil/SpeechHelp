@@ -1,11 +1,4 @@
 
-// export const featuresTranslations = {
-//   // Features Section
-//   'features.title': 'Why Choose SpeechHelp?',
-//   'features.subtitle': 'Everything you need to create compelling speeches',
-// };
-
-
 export const featuresTranslations = {
   'features.title': 'Welcome to Speech Help!',
   'features.subtitle': 'Have you ever stared at a blank page and felt like it was judging you? Whether you\'re giving a wedding toast, hyping up a team, or delivering a lecture, Speech Help is here to rescue you from idea paralysis and blank-page syndrome.',

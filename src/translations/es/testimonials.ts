@@ -1,6 +1,7 @@
 
 export const testimonials = {
-  'testimonials.quote1': 'SpeechHelp transformó mi discurso de boda de un divagación nerviosa a un mensaje sincero que a todos les encantó. No podría estar más agradecida.',
-  'testimonials.author1': 'Lauren Wilson',
-  'testimonials.role1': 'Directora de Marketing'
+  'testimonials.quote1': 'Speech Help transformó mi forma de abordar los discursos. ¡La IA hace que todo sea tan natural y personal!',
+  'testimonials.author1': 'María González',
+  'testimonials.role1': 'Organizadora de eventos',
+  'headers.whatClientsAboutUs': 'Lo que nuestros clientes dicen de nosotros'
 };
