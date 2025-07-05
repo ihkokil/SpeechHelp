@@ -18,24 +18,56 @@ export * from './settings';
 export * from './admin';
 
 import { 
-  common, 
-  navigation, 
-  hero, 
-  features,
-  howItWorks,
-  testimonials,
-  gallery,
-  cta,
-  contact,
-  footer,
-  headers,
-  general,
-  dashboard,
-  speechLab,
-  speechTypes,
-  settings,
+  common
+} from './common';
+import { 
+  navigation
+} from './navigation';
+import { 
+  hero
+} from './hero';
+import { 
+  features
+} from './features';
+import {
+  howItWorks
+} from './howItWorks';
+import {
+  testimonials
+} from './testimonials';
+import {
+  gallery
+} from './gallery';
+import {
+  cta
+} from './cta';
+import {
+  contact
+} from './contact';
+import {
+  footer
+} from './footer';
+import {
+  headers
+} from './headers';
+import {
+  general
+} from './general';
+import {
+  dashboard
+} from './dashboard';
+import {
+  speechLab
+} from './speechLab';
+import {
+  speechTypes
+} from './speechTypes';
+import {
+  settings
+} from './settings';
+import {
   admin
-} from '.';
+} from './admin';
 
 export const frTranslations = {
   ...common,
