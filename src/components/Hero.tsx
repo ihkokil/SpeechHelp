@@ -15,6 +15,7 @@ const Hero = () => {
   const heroRef = useRef<HTMLElement>(null);
   
   const videoUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/videofiles//SpeechHelp_App.mov";
+  const videoUrlMP4 = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/videofiles//SpeechHelp_App.mp4";
   
   useEffect(() => {
     setIsLoaded(true);
@@ -66,7 +67,7 @@ const Hero = () => {
             poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
           >
             <source src={videoUrl} type="video/quicktime" />
-            <source src={videoUrl} type="video/mp4" />
+            <source src={videoUrlMP4} type="video/mp4" />
           </video>
           {/* Enhanced video overlay with improved readability */}
           <div className="absolute inset-0 bg-black/50 backdrop-brightness-75 backdrop-contrast-125"></div>
