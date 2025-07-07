@@ -1,3 +1,4 @@
+
 import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,20 @@ interface PricingTierProps {
 	isCurrentPlan?: boolean;
 }
 
+// Plan hierarchy: PRO > PREMIUM > FREE_TRIAL
+const getPlanHierarchyLevel = (plan: SubscriptionPlan): number => {
+	switch (plan) {
+		case SubscriptionPlan.PRO:
+			return 3;
+		case SubscriptionPlan.PREMIUM:
+			return 2;
+		case SubscriptionPlan.FREE_TRIAL:
+			return 1;
+		default:
+			return 0;
+	}
+};
+
 const PricingTier: React.FC<PricingTierProps> = ({
 	name,
 	planType,
@@ -40,9 +55,28 @@ const PricingTier: React.FC<PricingTierProps> = ({
 }) => {
 	const { toast } = useToast();
 	const { user } = useAuth();
-	const { updateProfile } = useProfile();
+	const { profile, updateProfile } = useProfile();
+
+	// Check if user has a higher tier plan
+	const currentPlanLevel = profile?.subscription_plan ? getPlanHierarchyLevel(profile.subscription_plan as SubscriptionPlan) : 0;
+	const targetPlanLevel = getPlanHierarchyLevel(planType);
+	const isLowerTierPlan = currentPlanLevel > targetPlanLevel;
+
+	// Check if user has already used free trial
+	const hasUsedFreeTrial = profile?.subscription_plan === 'free_trial' || 
+		(profile?.subscription_start_date && profile?.subscription_plan !== null);
+	const isFreeTrial = planType === SubscriptionPlan.FREE_TRIAL;
+	const cannotUseFreeTrialAgain = isFreeTrial && hasUsedFreeTrial && !isCurrentPlan;
+
+	// Determine if this plan should be disabled
+	const isPlanDisabled = isLowerTierPlan || cannotUseFreeTrialAgain;
 
 	const handleStripeCheckout = useCallback(async () => {
+		// Prevent action if plan is disabled
+		if (isPlanDisabled) {
+			return;
+		}
+
 		try {
 			console.log('Starting checkout process for plan:', planType);
 			
@@ -51,6 +85,16 @@ const PricingTier: React.FC<PricingTierProps> = ({
 				if (!user) {
 					// Redirect to signup for non-authenticated users
 					window.location.href = '/auth?plan=free_trial';
+					return;
+				}
+				
+				// Check if user already used free trial
+				if (hasUsedFreeTrial) {
+					toast({
+						title: "Free Trial Already Used",
+						description: "You have already used your free trial. Please choose a paid plan.",
+						variant: "destructive"
+					});
 					return;
 				}
 				
@@ -120,11 +164,17 @@ const PricingTier: React.FC<PricingTierProps> = ({
 				variant: 'destructive',
 			});
 		}
-	}, [planType, pricingPeriod, user, price, toast, updateProfile]);
+	}, [planType, pricingPeriod, user, price, toast, updateProfile, isPlanDisabled, hasUsedFreeTrial]);
 
 	const getButtonText = () => {
 		if (isCurrentPlan) {
 			return 'Current Plan';
+		}
+		if (isLowerTierPlan) {
+			return 'Lower Tier Plan';
+		}
+		if (cannotUseFreeTrialAgain) {
+			return 'Already Used';
 		}
 		if (planType === SubscriptionPlan.FREE_TRIAL) {
 			return 'Start Free Trial';
@@ -132,11 +182,23 @@ const PricingTier: React.FC<PricingTierProps> = ({
 		return 'Choose Plan';
 	};
 
+	const getDisabledReason = () => {
+		if (isLowerTierPlan) {
+			return `You already have a ${profile?.subscription_plan} plan, which is higher than this plan.`;
+		}
+		if (cannotUseFreeTrialAgain) {
+			return 'You have already used your free trial. Please choose a paid plan to continue.';
+		}
+		return '';
+	};
+
 	return (
-		<Card className={`border rounded-xl h-full overflow-hidden hover:shadow-lg transition-all duration-300 ${
+		<Card className={`border rounded-xl h-full overflow-hidden transition-all duration-300 ${
 			isCurrentPlan 
 				? 'border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50 shadow-xl ring-2 ring-purple-200' 
-				: 'border-gray-200 hover:border-purple-300'
+				: isPlanDisabled
+				? 'border-gray-200 bg-gray-50 opacity-60'
+				: 'border-gray-200 hover:border-purple-300 hover:shadow-lg'
 		}`}>
 			<div className="p-6 md:p-8 h-full flex flex-col relative">
 				{isCurrentPlan && (
@@ -145,8 +207,16 @@ const PricingTier: React.FC<PricingTierProps> = ({
 					</div>
 				)}
 				
-				<div className={`text-center mb-2 ${isCurrentPlan ? 'mt-8' : ''}`}>
-					<h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
+				{isPlanDisabled && !isCurrentPlan && (
+					<div className="absolute top-0 left-0 right-0 bg-gray-400 text-white text-center py-2 text-sm font-medium">
+						{isLowerTierPlan ? 'Lower Tier' : 'Unavailable'}
+					</div>
+				)}
+				
+				<div className={`text-center mb-2 ${isCurrentPlan || isPlanDisabled ? 'mt-8' : ''}`}>
+					<h3 className={`text-2xl font-bold mb-2 ${isPlanDisabled ? 'text-gray-500' : 'text-gray-900'}`}>
+						{name}
+					</h3>
 					{isCurrentPlan && (
 						<div className="flex justify-center">
 							<Badge className="bg-purple-600 text-white">
@@ -154,19 +224,35 @@ const PricingTier: React.FC<PricingTierProps> = ({
 							</Badge>
 						</div>
 					)}
+					{isPlanDisabled && !isCurrentPlan && (
+						<div className="flex justify-center">
+							<Badge className="bg-gray-400 text-white">
+								{isLowerTierPlan ? 'Lower Tier' : 'Used'}
+							</Badge>
+						</div>
+					)}
 				</div>
 				<div className="flex items-end justify-center mb-6">
-					<span className={`text-4xl font-bold ${isCurrentPlan ? 'text-purple-700' : 'text-purple-600'}`}>
+					<span className={`text-4xl font-bold ${
+						isCurrentPlan ? 'text-purple-700' : 
+						isPlanDisabled ? 'text-gray-500' : 'text-purple-600'
+					}`}>
 						{pricingPeriod === 'monthly' ? price.monthly.price : price.yearly.price}
 					</span>
 					{pricingPeriod === 'monthly' && planType !== SubscriptionPlan.FREE_TRIAL && (
-						<span className="text-gray-500 ml-2">/month</span>
+						<span className={`ml-2 ${isPlanDisabled ? 'text-gray-400' : 'text-gray-500'}`}>
+							/month
+						</span>
 					)}
 					{pricingPeriod === 'yearly' && planType !== SubscriptionPlan.FREE_TRIAL && (
-						<span className="text-gray-500 ml-2">/year</span>
+						<span className={`ml-2 ${isPlanDisabled ? 'text-gray-400' : 'text-gray-500'}`}>
+							/year
+						</span>
 					)}
 				</div>
-				<p className="text-center text-gray-600 mb-6">{description}</p>
+				<p className={`text-center mb-6 ${isPlanDisabled ? 'text-gray-400' : 'text-gray-600'}`}>
+					{description}
+				</p>
 
 				<ul className="space-y-6 mb-8">
 					{(features || []).map((feature, index) => (
@@ -175,18 +261,29 @@ const PricingTier: React.FC<PricingTierProps> = ({
 							text={feature.text}
 							description={feature.description}
 							icon={feature.icon}
+							disabled={isPlanDisabled}
 						/>
 					))}
 				</ul>
+
+				{isPlanDisabled && !isCurrentPlan && (
+					<div className="mb-4 p-3 bg-gray-100 rounded-lg">
+						<p className="text-sm text-gray-600 text-center">
+							{getDisabledReason()}
+						</p>
+					</div>
+				)}
 
 				<Button
 					className={`w-full mt-auto ${
 						isCurrentPlan 
 							? 'bg-purple-600 hover:bg-purple-700 cursor-default opacity-75' 
+							: isPlanDisabled
+							? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-60'
 							: 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700'
 					}`}
-					onClick={isCurrentPlan ? undefined : handleStripeCheckout}
-					disabled={isCurrentPlan}
+					onClick={isCurrentPlan || isPlanDisabled ? undefined : handleStripeCheckout}
+					disabled={isCurrentPlan || isPlanDisabled}
 				>
 					{getButtonText()}
 				</Button>
