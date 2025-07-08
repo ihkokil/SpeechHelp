@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -10,7 +9,7 @@ interface GalleryItemProps {
   subtitle: string;
   isVisible: boolean;
   index: number;
-  icon: JSX.Element;
+  icon: React.ReactElement;
 }
 
 const GalleryItem = ({
@@ -21,7 +20,8 @@ const GalleryItem = ({
   index,
   icon
 }: GalleryItemProps) => {
-  return <div className={`group relative rounded-md overflow-hidden opacity-0 ${isVisible ? `animate-fade-in delay-${index % 5 * 100}` : ''}`}>
+  return (
+    <div className={`group relative rounded-md overflow-hidden opacity-0 ${isVisible ? `animate-fade-in delay-${index % 5 * 100}` : ''}`}>
       <img src={image} alt={title} className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-70"></div>
       <div className="absolute top-3 right-3 bg-pink-600 rounded-full p-1.5 text-white">
@@ -31,7 +31,8 @@ const GalleryItem = ({
         <h3 className="text-white text-sm font-medium">{title}</h3>
         <p className="text-white/70 text-xs mt-1">{subtitle}</p>
       </div>
-    </div>;
+    </div>
+  );
 };
 
 const SpeechGallery = () => {
@@ -81,7 +82,7 @@ const SpeechGallery = () => {
               subtitle={speech.description} 
               isVisible={isVisible} 
               index={index} 
-              icon={speech.icon} 
+              icon={speech.icon as React.ReactElement} 
             />
           ))}
         </div>
