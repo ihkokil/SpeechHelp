@@ -15,7 +15,7 @@ const TermsOfService = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50">
       <div className="container mx-auto px-4 sm:px-6 md:px-12 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -27,20 +27,22 @@ const TermsOfService = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               <Translate text="legal.backToHome" fallback="Back to Home" />
             </Link>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              <Translate text="legal.termsOfService.title" fallback="Terms of Service" />
-            </h1>
-            <p className="text-gray-600">
-              <Translate text="legal.lastUpdated" fallback="Last updated" />: December 11, 2024
-            </p>
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl p-6 mb-6">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                <Translate text="legal.termsOfService.title" fallback="Terms of Service" />
+              </h1>
+              <p className="text-purple-100">
+                <Translate text="legal.lastUpdated" fallback="Last updated" />: June 11, 2025
+              </p>
+            </div>
           </div>
 
           {/* Content */}
-          <div className="bg-white rounded-lg shadow-sm p-6 md:p-8 space-y-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 md:p-8 space-y-8">
             
             {/* Agreement */}
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <section className="border-l-4 border-purple-500 pl-6 bg-purple-50 p-6 rounded-r-lg">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-purple-800">
                 <Translate text="legal.termsOfService.agreement.title" fallback="Agreement to Terms" />
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -49,8 +51,8 @@ const TermsOfService = () => {
             </section>
 
             {/* Service Description */}
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <section className="border-l-4 border-blue-500 pl-6 bg-blue-50 p-6 rounded-r-lg">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-blue-800">
                 <Translate text="legal.termsOfService.service.title" fallback="Description of Service" />
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -67,8 +69,8 @@ const TermsOfService = () => {
             </section>
 
             {/* User Accounts */}
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <section className="border-l-4 border-green-500 pl-6 bg-green-50 p-6 rounded-r-lg">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-green-800">
                 <Translate text="legal.termsOfService.accounts.title" fallback="User Accounts and Registration" />
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -87,8 +89,8 @@ const TermsOfService = () => {
             </section>
 
             {/* Subscription and Payment */}
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <section className="border-l-4 border-yellow-500 pl-6 bg-yellow-50 p-6 rounded-r-lg">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-yellow-800">
                 <Translate text="legal.termsOfService.payment.title" fallback="Subscription Plans and Payment" />
               </h2>
               
@@ -115,8 +117,8 @@ const TermsOfService = () => {
             </section>
 
             {/* Acceptable Use */}
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <section className="border-l-4 border-red-500 pl-6 bg-red-50 p-6 rounded-r-lg">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-red-800">
                 <Translate text="legal.termsOfService.usage.title" fallback="Acceptable Use Policy" />
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -135,8 +137,8 @@ const TermsOfService = () => {
             </section>
 
             {/* Intellectual Property */}
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <section className="border-l-4 border-indigo-500 pl-6 bg-indigo-50 p-6 rounded-r-lg">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-indigo-800">
                 <Translate text="legal.termsOfService.ip.title" fallback="Intellectual Property Rights" />
               </h2>
               

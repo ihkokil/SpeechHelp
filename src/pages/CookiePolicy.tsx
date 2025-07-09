@@ -15,7 +15,7 @@ const CookiePolicy = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="container mx-auto px-4 sm:px-6 md:px-12 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -27,20 +27,22 @@ const CookiePolicy = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               <Translate text="legal.backToHome" fallback="Back to Home" />
             </Link>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              <Translate text="legal.cookiePolicy.title" fallback="Cookie Policy" />
-            </h1>
-            <p className="text-gray-600">
-              <Translate text="legal.lastUpdated" fallback="Last updated" />: December 11, 2024
-            </p>
+            <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl p-6 mb-6">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                <Translate text="legal.cookiePolicy.title" fallback="Cookie Policy" />
+              </h1>
+              <p className="text-blue-100">
+                <Translate text="legal.lastUpdated" fallback="Last updated" />: June 11, 2025
+              </p>
+            </div>
           </div>
 
           {/* Content */}
-          <div className="bg-white rounded-lg shadow-sm p-6 md:p-8 space-y-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 md:p-8 space-y-8">
             
             {/* Introduction */}
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <section className="border-l-4 border-blue-500 pl-6 bg-blue-50 p-6 rounded-r-lg">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-blue-800">
                 <Translate text="legal.cookiePolicy.introduction.title" fallback="What Are Cookies" />
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -52,8 +54,8 @@ const CookiePolicy = () => {
             </section>
 
             {/* Types of Cookies */}
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <section className="border-l-4 border-green-500 pl-6 bg-green-50 p-6 rounded-r-lg">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-green-800">
                 <Translate text="legal.cookiePolicy.types.title" fallback="Types of Cookies We Use" />
               </h2>
               
@@ -103,8 +105,8 @@ const CookiePolicy = () => {
             </section>
 
             {/* Third-Party Cookies */}
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <section className="border-l-4 border-purple-500 pl-6 bg-purple-50 p-6 rounded-r-lg">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-purple-800">
                 <Translate text="legal.cookiePolicy.thirdParty.title" fallback="Third-Party Cookies" />
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -143,8 +145,8 @@ const CookiePolicy = () => {
             </section>
 
             {/* How We Use Cookies */}
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <section className="border-l-4 border-yellow-500 pl-6 bg-yellow-50 p-6 rounded-r-lg">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-yellow-800">
                 <Translate text="legal.cookiePolicy.usage.title" fallback="How We Use Cookie Information" />
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -162,8 +164,8 @@ const CookiePolicy = () => {
             </section>
 
             {/* Cookie Management */}
-            <section>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <section className="border-l-4 border-red-500 pl-6 bg-red-50 p-6 rounded-r-lg">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4 text-red-800">
                 <Translate text="legal.cookiePolicy.management.title" fallback="Managing Your Cookie Preferences" />
               </h2>
               
@@ -180,7 +182,7 @@ const CookiePolicy = () => {
 
               <h3 className="text-xl font-medium text-gray-800 mb-3">Browser-Specific Instructions</h3>
               <div className="space-y-4 mb-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                   <p className="text-gray-700">
                     <strong>Chrome:</strong> Settings → Privacy and security → Cookies and other site data<br />
                     <strong>Firefox:</strong> Preferences → Privacy & Security → Cookies and Site Data<br />
