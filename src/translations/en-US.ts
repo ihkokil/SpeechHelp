@@ -16,7 +16,8 @@ import {
   speechLabTranslations,
   speechTypesTranslations,
   settingsTranslations,
-  adminTranslations
+  adminTranslations,
+  legalTranslations
 } from './sections';
 
 export const enUSTranslations = {
@@ -36,7 +37,8 @@ export const enUSTranslations = {
   ...speechLabTranslations,
   ...speechTypesTranslations,
   ...settingsTranslations,
-  ...adminTranslations
+  ...adminTranslations,
+  ...legalTranslations
 };
 
 export const enUS = enUSTranslations;

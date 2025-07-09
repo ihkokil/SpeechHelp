@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,9 @@ import WritingTips from "./pages/WritingTips";
 import HelpSupport from "./pages/HelpSupport";
 import Settings from "./pages/Settings";
 import Pricing from "./pages/Pricing";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
 import NotFound from "./pages/NotFound";
 import Test from "./pages/Test";
 import AdminAuth from "./pages/AdminAuth";
@@ -47,6 +51,9 @@ function App() {
                     <Route path="/help" element={<HelpSupport />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/terms-of-service" element={<TermsOfService />} />
+                    <Route path="/cookie-policy" element={<CookiePolicy />} />
                     <Route path="/test" element={<Test />} />
                     <Route path="/admin/auth" element={<AdminAuth />} />
                     <Route path="/admin" element={<AdminLayout />}>

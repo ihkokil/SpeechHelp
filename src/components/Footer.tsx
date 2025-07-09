@@ -92,9 +92,24 @@ const Footer = () => {
             © {currentYear} SpeechHelp is a registered service of Creativity Crisis, LLC | <Translate text="footer.rights" />
           </p>
           <div className="flex space-x-6 text-sm">
-            <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors"><Translate text="footer.privacy" /></a>
-            <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors"><Translate text="footer.terms" /></a>
-            <a href="#" className="text-gray-600 hover:text-pink-600 transition-colors"><Translate text="footer.cookies" /></a>
+            <Link 
+              to="/privacy-policy" 
+              className="text-gray-600 hover:text-pink-600 transition-colors"
+            >
+              <Translate text="footer.privacy" />
+            </Link>
+            <Link 
+              to="/terms-of-service" 
+              className="text-gray-600 hover:text-pink-600 transition-colors"
+            >
+              <Translate text="footer.terms" />
+            </Link>
+            <Link 
+              to="/cookie-policy" 
+              className="text-gray-600 hover:text-pink-600 transition-colors"
+            >
+              <Translate text="footer.cookies" />
+            </Link>
           </div>
         </div>
       </div>

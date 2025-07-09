@@ -16,3 +16,4 @@ export * from './speechLab';
 export * from './speechTypes';
 export * from './settings';
 export * from './admin';
+export * from './legal';

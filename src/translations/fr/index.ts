@@ -16,6 +16,7 @@ export * from './speechLab';
 export * from './speechTypes';
 export * from './settings';
 export * from './admin';
+export * from './legal';
 
 import { 
   common
@@ -68,6 +69,9 @@ import {
 import {
   admin
 } from './admin';
+import {
+  legal
+} from './legal';
 
 export const frTranslations = {
   ...common,
@@ -86,5 +90,6 @@ export const frTranslations = {
   ...speechLab,
   ...speechTypes,
   ...settings,
-  ...admin
+  ...admin,
+  ...legal
 };
