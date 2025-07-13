@@ -10,6 +10,7 @@ export const useSpeechLabState = () => {
   const [speechDetails, setSpeechDetails] = useState<SpeechDetails>({});
   const [speechTitle, setSpeechTitle] = useState('');
   const [generatedSpeech, setGeneratedSpeech] = useState('');
+  const [autoSavedSpeechId, setAutoSavedSpeechId] = useState<string | undefined>(undefined);
   
   // Initialize generatedSpeech from localStorage if it exists
   useEffect(() => {
@@ -19,8 +20,11 @@ export const useSpeechLabState = () => {
     }
   }, []);
   
-  const nextStep = () => {
+  const nextStep = (speechId?: string) => {
     if (currentStep < 4) {
+      if (speechId) {
+        setAutoSavedSpeechId(speechId);
+      }
       setCurrentStep(currentStep + 1);
     }
   };
@@ -53,6 +57,7 @@ export const useSpeechLabState = () => {
     speechDetails,
     speechTitle,
     generatedSpeech,
+    autoSavedSpeechId,
     steps,
     setSelectedSpeechType,
     setSpeechTitle,

@@ -11,7 +11,7 @@ import { SpeechDetails } from '../hooks/useSpeechLabState';
 import { SpeechType } from '../data/speechTypesData';
 
 interface Step3GenerateSpeechProps {
-  nextStep: () => void;
+  nextStep: (speechId?: string) => void;
   prevStep: () => void;
   selectedSpeechType: string;
   speechTypes: SpeechType[];
@@ -37,7 +37,7 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
     speechTitle, 
     speechDetails, 
     speechType: selectedSpeechType,
-    onSuccess: nextStep 
+    onSuccess: (speechId) => nextStep(speechId)
   });
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

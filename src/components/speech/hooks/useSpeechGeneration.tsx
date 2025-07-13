@@ -10,7 +10,7 @@ interface UseSpeechGenerationProps {
 	speechTitle: string;
 	speechDetails?: SpeechDetails;
 	speechType: string;
-	onSuccess: () => void;
+	onSuccess: (speechId?: string) => void;
 }
 
 export const useSpeechGeneration = ({
@@ -24,6 +24,7 @@ export const useSpeechGeneration = ({
 	const [generating, setGenerating] = useState(false);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [generatedSpeech, setGeneratedSpeech] = useState('');
+	const [autoSavedSpeechId, setAutoSavedSpeechId] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 
 	// Initialize work preservation
@@ -60,13 +61,13 @@ export const useSpeechGeneration = ({
 			timer = setTimeout(() => {
 				setShowConfetti(false);
 				clearSavedWork(); // Clear saved work after successful completion
-				onSuccess();
+				onSuccess(autoSavedSpeechId || undefined);
 			}, 5000); // Show confetti for 5 seconds before moving to next step
 		}
 		return () => {
 			if (timer) clearTimeout(timer);
 		};
-	}, [showConfetti, onSuccess, clearSavedWork]);
+	}, [showConfetti, onSuccess, clearSavedWork, autoSavedSpeechId]);
 
 	const validateTitle = () => {
 		if (!speechTitle.trim()) {
@@ -96,6 +97,7 @@ export const useSpeechGeneration = ({
 
 		setGenerating(true);
 		setError(null);
+		setAutoSavedSpeechId(null);
 
 		// Immediately save work state before starting generation
 		autoSaveToLocalStorage();
@@ -119,7 +121,20 @@ export const useSpeechGeneration = ({
 				};
 				const contentToSave = JSON.stringify(speechWithMetadata);
 				
-				await saveSpeech(speechTitle, contentToSave, speechType);
+				const speechResponse = await saveSpeech(speechTitle, contentToSave, speechType);
+				
+				// Extract the speech ID correctly from the response
+				let savedSpeechId: string | null = null;
+				if (Array.isArray(speechResponse) && speechResponse.length > 0) {
+					const firstItem = speechResponse[0];
+					if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
+						savedSpeechId = firstItem.id as string;
+					}
+				} else if (speechResponse && typeof speechResponse === 'object' && 'id' in speechResponse) {
+					savedSpeechId = speechResponse.id as string;
+				}
+				
+				setAutoSavedSpeechId(savedSpeechId);
 				
 				// Refresh speeches list to include the new speech
 				await fetchSpeeches();
@@ -160,6 +175,7 @@ export const useSpeechGeneration = ({
 		generating,
 		showConfetti,
 		generatedSpeech,
+		autoSavedSpeechId,
 		error,
 		generateSpeech
 	};

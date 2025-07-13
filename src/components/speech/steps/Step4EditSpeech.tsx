@@ -18,6 +18,7 @@ interface Step4Props {
 	speechType: string;
 	onTitleChange: (title: string) => void;
 	speechDetails?: Record<string, string>;
+	autoSavedSpeechId?: string;
 }
 
 const Step4EditSpeech: React.FC<Step4Props> = ({
@@ -25,7 +26,8 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 	speechTitle,
 	speechType,
 	onTitleChange,
-	speechDetails = {}
+	speechDetails = {},
+	autoSavedSpeechId
 }) => {
 	const { toast } = useToast();
 	const [title, setTitle] = useState(speechTitle);
@@ -37,7 +39,8 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 		title,
 		content,
 		speechType,
-		speechDetails
+		speechDetails,
+		initialSpeechId: autoSavedSpeechId
 	});
 
 	const { handleReset } = useSpeechReset({
@@ -95,11 +98,15 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 		if (recoveredContent) {
 			setContent(recoveredContent);
 			setHasRecoveredSpeech(true);
-			setIsAutoSaved(true); // Assume it was auto-saved during generation
+			setIsAutoSaved(Boolean(autoSavedSpeechId)); // Mark as auto-saved if we have an ID
+			
+			const message = autoSavedSpeechId 
+				? "Your generated speech is ready for editing. It has been automatically saved to your account."
+				: "Your generated speech is ready for editing.";
 			
 			toast({
 				title: "Speech Ready!",
-				description: `Your generated speech is ready for editing. It has been automatically saved to your account.`,
+				description: message,
 			});
 		} else {
 			// Fallback to placeholder if no recovery possible
@@ -112,7 +119,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 				variant: "destructive"
 			});
 		}
-	}, [title, speechDetails, toast]);
+	}, [title, speechDetails, toast, autoSavedSpeechId]);
 
 	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setTitle(e.target.value);
@@ -160,7 +167,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 			<CardHeader>
 				<CardTitle><Translate text="speechLab.editTitle" /></CardTitle>
 				<CardDescription><Translate text="speechLab.editDesc" /></CardDescription>
-				{hasRecoveredSpeech && isAutoSaved && (
+				{hasRecoveredSpeech && isAutoSaved && autoSavedSpeechId && (
 					<div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
 						<CheckCircle className="h-4 w-4 text-green-600" />
 						<span className="text-sm text-green-700">
@@ -205,7 +212,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 							</svg>
 							<Translate text="common.saving" fallback="Saving..." />
 						</span>
-					) : isAutoSaved ? (
+					) : isAutoSaved && autoSavedSpeechId ? (
 						<>
 							<Save className="mr-2 h-4 w-4" />
 							<Translate text="speechLab.saveChanges" fallback="Save Changes" />

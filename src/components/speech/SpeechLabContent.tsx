@@ -1,21 +1,20 @@
 
 import React from 'react';
+import { useSpeechLabState } from './hooks/useSpeechLabState';
+import { speechTypesData } from './data/speechTypesData';
 import SpeechStepIndicator from './SpeechStepIndicator';
-import SpeechLabHeader from './SpeechLabHeader';
 import Step1SelectOccasion from './steps/Step1SelectOccasion';
 import Step2SpeechDetails from './steps/Step2SpeechDetails';
 import Step3GenerateSpeech from './steps/Step3GenerateSpeech';
 import Step4EditSpeech from './steps/Step4EditSpeech';
-import { useSpeechLabState } from './hooks/useSpeechLabState';
-import { speechTypesData } from './data/speechTypesData';
-import { useSpeechWorkPreservation } from '@/hooks/useSpeechWorkPreservation';
 
-const SpeechLabContent: React.FC = () => {
+const SpeechLabContent = () => {
   const {
     currentStep,
     selectedSpeechType,
     speechDetails,
     speechTitle,
+    autoSavedSpeechId,
     steps,
     setSelectedSpeechType,
     nextStep,
@@ -24,73 +23,59 @@ const SpeechLabContent: React.FC = () => {
     handleSpeechDetailsChange
   } = useSpeechLabState();
 
-  // Initialize work preservation for the entire Speech Lab session
-  const { autoSaveToLocalStorage } = useSpeechWorkPreservation({
-    speechData: {
-      title: speechTitle,
-      content: '',
-      speechType: selectedSpeechType,
-      speechDetails,
-      currentStep
-    },
-    hasUnsavedChanges: Boolean(speechTitle || selectedSpeechType || Object.keys(speechDetails).length > 0)
-  });
-
-  // Auto-save when important state changes
-  React.useEffect(() => {
-    if (speechTitle || selectedSpeechType || Object.keys(speechDetails).length > 0) {
-      autoSaveToLocalStorage();
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <Step1SelectOccasion
+            nextStep={nextStep}
+            selectedSpeechType={selectedSpeechType}
+            setSelectedSpeechType={setSelectedSpeechType}
+            speechTypes={speechTypesData}
+          />
+        );
+      case 2:
+        return (
+          <Step2SpeechDetails
+            nextStep={nextStep}
+            prevStep={prevStep}
+            selectedSpeechType={selectedSpeechType}
+            speechTypes={speechTypesData}
+            onSpeechDetailsChange={handleSpeechDetailsChange}
+          />
+        );
+      case 3:
+        return (
+          <Step3GenerateSpeech
+            nextStep={nextStep}
+            prevStep={prevStep}
+            selectedSpeechType={selectedSpeechType}
+            speechTypes={speechTypesData}
+            speechTitle={speechTitle}
+            setSpeechTitle={handleSpeechTitleChange}
+            speechDetails={speechDetails}
+          />
+        );
+      case 4:
+        return (
+          <Step4EditSpeech
+            prevStep={prevStep}
+            speechTitle={speechTitle}
+            speechType={selectedSpeechType}
+            onTitleChange={handleSpeechTitleChange}
+            speechDetails={speechDetails}
+            autoSavedSpeechId={autoSavedSpeechId}
+          />
+        );
+      default:
+        return null;
     }
-  }, [speechTitle, selectedSpeechType, speechDetails, currentStep, autoSaveToLocalStorage]);
+  };
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <SpeechLabHeader />
-        
-        <SpeechStepIndicator currentStep={currentStep} steps={steps} />
-
-        <div className="mt-8">
-          {currentStep === 1 && (
-            <Step1SelectOccasion 
-              selectedSpeechType={selectedSpeechType} 
-              setSelectedSpeechType={setSelectedSpeechType} 
-              nextStep={nextStep}
-            />
-          )}
-
-          {currentStep === 2 && (
-            <Step2SpeechDetails 
-              nextStep={nextStep} 
-              prevStep={prevStep}
-              selectedSpeechType={selectedSpeechType}
-              onDetailsChange={handleSpeechDetailsChange}
-            />
-          )}
-
-          {currentStep === 3 && (
-            <Step3GenerateSpeech 
-              nextStep={nextStep} 
-              prevStep={prevStep} 
-              selectedSpeechType={selectedSpeechType}
-              speechTypes={speechTypesData}
-              speechTitle={speechTitle}
-              setSpeechTitle={handleSpeechTitleChange}
-              speechDetails={speechDetails}
-            />
-          )}
-
-          {currentStep === 4 && (
-            <Step4EditSpeech 
-              prevStep={prevStep}
-              speechTitle={speechTitle}
-              speechType={selectedSpeechType}
-              onTitleChange={handleSpeechTitleChange}
-              speechDetails={speechDetails}
-            />
-          )}
-        </div>
-      </div>
+    <div className="max-w-4xl mx-auto p-6 space-y-8">
+      <SpeechStepIndicator currentStep={currentStep} steps={steps} />
+      {renderStep()}
     </div>
   );
 };

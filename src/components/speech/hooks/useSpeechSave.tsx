@@ -9,16 +9,18 @@ interface UseSpeechSaveProps {
 	content: string;
 	speechType: string;
 	speechDetails?: Record<string, string>;
+	initialSpeechId?: string;
 }
 
 export const useSpeechSave = ({
 	title,
 	content,
 	speechType,
-	speechDetails = {}
+	speechDetails = {},
+	initialSpeechId
 }: UseSpeechSaveProps) => {
 	const [isSaving, setIsSaving] = useState(false);
-	const [speechId, setSpeechId] = useState<string | null>(null);
+	const [speechId, setSpeechId] = useState<string | null>(initialSpeechId || null);
 	const { toast } = useToast();
 	const { user } = useAuth();
 	const speechService = useSpeechService();
@@ -50,6 +52,15 @@ export const useSpeechSave = ({
 			return;
 		}
 
+		if (!user) {
+			toast({
+				title: "Authentication Required",
+				description: "Please sign in to save your speech.",
+				variant: "destructive",
+			});
+			return;
+		}
+
 		setIsSaving(true);
 
 		try {
@@ -60,40 +71,34 @@ export const useSpeechSave = ({
 
 			const contentToSave = JSON.stringify(speechWithMetadata);
 
-			if (speechId) {
-				await speechService.updateSpeech(user.id, speechId, title, contentToSave);
+			// Always check if we have an existing speech ID (either from auto-save or previous saves)
+			const currentSpeechId = speechId || initialSpeechId;
+
+			if (currentSpeechId) {
+				// Update existing speech
+				await speechService.updateSpeech(user.id, currentSpeechId, title, contentToSave);
 				toast({
 					title: "Speech Updated",
 					description: "Your speech has been updated successfully.",
 				});
 			} else {
-				if (user) {
-					// Extract the speech ID correctly from the response
-					const speechResponse = await speechService.saveSpeech(user.id, title, contentToSave, speechType);
-					
-					// Fix: Properly handle different response formats with type checking
-					if (Array.isArray(speechResponse) && speechResponse.length > 0) {
-						// If the response is an array, get the first item's ID
-						const firstItem = speechResponse[0];
-						if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
-							setSpeechId(firstItem.id as string);
-						}
-					} else if (speechResponse && typeof speechResponse === 'object' && 'id' in speechResponse) {
-						// If it's a single object with an ID property
-						setSpeechId(speechResponse.id as string);
+				// Create new speech only if no existing ID
+				const speechResponse = await speechService.saveSpeech(user.id, title, contentToSave, speechType);
+				
+				// Extract the speech ID correctly from the response
+				if (Array.isArray(speechResponse) && speechResponse.length > 0) {
+					const firstItem = speechResponse[0];
+					if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
+						setSpeechId(firstItem.id as string);
 					}
-					
-					toast({
-						title: "Speech Saved",
-						description: "Your speech has been saved successfully.",
-					});
-				} else {
-					toast({
-						title: "Authentication Required",
-						description: "Please sign in to save your speech.",
-						variant: "destructive",
-					});
+				} else if (speechResponse && typeof speechResponse === 'object' && 'id' in speechResponse) {
+					setSpeechId(speechResponse.id as string);
 				}
+				
+				toast({
+					title: "Speech Saved",
+					description: "Your speech has been saved successfully.",
+				});
 			}
 		} catch (error) {
 			toast({
@@ -110,6 +115,6 @@ export const useSpeechSave = ({
 	return {
 		isSaving,
 		handleSave,
-		speechId
+		speechId: speechId || initialSpeechId
 	};
 };
