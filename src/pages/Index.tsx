@@ -106,9 +106,9 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden w-full">
+    <div className="min-h-screen flex flex-col overflow-x-hidden">
       <Navbar />
-      <main className="flex-1 w-full">
+      <main className="flex-1">
         <Hero />
         {/* Features section */}
         <Features />
@@ -116,7 +116,7 @@ const Index = () => {
         <HowItWorks />
         <SpeechGallery />
         {/* Contact section - removing id from here as it's now in the component */}
-        <div className="w-full pt-2">
+        <div className="pt-2">
           <ContactForm />
         </div>
       </main>
