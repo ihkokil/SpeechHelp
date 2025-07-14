@@ -8,13 +8,12 @@ import SpeechDetailsSummary from '../components/SpeechDetailsSummary';
 import SpeechGenerationProgress from '../components/SpeechGenerationProgress';
 import Translate from '@/components/Translate';
 import { SpeechDetails } from '../hooks/useSpeechLabState';
-import { SpeechType } from '../data/speechTypesData';
+import { speechTypesData } from '../data/speechTypesData';
 
 interface Step3GenerateSpeechProps {
   nextStep: (speechId?: string) => void;
   prevStep: () => void;
   selectedSpeechType: string;
-  speechTypes: SpeechType[];
   speechTitle: string;
   setSpeechTitle: (title: string) => void;
   speechDetails?: SpeechDetails;
@@ -24,7 +23,6 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
   nextStep,
   prevStep,
   selectedSpeechType,
-  speechTypes,
   speechTitle,
   setSpeechTitle,
   speechDetails = {}
@@ -67,7 +65,7 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
 
         <SpeechDetailsSummary
           selectedSpeechType={selectedSpeechType}
-          speechTypes={speechTypes}
+          speechTypes={speechTypesData}
           speechDetails={speechDetails}
         />
 

@@ -125,13 +125,15 @@ export const useSpeechGeneration = ({
 				
 				// Extract the speech ID correctly from the response
 				let savedSpeechId: string | null = null;
-				if (Array.isArray(speechResponse) && speechResponse.length > 0) {
-					const firstItem = speechResponse[0];
-					if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
-						savedSpeechId = firstItem.id as string;
+				if (speechResponse) {
+					if (Array.isArray(speechResponse) && speechResponse.length > 0) {
+						const firstItem = speechResponse[0];
+						if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
+							savedSpeechId = firstItem.id as string;
+						}
+					} else if (typeof speechResponse === 'object' && 'id' in speechResponse) {
+						savedSpeechId = speechResponse.id as string;
 					}
-				} else if (speechResponse && typeof speechResponse === 'object' && 'id' in speechResponse) {
-					savedSpeechId = speechResponse.id as string;
 				}
 				
 				setAutoSavedSpeechId(savedSpeechId);

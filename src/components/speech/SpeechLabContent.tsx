@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { useSpeechLabState } from './hooks/useSpeechLabState';
-import { speechTypesData } from './data/speechTypesData';
 import SpeechStepIndicator from './SpeechStepIndicator';
 import Step1SelectOccasion from './steps/Step1SelectOccasion';
 import Step2SpeechDetails from './steps/Step2SpeechDetails';
@@ -31,7 +30,6 @@ const SpeechLabContent = () => {
             nextStep={nextStep}
             selectedSpeechType={selectedSpeechType}
             setSelectedSpeechType={setSelectedSpeechType}
-            speechTypes={speechTypesData}
           />
         );
       case 2:
@@ -40,8 +38,7 @@ const SpeechLabContent = () => {
             nextStep={nextStep}
             prevStep={prevStep}
             selectedSpeechType={selectedSpeechType}
-            speechTypes={speechTypesData}
-            onSpeechDetailsChange={handleSpeechDetailsChange}
+            onDetailsChange={handleSpeechDetailsChange}
           />
         );
       case 3:
