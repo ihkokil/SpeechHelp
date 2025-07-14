@@ -47,7 +47,6 @@ const SpeechLabContent = () => {
             nextStep={nextStep}
             prevStep={prevStep}
             selectedSpeechType={selectedSpeechType}
-            speechTypes={speechTypesData}
             speechTitle={speechTitle}
             setSpeechTitle={handleSpeechTitleChange}
             speechDetails={speechDetails}

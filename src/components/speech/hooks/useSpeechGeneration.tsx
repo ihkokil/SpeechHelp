@@ -131,8 +131,8 @@ export const useSpeechGeneration = ({
 						if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
 							savedSpeechId = firstItem.id as string;
 						}
-					} else if (typeof speechResponse === 'object' && 'id' in speechResponse) {
-						savedSpeechId = speechResponse.id as string;
+					} else if (typeof speechResponse === 'object' && speechResponse !== null && 'id' in speechResponse) {
+						savedSpeechId = (speechResponse as any).id as string;
 					}
 				}
 				
