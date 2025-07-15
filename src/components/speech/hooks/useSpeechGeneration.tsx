@@ -19,7 +19,7 @@ export const useSpeechGeneration = ({
 	onSuccess
 }: UseSpeechGenerationProps) => {
 	const { toast } = useToast();
-	const { user, saveSpeech, fetchSpeeches } = useAuth();
+	const { user, saveSpeech, speeches } = useAuth();
 	const [generating, setGenerating] = useState(false);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [generatedSpeech, setGeneratedSpeech] = useState('');
@@ -123,15 +123,11 @@ export const useSpeechGeneration = ({
 				// Call saveSpeech and handle the response properly
 				await saveSpeech(speechTitle, contentToSave, speechType);
 				
-				// Since saveSpeech might return void, we'll fetch speeches to get the latest ID
-				// This is a workaround for the type issue
-				const speeches = await fetchSpeeches();
-				
-				// Find the most recently created speech that matches our title
+				// Find the most recently created speech that matches our title from existing speeches
 				let savedSpeechId: string | null = null;
 				if (speeches && Array.isArray(speeches) && speeches.length > 0) {
 					// Sort by creation date and find the most recent speech with matching title
-					const sortedSpeeches = speeches.sort((a: any, b: any) => 
+					const sortedSpeeches = [...speeches].sort((a: any, b: any) => 
 						new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
 					);
 					
