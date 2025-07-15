@@ -57,11 +57,17 @@ const Translate: React.FC<TranslateProps> = ({
   // If the translation is the same as the key and it looks like a translation key,
   // render the fallback content if provided or format the key in a user-friendly way
   if (translation === text && text.includes('.')) {
-    if (fallback) {
+    if (fallback !== undefined) {
       return <>{fallback}</>;
     }
+    // Convert key to readable text: speechLab.backButton -> Back Button
     const parts = text.split('.');
-    return <>{parts[parts.length - 1].replace(/([A-Z])/g, ' $1').trim()}</>;
+    const lastPart = parts[parts.length - 1];
+    const readableText = lastPart
+      .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+      .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
+      .trim();
+    return <>{readableText}</>;
   }
   
   return <>{translation}</>;

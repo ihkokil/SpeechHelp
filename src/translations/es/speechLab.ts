@@ -1,12 +1,39 @@
 
 export const speechLab = {
-  'speechLab.occasionTitle': 'Selecciona la ocasión',
+  // Speech Lab
+  'speechLab.title': 'Laboratorio de Discursos',
+  'speechLab.subtitle': 'Crea tu discurso perfecto con asistencia de IA',
+  'speechLab.description': 'Crea tu discurso perfecto',
+  
+  // Step 1 - Select Occasion
+  'speechLab.occasionTitle': 'Selecciona la Ocasión de tu Discurso',
   'speechLab.occasionDesc': 'Elige el tipo de discurso que necesitas crear',
+  
+  // Step 2 - Speech Details
+  'speechLab.detailsTitle': 'Detalles del Discurso',
+  'speechLab.detailsDesc': 'Cuéntanos más sobre tu discurso para personalizarlo',
+  
+  // Step 3 - Generate Speech
+  'speechLab.generateSpeech': 'Genera tu Discurso',
+  'speechLab.speechTitle': 'Título del Discurso',
+  'speechLab.generateButton': 'Generar Discurso',
+  
+  // Step 4 - Edit Speech
+  'speechLab.editTitle': 'Edita y Perfecciona tu Discurso',
+  'speechLab.editDesc': 'Revisa, edita y personaliza tu discurso generado por IA',
+  'speechLab.saveButton': 'Guardar Discurso',
+  'speechLab.saveChanges': 'Guardar Cambios',
+  
+  // Navigation buttons
   'speechLab.nextButton': 'Siguiente',
+  'speechLab.backButton': 'Atrás',
+  
   // Speech quick modifiers
   'speechLab.makeLonger': 'Hacerlo más largo',
   'speechLab.makeShorter': 'Hacerlo más corto',
   'speechLab.makeFormal': 'Hacerlo más formal',
   'speechLab.addHumor': 'Agregar más humor',
+  'speechLab.customInstruction': 'Instrucción personalizada',
+  'speechLab.customInstructionPlaceholder': '¿Cómo te gustaría modificar tu discurso?',
   'speechLab.content': 'Contenido del discurso'
 };
