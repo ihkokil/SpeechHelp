@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generateSpeechFromDetails } from '../utils/speechGenerator';
@@ -121,25 +120,31 @@ export const useSpeechGeneration = ({
 				};
 				const contentToSave = JSON.stringify(speechWithMetadata);
 				
-				const speechResponse = await saveSpeech(speechTitle, contentToSave, speechType);
+				// Call saveSpeech and handle the response properly
+				await saveSpeech(speechTitle, contentToSave, speechType);
 				
-				// Extract the speech ID correctly from the response
+				// Since saveSpeech might return void, we'll fetch speeches to get the latest ID
+				// This is a workaround for the type issue
+				const speeches = await fetchSpeeches();
+				
+				// Find the most recently created speech that matches our title
 				let savedSpeechId: string | null = null;
-				if (speechResponse) {
-					if (Array.isArray(speechResponse) && speechResponse.length > 0) {
-						const firstItem = speechResponse[0];
-						if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
-							savedSpeechId = firstItem.id as string;
-						}
-					} else if (typeof speechResponse === 'object' && speechResponse !== null && 'id' in speechResponse) {
-						savedSpeechId = (speechResponse as any).id as string;
+				if (speeches && Array.isArray(speeches) && speeches.length > 0) {
+					// Sort by creation date and find the most recent speech with matching title
+					const sortedSpeeches = speeches.sort((a: any, b: any) => 
+						new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+					);
+					
+					const recentSpeech = sortedSpeeches.find((speech: any) => 
+						speech.title === speechTitle
+					);
+					
+					if (recentSpeech && recentSpeech.id) {
+						savedSpeechId = recentSpeech.id;
 					}
 				}
 				
 				setAutoSavedSpeechId(savedSpeechId);
-				
-				// Refresh speeches list to include the new speech
-				await fetchSpeeches();
 
 				toast({
 					title: "Speech Generated & Saved",
