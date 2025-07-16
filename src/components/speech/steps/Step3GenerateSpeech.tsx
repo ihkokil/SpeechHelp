@@ -35,7 +35,24 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
     speechTitle, 
     speechDetails, 
     speechType: selectedSpeechType,
-    onSuccess: (speechId) => nextStep(speechId)
+    onSuccess: (speechId) => {
+      // Save progress before moving to next step
+      try {
+        const progress = {
+          currentStep: 4, // Next step
+          selectedSpeechType,
+          speechDetails,
+          speechTitle,
+          autoSavedSpeechId: speechId,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('speechLabProgress', JSON.stringify(progress));
+      } catch (error) {
+        console.error('Failed to save progress before moving to step 4:', error);
+      }
+      
+      nextStep(speechId);
+    }
   });
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
