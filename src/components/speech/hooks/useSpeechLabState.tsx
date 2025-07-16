@@ -1,8 +1,21 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SpeechType } from '../data/speechTypesData';
 
 export type SpeechDetails = Record<string, string>;
+
+interface SpeechLabState {
+  currentStep: number;
+  selectedSpeechType: string;
+  speechDetails: SpeechDetails;
+  speechTitle: string;
+  generatedSpeech: string;
+  autoSavedSpeechId?: string;
+  lastActiveTimestamp: number;
+}
+
+const SPEECH_LAB_STATE_KEY = 'speechLabState';
+const STATE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
 export const useSpeechLabState = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -11,15 +24,73 @@ export const useSpeechLabState = () => {
   const [speechTitle, setSpeechTitle] = useState('');
   const [generatedSpeech, setGeneratedSpeech] = useState('');
   const [autoSavedSpeechId, setAutoSavedSpeechId] = useState<string | undefined>(undefined);
-  
-  // Initialize generatedSpeech from localStorage if it exists
+  const [isStateRestored, setIsStateRestored] = useState(false);
+
+  // Load persisted state on mount
   useEffect(() => {
-    const savedSpeech = localStorage.getItem('generatedSpeech');
-    if (savedSpeech) {
-      setGeneratedSpeech(savedSpeech);
+    try {
+      const savedState = localStorage.getItem(SPEECH_LAB_STATE_KEY);
+      if (savedState) {
+        const parsedState: SpeechLabState = JSON.parse(savedState);
+        const isExpired = Date.now() - parsedState.lastActiveTimestamp > STATE_EXPIRY;
+
+        if (!isExpired && parsedState.currentStep > 1) {
+          setCurrentStep(parsedState.currentStep);
+          setSelectedSpeechType(parsedState.selectedSpeechType);
+          setSpeechDetails(parsedState.speechDetails);
+          setSpeechTitle(parsedState.speechTitle);
+          setGeneratedSpeech(parsedState.generatedSpeech);
+          setAutoSavedSpeechId(parsedState.autoSavedSpeechId);
+          
+          console.log(`🔄 Speech Lab state restored from step ${parsedState.currentStep}`);
+        } else if (isExpired) {
+          localStorage.removeItem(SPEECH_LAB_STATE_KEY);
+          console.log('🗑️ Expired Speech Lab state removed');
+        }
+      }
+
+      // Also check for legacy generatedSpeech in localStorage
+      const savedSpeech = localStorage.getItem('generatedSpeech');
+      if (savedSpeech && !generatedSpeech) {
+        setGeneratedSpeech(savedSpeech);
+      }
+    } catch (error) {
+      console.error('Error loading Speech Lab state:', error);
+    } finally {
+      setIsStateRestored(true);
     }
   }, []);
-  
+
+  // Save state to localStorage whenever it changes (debounced)
+  const saveStateToStorage = useCallback(() => {
+    if (!isStateRestored) return; // Don't save during initial load
+
+    try {
+      const stateToSave: SpeechLabState = {
+        currentStep,
+        selectedSpeechType,
+        speechDetails,
+        speechTitle,
+        generatedSpeech,
+        autoSavedSpeechId,
+        lastActiveTimestamp: Date.now()
+      };
+
+      localStorage.setItem(SPEECH_LAB_STATE_KEY, JSON.stringify(stateToSave));
+      console.log(`💾 Speech Lab state saved at step ${currentStep}`);
+    } catch (error) {
+      console.error('Error saving Speech Lab state:', error);
+    }
+  }, [currentStep, selectedSpeechType, speechDetails, speechTitle, generatedSpeech, autoSavedSpeechId, isStateRestored]);
+
+  // Debounced save effect
+  useEffect(() => {
+    if (!isStateRestored) return;
+
+    const timeoutId = setTimeout(saveStateToStorage, 500);
+    return () => clearTimeout(timeoutId);
+  }, [saveStateToStorage]);
+
   const nextStep = (speechId?: string) => {
     if (currentStep < 4) {
       if (speechId) {
@@ -43,6 +114,18 @@ export const useSpeechLabState = () => {
     setSpeechDetails(details);
   };
 
+  const clearState = useCallback(() => {
+    setCurrentStep(1);
+    setSelectedSpeechType('');
+    setSpeechDetails({});
+    setSpeechTitle('');
+    setGeneratedSpeech('');
+    setAutoSavedSpeechId(undefined);
+    localStorage.removeItem(SPEECH_LAB_STATE_KEY);
+    localStorage.removeItem('generatedSpeech');
+    console.log('🗑️ Speech Lab state cleared');
+  }, []);
+
   // Define step labels for the progress indicator
   const steps = [
     { number: 1, title: 'Select Occasion' },
@@ -59,6 +142,7 @@ export const useSpeechLabState = () => {
     generatedSpeech,
     autoSavedSpeechId,
     steps,
+    isStateRestored,
     setSelectedSpeechType,
     setSpeechTitle,
     setSpeechDetails,
@@ -66,6 +150,7 @@ export const useSpeechLabState = () => {
     nextStep,
     prevStep,
     handleSpeechTitleChange,
-    handleSpeechDetailsChange
+    handleSpeechDetailsChange,
+    clearState
   };
 };
