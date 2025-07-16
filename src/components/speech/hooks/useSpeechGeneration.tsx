@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { generateSpeechFromDetails } from '../utils/speechGenerator';
@@ -60,14 +59,14 @@ export const useSpeechGeneration = ({
 		if (showConfetti) {
 			timer = setTimeout(() => {
 				setShowConfetti(false);
-				// Don't clear saved work here - let the user decide when to clear progress
+				clearSavedWork(); // Clear saved work after successful completion
 				onSuccess(autoSavedSpeechId || undefined);
 			}, 5000); // Show confetti for 5 seconds before moving to next step
 		}
 		return () => {
 			if (timer) clearTimeout(timer);
 		};
-	}, [showConfetti, onSuccess, autoSavedSpeechId]);
+	}, [showConfetti, onSuccess, clearSavedWork, autoSavedSpeechId]);
 
 	const validateTitle = () => {
 		if (!speechTitle.trim()) {
