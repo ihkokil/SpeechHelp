@@ -43,7 +43,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
       {questions.map((question, index) => (
         <QuestionRenderer
           key={`${question.question}-${index}`}
-          question={question}
+          questionData={question}
           value={formData[question.question] || ''}
           onChange={(value) => handleInputChange(question.question, value)}
         />
