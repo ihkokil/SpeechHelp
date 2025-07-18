@@ -2,7 +2,7 @@
 import React from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { useSpeechGeneration } from '../hooks/useSpeechGeneration';
 import SpeechDetailsSummary from '../components/SpeechDetailsSummary';
 import SpeechGenerationProgress from '../components/SpeechGenerationProgress';
@@ -17,6 +17,8 @@ interface Step3GenerateSpeechProps {
   speechTitle: string;
   setSpeechTitle: (title: string) => void;
   speechDetails?: SpeechDetails;
+  showStartOverButton?: boolean;
+  onStartOver?: () => void;
 }
 
 const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
@@ -25,7 +27,9 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
   selectedSpeechType,
   speechTitle,
   setSpeechTitle,
-  speechDetails = {}
+  speechDetails = {},
+  showStartOverButton = false,
+  onStartOver
 }) => {
   const { 
     generating, 
@@ -73,24 +77,44 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
           <SpeechGenerationProgress showConfetti={showConfetti} />
         )}
 
-        <div className="flex justify-between pt-4">
-          <ButtonCustom 
-            onClick={prevStep} 
-            variant="outline"
-            disabled={generating}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            <Translate text="speechLab.backButton" />
-          </ButtonCustom>
-          
-          <ButtonCustom 
-            onClick={generateSpeech} 
-            variant="magenta"
-            disabled={generating}
-          >
-            <Translate text="speechLab.generateButton" fallback="Generate Speech" />
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </ButtonCustom>
+        <div className="flex flex-col space-y-4 pt-4">
+          {/* Desktop layout: Back and Start Over side by side */}
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <ButtonCustom 
+                onClick={prevStep} 
+                variant="outline"
+                disabled={generating}
+                className="w-full sm:w-auto"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                <Translate text="speechLab.backButton" />
+              </ButtonCustom>
+              
+              {showStartOverButton && onStartOver && (
+                <ButtonCustom 
+                  onClick={onStartOver} 
+                  variant="outline"
+                  disabled={generating}
+                  className="w-full sm:w-auto"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Start Over
+                </ButtonCustom>
+              )}
+            </div>
+            
+            {/* Generate button - below on mobile, right side on desktop */}
+            <ButtonCustom 
+              onClick={generateSpeech} 
+              variant="magenta"
+              disabled={generating}
+              className="w-full sm:w-auto"
+            >
+              <Translate text="speechLab.generateButton" fallback="Generate Speech" />
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </ButtonCustom>
+          </div>
         </div>
       </div>
     </div>

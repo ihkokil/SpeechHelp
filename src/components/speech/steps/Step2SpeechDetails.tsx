@@ -13,13 +13,17 @@ interface Step2Props {
   prevStep: () => void;
   selectedSpeechType: string;
   onDetailsChange: (details: Record<string, string>) => void;
+  showStartOverButton?: boolean;
+  onStartOver?: () => void;
 }
 
 const Step2SpeechDetails: React.FC<Step2Props> = ({ 
   nextStep, 
   prevStep, 
   selectedSpeechType,
-  onDetailsChange 
+  onDetailsChange,
+  showStartOverButton = false,
+  onStartOver
 }) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
@@ -130,6 +134,8 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
             onFormDataChange={handleFormDataChange}
             onNext={nextStep}
             onPrev={prevStep}
+            showStartOverButton={showStartOverButton}
+            onStartOver={onStartOver}
           />
         ) : (
           <div className="flex justify-center items-center p-8">
