@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -18,8 +19,6 @@ interface Step4Props {
 	onTitleChange: (title: string) => void;
 	speechDetails?: Record<string, string>;
 	autoSavedSpeechId?: string;
-	showStartOverButton?: boolean;
-	onStartOver?: () => void;
 }
 
 const Step4EditSpeech: React.FC<Step4Props> = ({
@@ -28,9 +27,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 	speechType,
 	onTitleChange,
 	speechDetails = {},
-	autoSavedSpeechId,
-	showStartOverButton = false,
-	onStartOver
+	autoSavedSpeechId
 }) => {
 	const { toast } = useToast();
 	const [title, setTitle] = useState(speechTitle);

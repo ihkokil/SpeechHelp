@@ -62,8 +62,6 @@ const SpeechLabContent = () => {
             prevStep={prevStep}
             selectedSpeechType={selectedSpeechType}
             onDetailsChange={handleSpeechDetailsChange}
-            showStartOverButton={showRestorationAlert}
-            onStartOver={handleStartOver}
           />
         );
       case 3:
@@ -75,8 +73,6 @@ const SpeechLabContent = () => {
             speechTitle={speechTitle}
             setSpeechTitle={handleSpeechTitleChange}
             speechDetails={speechDetails}
-            showStartOverButton={showRestorationAlert}
-            onStartOver={handleStartOver}
           />
         );
       case 4:
@@ -88,8 +84,6 @@ const SpeechLabContent = () => {
             onTitleChange={handleSpeechTitleChange}
             speechDetails={speechDetails}
             autoSavedSpeechId={autoSavedSpeechId}
-            showStartOverButton={showRestorationAlert}
-            onStartOver={handleStartOver}
           />
         );
       default:
@@ -106,14 +100,24 @@ const SpeechLabContent = () => {
             <span className="text-green-800">
               Your progress has been restored! You're continuing from step {currentStep}: "{steps[currentStep - 1]?.title}".
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDismissAlert}
-              className="h-8 w-8 p-0 ml-4"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center space-x-2 ml-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleStartOver}
+                className="h-8 text-xs"
+              >
+                Start Over
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDismissAlert}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </AlertDescription>
         </Alert>
       )}
