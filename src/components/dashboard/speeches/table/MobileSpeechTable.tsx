@@ -1,10 +1,10 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Eye, Edit, Trash2 } from 'lucide-react';
 import { Speech } from '@/types/speech';
-import { getSpeechTypeLabel, getSpeechTypeColor, formatSpeechDate } from '../speech-utils';
+import { Eye, Edit, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { getSpeechTypeLabel, getTypeColor } from '../speech-utils';
+import { formatSpeechDate } from '../utils/dateFormatUtils';
+import { useEffect } from 'react';
 
 interface MobileSpeechTableProps {
   speeches: Speech[];
@@ -14,59 +14,61 @@ interface MobileSpeechTableProps {
 }
 
 const MobileSpeechTable = ({ speeches, onView, onEdit, onDelete }: MobileSpeechTableProps) => {
+  // Debug information about speeches
+  useEffect(() => {
+    console.log(`MobileSpeechTable rendering with ${speeches.length} speeches`);
+  }, [speeches]);
+
   return (
-    <div className="space-y-4">
-      {speeches.map((speech) => (
-        <Card key={speech.id} className="w-full">
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle className="text-lg font-medium mb-2">{speech.title}</CardTitle>
-                <Badge 
-                  variant="speech"
-                  className={getSpeechTypeColor(speech.speech_type)}
-                >
+    <div className="space-y-4 pb-4">
+      {speeches.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-500">No speeches found</p>
+        </div>
+      ) : (
+        speeches.map((speech) => (
+          <div 
+            key={speech.id} 
+            className="bg-white rounded-lg border p-4 shadow-sm"
+          >
+            <h3 className="font-medium text-base break-words">{speech.title}</h3>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mt-2">
+              <div className="text-sm text-gray-500">
+                <Badge className={getTypeColor(speech.speech_type)}>
                   {getSpeechTypeLabel(speech.speech_type)}
                 </Badge>
+                <div className="mt-2">
+                  <div>{formatSpeechDate(speech, 'created_at')}</div>
+                  <div>{speech.isUpcoming ? '' : `Modified: ${formatSpeechDate(speech, 'updated_at')}`}</div>
+                </div>
+              </div>
+              <div className="flex space-x-2 mt-2 sm:mt-0">
+                <button
+                  onClick={() => onView(speech)}
+                  className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                  aria-label="View speech"
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => onEdit(speech)}
+                  className="p-2 text-gray-500 hover:text-amber-600 transition-colors"
+                  aria-label="Edit speech"
+                >
+                  <Edit className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => onDelete(speech)}
+                  className="p-2 text-gray-500 hover:text-red-600 transition-colors"
+                  aria-label="Delete speech"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-2 text-sm text-gray-600 mb-4">
-              <div>Created: {formatSpeechDate(speech.created_at)}</div>
-              <div>Modified: {formatSpeechDate(speech.updated_at)}</div>
-            </div>
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onView(speech)}
-                className="flex-1"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                View
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(speech)}
-                className="flex-1"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDelete(speech)}
-                className="text-red-600 hover:text-red-800"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+          </div>
+        ))
+      )}
     </div>
   );
 };

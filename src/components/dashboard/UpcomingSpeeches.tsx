@@ -18,8 +18,8 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   
-  // Only get actual upcoming events, not regular speeches
-  const actualUpcomingSpeeches = speeches?.filter(speech => speech.isUpcoming) || [];
+  // Debug info
+  console.log('UpcomingSpeeches - received speeches:', speeches?.length);
   
   const { 
     upcomingEvents, 
@@ -27,12 +27,12 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
     createSpeechFromEvent, 
     viewAllEvents,
     loadEvents
-  } = useUpcomingEvents(actualUpcomingSpeeches);
+  } = useUpcomingEvents(speeches);
 
   // Force refresh of events when component mounts
   useEffect(() => {
     if (user?.id) {
-      console.log('UpcomingSpeeches - loading events for user:', user.id);
+      console.log('UpcomingSpeeches - forcing refresh of events for user:', user.id);
       loadEvents();
     }
   }, [user?.id, loadEvents]);
@@ -43,7 +43,7 @@ const UpcomingSpeeches = ({ speeches = [] }: UpcomingSpeechesProps) => {
     return null;
   }
   
-  console.log('UpcomingSpeeches - rendering with events:', upcomingEvents?.length);
+  console.log('UpcomingSpeeches - upcomingEvents loaded:', upcomingEvents?.length);
 
   return (
     <div className="bg-white rounded-lg shadow-sm">

@@ -1,67 +1,74 @@
 
 import { useMemo } from 'react';
 import { Speech } from '@/types/speech';
-
-export type FilterOption = 'all' | 'upcoming' | 'wedding' | 'business' | 'birthday' | 'graduation' | 'funeral' | 'motivational' | 'informative' | 'entertaining' | 'persuasive' | 'introduction' | 'farewell' | 'award' | 'retirement' | 'keynote' | 'tedtalk' | 'social' | 'other';
-export type SortOption = 'newest' | 'oldest' | 'alphabetical';
+import { FilterOption, SortOption } from './FilterBar';
+import { useUpcomingEventsFilter } from './hooks/useUpcomingEventsFilter';
 
 export const useSpeechesFilter = (
-  speeches: Speech[], 
-  searchQuery: string, 
-  filterType: FilterOption, 
+  speeches: Speech[],
+  searchQuery: string,
+  filterType: FilterOption,
   sortBy: SortOption
 ) => {
+  const { upcomingSpeeches } = useUpcomingEventsFilter();
+  
   const filteredSpeeches = useMemo(() => {
-    if (!speeches) return [];
+    // Combine regular speeches with upcoming speeches
+    const allSpeeches = [...speeches, ...upcomingSpeeches];
     
-    let filtered = [...speeches];
-
     // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(speech =>
-        speech.title.toLowerCase().includes(query) ||
-        speech.speech_type.toLowerCase().includes(query)
-      );
-    }
-
-    // Apply type filter - ensure clean separation between upcoming and regular speeches
-    if (filterType === 'upcoming') {
-      filtered = filtered.filter(speech => speech.isUpcoming === true);
-    } else if (filterType === 'all') {
-      // For 'all', exclude upcoming speeches to avoid duplicates
-      filtered = filtered.filter(speech => !speech.isUpcoming);
-    } else {
-      // For specific speech types, only show regular speeches (not upcoming)
+    let filtered = allSpeeches;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(speech => 
-        !speech.isUpcoming && speech.speech_type === filterType
+        speech.title?.toLowerCase().includes(query) || 
+        speech.content?.toLowerCase().includes(query)
       );
     }
-
-    // Apply sorting
-    switch (sortBy) {
-      case 'oldest':
-        filtered.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-        break;
-      case 'alphabetical':
-        filtered.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case 'newest':
-      default:
-        filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        break;
+    
+    // Apply type filter
+    if (filterType === 'all') {
+      // Show all speeches
+    } else if (filterType === 'upcoming') {
+      filtered = filtered.filter(speech => speech.isUpcoming === true);
+    } else {
+      filtered = filtered.filter(speech => 
+        speech.speech_type === filterType && !speech.isUpcoming
+      );
     }
-
-    console.log('useSpeechesFilter - applied filters:', {
-      searchQuery,
-      filterType,
-      sortBy,
-      originalCount: speeches.length,
-      filteredCount: filtered.length
+    
+    // Remove duplicates based on ID
+    const uniqueSpeeches = Array.from(
+      new Map(filtered.map(speech => [speech.id, speech])).values()
+    );
+    
+    // Sort speeches
+    return uniqueSpeeches.sort((a, b) => {
+      if (sortBy === 'newest') {
+        if (a.isUpcoming && b.isUpcoming) {
+          return new Date(b.event_date || '').getTime() - new Date(a.event_date || '').getTime();
+        } else if (a.isUpcoming) {
+          return -1;
+        } else if (b.isUpcoming) {
+          return 1;
+        }
+        return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+      } else if (sortBy === 'oldest') {
+        if (a.isUpcoming && b.isUpcoming) {
+          return new Date(a.event_date || '').getTime() - new Date(b.event_date || '').getTime();
+        } else if (a.isUpcoming) {
+          return -1;
+        } else if (b.isUpcoming) {
+          return 1;
+        }
+        return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
+      } else if (sortBy === 'title-asc') {
+        return (a.title || '').localeCompare(b.title || '');
+      } else {
+        return (b.title || '').localeCompare(a.title || '');
+      }
     });
-
-    return filtered;
-  }, [speeches, searchQuery, filterType, sortBy]);
-
+  }, [speeches, upcomingSpeeches, searchQuery, filterType, sortBy]);
+  
   return { filteredSpeeches };
 };
