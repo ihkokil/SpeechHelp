@@ -15,7 +15,7 @@ import EditSpeechForm from '../components/EditSpeechForm';
 interface EditSpeechModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  speech: Speech;
+  speech: Speech | null;
   editTitle: string;
   editContent: string;
   setEditTitle: (title: string) => void;
@@ -33,6 +33,18 @@ const EditSpeechModal = ({
   setEditContent, 
   onSave 
 }: EditSpeechModalProps) => {
+  // Debug log
+  console.log('EditSpeechModal rendered with:', {
+    isOpen,
+    speechId: speech?.id,
+    speechTitle: speech?.title,
+    editTitle,
+    editContentLength: editContent?.length || 0,
+    hasContent: Boolean(editContent)
+  });
+
+  if (!speech) return null;
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
@@ -61,6 +73,7 @@ const EditSpeechModal = ({
           <ButtonCustom 
             variant="default" 
             onClick={onSave}
+            disabled={!editTitle.trim() || !editContent.trim()}
           >
             <Translate text="common.saveChanges" />
           </ButtonCustom>
