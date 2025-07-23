@@ -36,8 +36,11 @@ const PreviousSpeeches = () => {
     navigate('/speech-lab');
   };
 
-  // Filter out upcoming speeches for PreviousSpeeches component
+  // Only show actual database speeches, not upcoming events
   const regularSpeeches = speeches?.filter(speech => !speech.isUpcoming) || [];
+
+  console.log('PreviousSpeeches - total speeches:', speeches?.length);
+  console.log('PreviousSpeeches - regular speeches:', regularSpeeches.length);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border">

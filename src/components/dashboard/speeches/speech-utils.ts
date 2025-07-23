@@ -1,59 +1,59 @@
 
-// Helper functions for speech type display
+import { format } from 'date-fns';
 
-export const getSpeechTypeLabel = (type: string): string => {
-  switch (type) {
-    case 'presentation': return 'Presentation';
-    case 'meeting': return 'Meeting';
-    case 'interview': return 'Interview';
-    case 'speech': return 'Speech';
-    case 'wedding': return 'Wedding';
-    case 'birthday': return 'Birthday';
-    case 'graduation': return 'Graduation';
-    case 'retirement': return 'Retirement';
-    case 'award': return 'Award';
-    case 'funeral': return 'Funeral';
-    case 'social': return 'Social';
-    case 'business': return 'Business';
-    case 'entertaining': return 'Entertaining';
-    case 'persuasive': return 'Persuasive';
-    case 'motivational': return 'Motivational';
-    case 'informative': return 'Informative';
-    case 'tedtalk': return 'TED Talk';  // Updated from 'Tedtalk' to 'TED Talk'
-    case 'keynote': return 'Keynote';
-    case 'upcoming': return 'Upcoming';
-    case 'farewell': return 'Farewell';
-    case 'other': return 'Other';
-    default: return type.charAt(0).toUpperCase() + type.slice(1);  // Capitalize first letter for any other types
+export const getSpeechTypeLabel = (speechType: string) => {
+  const labels: Record<string, string> = {
+    wedding: 'Wedding',
+    business: 'Business',
+    birthday: 'Birthday',
+    graduation: 'Graduation',
+    funeral: 'Funeral',
+    motivational: 'Motivational',
+    informative: 'Informative',
+    entertaining: 'Entertaining',
+    persuasive: 'Persuasive',
+    introduction: 'Introduction',
+    farewell: 'Farewell',
+    award: 'Award',
+    retirement: 'Retirement',
+    keynote: 'Keynote',
+    tedtalk: 'TED Talk',
+    social: 'Social',
+    other: 'Other'
   };
+  
+  return labels[speechType] || speechType.charAt(0).toUpperCase() + speechType.slice(1);
 };
 
-export const getTypeColor = (type: string): string => {
-  // Base classes with consistent min-width
-  const baseClasses = 'min-w-[100px] text-center inline-flex justify-center';
+export const getSpeechTypeColor = (speechType: string) => {
+  const colors: Record<string, string> = {
+    wedding: 'bg-pink-100 text-pink-800',
+    business: 'bg-blue-100 text-blue-800',
+    birthday: 'bg-yellow-100 text-yellow-800',
+    graduation: 'bg-green-100 text-green-800',
+    funeral: 'bg-gray-100 text-gray-800',
+    motivational: 'bg-purple-100 text-purple-800',
+    informative: 'bg-indigo-100 text-indigo-800',
+    entertaining: 'bg-orange-100 text-orange-800',
+    persuasive: 'bg-red-100 text-red-800',
+    introduction: 'bg-teal-100 text-teal-800',
+    farewell: 'bg-amber-100 text-amber-800',
+    award: 'bg-emerald-100 text-emerald-800',
+    retirement: 'bg-slate-100 text-slate-800',
+    keynote: 'bg-violet-100 text-violet-800',
+    tedtalk: 'bg-cyan-100 text-cyan-800',
+    social: 'bg-lime-100 text-lime-800',
+    other: 'bg-neutral-100 text-neutral-800'
+  };
   
-  switch (type) {
-    case 'presentation': return `${baseClasses} bg-blue-100 text-blue-700`;
-    case 'meeting': return `${baseClasses} bg-green-100 text-green-700`;
-    case 'interview': return `${baseClasses} bg-purple-100 text-purple-700`;
-    case 'speech': return `${baseClasses} bg-amber-100 text-amber-700`;
-    case 'wedding': return `${baseClasses} bg-pink-100 text-pink-700`;
-    case 'birthday': return `${baseClasses} bg-yellow-100 text-yellow-700`;
-    case 'graduation': return `${baseClasses} bg-indigo-100 text-indigo-700`;
-    case 'retirement': return `${baseClasses} bg-orange-100 text-orange-700`;
-    case 'award': return `${baseClasses} bg-emerald-100 text-emerald-700`;
-    case 'funeral': return `${baseClasses} bg-slate-100 text-slate-700`;
-    case 'social': return `${baseClasses} bg-rose-100 text-rose-700`;
-    case 'business': return `${baseClasses} bg-sky-100 text-sky-700`;
-    case 'entertaining': return `${baseClasses} bg-violet-100 text-violet-700`;
-    case 'persuasive': return `${baseClasses} bg-teal-100 text-teal-700`;
-    case 'motivational': return `${baseClasses} bg-lime-100 text-lime-700`;
-    case 'informative': return `${baseClasses} bg-cyan-100 text-cyan-700`;
-    case 'tedtalk': return `${baseClasses} bg-red-100 text-red-700`;
-    case 'keynote': return `${baseClasses} bg-blue-100 text-blue-700`;
-    case 'farewell': return `${baseClasses} bg-amber-100 text-amber-700`;
-    case 'upcoming': return `${baseClasses} bg-blue-100 text-blue-700`;
-    case 'other': return `${baseClasses} bg-gray-100 text-gray-700`;
-    default: return `${baseClasses} bg-gray-100 text-gray-700`;
+  return colors[speechType] || colors.other;
+};
+
+export const formatSpeechDate = (dateString: string): string => {
+  try {
+    return format(new Date(dateString), 'PPP p');
+  } catch (error) {
+    console.error('Error formatting date:', dateString, error);
+    return 'Invalid date';
   }
 };
