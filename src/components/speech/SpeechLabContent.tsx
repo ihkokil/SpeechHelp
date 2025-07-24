@@ -98,7 +98,7 @@ const SpeechLabContent = () => {
           <RotateCcw className="h-4 w-4 text-green-600" />
           <AlertDescription className="flex items-center justify-between">
             <span className="text-green-800">
-              Your progress has been restored! You're continuing from step {currentStep}: "{steps[currentStep - 1]?.title}".
+              Please try to fillup every details for best results.
             </span>
             <div className="flex items-center space-x-2 ml-4">
               <Button
