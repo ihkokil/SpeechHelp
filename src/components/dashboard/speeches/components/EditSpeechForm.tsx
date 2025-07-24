@@ -28,8 +28,10 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
   useEffect(() => {
     console.log('EditSpeechForm rendered with:', {
       speechId: speech?.id,
+      speechTitle: speech?.title,
       editTitle,
-      editContent: editContent ? `${editContent.substring(0, 50)}...` : 'empty'
+      editContentLength: editContent?.length || 0,
+      hasEditContent: Boolean(editContent)
     });
   }, [speech, editTitle, editContent]);
 
@@ -38,7 +40,14 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
     setEditContent(newContent);
   };
 
-  if (!speech) return null;
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditTitle(e.target.value);
+  };
+
+  if (!speech) {
+    console.log('EditSpeechForm: No speech provided');
+    return null;
+  }
 
   return (
     <div className="space-y-4">
@@ -49,19 +58,35 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
         <Input
           id="editTitle"
           value={editTitle}
-          onChange={(e) => setEditTitle(e.target.value)}
+          onChange={handleTitleChange}
           className="w-full"
+          placeholder="Enter speech title..."
         />
       </div>
       <div className="mt-4">
         {viewMode === 'edit' ? (
-          <SpeechContentEditor 
-            content={editContent}  
-            onContentChange={handleContentChange}
-            preserveHtml={false}
-            forceEditMode={true}
-            showFormattedContent={false}
-          />
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-pink-600 font-medium uppercase">
+                <Translate text="speechLab.content" fallback="Speech Content" />
+              </label>
+              <button 
+                onClick={() => setViewMode('preview')}
+                className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center"
+                disabled={!editContent.trim()}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <Translate text="speechLab.preview" fallback="Preview" />
+              </button>
+            </div>
+            <SpeechContentEditor 
+              content={editContent}  
+              onContentChange={handleContentChange}
+              preserveHtml={false}
+              forceEditMode={true}
+              showFormattedContent={false}
+            />
+          </div>
         ) : (
           <div>
             <div className="flex justify-between items-center mb-2">

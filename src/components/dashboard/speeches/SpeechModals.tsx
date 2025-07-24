@@ -4,6 +4,7 @@ import ViewSpeechModal from './modals/ViewSpeechModal';
 import EditSpeechModal from './modals/EditSpeechModal';
 import DeleteSpeechAlert from './modals/DeleteSpeechAlert';
 import { useSpeechModals } from './hooks/useSpeechModals';
+import { useEffect } from 'react';
 
 interface SpeechModalsProps {
   selectedSpeech: Speech | null;
@@ -35,33 +36,50 @@ const SpeechModals = ({
     handleDeleteSpeech
   } = useSpeechModals();
   
-  const handleEditModalOpenChange = (open: boolean) => {
-    setIsEditModalOpen(open);
-    if (open && selectedSpeech) {
-      setTitle(selectedSpeech.title);
+  // Initialize form data when selected speech changes or edit modal opens
+  useEffect(() => {
+    if (selectedSpeech && isEditModalOpen) {
+      console.log('Initializing edit form with speech:', selectedSpeech);
+      
+      // Set title
+      setTitle(selectedSpeech.title || '');
       
       // Process content based on its format
+      let processedContent = '';
+      
       try {
-        if (selectedSpeech.content && typeof selectedSpeech.content === 'string') {
-          if (selectedSpeech.content.trim().startsWith('{')) {
-            const parsedContent = JSON.parse(selectedSpeech.content);
-            setContent(parsedContent.content || selectedSpeech.content);
+        if (selectedSpeech.content) {
+          if (typeof selectedSpeech.content === 'string') {
+            // Check if it's JSON format
+            if (selectedSpeech.content.trim().startsWith('{')) {
+              const parsedContent = JSON.parse(selectedSpeech.content);
+              processedContent = parsedContent.content || selectedSpeech.content;
+            } else {
+              processedContent = selectedSpeech.content;
+            }
           } else {
-            setContent(selectedSpeech.content);
+            processedContent = String(selectedSpeech.content);
           }
-        } else {
-          setContent(selectedSpeech.content || '');
         }
       } catch (error) {
-        console.error('Error processing content:', error);
-        setContent(selectedSpeech.content || '');
+        console.error('Error processing speech content:', error);
+        processedContent = selectedSpeech.content || '';
       }
+      
+      setContent(processedContent);
+      console.log('Set content to:', processedContent.substring(0, 100) + '...');
     }
+  }, [selectedSpeech, isEditModalOpen, setTitle, setContent]);
+  
+  const handleEditModalOpenChange = (open: boolean) => {
+    setIsEditModalOpen(open);
+    // Form data is now initialized in useEffect above
   };
   
   const handleSaveEdit = async () => {
     if (!selectedSpeech) return;
     
+    console.log('Saving speech with:', { title, content: content.substring(0, 100) + '...' });
     const success = await handleUpdateSpeech(selectedSpeech, title, content);
     if (success) {
       setIsEditModalOpen(false);
