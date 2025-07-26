@@ -92,7 +92,7 @@ const SpeechLabContent = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
+    <div className="w-full p-6 space-y-8">
       {showRestorationAlert && (
         <Alert className="border-green-200 bg-green-50">
           <RotateCcw className="h-4 w-4 text-green-600" />
