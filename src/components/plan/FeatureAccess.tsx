@@ -69,7 +69,7 @@ interface FeatureAccessProps {
 
 /**
  * Component that conditionally renders content based on the user's subscription plan
- * with improved UI for denied access cases
+ * with enhanced expiration handling
  */
 export function FeatureAccess({
 	feature,
@@ -96,12 +96,31 @@ export function FeatureAccess({
 		);
 	}
 
+	// Check if the subscription is expired first
+	if (planLimits.isExpired) {
+		const expiredMessage = limitMessage || `Your subscription has expired. Please upgrade to continue using ${featureName}.`;
+		const expiredDescription = limitDescription || `Your ${planLimits.planDisplayName.replace(' (Expired)', '')} has expired. Upgrade to restore access to ${featureName} and other premium features.`;
+		
+		return (
+			<PlanLimitBlock
+				title="Subscription Expired"
+				message={expiredMessage}
+				description={expiredDescription}
+				requiredPlan={minimumPlan || getMinimumPlanForFeature(feature)}
+				featureName={featureName}
+				upgradeUrl={upgradeUrl}
+				showUpgradeButton={showUpgradeButton}
+				className={blockClassName}
+			/>
+		);
+	}
+
 	// Check if the user is active
 	if (!planLimits.isActive) {
 		return (
 			<PlanLimitBlock
-				title={`Subscription Expired`}
-				message={limitMessage || `Your subscription has expired. Please upgrade to continue using ${featureName}.`}
+				title="Subscription Inactive"
+				message={limitMessage || `Your subscription is not active. Please upgrade to continue using ${featureName}.`}
 				description={limitDescription || `Upgrade to access ${featureName} and other premium features.`}
 				requiredPlan={minimumPlan || getMinimumPlanForFeature(feature)}
 				featureName={featureName}
@@ -112,7 +131,7 @@ export function FeatureAccess({
 		);
 	}
 
-	// Check feature availability if specified
+	// Check feature availability if specified (uses effective plan)
 	if (feature) {
 		const hasFeatureAccess = planLimits.isFeatureAvailable(feature) as boolean;
 		if (!hasFeatureAccess) {
@@ -134,7 +153,7 @@ export function FeatureAccess({
 		}
 	}
 
-	// Check limit if specified
+	// Check limit if specified (uses effective plan)
 	if (limitType) {
 		const hasReachedLimit = planLimits.hasReachedLimit(limitType);
 		if (hasReachedLimit) {
@@ -155,7 +174,7 @@ export function FeatureAccess({
 		}
 	}
 
-	// Check minimum plan if specified
+	// Check minimum plan if specified (uses effective plan)
 	if (minimumPlan) {
 		const planOrder = [
 			SubscriptionPlan.FREE_TRIAL,
@@ -163,16 +182,16 @@ export function FeatureAccess({
 			SubscriptionPlan.PRO,
 		];
 
-		const currentPlanIndex = planOrder.indexOf(planLimits.currentPlan);
+		const effectivePlanIndex = planOrder.indexOf(planLimits.effectivePlan);
 		const requiredPlanIndex = planOrder.indexOf(minimumPlan);
 
-		if (currentPlanIndex < requiredPlanIndex) {
+		if (effectivePlanIndex < requiredPlanIndex) {
 			// Return custom fallback or the limit block
 			if (fallback) return <>{fallback}</>;
 
 			return (
 				<PlanLimitBlock
-					title={`Plan Upgrade Required`}
+					title="Plan Upgrade Required"
 					message={limitMessage || `${featureName} requires at least the ${PLAN_RULES[minimumPlan].displayName} plan.`}
 					description={limitDescription || `Upgrade to access ${featureName} and other premium features.`}
 					requiredPlan={minimumPlan}

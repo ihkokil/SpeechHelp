@@ -13,6 +13,10 @@ const PricingHeader: React.FC = () => {
     
     const planName = profile.subscription_plan || 'Free Trial';
     const status = profile.subscription_status || 'inactive';
+    const endDate = profile.subscription_end_date;
+    
+    // Check if subscription is expired
+    const isExpired = endDate ? new Date() > new Date(endDate) : false;
     
     // Format plan name for display
     const formatPlanName = (plan: string) => {
@@ -28,7 +32,11 @@ const PricingHeader: React.FC = () => {
       }
     };
 
-    const getStatusColor = (status: string) => {
+    const getStatusColor = (status: string, expired: boolean) => {
+      if (expired) {
+        return 'bg-red-100 text-red-800';
+      }
+      
       switch (status.toLowerCase()) {
         case 'active':
           return 'bg-green-100 text-green-800';
@@ -42,18 +50,44 @@ const PricingHeader: React.FC = () => {
       }
     };
 
+    const getStatusText = (status: string, expired: boolean) => {
+      if (expired) {
+        return 'Expired';
+      }
+      
+      switch (status.toLowerCase()) {
+        case 'active':
+          return 'Active';
+        case 'canceled':
+        case 'cancelled':
+          return 'Canceled';
+        case 'past_due':
+          return 'Past Due';
+        default:
+          return 'Inactive';
+      }
+    };
+
     return (
       <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-3 flex-wrap">
           <span className="text-lg font-medium text-gray-700">
             Your Current Plan:
           </span>
-          <Badge className={`${getStatusColor(status)} font-medium px-3 py-1`}>
-            {formatPlanName(planName)}
+          <Badge className={`${getStatusColor(status, isExpired)} font-medium px-3 py-1`}>
+            {formatPlanName(planName)} {isExpired && '(Expired)'}
           </Badge>
-          {status === 'active' && profile.subscription_end_date && (
+          <Badge className={getStatusColor(status, isExpired)}>
+            {getStatusText(status, isExpired)}
+          </Badge>
+          {endDate && (
             <span className="text-sm text-gray-600">
-              (Renews: {new Date(profile.subscription_end_date).toLocaleDateString()})
+              {isExpired ? 'Expired:' : (status === 'active' ? 'Renews:' : 'Ends:')} {new Date(endDate).toLocaleDateString()}
+            </span>
+          )}
+          {isExpired && (
+            <span className="text-sm text-red-600 font-medium">
+              Please upgrade to continue using premium features
             </span>
           )}
         </div>

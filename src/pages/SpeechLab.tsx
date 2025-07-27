@@ -2,7 +2,7 @@
 import React from 'react';
 import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 import SpeechLabContent from '@/components/speech/SpeechLabContent';
-import { LimitType, SubscriptionPlan } from '@/lib/plan_rules';
+import { LimitType } from '@/lib/plan_rules';
 import { FeatureAccess } from '@/components/plan/FeatureAccess';
 import { useCachedPlanAccess } from '@/hooks/useCachedPlanAccess';
 import { Loader2 } from 'lucide-react';
@@ -37,7 +37,7 @@ const SpeechLab = () => {
 				<FeatureAccess
 					limitType={LimitType.SPEECHES_COUNT}
 					featureName="Speech Lab"
-					limitDescription="Our Premium plan gives you access to 3 speeches per month, and our Pro plan offers unlimited speeches along with additional features."
+					limitDescription={reasonCannotCreate || "Our Premium plan gives you access to 3 speeches per month, and our Pro plan offers unlimited speeches along with additional features."}
 					blockClassName="max-w-xl mx-auto my-8"
 					upgradeUrl="/pricing"
 				>

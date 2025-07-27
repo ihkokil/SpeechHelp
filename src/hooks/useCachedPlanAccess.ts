@@ -9,10 +9,12 @@ interface CachedPlanAccess {
   canCreateSpeech: boolean;
   reasonCannotCreate?: string;
   shouldShowUpgrade: boolean;
+  isExpired: boolean;
+  isActive: boolean;
   timestamp: number;
 }
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 2 * 60 * 1000; // Reduced to 2 minutes for more frequent checks
 const CACHE_KEY_PREFIX = 'planAccess_';
 
 export const useCachedPlanAccess = (limitType: LimitType, featureName: string) => {
@@ -36,7 +38,11 @@ export const useCachedPlanAccess = (limitType: LimitType, featureName: string) =
         if (!isExpired) {
           setCachedAccess(parsedCache);
           setIsInitialCheck(false);
-          console.log(`✅ Using cached plan access for ${featureName}`);
+          console.log(`✅ Using cached plan access for ${featureName}`, {
+            canCreate: parsedCache.canCreateSpeech,
+            isExpired: parsedCache.isExpired,
+            isActive: parsedCache.isActive
+          });
         } else {
           localStorage.removeItem(cacheKey);
           console.log(`🗑️ Expired cache removed for ${featureName}`);
@@ -55,6 +61,8 @@ export const useCachedPlanAccess = (limitType: LimitType, featureName: string) =
         canCreateSpeech: planLimits.canCreateSpeech,
         reasonCannotCreate: planLimits.reasonCannotCreate,
         shouldShowUpgrade: planLimits.shouldShowUpgradePrompt,
+        isExpired: planLimits.isExpired,
+        isActive: planLimits.isActive,
         timestamp: Date.now()
       };
 
@@ -63,28 +71,49 @@ export const useCachedPlanAccess = (limitType: LimitType, featureName: string) =
 
       try {
         localStorage.setItem(cacheKey, JSON.stringify(newCachedAccess));
-        console.log(`💾 Cached plan access for ${featureName}`);
+        console.log(`💾 Cached plan access for ${featureName}`, {
+          canCreate: newCachedAccess.canCreateSpeech,
+          isExpired: newCachedAccess.isExpired,
+          isActive: newCachedAccess.isActive
+        });
       } catch (error) {
         console.error('Error caching plan access:', error);
       }
     }
-  }, [planLimits.loadingPlanLimits, planLimits.canCreateSpeech, planLimits.reasonCannotCreate, planLimits.shouldShowUpgradePrompt, cacheKey, cachedAccess, featureName]);
+  }, [
+    planLimits.loadingPlanLimits, 
+    planLimits.canCreateSpeech, 
+    planLimits.reasonCannotCreate, 
+    planLimits.shouldShowUpgradePrompt,
+    planLimits.isExpired,
+    planLimits.isActive,
+    cacheKey, 
+    cachedAccess, 
+    featureName
+  ]);
 
   const clearCache = useCallback(() => {
     if (cacheKey) {
       localStorage.removeItem(cacheKey);
       setCachedAccess(null);
+      console.log(`🧹 Cleared cache for ${featureName}`);
     }
-  }, [cacheKey]);
+  }, [cacheKey, featureName]);
+
+  // If subscription is expired or inactive, always deny access regardless of cache
+  const effectiveAccess = cachedAccess?.isExpired || !cachedAccess?.isActive ? false : 
+    (cachedAccess?.canCreateSpeech ?? planLimits.canCreateSpeech);
 
   // Return cached data if available, otherwise use live data
   const isLoading = isInitialCheck && planLimits.loadingPlanLimits && !cachedAccess;
   
   return {
     loadingPlanLimits: isLoading,
-    canCreateSpeech: cachedAccess?.canCreateSpeech ?? planLimits.canCreateSpeech,
+    canCreateSpeech: effectiveAccess,
     reasonCannotCreate: cachedAccess?.reasonCannotCreate ?? planLimits.reasonCannotCreate,
     shouldShowUpgradePrompt: cachedAccess?.shouldShowUpgrade ?? planLimits.shouldShowUpgradePrompt,
+    isExpired: cachedAccess?.isExpired ?? planLimits.isExpired,
+    isActive: cachedAccess?.isActive ?? planLimits.isActive,
     clearCache,
     hasCachedData: !!cachedAccess
   };

@@ -9,7 +9,9 @@ import {
 	isFeatureAvailable,
 	canCreateSpeech,
 	isSubscriptionActive,
-	getTrialDaysRemaining
+	isSubscriptionExpired,
+	getDaysRemaining,
+	getEffectivePlanStatus
 } from '@/lib/plan_rules';
 
 /**
@@ -17,9 +19,11 @@ import {
  */
 export interface UserPlanLimits {
 	loadingPlanLimits: boolean;
-	// Plan status
+	// Plan status with enhanced expiration logic
 	isActive: boolean;
+	isExpired: boolean;
 	currentPlan: SubscriptionPlan;
+	effectivePlan: SubscriptionPlan; // Plan after considering expiration
 	planDisplayName: string;
 	daysRemaining: number | null;
 
@@ -30,7 +34,7 @@ export interface UserPlanLimits {
 	speechesLimit: number;
 	speechesRemaining: number;
 
-	// Features access
+	// Features access (based on effective plan)
 	canUseAiAnalysis: boolean;
 	canUseTeamCollaboration: boolean;
 	canUseCustomBranding: boolean;
@@ -53,7 +57,7 @@ export interface UserPlanLimits {
 }
 
 /**
- * Hook to monitor a user's subscription plan limits
+ * Hook to monitor a user's subscription plan limits with enhanced expiration logic
  */
 export function usePlanLimits(): UserPlanLimits {
 	const { user } = useAuth();
@@ -63,6 +67,7 @@ export function usePlanLimits(): UserPlanLimits {
 		planType: SubscriptionPlan;
 		startDate: Date;
 		endDate?: Date;
+		subscriptionStatus?: string;
 		usageStats: {
 			speechesUsed: number;
 			storageUsed: number;
@@ -89,6 +94,8 @@ export function usePlanLimits(): UserPlanLimits {
 			
 			setLoadingPlanLimits(true);
 			try {
+				console.log('🔍 Fetching subscription data for user:', user.id);
+				
 				// Get the user's profile from the database
 				const { data: profileData, error: profileError } = await supabase
 					.from('profiles')
@@ -97,9 +104,16 @@ export function usePlanLimits(): UserPlanLimits {
 					.single();
 
 				if (profileError) {
-					console.error('Error fetching profile:', profileError);
+					console.error('❌ Error fetching profile:', profileError);
 					return;
 				}
+
+				console.log('📋 Profile data:', {
+					plan: profileData?.subscription_plan,
+					status: profileData?.subscription_status,
+					startDate: profileData?.subscription_start_date,
+					endDate: profileData?.subscription_end_date
+				});
 
 				// Get speech count for the user
 				const { count: speechCount, error: speechError } = await supabase
@@ -108,9 +122,11 @@ export function usePlanLimits(): UserPlanLimits {
 					.eq('user_id', user.id);
 
 				if (speechError) {
-					console.error('Error fetching speech count:', speechError);
+					console.error('❌ Error fetching speech count:', speechError);
 					return;
 				}
+
+				console.log('🎤 Speech count:', speechCount);
 
 				// Map database values to our user subscription model
 				const planType = (profileData?.subscription_plan as SubscriptionPlan) || SubscriptionPlan.FREE_TRIAL;
@@ -120,20 +136,32 @@ export function usePlanLimits(): UserPlanLimits {
 				const endDate = profileData?.subscription_end_date
 					? new Date(profileData.subscription_end_date)
 					: undefined;
+				const subscriptionStatus = profileData?.subscription_status || undefined;
 
-				setUserSubscription({
+				const newSubscription = {
 					userId: user.id,
 					planType,
 					startDate,
 					endDate,
+					subscriptionStatus,
 					usageStats: {
 						speechesUsed: speechCount || 0,
 						storageUsed: 0, // This would need to be calculated based on your storage model
 						teamMembersAdded: 0, // This would need to be fetched from a team members table
 					},
+				};
+
+				console.log('✅ Final subscription data:', {
+					planType: newSubscription.planType,
+					status: newSubscription.subscriptionStatus,
+					isActive: isSubscriptionActive(newSubscription),
+					isExpired: isSubscriptionExpired(newSubscription),
+					daysRemaining: getDaysRemaining(newSubscription)
 				});
+
+				setUserSubscription(newSubscription);
 			} catch (error) {
-				console.error('Error in fetchUserSubscriptionData:', error);
+				console.error('❌ Error in fetchUserSubscriptionData:', error);
 			} finally {
 				setLoadingPlanLimits(false);
 			}
@@ -142,7 +170,7 @@ export function usePlanLimits(): UserPlanLimits {
 		fetchUserSubscriptionData();
 	}, [user]);
 
-	// Check if feature is available
+	// Check if feature is available using effective plan
 	const checkFeatureAvailability = useCallback(
 		(feature: 'aiAnalysis' | 'teamCollaboration' | 'customBranding' | 'exportOptions'): boolean | string[] => {
 			if (feature === 'exportOptions') {
@@ -153,10 +181,14 @@ export function usePlanLimits(): UserPlanLimits {
 		[userSubscription]
 	);
 
-	// Check if user has reached a specific limit
+	// Check if user has reached a specific limit using effective plan
 	const hasReachedLimit = useCallback(
 		(limitType: LimitType): boolean => {
-			const limit = PLAN_RULES[userSubscription.planType].limits[limitType];
+			const { effectivePlan, isActive, isExpired } = getEffectivePlanStatus(userSubscription);
+			
+			// If expired or inactive, use most restrictive limits
+			const planToCheck = (isExpired || !isActive) ? SubscriptionPlan.FREE_TRIAL : effectivePlan;
+			const limit = PLAN_RULES[planToCheck].limits[limitType];
 
 			switch (limitType) {
 				case LimitType.SPEECHES_COUNT:
@@ -166,8 +198,8 @@ export function usePlanLimits(): UserPlanLimits {
 				case LimitType.TEAM_MEMBERS:
 					return userSubscription.usageStats.teamMembersAdded >= limit;
 				case LimitType.ACTIVE_DAYS:
-					// For active days, we check if the subscription is active
-					return !isSubscriptionActive(userSubscription);
+					// For active days, we check if the subscription is expired
+					return isExpired || !isActive;
 				default:
 					return false;
 			}
@@ -175,56 +207,45 @@ export function usePlanLimits(): UserPlanLimits {
 		[userSubscription]
 	);
 
-	// Get plan display name
-	const planDisplayName = PLAN_RULES[userSubscription.planType].displayName;
-
-	// Check if subscription is active
-	const isActive = isSubscriptionActive(userSubscription);
+	// Get effective plan status
+	const effectiveStatus = getEffectivePlanStatus(userSubscription);
+	
+	// Get plan display name (show original plan but indicate if expired)
+	const planDisplayName = effectiveStatus.isExpired 
+		? `${PLAN_RULES[userSubscription.planType].displayName} (Expired)`
+		: PLAN_RULES[userSubscription.planType].displayName;
 
 	// Get speech creation permission
 	const speechCreationStatus = canCreateSpeech(userSubscription);
 
-	// Calculate days remaining (for trial or time-limited plans)
-	let daysRemaining: number | null = null;
-	if (userSubscription.planType === SubscriptionPlan.FREE_TRIAL) {
-		daysRemaining = getTrialDaysRemaining(userSubscription);
-	} else if (userSubscription.endDate) {
-		const now = new Date();
-		const diffTime = userSubscription.endDate.getTime() - now.getTime();
-		daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-	}
+	// Calculate days remaining
+	const daysRemaining = getDaysRemaining(userSubscription);
 
-	// Calculate usage statistics and limits
-	const speechesLimit = PLAN_RULES[userSubscription.planType].limits[LimitType.SPEECHES_COUNT];
+	// Calculate usage statistics and limits using effective plan
+	const speechesLimit = PLAN_RULES[effectiveStatus.effectivePlan].limits[LimitType.SPEECHES_COUNT];
 	const speechesRemaining = speechesLimit === Infinity
 		? Infinity
 		: speechesLimit - userSubscription.usageStats.speechesUsed;
 
-	const storageLimit = PLAN_RULES[userSubscription.planType].limits[LimitType.STORAGE_MB];
+	const storageLimit = PLAN_RULES[effectiveStatus.effectivePlan].limits[LimitType.STORAGE_MB];
 	const storageRemaining = storageLimit === Infinity
 		? Infinity
 		: storageLimit - userSubscription.usageStats.storageUsed;
 
-	const teamMembersLimit = PLAN_RULES[userSubscription.planType].limits[LimitType.TEAM_MEMBERS];
+	const teamMembersLimit = PLAN_RULES[effectiveStatus.effectivePlan].limits[LimitType.TEAM_MEMBERS];
 	const teamMembersRemaining = teamMembersLimit === Infinity
 		? Infinity
 		: teamMembersLimit - userSubscription.usageStats.teamMembersAdded;
 
-	// Determine if we should show upgrade prompt
-	// Show if: close to speech limit or trial ending soon or storage running low
-	const shouldShowUpgradePrompt = (
-		(typeof speechesRemaining === 'number' && speechesRemaining <= 1) ||
-		(daysRemaining !== null && daysRemaining <= 2) ||
-		(typeof storageRemaining === 'number' && storageRemaining <= 50)
-	);
-
 	return {
 		loadingPlanLimits,
-		// Plan status
-		isActive,
+		// Plan status with enhanced logic
+		isActive: effectiveStatus.isActive,
+		isExpired: effectiveStatus.isExpired,
 		currentPlan: userSubscription.planType,
+		effectivePlan: effectiveStatus.effectivePlan,
 		planDisplayName,
-		daysRemaining,
+		daysRemaining: daysRemaining > 0 ? daysRemaining : null,
 
 		// Speech limits
 		canCreateSpeech: speechCreationStatus.allowed,
@@ -233,7 +254,7 @@ export function usePlanLimits(): UserPlanLimits {
 		speechesLimit,
 		speechesRemaining,
 
-		// Features access
+		// Features access (based on effective plan)
 		canUseAiAnalysis: checkFeatureAvailability('aiAnalysis') as boolean,
 		canUseTeamCollaboration: checkFeatureAvailability('teamCollaboration') as boolean,
 		canUseCustomBranding: checkFeatureAvailability('customBranding') as boolean,
@@ -252,6 +273,6 @@ export function usePlanLimits(): UserPlanLimits {
 		// Utility methods
 		isFeatureAvailable: checkFeatureAvailability,
 		hasReachedLimit,
-		shouldShowUpgradePrompt,
+		shouldShowUpgradePrompt: effectiveStatus.shouldShowUpgrade,
 	};
 }
