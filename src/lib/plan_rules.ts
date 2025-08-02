@@ -320,6 +320,7 @@ export function getEffectivePlanStatus(subscription: UserSubscription): {
 		(!isActive) ||
 		(subscription.planType === SubscriptionPlan.FREE_TRIAL && daysRemaining <= 2) ||
 		(subscription.planType !== SubscriptionPlan.PRO && 
+		 subscription.planType !== SubscriptionPlan.FREE_TRIAL &&
 		 PLAN_RULES[subscription.planType].limits[LimitType.SPEECHES_COUNT] !== Infinity && 
 		 subscription.usageStats.speechesUsed >= PLAN_RULES[subscription.planType].limits[LimitType.SPEECHES_COUNT] - 1);
 	
