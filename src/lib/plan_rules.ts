@@ -315,11 +315,12 @@ export function getEffectivePlanStatus(subscription: UserSubscription): {
 	// If expired, effective plan is free trial (most restrictive)
 	const effectivePlan = (isExpired || !isActive) ? SubscriptionPlan.FREE_TRIAL : subscription.planType;
 	
-	// Show upgrade if expired, trial ending soon, or close to limits
+	// Show upgrade if expired, inactive, trial ending soon, or close to limits
 	const shouldShowUpgrade = isExpired || 
 		(!isActive) ||
 		(subscription.planType === SubscriptionPlan.FREE_TRIAL && daysRemaining <= 2) ||
-		(PLAN_RULES[subscription.planType].limits[LimitType.SPEECHES_COUNT] !== Infinity && 
+		(subscription.planType !== SubscriptionPlan.PRO && 
+		 PLAN_RULES[subscription.planType].limits[LimitType.SPEECHES_COUNT] !== Infinity && 
 		 subscription.usageStats.speechesUsed >= PLAN_RULES[subscription.planType].limits[LimitType.SPEECHES_COUNT] - 1);
 	
 	return {
