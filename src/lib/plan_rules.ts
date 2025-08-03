@@ -1,5 +1,196 @@
 
 /**
+ * Subscription plan types and rules
+ */
+export enum SubscriptionPlan {
+	FREE_TRIAL = 'free_trial',
+	PREMIUM = 'premium',
+	PRO = 'pro',
+}
+
+/**
+ * Types of limits that can be enforced
+ */
+export enum LimitType {
+	SPEECHES_COUNT = 'speeches_count',
+	STORAGE_MB = 'storage_mb',
+	TEAM_MEMBERS = 'team_members',
+	ACTIVE_DAYS = 'active_days',
+}
+
+/**
+ * User subscription interface
+ */
+export interface UserSubscription {
+	userId: string;
+	planType: SubscriptionPlan;
+	startDate: Date;
+	endDate?: Date;
+	subscriptionStatus?: string;
+	usageStats: {
+		speechesUsed: number;
+		storageUsed: number;
+		teamMembersAdded: number;
+	};
+}
+
+/**
+ * Plan configuration interface
+ */
+interface PlanConfig {
+	displayName: string;
+	limits: {
+		[LimitType.SPEECHES_COUNT]: number;
+		[LimitType.STORAGE_MB]: number;
+		[LimitType.TEAM_MEMBERS]: number;
+		[LimitType.ACTIVE_DAYS]: number;
+	};
+	features: {
+		aiAnalysis: boolean;
+		teamCollaboration: boolean;
+		customBranding: boolean;
+		exportOptions: string[];
+	};
+}
+
+/**
+ * Plan rules configuration
+ */
+export const PLAN_RULES: Record<SubscriptionPlan, PlanConfig> = {
+	[SubscriptionPlan.FREE_TRIAL]: {
+		displayName: 'Free Trial',
+		limits: {
+			[LimitType.SPEECHES_COUNT]: 1,
+			[LimitType.STORAGE_MB]: 100,
+			[LimitType.TEAM_MEMBERS]: 1,
+			[LimitType.ACTIVE_DAYS]: 7,
+		},
+		features: {
+			aiAnalysis: true,
+			teamCollaboration: false,
+			customBranding: false,
+			exportOptions: ['pdf'],
+		},
+	},
+	[SubscriptionPlan.PREMIUM]: {
+		displayName: 'Premium Plan',
+		limits: {
+			[LimitType.SPEECHES_COUNT]: 3,
+			[LimitType.STORAGE_MB]: 1000,
+			[LimitType.TEAM_MEMBERS]: 5,
+			[LimitType.ACTIVE_DAYS]: Infinity,
+		},
+		features: {
+			aiAnalysis: true,
+			teamCollaboration: true,
+			customBranding: false,
+			exportOptions: ['pdf', 'docx', 'pptx'],
+		},
+	},
+	[SubscriptionPlan.PRO]: {
+		displayName: 'Pro Plan',
+		limits: {
+			[LimitType.SPEECHES_COUNT]: Infinity,
+			[LimitType.STORAGE_MB]: Infinity,
+			[LimitType.TEAM_MEMBERS]: Infinity,
+			[LimitType.ACTIVE_DAYS]: Infinity,
+		},
+		features: {
+			aiAnalysis: true,
+			teamCollaboration: true,
+			customBranding: true,
+			exportOptions: ['pdf', 'docx', 'pptx', 'html'],
+		},
+	},
+};
+
+/**
+ * Check if subscription is currently active
+ */
+export function isSubscriptionActive(subscription: UserSubscription): boolean {
+	if (!subscription.subscriptionStatus) {
+		return subscription.planType === SubscriptionPlan.FREE_TRIAL;
+	}
+	return subscription.subscriptionStatus === 'active';
+}
+
+/**
+ * Check if subscription is expired
+ */
+export function isSubscriptionExpired(subscription: UserSubscription): boolean {
+	if (!subscription.endDate) {
+		return false;
+	}
+	return new Date() > subscription.endDate;
+}
+
+/**
+ * Get days remaining in subscription
+ */
+export function getDaysRemaining(subscription: UserSubscription): number {
+	if (!subscription.endDate) {
+		return Infinity;
+	}
+	
+	const now = new Date();
+	const endDate = subscription.endDate;
+	const diffInMs = endDate.getTime() - now.getTime();
+	const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+	
+	return Math.max(0, diffInDays);
+}
+
+/**
+ * Check if a feature is available for the user's subscription
+ */
+export function isFeatureAvailable(
+	subscription: UserSubscription,
+	feature: 'aiAnalysis' | 'teamCollaboration' | 'customBranding' | 'exportOptions'
+): boolean | string[] {
+	const { effectivePlan } = getEffectivePlanStatus(subscription);
+	const planConfig = PLAN_RULES[effectivePlan];
+	
+	if (feature === 'exportOptions') {
+		return planConfig.features.exportOptions;
+	}
+	
+	return planConfig.features[feature];
+}
+
+/**
+ * Check if user can create a new speech
+ */
+export function canCreateSpeech(subscription: UserSubscription): { allowed: boolean; reason?: string } {
+	const { effectivePlan, isActive, isExpired } = getEffectivePlanStatus(subscription);
+	
+	// Check if subscription is expired or inactive
+	if (isExpired) {
+		return {
+			allowed: false,
+			reason: `Your ${PLAN_RULES[subscription.planType].displayName} has expired. Please upgrade to continue creating speeches.`
+		};
+	}
+	
+	if (!isActive) {
+		return {
+			allowed: false,
+			reason: `Your subscription is not active. Please upgrade to continue creating speeches.`
+		};
+	}
+	
+	// Check speech limit
+	const speechLimit = PLAN_RULES[effectivePlan].limits[LimitType.SPEECHES_COUNT];
+	if (speechLimit !== Infinity && subscription.usageStats.speechesUsed >= speechLimit) {
+		return {
+			allowed: false,
+			reason: `You've reached your limit of ${speechLimit} speeches on your ${PLAN_RULES[subscription.planType].displayName}. Upgrade to create more speeches.`
+		};
+	}
+	
+	return { allowed: true };
+}
+
+/**
  * Determine effective plan status considering both plan type and expiration
  */
 export function getEffectivePlanStatus(subscription: UserSubscription): {
