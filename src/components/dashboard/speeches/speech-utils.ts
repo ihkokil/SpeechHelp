@@ -29,8 +29,8 @@ export const getSpeechTypeLabel = (type: string): string => {
 };
 
 export const getTypeColor = (type: string): string => {
-  // Base classes with consistent min-width - no hover effects
-  const baseClasses = 'min-w-[100px] text-center inline-flex justify-center';
+  // Base classes with consistent min-width - explicitly remove hover effects
+  const baseClasses = 'min-w-[100px] text-center inline-flex justify-center hover:bg-current hover:text-current pointer-events-none';
   
   switch (type) {
     case 'presentation': return `${baseClasses} bg-blue-100 text-blue-700`;
