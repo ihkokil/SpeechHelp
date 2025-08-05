@@ -1,4 +1,6 @@
+
 import { format, differenceInDays } from 'date-fns';
+import { SpeechEvent } from './types';
 
 export const getCategoryColor = (category: string): string => {
   // Base classes with consistent styling - explicitly remove hover effects
@@ -61,4 +63,34 @@ export const getDaysRemaining = (date: Date | string): number => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   const today = new Date();
   return differenceInDays(dateObj, today);
+};
+
+export const loadEventsFromStorage = (userId: string): SpeechEvent[] | null => {
+  try {
+    const storageKey = `upcomingEvents_${userId}`;
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      const events = JSON.parse(stored);
+      return events.map((event: any) => ({
+        ...event,
+        date: new Date(event.date)
+      }));
+    }
+  } catch (error) {
+    console.error('Error loading events from storage:', error);
+  }
+  return null;
+};
+
+export const saveEventsToStorage = (events: SpeechEvent[], userId: string): void => {
+  try {
+    const storageKey = `upcomingEvents_${userId}`;
+    const eventsToStore = events.map(event => ({
+      ...event,
+      date: event.date instanceof Date ? event.date.toISOString() : event.date
+    }));
+    localStorage.setItem(storageKey, JSON.stringify(eventsToStore));
+  } catch (error) {
+    console.error('Error saving events to storage:', error);
+  }
 };
