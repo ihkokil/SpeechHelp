@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Speech } from '@/types/speech';
 import FilterBar from './FilterBar';
@@ -17,6 +17,7 @@ interface SpeechesManagerProps {
 const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManagerProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const hasUpdatedUrl = useRef(false);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterOption>(initialFilter as FilterOption);
@@ -34,20 +35,32 @@ const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManag
     }
   }, [initialFilter]);
   
-  // Update URL when filter changes
+  // Update URL when filter changes (but prevent infinite loops)
   useEffect(() => {
+    // Prevent updating URL on initial mount or if we've already updated
+    if (hasUpdatedUrl.current) {
+      return;
+    }
+
     const params = new URLSearchParams(location.search);
     const currentFilter = params.get('filter');
     
     if (filterType !== 'all' && filterType !== currentFilter) {
       params.set('filter', filterType);
       navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+      hasUpdatedUrl.current = true;
     } else if (filterType === 'all' && currentFilter) {
       params.delete('filter');
       const newSearch = params.toString();
       navigate(`${location.pathname}${newSearch ? `?${newSearch}` : ''}`, { replace: true });
+      hasUpdatedUrl.current = true;
     }
-  }, [filterType, location, navigate]);
+  }, [filterType, navigate, location.pathname, location.search]);
+
+  // Reset the URL update flag when filterType changes from user interaction
+  useEffect(() => {
+    hasUpdatedUrl.current = false;
+  }, [filterType]);
   
   const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
   
