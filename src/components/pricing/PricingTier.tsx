@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -170,9 +169,6 @@ const PricingTier: React.FC<PricingTierProps> = ({
 		if (isCurrentPlan) {
 			return 'Current Plan';
 		}
-		if (isLowerTierPlan) {
-			return 'Lower Tier Plan';
-		}
 		if (cannotUseFreeTrialAgain) {
 			return 'Already Used';
 		}
@@ -207,13 +203,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
 					</div>
 				)}
 				
-				{isPlanDisabled && !isCurrentPlan && (
-					<div className="absolute top-0 left-0 right-0 bg-gray-400 text-white text-center py-2 text-sm font-medium">
-						{isLowerTierPlan ? 'Lower Tier' : 'Unavailable'}
-					</div>
-				)}
-				
-				<div className={`text-center mb-2 ${isCurrentPlan || isPlanDisabled ? 'mt-8' : ''}`}>
+				<div className={`text-center mb-2 ${isCurrentPlan ? 'mt-8' : ''}`}>
 					<h3 className={`text-2xl font-bold mb-2 ${isPlanDisabled ? 'text-gray-500' : 'text-gray-900'}`}>
 						{name}
 					</h3>
@@ -221,13 +211,6 @@ const PricingTier: React.FC<PricingTierProps> = ({
 						<div className="flex justify-center">
 							<Badge className="bg-purple-600 text-white">
 								Active
-							</Badge>
-						</div>
-					)}
-					{isPlanDisabled && !isCurrentPlan && (
-						<div className="flex justify-center">
-							<Badge className="bg-gray-400 text-white">
-								{isLowerTierPlan ? 'Lower Tier' : 'Used'}
 							</Badge>
 						</div>
 					)}
