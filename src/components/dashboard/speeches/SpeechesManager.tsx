@@ -17,7 +17,7 @@ interface SpeechesManagerProps {
 const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManagerProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const hasUpdatedUrl = useRef(false);
+  const isInitialMount = useRef(true);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterOption>(initialFilter as FilterOption);
@@ -35,32 +35,27 @@ const SpeechesManager = ({ speeches = [], initialFilter = 'all' }: SpeechesManag
     }
   }, [initialFilter]);
   
-  // Update URL when filter changes (but prevent infinite loops)
+  // Update URL when filter changes from user interaction (not from URL parsing)
   useEffect(() => {
-    // Prevent updating URL on initial mount or if we've already updated
-    if (hasUpdatedUrl.current) {
+    // Skip URL updates on initial mount or when filter comes from URL
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
       return;
     }
 
     const params = new URLSearchParams(location.search);
     const currentFilter = params.get('filter');
     
+    // Only update URL if filter actually changed and wasn't set from URL
     if (filterType !== 'all' && filterType !== currentFilter) {
       params.set('filter', filterType);
       navigate(`${location.pathname}?${params.toString()}`, { replace: true });
-      hasUpdatedUrl.current = true;
     } else if (filterType === 'all' && currentFilter) {
       params.delete('filter');
       const newSearch = params.toString();
       navigate(`${location.pathname}${newSearch ? `?${newSearch}` : ''}`, { replace: true });
-      hasUpdatedUrl.current = true;
     }
-  }, [filterType, navigate, location.pathname, location.search]);
-
-  // Reset the URL update flag when filterType changes from user interaction
-  useEffect(() => {
-    hasUpdatedUrl.current = false;
-  }, [filterType]);
+  }, [filterType, navigate, location.pathname]);
   
   const { filteredSpeeches } = useSpeechesFilter(speeches, searchQuery, filterType, sortBy);
   
