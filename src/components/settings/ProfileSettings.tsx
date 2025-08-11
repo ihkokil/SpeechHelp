@@ -25,7 +25,7 @@ export default function ProfileSettings() {
   return (
     <div className="space-y-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={onSubmit} className="space-y-8">
           <div className="space-y-6">
             <div className="flex flex-col gap-6">
               <div className="bg-white rounded-lg border border-gray-200 p-6">

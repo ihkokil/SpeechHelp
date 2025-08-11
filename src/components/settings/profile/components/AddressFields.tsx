@@ -23,6 +23,32 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
 
   return (
     <div className="space-y-4">
+      {/* Country Selection - First Field */}
+      <FormField
+        control={form.control}
+        name="country"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Country</FormLabel>
+            <Select onValueChange={field.onChange} value={field.value || ''}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {countries.map((country) => (
+                  <SelectItem key={country.code} value={country.code}>
+                    {country.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       <FormField
         control={form.control}
         name="streetAddress"
@@ -79,23 +105,26 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* State/Province Field - Only show if country has states */}
+      {statesForCountry.length > 0 && (
         <FormField
           control={form.control}
-          name="country"
+          name="state"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Country</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <FormLabel>
+                {selectedCountryCode === 'CA' ? 'Province' : 'State'}
+              </FormLabel>
+              <Select onValueChange={field.onChange} value={field.value || ''}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select country" />
+                    <SelectValue placeholder={`Select ${selectedCountryCode === 'CA' ? 'province' : 'state'}`} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {countries.map((country) => (
-                    <SelectItem key={country.code} value={country.code}>
-                      {country.name}
+                  {statesForCountry.map((state) => (
+                    <SelectItem key={state.code} value={state.code}>
+                      {state.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -104,36 +133,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
             </FormItem>
           )}
         />
-
-        {statesForCountry.length > 0 && (
-          <FormField
-            control={form.control}
-            name="state"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  {selectedCountryCode === 'CA' ? 'Province' : 'State'}
-                </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value || ''}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder={`Select ${selectedCountryCode === 'CA' ? 'province' : 'state'}`} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {statesForCountry.map((state) => (
-                      <SelectItem key={state.code} value={state.code}>
-                        {state.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-      </div>
+      )}
     </div>
   );
 };
