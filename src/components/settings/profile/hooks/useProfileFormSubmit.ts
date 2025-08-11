@@ -1,106 +1,131 @@
 
 import { useState } from 'react';
+import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { ProfileFormValues } from '../types';
-import { supabase } from '@/integrations/supabase/client';
 import { profileService } from '@/services/profileService';
+import { supabase } from '@/integrations/supabase/client';
+import { ProfileFormValues } from '../types';
 
-export const useProfileFormSubmit = (refreshUserData?: () => Promise<void>) => {
-  const { user } = useAuth();
-  const { toast } = useToast();
+export const useProfileFormSubmit = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  const { user, refreshUser } = useAuth();
 
-  const handleSubmit = async (data: ProfileFormValues) => {
+  const onSubmit = async (data: ProfileFormValues) => {
     if (!user) {
       toast({
-        title: "Authentication error",
-        description: "You must be logged in to update your profile.",
-        variant: "destructive",
+        title: "Error",
+        description: "You must be logged in to update your profile",
+        variant: "destructive"
       });
       return;
     }
 
     setIsSubmitting(true);
+
     try {
-      console.log('Submitting profile data:', data);
-      
-      // Check if email is being changed
-      const isEmailChanged = data.email !== user.email;
-      
-      // If email is changed, verify password first
-      if (isEmailChanged) {
-        if (!data.password) {
-          throw new Error("Password is required to change email address");
-        }
-        
-        // Verify the password before changing email
-        const { error: verifyError } = await supabase.auth.signInWithPassword({
-          email: user.email!,
-          password: data.password,
-        });
-        
-        if (verifyError) {
-          throw new Error("Incorrect password. Please try again.");
-        }
-        
-        // Update email
-        const { error: updateEmailError } = await supabase.auth.updateUser({
-          email: data.email,
-        });
-        
-        if (updateEmailError) {
-          throw updateEmailError;
-        }
-        
+      // Check if email is being changed and password is required
+      const currentUser = await supabase.auth.getUser();
+      const currentEmail = currentUser.data.user?.email;
+      const isEmailChanged = data.email !== currentEmail;
+
+      if (isEmailChanged && !data.currentPassword) {
         toast({
-          title: "Email verification sent",
-          description: "Please check your new email address for a verification link.",
+          title: "Password Required",
+          description: "Please enter your current password to update your email address",
+          variant: "destructive"
         });
+        setIsSubmitting(false);
+        return;
       }
-      
-      // Update user profile in profiles table (single source of truth)
-      const profileUpdates = {
+
+      // Verify password if email is being changed
+      if (isEmailChanged && data.currentPassword) {
+        const { error: passwordError } = await supabase.functions.invoke('verify-password', {
+          body: { password: data.currentPassword }
+        });
+
+        if (passwordError) {
+          toast({
+            title: "Invalid Password",
+            description: "The password you entered is incorrect",
+            variant: "destructive"
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Update profile in profiles table
+      const updateResult = await profileService.updateUserProfile(user.id, {
         first_name: data.firstName,
         last_name: data.lastName,
-        phone: data.phone,
+        phone: data.phone || null,
         country_code: data.countryCode,
-        username: `${data.firstName} ${data.lastName}`.trim() || data.firstName || user.email?.split('@')[0] || 'User'
-      };
-      
-      console.log('Updating user profile:', profileUpdates);
-      
-      const result = await profileService.updateUserProfile(user.id, profileUpdates);
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to update profile');
-      }
-      
-      console.log('Profile updated successfully');
-      
-      // Refresh the user data in AuthContext
-      if (refreshUserData) {
-        await refreshUserData();
-      }
-      
-      toast({
-        title: "Profile updated",
-        description: "Your profile information has been saved successfully.",
+        // Address fields will be stored in user metadata for now
+        // In a future update, these could be moved to dedicated columns
       });
+
+      if (!updateResult.success) {
+        throw new Error(updateResult.error || 'Failed to update profile');
+      }
+
+      // Update auth metadata with address information
+      const { error: metadataError } = await supabase.auth.updateUser({
+        data: {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          full_name: `${data.firstName} ${data.lastName}`,
+          phone: data.phone || '',
+          country_code: data.countryCode,
+          street_address: data.streetAddress || '',
+          city: data.city || '',
+          state: data.state || '',
+          zip_code: data.zipCode || '',
+          country: data.country,
+        }
+      });
+
+      if (metadataError) {
+        console.error('Error updating user metadata:', metadataError);
+        // Don't throw error as profile update was successful
+      }
+
+      // Update email if changed
+      if (isEmailChanged) {
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: data.email
+        });
+
+        if (emailError) {
+          throw new Error('Failed to update email address');
+        }
+
+        toast({
+          title: "Email Update Sent",
+          description: "Please check your new email address to confirm the change",
+        });
+      }
+
+      // Refresh user data
+      await refreshUser();
+
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully",
+      });
+
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast({
-        title: "Update failed",
-        description: error.message || "There was a problem updating your profile. Please try again.",
-        variant: "destructive",
+        title: "Update Failed",
+        description: error.message || "Failed to update profile. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return {
-    isSubmitting,
-    handleSubmit
-  };
+  return { onSubmit, isSubmitting };
 };

@@ -1,66 +1,56 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { ProfileFormValues } from '../types';
-import { profileService } from '@/services/profileService';
+import { profileService, UserProfile } from '@/services/profileService';
 
-/**
- * Hook to load user profile data into the form - uses profiles table as source of truth
- */
-export const useUserProfileData = (
-  form: UseFormReturn<ProfileFormValues>,
-  setOriginalEmail?: (email: string) => void
-) => {
-  const { user, profile, isLoading: isAuthLoading } = useAuth();
-  const [dataLoaded, setDataLoaded] = useState(false);
+export const useUserProfileData = () => {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [originalEmail, setOriginalEmail] = useState('');
 
-  // Load user data into form - prioritize profiles table data
-  const loadUserData = useCallback(async () => {
-    if (!user || dataLoaded) return;
-
-    try {
-      console.log('Loading user profile data for:', user.id);
-      
-      // Set original email from auth user
-      if (user.email && setOriginalEmail) {
-        setOriginalEmail(user.email);
-      }
-      
-      // Use profile data if available, otherwise fallback to auth metadata
-      const profileData = profile || await profileService.getCurrentUserProfile();
-      
-      const formData = {
-        firstName: profileData?.first_name || '',
-        lastName: profileData?.last_name || '',
-        email: user.email || '',
-        password: '',
-        phone: profileData?.phone || '',
-        countryCode: profileData?.country_code || 'US',
-      };
-      
-      // Reset form with profile data
-      form.reset(formData);
-      
-      console.log('Form reset with profile values:', formData);
-      
-      setDataLoaded(true);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error loading user profile data:', error);
-      setIsLoading(false);
-    }
-  }, [user, profile, dataLoaded, form, setOriginalEmail]);
-
-  // Load user data when component mounts or user/profile changes
   useEffect(() => {
-    if (!isAuthLoading && user) {
-      loadUserData();
-    } else if (!isAuthLoading) {
-      setIsLoading(false);
-    }
-  }, [user, profile, isAuthLoading, loadUserData]);
+    const loadProfile = async () => {
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
 
-  return { isLoading: isLoading || isAuthLoading };
+      try {
+        setOriginalEmail(user.email || '');
+        
+        // Get profile data from profiles table  
+        const profileData = await profileService.getUserProfile(user.id);
+        
+        if (profileData) {
+          setProfile(profileData);
+        } else {
+          // If no profile exists, sync from auth metadata
+          await profileService.syncAuthToProfile(user);
+          const syncedProfile = await profileService.getUserProfile(user.id);
+          setProfile(syncedProfile);
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [user]);
+
+  return {
+    profile,
+    isLoading,
+    originalEmail,
+    // Include address data from user metadata
+    addressData: {
+      streetAddress: user?.user_metadata?.street_address || '',
+      city: user?.user_metadata?.city || '',
+      state: user?.user_metadata?.state || '',
+      zipCode: user?.user_metadata?.zip_code || '',
+      country: user?.user_metadata?.country || user?.user_metadata?.country_code || 'US',
+    }
+  };
 };

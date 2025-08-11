@@ -1,43 +1,56 @@
 
-import { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '@/contexts/AuthContext';
 import { profileFormSchema, ProfileFormValues } from './types';
-import { useProfileFormSubmit } from './hooks/useProfileFormSubmit';
 import { useUserProfileData } from './hooks/useUserProfileData';
+import { useProfileFormSubmit } from './hooks/useProfileFormSubmit';
 
 export const useProfileForm = () => {
-  const { refreshUserData } = useAuth();
-  const [originalEmail, setOriginalEmail] = useState('');
+  const { profile, isLoading, originalEmail, addressData } = useUserProfileData();
+  const { onSubmit } = useProfileFormSubmit();
 
-  // Initialize form with default values
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       firstName: '',
       lastName: '',
       email: '',
-      password: '',
       phone: '',
       countryCode: 'US',
+      streetAddress: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'US',
+      currentPassword: '',
     },
   });
 
-  // Load user data into form
-  const { isLoading } = useUserProfileData(
-    form, 
-    setOriginalEmail
-  );
-
-  // Handle form submission
-  const { isSubmitting, handleSubmit } = useProfileFormSubmit(refreshUserData);
+  // Update form when profile data is loaded
+  React.useEffect(() => {
+    if (profile) {
+      form.reset({
+        firstName: profile.first_name || '',
+        lastName: profile.last_name || '',
+        email: originalEmail || '',
+        phone: profile.phone || '',
+        countryCode: profile.country_code || 'US',
+        // Address fields from user metadata
+        streetAddress: addressData.streetAddress || '',
+        city: addressData.city || '',
+        state: addressData.state || '',
+        zipCode: addressData.zipCode || '',
+        country: addressData.country || 'US',
+        currentPassword: '',
+      });
+    }
+  }, [profile, originalEmail, addressData, form]);
 
   return {
     form,
     isLoading,
-    isSubmitting,
     originalEmail,
-    onSubmit: handleSubmit
+    onSubmit: form.handleSubmit(onSubmit)
   };
 };
