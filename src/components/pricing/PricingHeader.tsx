@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
@@ -34,19 +33,19 @@ const PricingHeader: React.FC = () => {
 
     const getStatusColor = (status: string, expired: boolean) => {
       if (expired) {
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 hover:bg-red-100';
       }
       
       switch (status.toLowerCase()) {
         case 'active':
-          return 'bg-green-100 text-green-800';
+          return 'bg-green-100 text-green-800 hover:bg-green-100';
         case 'canceled':
         case 'cancelled':
-          return 'bg-red-100 text-red-800';
+          return 'bg-red-100 text-red-800 hover:bg-red-100';
         case 'past_due':
-          return 'bg-yellow-100 text-yellow-800';
+          return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100';
         default:
-          return 'bg-gray-100 text-gray-800';
+          return 'bg-gray-100 text-gray-800 hover:bg-gray-100';
       }
     };
 
@@ -74,10 +73,10 @@ const PricingHeader: React.FC = () => {
           <span className="text-lg font-medium text-gray-700">
             Your Current Plan:
           </span>
-          <Badge className={`${getStatusColor(status, isExpired)} font-medium px-3 py-1`}>
+          <Badge className={`${getStatusColor(status, isExpired)} font-medium px-3 py-1 cursor-default`}>
             {formatPlanName(planName)} {isExpired && '(Expired)'}
           </Badge>
-          <Badge className={getStatusColor(status, isExpired)}>
+          <Badge className={`${getStatusColor(status, isExpired)} cursor-default`}>
             {getStatusText(status, isExpired)}
           </Badge>
           {endDate && (
