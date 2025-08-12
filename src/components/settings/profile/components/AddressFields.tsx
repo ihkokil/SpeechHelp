@@ -94,13 +94,11 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
           name="state"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>
-                {selectedCountryCode === 'CA' ? 'Province' : 'State'}
-              </FormLabel>
+              <FormLabel>State / Province</FormLabel>
               <Select onValueChange={field.onChange} value={field.value || ''}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder={`Select ${selectedCountryCode === 'CA' ? 'province' : 'state'}`} />
+                    <SelectValue placeholder="Select state / province" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
