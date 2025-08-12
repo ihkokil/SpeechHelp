@@ -49,6 +49,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
         )}
       />
 
+      {/* Street Address - Second Field */}
       <FormField
         control={form.control}
         name="streetAddress"
@@ -67,45 +68,26 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
         )}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="city"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>City</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder="Enter your city"
-                  value={field.value || ''}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      {/* City - Third Field */}
+      <FormField
+        control={form.control}
+        name="city"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>City</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                placeholder="Enter your city"
+                value={field.value || ''}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-        <FormField
-          control={form.control}
-          name="zipCode"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>ZIP/Postal Code</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder="Enter ZIP/postal code"
-                  value={field.value || ''}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      {/* State/Province Field - Only show if country has states */}
+      {/* State/Province Field - Fourth Field (Only show if country has states) */}
       {statesForCountry.length > 0 && (
         <FormField
           control={form.control}
@@ -134,6 +116,25 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
           )}
         />
       )}
+
+      {/* ZIP/Postal Code - Fifth Field */}
+      <FormField
+        control={form.control}
+        name="zipCode"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>ZIP/Postal Code</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                placeholder="Enter ZIP/postal code"
+                value={field.value || ''}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 };
