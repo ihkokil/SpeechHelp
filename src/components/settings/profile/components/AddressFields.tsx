@@ -23,6 +23,17 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
     }
   }, [selectedCountryCode, form]);
 
+  const handleCountryChange = (value: string) => {
+    console.log('Country changed to:', value);
+    form.setValue('country', value);
+    form.setValue('state', '');
+  };
+
+  const handleStateChange = (value: string) => {
+    console.log('State changed to:', value);
+    form.setValue('state', value);
+  };
+
   return (
     <div className="space-y-4">
       {/* Country Selection - First Field */}
@@ -33,11 +44,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
           <FormItem>
             <FormLabel>Country</FormLabel>
             <Select 
-              onValueChange={(value) => {
-                field.onChange(value);
-                // Also clear the state field when country changes
-                form.setValue('state', '');
-              }} 
+              onValueChange={handleCountryChange}
               value={field.value || ''}
             >
               <FormControl>
@@ -105,9 +112,9 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
             <FormItem>
               <FormLabel>State / Province</FormLabel>
               <Select 
-                onValueChange={field.onChange} 
+                onValueChange={handleStateChange}
                 value={field.value || ''}
-                key={selectedCountryCode} // Force re-render when country changes
+                key={`states-${selectedCountryCode}`}
               >
                 <FormControl>
                   <SelectTrigger>
