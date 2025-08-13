@@ -14,11 +14,13 @@ interface AddressFieldsProps {
 const AddressFields = ({ form }: AddressFieldsProps) => {
   const countries = getAllCountries();
   const selectedCountryCode = form.watch('country');
-  const statesForCountry = getStatesForCountry(selectedCountryCode);
+  const statesForCountry = getStatesForCountry(selectedCountryCode || '');
 
   // Clear state when country changes
   React.useEffect(() => {
-    form.setValue('state', '');
+    if (selectedCountryCode) {
+      form.setValue('state', '');
+    }
   }, [selectedCountryCode, form]);
 
   return (
@@ -30,7 +32,14 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Country</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value || ''}>
+            <Select 
+              onValueChange={(value) => {
+                field.onChange(value);
+                // Also clear the state field when country changes
+                form.setValue('state', '');
+              }} 
+              value={field.value || ''}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select country" />
@@ -95,7 +104,11 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>State / Province</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ''}>
+              <Select 
+                onValueChange={field.onChange} 
+                value={field.value || ''}
+                key={selectedCountryCode} // Force re-render when country changes
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select state / province" />
@@ -103,7 +116,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                 </FormControl>
                 <SelectContent>
                   {statesForCountry.map((state) => (
-                    <SelectItem key={state.code} value={state.code}>
+                    <SelectItem key={`${selectedCountryCode}-${state.code}`} value={state.code}>
                       {state.name}
                     </SelectItem>
                   ))}
