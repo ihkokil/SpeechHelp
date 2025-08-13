@@ -23,15 +23,17 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
     }
   }, [selectedCountryCode, form]);
 
-  const handleCountryChange = (value: string) => {
+  const handleCountryChange = (value: string, fieldOnChange: (value: string) => void) => {
     console.log('Country changed to:', value);
-    form.setValue('country', value);
-    form.setValue('state', '');
+    fieldOnChange(value); // Update the form field
+    form.setValue('country', value); // Update the form value
+    form.setValue('state', ''); // Clear state selection
   };
 
-  const handleStateChange = (value: string) => {
+  const handleStateChange = (value: string, fieldOnChange: (value: string) => void) => {
     console.log('State changed to:', value);
-    form.setValue('state', value);
+    fieldOnChange(value); // Update the form field
+    form.setValue('state', value); // Update the form value
   };
 
   return (
@@ -44,7 +46,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
           <FormItem>
             <FormLabel>Country</FormLabel>
             <Select 
-              onValueChange={handleCountryChange}
+              onValueChange={(value) => handleCountryChange(value, field.onChange)}
               value={field.value || ''}
             >
               <FormControl>
@@ -112,7 +114,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
             <FormItem>
               <FormLabel>State / Province</FormLabel>
               <Select 
-                onValueChange={handleStateChange}
+                onValueChange={(value) => handleStateChange(value, field.onChange)}
                 value={field.value || ''}
                 key={`states-${selectedCountryCode}`}
               >
