@@ -16,24 +16,23 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
   const selectedCountryCode = form.watch('country');
   const statesForCountry = getStatesForCountry(selectedCountryCode || '');
 
-  // Clear state when country changes
-  React.useEffect(() => {
-    if (selectedCountryCode) {
-      form.setValue('state', '');
-    }
-  }, [selectedCountryCode, form]);
+  console.log('Current selected country code:', selectedCountryCode);
+  console.log('Available states for country:', statesForCountry);
 
   const handleCountryChange = (value: string, fieldOnChange: (value: string) => void) => {
     console.log('Country changed to:', value);
-    fieldOnChange(value); // Update the form field
-    form.setValue('country', value); // Update the form value
-    form.setValue('state', ''); // Clear state selection
+    // Call field.onChange first to update the form field immediately
+    fieldOnChange(value);
+    // Then clear the state field since country changed
+    form.setValue('state', '');
+    // Trigger form validation/update
+    form.trigger('country');
   };
 
   const handleStateChange = (value: string, fieldOnChange: (value: string) => void) => {
     console.log('State changed to:', value);
-    fieldOnChange(value); // Update the form field
-    form.setValue('state', value); // Update the form value
+    fieldOnChange(value);
+    form.trigger('state');
   };
 
   return (
@@ -116,7 +115,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
               <Select 
                 onValueChange={(value) => handleStateChange(value, field.onChange)}
                 value={field.value || ''}
-                key={`states-${selectedCountryCode}`}
+                key={`states-${selectedCountryCode}-${field.value}`}
               >
                 <FormControl>
                   <SelectTrigger>

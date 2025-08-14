@@ -25,12 +25,16 @@ export const useProfileForm = () => {
       country: 'US',
       currentPassword: '',
     },
+    mode: 'onChange', // This helps with real-time validation
   });
 
-  // Update form when profile data is loaded
+  // Update form when profile data is loaded, but don't override user changes
   React.useEffect(() => {
-    if (profile) {
-      form.reset({
+    if (profile && !form.formState.isDirty) {
+      console.log('Initializing form with profile data:', profile);
+      console.log('Address data:', addressData);
+      
+      const formData = {
         firstName: profile.first_name || '',
         lastName: profile.last_name || '',
         email: originalEmail || '',
@@ -43,7 +47,10 @@ export const useProfileForm = () => {
         zipCode: addressData.zipCode || '',
         country: addressData.country || 'US',
         currentPassword: '',
-      });
+      };
+      
+      console.log('Setting form data:', formData);
+      form.reset(formData);
     }
   }, [profile, originalEmail, addressData, form]);
 
