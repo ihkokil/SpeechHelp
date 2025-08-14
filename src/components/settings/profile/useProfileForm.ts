@@ -30,14 +30,15 @@ export const useProfileForm = () => {
 
   // Update form when profile data is loaded, but don't override user changes
   React.useEffect(() => {
-    if (profile && !form.formState.isDirty) {
+    if (profile && originalEmail && !form.formState.isDirty) {
       console.log('Initializing form with profile data:', profile);
+      console.log('Original email:', originalEmail);
       console.log('Address data:', addressData);
       
       const formData = {
         firstName: profile.first_name || '',
         lastName: profile.last_name || '',
-        email: originalEmail || '',
+        email: originalEmail || '', // Make sure email is always set
         phone: profile.phone || '',
         countryCode: profile.country_code || 'US',
         // Address fields from user metadata
@@ -53,6 +54,15 @@ export const useProfileForm = () => {
       form.reset(formData);
     }
   }, [profile, originalEmail, addressData, form]);
+
+  // Force email field update if it's empty but we have originalEmail
+  React.useEffect(() => {
+    const currentEmail = form.getValues('email');
+    if (originalEmail && !currentEmail) {
+      console.log('Setting email field to originalEmail:', originalEmail);
+      form.setValue('email', originalEmail);
+    }
+  }, [originalEmail, form]);
 
   return {
     form,

@@ -18,11 +18,15 @@ const PersonalInfoForm = ({ form, originalEmail }: PersonalInfoFormProps) => {
   const currentEmail = form.watch('email');
   const isEmailChanged = currentEmail !== originalEmail;
 
+  console.log('PersonalInfoForm - originalEmail:', originalEmail);
+  console.log('PersonalInfoForm - currentEmail:', currentEmail);
+  console.log('PersonalInfoForm - isEmailChanged:', isEmailChanged);
+
   return (
     <div className="space-y-8">
       <div className="space-y-6">
         <NameFields form={form} />
-        <EmailField form={form} />
+        <EmailField form={form} disabled={false} />
         <PasswordConfirmField form={form} isEmailChanged={isEmailChanged} />
         <PhoneInput 
           form={form}

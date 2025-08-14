@@ -30,8 +30,9 @@ const EmailField = ({ form, field, disabled = false }: EmailFieldProps) => {
               {...field} 
               type="email" 
               placeholder="Email"
-              className="pl-10"
+              className={`pl-10 ${!isEditing ? 'bg-gray-50 text-gray-600' : 'bg-white'}`}
               disabled={disabled || !isEditing}
+              value={field.value || ''}
               data-focus-visible="true"
             />
             <Button
@@ -69,9 +70,10 @@ const EmailField = ({ form, field, disabled = false }: EmailFieldProps) => {
                 <Input 
                   {...field} 
                   type="email" 
-                  placeholder="Email"
-                  className="pl-10"
+                  placeholder="Enter your email address"
+                  className={`pl-10 ${!isEditing ? 'bg-gray-50 text-gray-600' : 'bg-white'}`}
                   disabled={disabled || !isEditing}
+                  value={field.value || ''}
                   data-focus-visible="true"
                 />
                 <Button
@@ -88,6 +90,11 @@ const EmailField = ({ form, field, disabled = false }: EmailFieldProps) => {
               </div>
             </FormControl>
             <FormMessage />
+            {!isEditing && (
+              <p className="text-xs text-gray-500 mt-1">
+                Click the edit button to change your email address
+              </p>
+            )}
           </FormItem>
         )}
       />
