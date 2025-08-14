@@ -6,6 +6,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getAllCountries, getStatesForCountry } from '../utils/locationUtils';
+import { countriesComplete } from '@/data/countriesComplete';
 
 interface AddressFieldsProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -18,6 +19,12 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
 
   console.log('Current selected country code:', selectedCountryCode);
   console.log('Available states for country:', statesForCountry);
+
+  // Get country flag by code
+  const getCountryFlag = (countryCode: string) => {
+    const countryWithFlag = countriesComplete.find(country => country.code === countryCode);
+    return countryWithFlag?.flag || '🌍';
+  };
 
   const handleCountryChange = (value: string, fieldOnChange: (value: string) => void) => {
     console.log('Country changed to:', value);
@@ -50,13 +57,23 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select country" />
+                  <SelectValue placeholder="Select country">
+                    {field.value && (
+                      <span className="flex items-center gap-2">
+                        <span>{getCountryFlag(field.value)}</span>
+                        <span>{countries.find(c => c.code === field.value)?.name}</span>
+                      </span>
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
                 {countries.map((country) => (
                   <SelectItem key={country.code} value={country.code}>
-                    {country.name}
+                    <span className="flex items-center gap-2">
+                      <span>{getCountryFlag(country.code)}</span>
+                      <span>{country.name}</span>
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
