@@ -182,12 +182,8 @@ const BillingSettings = () => {
 
         if (profileError) {
           console.error('Error fetching profile:', profileError);
-          toast({
-            title: "Error",
-            description: "Failed to load subscription data.",
-            variant: "destructive"
-          });
-          return;
+          // Don't show error toast here, just log it
+          console.log('Profile error, will try to show available data');
         }
 
         // Fetch payment history with improved duplicate removal
@@ -234,61 +230,90 @@ const BillingSettings = () => {
         // Fetch real payment methods
         await fetchPaymentMethods();
 
-        // Process subscription data
+        // Process subscription data - be more lenient with what we consider a subscription
         if (profile) {
           console.log('Raw profile data:', profile);
           
-          const planName = profile.subscription_plan 
-            ? profile.subscription_plan.charAt(0).toUpperCase() + profile.subscription_plan.slice(1) + ' Plan'
-            : 'Free Trial';
+          // Determine if user has any subscription data at all
+          const hasSubscriptionData = profile.subscription_plan && 
+            profile.subscription_plan !== 'free_trial' && 
+            profile.subscription_plan !== 'free';
           
-          // Use the actual dates from the database
-          const startDate = profile.subscription_start_date 
-            ? new Date(profile.subscription_start_date) 
-            : new Date();
+          // Check if subscription is active based on various factors
+          const isActiveSubscription = profile.subscription_status === 'active' || 
+            (profile.subscription_end_date && new Date(profile.subscription_end_date) > new Date()) ||
+            (profile.stripe_subscription_id && profile.stripe_subscription_id !== null);
           
-          const endDate = profile.subscription_end_date 
-            ? new Date(profile.subscription_end_date)
-            : addMonths(startDate, 1);
+          console.log('Subscription analysis:', {
+            hasSubscriptionData,
+            isActiveSubscription,
+            subscription_status: profile.subscription_status,
+            subscription_plan: profile.subscription_plan,
+            subscription_end_date: profile.subscription_end_date,
+            stripe_subscription_id: profile.stripe_subscription_id
+          });
+          
+          if (hasSubscriptionData || isActiveSubscription) {
+            const planName = profile.subscription_plan 
+              ? capitalizeSubscriptionType(profile.subscription_plan) + ' Plan'
+              : 'Premium Plan';
+            
+            // Use the actual dates from the database
+            const startDate = profile.subscription_start_date 
+              ? new Date(profile.subscription_start_date) 
+              : new Date();
+            
+            const endDate = profile.subscription_end_date 
+              ? new Date(profile.subscription_end_date)
+              : addMonths(startDate, 1);
 
-          // Calculate price based on subscription data
-          let price = '$0.00';
-          if (profile.subscription_amount) {
-            price = `$${(profile.subscription_amount / 100).toFixed(2)}`;
+            // Calculate price based on subscription data
+            let price = '$0.00';
+            if (profile.subscription_amount && profile.subscription_amount > 0) {
+              price = `$${(profile.subscription_amount / 100).toFixed(2)}`;
+            } else if (profile.subscription_plan === 'premium') {
+              price = '$29.99'; // Default premium price
+            } else if (profile.subscription_plan === 'pro') {
+              price = '$49.99'; // Default pro price
+            }
+
+            console.log('Processed subscription data:', {
+              plan: planName,
+              status: profile.subscription_status || 'active',
+              startDate: startDate.toISOString(),
+              endDate: endDate.toISOString(),
+              price: price
+            });
+
+            setSubscriptionData({
+              plan: planName,
+              status: profile.subscription_status || 'active',
+              price: price,
+              billingPeriod: profile.subscription_period || 'monthly',
+              startDate: startDate,
+              endDate: endDate,
+              paymentMethod: undefined // Will be set when payment methods load
+            });
+          } else {
+            console.log('No subscription data found, showing no subscription state');
+            setSubscriptionData(null);
           }
-
-          console.log('Processed subscription data:', {
-            plan: planName,
-            status: profile.subscription_status,
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString(),
-            price: price
-          });
-
-          setSubscriptionData({
-            plan: planName,
-            status: profile.subscription_status || 'inactive',
-            price: price,
-            billingPeriod: profile.subscription_period || 'monthly',
-            startDate: startDate,
-            endDate: endDate,
-            paymentMethod: undefined // Will be set when payment methods load
-          });
+        } else {
+          console.log('No profile found, showing no subscription state');
+          setSubscriptionData(null);
         }
       } catch (error) {
         console.error('Error fetching subscription data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load billing information.",
-          variant: "destructive"
-        });
+        // Don't show error toast, just log it
+        console.log('Will show no subscription state due to error');
+        setSubscriptionData(null);
       } finally {
         setLoading(false);
       }
     };
 
     fetchSubscriptionData();
-  }, [user, toast]);
+  }, [user]);
 
   // Update subscription data when payment methods change
   useEffect(() => {
@@ -384,6 +409,9 @@ const BillingSettings = () => {
         <div className="text-center p-8">
           <h3 className="text-lg font-medium">No subscription found</h3>
           <p className="text-muted-foreground">You don't have an active subscription.</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            If you believe this is an error, please contact support or try refreshing the page.
+          </p>
         </div>
         
         <PaymentMethodsCard 
