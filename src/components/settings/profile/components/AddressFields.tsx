@@ -17,8 +17,8 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
   const selectedCountryCode = form.watch('country');
   const statesForCountry = getStatesForCountry(selectedCountryCode || '');
 
-  console.log('Current selected country code:', selectedCountryCode);
-  console.log('Available states for country:', statesForCountry);
+  console.log('AddressFields - Current selected country code:', selectedCountryCode);
+  console.log('AddressFields - Available states for country:', statesForCountry);
 
   // Get country flag by code
   const getCountryFlag = (countryCode: string) => {
@@ -26,19 +26,22 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
     return countryWithFlag?.flag || '🌍';
   };
 
-  const handleCountryChange = (value: string, fieldOnChange: (value: string) => void) => {
-    console.log('Country changed to:', value);
-    // Call field.onChange first to update the form field immediately
-    fieldOnChange(value);
-    // Then clear the state field since country changed
-    form.setValue('state', '');
-    // Trigger form validation/update
-    form.trigger('country');
+  const handleCountryChange = (value: string) => {
+    console.log('Address country changing to:', value);
+    
+    // Update country field
+    form.setValue('country', value, { shouldValidate: true, shouldDirty: true });
+    
+    // Clear state field when country changes
+    form.setValue('state', '', { shouldValidate: true, shouldDirty: true });
+    
+    // Trigger validation for both fields
+    form.trigger(['country', 'state']);
   };
 
-  const handleStateChange = (value: string, fieldOnChange: (value: string) => void) => {
-    console.log('State changed to:', value);
-    fieldOnChange(value);
+  const handleStateChange = (value: string) => {
+    console.log('State changing to:', value);
+    form.setValue('state', value, { shouldValidate: true, shouldDirty: true });
     form.trigger('state');
   };
 
@@ -52,8 +55,9 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
           <FormItem>
             <FormLabel>Country</FormLabel>
             <Select 
-              onValueChange={(value) => handleCountryChange(value, field.onChange)}
+              onValueChange={handleCountryChange}
               value={field.value || ''}
+              key={`country-${field.value}`}
             >
               <FormControl>
                 <SelectTrigger>
@@ -130,9 +134,9 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
             <FormItem>
               <FormLabel>State / Province</FormLabel>
               <Select 
-                onValueChange={(value) => handleStateChange(value, field.onChange)}
+                onValueChange={handleStateChange}
                 value={field.value || ''}
-                key={`states-${selectedCountryCode}-${field.value}`}
+                key={`states-${selectedCountryCode}-${statesForCountry.length}`}
               >
                 <FormControl>
                   <SelectTrigger>

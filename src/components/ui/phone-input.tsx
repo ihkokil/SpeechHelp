@@ -47,11 +47,16 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   };
   
   const handleCountryChange = (countryCode: string) => {
+    console.log('Phone country changing to:', countryCode);
     form.setValue(countryFieldName, countryCode);
+    form.trigger(countryFieldName);
   };
   
   const selectedCountry = getCountryByCode(watchedCountry);
   const dialCode = selectedCountry?.dialCode || '1';
+
+  console.log('PhoneInput - watchedCountry:', watchedCountry);
+  console.log('PhoneInput - selectedCountry:', selectedCountry);
 
   return (
     <div className="space-y-4">
@@ -62,12 +67,9 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
           <FormItem>
             <FormLabel>Country {required && <span className="text-red-500">*</span>}</FormLabel>
             <Select
-              onValueChange={(value) => {
-                handleCountryChange(value);
-                field.onChange(value);
-              }}
-              value={field.value}
-              defaultValue={field.value}
+              onValueChange={handleCountryChange}
+              value={field.value || ''}
+              defaultValue={field.value || ''}
             >
               <FormControl>
                 <div className="relative">
@@ -75,7 +77,15 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
                     <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
                       <Phone className="h-4 w-4 text-gray-500" />
                     </div>
-                    <SelectValue placeholder="Select Country" />
+                    <SelectValue placeholder="Select Country">
+                      {field.value && selectedCountry && (
+                        <span className="flex items-center gap-2">
+                          <span className="text-lg">{selectedCountry.flag}</span>
+                          <span>+{selectedCountry.dialCode}</span>
+                          <span>{selectedCountry.name}</span>
+                        </span>
+                      )}
+                    </SelectValue>
                   </SelectTrigger>
                 </div>
               </FormControl>
