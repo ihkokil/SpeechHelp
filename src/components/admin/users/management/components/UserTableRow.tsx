@@ -64,20 +64,20 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
         planName = translate('admin.plan.freeTrial');
     }
     
-    // Define colors for each plan
+    // Define colors for each plan without hover effects
     let badgeClasses = '';
     switch (planType.toLowerCase()) {
       case 'free_trial':
-        badgeClasses = 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200';
+        badgeClasses = 'bg-gray-100 text-gray-800 border-gray-200';
         break;
       case 'premium':
-        badgeClasses = 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200';
+        badgeClasses = 'bg-blue-100 text-blue-800 border-blue-200';
         break;
       case 'pro':
-        badgeClasses = 'bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200';
+        badgeClasses = 'bg-purple-100 text-purple-800 border-purple-200';
         break;
       default:
-        badgeClasses = 'bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200';
+        badgeClasses = 'bg-gray-100 text-gray-800 border-gray-200';
     }
     
     return { name: planName, classes: badgeClasses };
@@ -152,7 +152,7 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       <TableCell className="px-2 text-center">
         <Badge 
           variant={user.is_active !== false ? "default" : "secondary"}
-          className={user.is_active !== false ? "bg-green-100 text-green-800 border-green-200" : "bg-gray-100 text-gray-800 border-gray-200"}
+          className={`min-w-[80px] h-6 justify-center ${user.is_active !== false ? "bg-green-100 text-green-800 border-green-200" : "bg-gray-100 text-gray-800 border-gray-200"}`}
         >
           {user.is_active !== false ? translate('admin.status.active') : translate('admin.status.inactive')}
         </Badge>
@@ -160,18 +160,18 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
       
       <TableCell className="px-2 text-center">
         {user.is_admin ? (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          <Badge variant="outline" className="min-w-[80px] h-6 justify-center bg-blue-50 text-blue-700 border-blue-200">
             {translate('admin.role.admin')}
           </Badge>
         ) : (
-          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+          <Badge variant="outline" className="min-w-[80px] h-6 justify-center bg-gray-50 text-gray-700 border-gray-200">
             {translate('admin.role.user')}
           </Badge>
         )}
       </TableCell>
       
       <TableCell className="px-2 text-center">
-        <Badge variant="outline" className={subscriptionPlan.classes}>
+        <Badge variant="outline" className={`min-w-[80px] h-6 justify-center ${subscriptionPlan.classes}`}>
           {subscriptionPlan.name}
         </Badge>
       </TableCell>
