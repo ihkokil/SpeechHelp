@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { User } from '@/components/admin/users/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +23,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
     country: user.user_metadata?.country || user.country_code || ''
   };
 
-  const hasAddress = addressInfo.streetAddress or addressInfo.city or addressInfo.state or addressInfo.zipCode;
+  const hasAddress = addressInfo.streetAddress || addressInfo.city || addressInfo.state || addressInfo.zipCode;
 
   return (
     <div className="space-y-6">
