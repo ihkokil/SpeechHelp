@@ -15,16 +15,24 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
   const userPhone = getUserPhone(user);
   const countryFlag = getCountryFlag(user);
 
-  // Get address information from user metadata
+  // Get address information from user metadata - check multiple possible sources
   const addressInfo = {
-    streetAddress: user.user_metadata?.street_address || '',
+    streetAddress: user.user_metadata?.street_address || user.user_metadata?.streetAddress || '',
     city: user.user_metadata?.city || '',
-    state: user.user_metadata?.state || '',
-    zipCode: user.user_metadata?.zip_code || '',
+    state: user.user_metadata?.state || user.user_metadata?.province || '',
+    zipCode: user.user_metadata?.zip_code || user.user_metadata?.zipCode || user.user_metadata?.postal_code || '',
     country: user.user_metadata?.country || user.country_code || ''
   };
 
-  const hasAddress = addressInfo.streetAddress || addressInfo.city || addressInfo.state || addressInfo.zipCode;
+  // Debug log to see what address data we have
+  console.log('Address debug for user:', user.email, {
+    user_metadata: user.user_metadata,
+    addressInfo,
+    hasAddress: addressInfo.streetAddress || addressInfo.city || addressInfo.state || addressInfo.zipCode
+  });
+
+  // Always show address section - even if some fields are empty
+  const showAddressSection = true;
 
   return (
     <div className="space-y-6">
@@ -153,8 +161,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
         </CardContent>
       </Card>
 
-      {/* Address Information */}
-      {hasAddress && (
+      {/* Address Information - Always show this section */}
+      {showAddressSection && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
@@ -166,43 +174,41 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                {addressInfo.streetAddress && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-1">Street Address</h4>
-                    <p className="text-sm">{addressInfo.streetAddress}</p>
-                  </div>
-                )}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Street Address</h4>
+                  <p className="text-sm">{addressInfo.streetAddress || 'Not provided'}</p>
+                </div>
 
-                {addressInfo.city && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-1">City</h4>
-                    <p className="text-sm">{addressInfo.city}</p>
-                  </div>
-                )}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">City</h4>
+                  <p className="text-sm">{addressInfo.city || 'Not provided'}</p>
+                </div>
               </div>
 
               <div className="space-y-4">
-                {addressInfo.state && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-1">State/Province</h4>
-                    <p className="text-sm">{addressInfo.state}</p>
-                  </div>
-                )}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">State/Province</h4>
+                  <p className="text-sm">{addressInfo.state || 'Not provided'}</p>
+                </div>
 
-                {addressInfo.zipCode && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-1">ZIP/Postal Code</h4>
-                    <p className="text-sm">{addressInfo.zipCode}</p>
-                  </div>
-                )}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">ZIP/Postal Code</h4>
+                  <p className="text-sm">{addressInfo.zipCode || 'Not provided'}</p>
+                </div>
 
-                {addressInfo.country && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500 mb-1">Country</h4>
-                    <p className="text-sm">{addressInfo.country}</p>
-                  </div>
-                )}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500 mb-1">Country</h4>
+                  <p className="text-sm">{addressInfo.country || 'Not provided'}</p>
+                </div>
               </div>
+            </div>
+
+            {/* Debug section - show raw metadata */}
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-500 mb-2">Raw User Metadata (Debug)</h4>
+              <pre className="text-xs text-gray-600 overflow-auto max-h-32">
+                {JSON.stringify(user.user_metadata, null, 2)}
+              </pre>
             </div>
           </CardContent>
         </Card>
