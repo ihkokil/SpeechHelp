@@ -17,10 +17,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
 
   // Get address information from user metadata - check multiple possible sources
   const addressInfo = {
-    streetAddress: user.user_metadata?.street_address || user.user_metadata?.streetAddress || '',
+    streetAddress: user.user_metadata?.street_address || '',
     city: user.user_metadata?.city || '',
-    state: user.user_metadata?.state || user.user_metadata?.province || '',
-    zipCode: user.user_metadata?.zip_code || user.user_metadata?.zipCode || user.user_metadata?.postal_code || '',
+    state: user.user_metadata?.state || '',
+    zipCode: user.user_metadata?.zip_code || '',
     country: user.user_metadata?.country || user.country_code || ''
   };
 
