@@ -14,23 +14,16 @@ interface UserProfileProps {
 export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
   const userPhone = getUserPhone(user);
   const countryFlag = getCountryFlag(user);
-
-  // Get address information from user metadata - check all possible sources
+  
+  // Get address information from user metadata - check all possible sources using bracket notation
+  const metadata = user.user_metadata || {};
   const addressInfo = {
-    streetAddress: user.user_metadata?.street_address || user.user_metadata?.address || '',
-    city: user.user_metadata?.city || '',
-    state: user.user_metadata?.state || user.user_metadata?.province || '',
-    zipCode: user.user_metadata?.zip_code || user.user_metadata?.postal_code || '',
-    country: user.user_metadata?.country || user.country_code || ''
+    streetAddress: metadata.street_address || metadata['address'] || '',
+    city: metadata.city || '',
+    state: metadata.state || metadata['province'] || '',
+    zipCode: metadata.zip_code || metadata['postal_code'] || '',
+    country: metadata.country || user.country_code || ''
   };
-
-  // Debug log to see what address data we have
-  console.log('Address debug for user:', user.email, {
-    user_metadata: user.user_metadata,
-    addressInfo,
-    hasAddress: addressInfo.streetAddress || addressInfo.city || addressInfo.state || addressInfo.zipCode,
-    rawMetadata: JSON.stringify(user.user_metadata, null, 2)
-  });
 
   // Check if we have any address information
   const hasAddressInfo = Boolean(
@@ -205,29 +198,6 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
               <div>
                 <h4 className="text-sm font-medium text-gray-500 mb-1">Country</h4>
                 <p className="text-sm">{addressInfo.country || 'Not provided'}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Enhanced Debug section to help identify the issue */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Debug Information</h4>
-            <div className="space-y-2">
-              <div>
-                <h5 className="text-xs font-medium text-gray-600">Raw User Metadata:</h5>
-                <pre className="text-xs text-gray-600 overflow-auto max-h-32 bg-white p-2 rounded border">
-                  {JSON.stringify(user.user_metadata, null, 2)}
-                </pre>
-              </div>
-              <div>
-                <h5 className="text-xs font-medium text-gray-600">Extracted Address Info:</h5>
-                <pre className="text-xs text-gray-600 overflow-auto max-h-20 bg-white p-2 rounded border">
-                  {JSON.stringify(addressInfo, null, 2)}
-                </pre>
-              </div>
-              <div>
-                <h5 className="text-xs font-medium text-gray-600">Has Address Info:</h5>
-                <p className="text-xs text-gray-600">{hasAddressInfo ? 'Yes' : 'No'}</p>
               </div>
             </div>
           </div>
