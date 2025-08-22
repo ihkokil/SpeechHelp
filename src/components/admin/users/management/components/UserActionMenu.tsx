@@ -20,6 +20,7 @@ interface UserActionMenuProps {
   user: User;
   onViewDetails: (user: User) => void;
   onToggleAdmin: (user: User) => void;
+  onRequestAdminPassword?: (user: User) => void;
   onToggleUserActive: (userId: string, isActive: boolean) => void;
   onDeleteUser: (userId: string) => void;
   onSendEmail?: (user: User) => void;
@@ -30,6 +31,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   user,
   onViewDetails,
   onToggleAdmin,
+  onRequestAdminPassword,
   onToggleUserActive,
   onDeleteUser,
   onSendEmail,
@@ -63,7 +65,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     onToggleUserActive(user.id, user.is_active !== false);
   };
 
-  // Handler for admin toggle
+  // Handler for admin toggle - now uses password dialog for granting admin
   const handleToggleAdmin = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -74,7 +76,14 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     }
     
     console.log(`Toggle admin triggered for user ${user.id}, current admin state: ${isCurrentlyAdmin}`);
-    onToggleAdmin(user);
+    
+    // If granting admin access, show password dialog
+    if (!isCurrentlyAdmin && onRequestAdminPassword) {
+      onRequestAdminPassword(user);
+    } else {
+      // If removing admin access, proceed directly
+      onToggleAdmin(user);
+    }
   };
 
   return (

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -9,6 +10,7 @@ import UserDetailsDrawer from '@/components/admin/users/details/UserDetailsDrawe
 import AddUserDialog from '@/components/admin/users/add-user/AddUserDialog';
 import UpdateSubscriptionDialog from '@/components/admin/users/management/components/UpdateSubscriptionDialog';
 import UserFilters from '@/components/admin/users/management/components/UserFilters';
+import AdminPasswordDialog from '@/components/admin/users/management/components/AdminPasswordDialog';
 import { useSimpleAdminToggle } from '@/components/admin/users/management/hooks/user-actions/useSimpleAdminToggle';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/components/admin/users/types';
@@ -66,6 +68,10 @@ const UserManagement = () => {
   // New state for subscription dialog
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   
+  // New state for admin password dialog
+  const [isAdminPasswordDialogOpen, setIsAdminPasswordDialogOpen] = useState(false);
+  const [userForAdminToggle, setUserForAdminToggle] = useState<User | null>(null);
+  
   // Get the simple admin toggle hook
   const { handleToggleAdmin: baseHandleToggleAdmin } = useSimpleAdminToggle();
   
@@ -105,7 +111,14 @@ const UserManagement = () => {
     setIsSubscriptionDialogOpen(false);
   };
 
-  // Handler for admin toggle
+  // Handler for requesting admin password
+  const handleRequestAdminPassword = (user: User) => {
+    console.log("Requesting admin password for user:", user.id);
+    setUserForAdminToggle(user);
+    setIsAdminPasswordDialogOpen(true);
+  };
+
+  // Handler for admin toggle (called after password confirmation)
   const handleToggleAdmin = (user: User) => {
     baseHandleToggleAdmin(user, users, setUsers);
   };
@@ -194,6 +207,7 @@ const UserManagement = () => {
             handleDeleteUser={handleDeleteUser}
             handleSendEmail={handleSendEmail}
             handleUpdateSubscription={handleOpenSubscriptionDialog}
+            handleRequestAdminPassword={handleRequestAdminPassword}
           />
         </CardContent>
       </Card>
@@ -229,6 +243,14 @@ const UserManagement = () => {
           onSubscriptionUpdated={handleSubscriptionUpdated}
         />
       )}
+
+      {/* Add the admin password dialog */}
+      <AdminPasswordDialog
+        user={userForAdminToggle}
+        open={isAdminPasswordDialogOpen}
+        onOpenChange={setIsAdminPasswordDialogOpen}
+        onConfirm={handleToggleAdmin}
+      />
     </div>
   );
 };
