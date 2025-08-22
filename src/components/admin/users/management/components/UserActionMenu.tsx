@@ -65,7 +65,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     onToggleUserActive(user.id, user.is_active !== false);
   };
 
-  // Handler for admin toggle - now uses password dialog for granting admin
+  // Handler for admin toggle - ALWAYS use password dialog for any admin changes
   const handleToggleAdmin = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -75,14 +75,13 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
       return;
     }
     
-    console.log(`Toggle admin triggered for user ${user.id}, current admin state: ${isCurrentlyAdmin}`);
+    console.log(`Admin toggle requested for user ${user.id}, current admin state: ${isCurrentlyAdmin}`);
     
-    // If granting admin access, show password dialog
-    if (!isCurrentlyAdmin && onRequestAdminPassword) {
+    // ALWAYS show password dialog for any admin role changes
+    if (onRequestAdminPassword) {
       onRequestAdminPassword(user);
     } else {
-      // If removing admin access, proceed directly
-      onToggleAdmin(user);
+      console.error('onRequestAdminPassword handler not provided');
     }
   };
 

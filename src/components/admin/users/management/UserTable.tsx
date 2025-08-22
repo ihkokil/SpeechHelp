@@ -27,6 +27,7 @@ interface UserTableProps {
   handleDeleteUser: (userId: string) => void;
   handleSendEmail?: (user: User) => void;
   handleUpdateSubscription?: (user: User) => void;
+  handleRequestAdminPassword?: (user: User) => void;
 }
 
 export const UserTable: React.FC<UserTableProps> = ({
@@ -46,7 +47,8 @@ export const UserTable: React.FC<UserTableProps> = ({
   handleBulkDeactivate,
   handleDeleteUser,
   handleSendEmail,
-  handleUpdateSubscription
+  handleUpdateSubscription,
+  handleRequestAdminPassword
 }) => {
   console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
@@ -125,6 +127,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                       onToggleSelection={toggleUserSelection}
                       onViewDetails={handleViewUserDetails}
                       onToggleAdmin={handleToggleAdmin}
+                      onRequestAdminPassword={handleRequestAdminPassword}
                       onToggleActive={handleToggleUserStatus}
                       onDeleteUser={handleDeleteUser}
                       onSendEmail={handleSendEmail}

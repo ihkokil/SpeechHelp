@@ -79,7 +79,7 @@ const AdminPasswordDialog: React.FC<AdminPasswordDialogProps> = ({
           <DialogDescription>
             {user && (
               <>
-                You are about to grant admin privileges to <strong>{user.email}</strong>.
+                You are about to {user.is_admin ? 'remove admin privileges from' : 'grant admin privileges to'} <strong>{user.email}</strong>.
                 Please enter the admin password to confirm this action.
               </>
             )}
@@ -121,7 +121,7 @@ const AdminPasswordDialog: React.FC<AdminPasswordDialogProps> = ({
               disabled={isLoading || !password.trim()}
               className="bg-amber-600 hover:bg-amber-700"
             >
-              {isLoading ? 'Confirming...' : 'Grant Admin Access'}
+              {isLoading ? 'Confirming...' : user?.is_admin ? 'Remove Admin Access' : 'Grant Admin Access'}
             </Button>
           </DialogFooter>
         </form>
