@@ -9,8 +9,10 @@ interface AddressInfoProps {
 }
 
 export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
-  // Get address information from user metadata - check all possible sources using bracket notation
+  // Get address information from user metadata - check all possible sources
   const metadata = user.user_metadata || {};
+  
+  // Also check if the user object has direct address fields
   const addressInfo = {
     streetAddress: metadata.street_address || metadata['address'] || '',
     city: metadata.city || '',
@@ -18,6 +20,14 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
     zipCode: metadata.zip_code || metadata['postal_code'] || '',
     country: metadata.country || user.country_code || ''
   };
+
+  console.log('AddressInfo Debug - User object:', {
+    userId: user.id,
+    email: user.email,
+    user_metadata: user.user_metadata,
+    country_code: user.country_code,
+    extractedAddress: addressInfo
+  });
 
   return (
     <Card>
