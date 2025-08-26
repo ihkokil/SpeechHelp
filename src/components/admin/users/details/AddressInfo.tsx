@@ -13,39 +13,56 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
   const metadata = user.user_metadata || {};
   const rawMetadata = user.raw_user_meta_data || {};
   
+  // Debug: Log all the data sources to understand what's available
+  console.log('AddressInfo Debug - All user data sources:', {
+    userId: user.id,
+    email: user.email,
+    user_metadata: metadata,
+    raw_user_meta_data: rawMetadata,
+    direct_fields: {
+      first_name: user.first_name,
+      last_name: user.last_name,
+      phone: user.phone,
+      country_code: user.country_code
+    }
+  });
+  
   // Extract address info from multiple sources with comprehensive fallbacks
   const addressInfo = {
     streetAddress: metadata.street_address || 
                   metadata.address || 
                   rawMetadata.street_address || 
                   rawMetadata.address || 
+                  user.street_address ||
                   '',
     city: metadata.city || 
           rawMetadata.city || 
+          user.city ||
           '',
     state: metadata.state || 
            metadata.province || 
            rawMetadata.state || 
            rawMetadata.province || 
+           user.state ||
            '',
     zipCode: metadata.zip_code || 
              metadata.postal_code || 
              rawMetadata.zip_code || 
              rawMetadata.postal_code || 
+             user.zip_code ||
              '',
     country: metadata.country || 
              rawMetadata.country || 
+             user.country ||
              user.country_code || 
              ''
   };
 
-  console.log('AddressInfo Debug - Full user object:', {
+  // Enhanced debug logging
+  console.log('AddressInfo Debug - Extracted address:', {
     userId: user.id,
-    email: user.email,
-    user_metadata: user.user_metadata,
-    raw_user_meta_data: user.raw_user_meta_data,
-    country_code: user.country_code,
-    extractedAddress: addressInfo
+    extractedAddress: addressInfo,
+    hasAnyAddressData: Object.values(addressInfo).some(val => val && val.trim() !== '')
   });
 
   return (
@@ -87,6 +104,16 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
               <p className="text-sm">{addressInfo.country || 'Not provided'}</p>
             </div>
           </div>
+        </div>
+        
+        {/* Debug section - remove this after fixing */}
+        <div className="mt-4 p-3 bg-gray-50 rounded text-xs">
+          <strong>Debug Info:</strong>
+          <pre>{JSON.stringify({ 
+            metadata_keys: Object.keys(metadata), 
+            rawMetadata_keys: Object.keys(rawMetadata),
+            extractedAddress: addressInfo 
+          }, null, 2)}</pre>
         </div>
       </CardContent>
     </Card>
