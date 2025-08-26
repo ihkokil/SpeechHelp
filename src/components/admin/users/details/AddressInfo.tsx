@@ -9,22 +9,41 @@ interface AddressInfoProps {
 }
 
 export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
-  // Get address information from user metadata - check all possible sources
+  // Get address information from all possible sources
   const metadata = user.user_metadata || {};
+  const rawMetadata = user.raw_user_meta_data || {};
   
-  // Also check if the user object has direct address fields
+  // Extract address info from multiple sources with fallbacks
   const addressInfo = {
-    streetAddress: metadata.street_address || metadata['address'] || '',
-    city: metadata.city || '',
-    state: metadata.state || metadata['province'] || '',
-    zipCode: metadata.zip_code || metadata['postal_code'] || '',
-    country: metadata.country || user.country_code || ''
+    streetAddress: metadata.street_address || 
+                  metadata.address || 
+                  rawMetadata.street_address || 
+                  rawMetadata.address || 
+                  '',
+    city: metadata.city || 
+          rawMetadata.city || 
+          '',
+    state: metadata.state || 
+           metadata.province || 
+           rawMetadata.state || 
+           rawMetadata.province || 
+           '',
+    zipCode: metadata.zip_code || 
+             metadata.postal_code || 
+             rawMetadata.zip_code || 
+             rawMetadata.postal_code || 
+             '',
+    country: metadata.country || 
+             rawMetadata.country || 
+             user.country_code || 
+             ''
   };
 
-  console.log('AddressInfo Debug - User object:', {
+  console.log('AddressInfo Debug - Full user object:', {
     userId: user.id,
     email: user.email,
     user_metadata: user.user_metadata,
+    raw_user_meta_data: user.raw_user_meta_data,
     country_code: user.country_code,
     extractedAddress: addressInfo
   });

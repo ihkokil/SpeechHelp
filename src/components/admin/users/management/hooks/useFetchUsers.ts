@@ -79,6 +79,18 @@ export const useFetchUsers = () => {
           finalPhone: profilePhone || metadataPhone,
           finalCountryCode: profileCountryCode || metadataCountryCode || 'US'
         });
+
+        // Debug address data extraction
+        console.log('🏠 Address debug for user', authUser.id, ':', {
+          raw_user_meta_data: authUser.raw_user_meta_data,
+          address_fields: {
+            street_address: authUser.raw_user_meta_data?.street_address,
+            city: authUser.raw_user_meta_data?.city,
+            state: authUser.raw_user_meta_data?.state,
+            zip_code: authUser.raw_user_meta_data?.zip_code,
+            country: authUser.raw_user_meta_data?.country
+          }
+        });
         
         const user: User = {
           id: authUser.id,
@@ -104,6 +116,8 @@ export const useFetchUsers = () => {
             zip_code: authUser.raw_user_meta_data?.zip_code || '',
             country: authUser.raw_user_meta_data?.country || '',
           },
+          // Include raw_user_meta_data for address information access
+          raw_user_meta_data: authUser.raw_user_meta_data || {},
           is_active: authUser.is_active !== false,
           // Ensure admin status comes from the profile
           is_admin: authUser.is_admin === true,
@@ -135,6 +149,18 @@ export const useFetchUsers = () => {
           user_metadata_phone: user.user_metadata?.phone
         });
         
+        console.log('Final mapped user address fields for', authUser.id, ':', {
+          id: user.id,
+          raw_user_meta_data: user.raw_user_meta_data,
+          user_metadata_address: {
+            street_address: user.user_metadata?.street_address,
+            city: user.user_metadata?.city,
+            state: user.user_metadata?.state,
+            zip_code: user.user_metadata?.zip_code,
+            country: user.user_metadata?.country
+          }
+        });
+        
         return user;
       }) || [];
       
@@ -154,6 +180,7 @@ export const useFetchUsers = () => {
             name: adminUser.username,
             full_name: 'Admin User',
           },
+          raw_user_meta_data: {},
           is_active: true,
           is_admin: true,
           admin_role: 'Super Admin',
@@ -163,6 +190,7 @@ export const useFetchUsers = () => {
       
       console.log('Final mapped users count:', mappedUsers.length);
       console.log('Sample user with phone data:', mappedUsers.find(u => u.phone && u.phone !== ''));
+      console.log('Sample user with address data:', mappedUsers.find(u => u.raw_user_meta_data && Object.keys(u.raw_user_meta_data).length > 0));
       setUsers(mappedUsers);
       return mappedUsers;
     } catch (err) {
