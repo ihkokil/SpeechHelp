@@ -18,9 +18,12 @@ export interface User {
     phone?: string;
     country_code?: string;
     street_address?: string;
+    address?: string;
     city?: string;
     state?: string;
+    province?: string;
     zip_code?: string;
+    postal_code?: string;
     country?: string;
   };
   // Add raw_user_meta_data to access original auth metadata
@@ -65,4 +68,17 @@ export interface User {
   // Stripe fields
   stripe_customer_id?: string | null;
   stripe_subscription_id?: string | null;
+}
+
+// Add these interfaces to fix the AdminPermissionsDialog import errors
+export interface AdminRole {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export interface AdminPermission {
+  id: string;
+  name: string;
+  description?: string;
 }

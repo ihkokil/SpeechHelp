@@ -95,7 +95,7 @@ serve(async (req) => {
       // Get the profile data
       const profile = profileMap.get(authUser.id) || {};
       
-      // Extract metadata safely
+      // Extract metadata safely - PRESERVE ALL ADDRESS FIELDS
       const metadata = authUser.raw_user_meta_data || {};
       
       // Get first and last names with priority: profile table > metadata > empty
@@ -138,6 +138,32 @@ serve(async (req) => {
           email: safeString(authUser.email),
           phone: safeString(metadata.phone) || safeString(profile.phone),
           country_code: safeString(metadata.country_code) || safeString(profile.country_code) || 'US',
+          // PRESERVE ALL ADDRESS METADATA FIELDS
+          street_address: safeString(metadata.street_address),
+          address: safeString(metadata.address),
+          city: safeString(metadata.city),
+          state: safeString(metadata.state),
+          province: safeString(metadata.province),
+          zip_code: safeString(metadata.zip_code),
+          postal_code: safeString(metadata.postal_code),
+          country: safeString(metadata.country),
+        },
+        // ENSURE raw_user_meta_data is preserved with ALL original fields
+        raw_user_meta_data: {
+          ...metadata,
+          // Ensure these specific fields are always present
+          first_name: safeString(metadata.first_name),
+          last_name: safeString(metadata.last_name),
+          phone: safeString(metadata.phone),
+          country_code: safeString(metadata.country_code),
+          street_address: safeString(metadata.street_address),
+          address: safeString(metadata.address),
+          city: safeString(metadata.city),
+          state: safeString(metadata.state),
+          province: safeString(metadata.province),
+          zip_code: safeString(metadata.zip_code),
+          postal_code: safeString(metadata.postal_code),
+          country: safeString(metadata.country),
         },
         profile: {
           username: safeString(profile.username) || fullName || authUser.email?.split('@')[0] || '',

@@ -13,7 +13,7 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
   const metadata = user.user_metadata || {};
   const rawMetadata = user.raw_user_meta_data || {};
   
-  // Extract address info from multiple sources with fallbacks
+  // Extract address info from multiple sources with comprehensive fallbacks
   const addressInfo = {
     streetAddress: metadata.street_address || 
                   metadata.address || 
