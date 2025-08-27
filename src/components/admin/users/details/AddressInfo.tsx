@@ -12,6 +12,7 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
   // Get address information from all possible sources
   const metadata = user.user_metadata || {};
   const rawMetadata = user.raw_user_meta_data || {};
+  const profile = (user as any).profile || {};
   
   // Debug: Log all the data sources to understand what's available
   console.log('AddressInfo Debug - All user data sources:', {
@@ -19,6 +20,7 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
     email: user.email,
     user_metadata: metadata,
     raw_user_meta_data: rawMetadata,
+    profile: profile,
     direct_fields: {
       first_name: user.first_name,
       last_name: user.last_name,
@@ -32,23 +34,28 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
     streetAddress: metadata.street_address || 
                   metadata.address || 
                   rawMetadata.street_address || 
-                  rawMetadata.address || 
+                  rawMetadata.address ||
+                  profile.street_address ||
                   '',
     city: metadata.city || 
           rawMetadata.city || 
+          profile.city ||
           '',
     state: metadata.state || 
            metadata.province || 
            rawMetadata.state || 
-           rawMetadata.province || 
+           rawMetadata.province ||
+           profile.state ||
            '',
     zipCode: metadata.zip_code || 
              metadata.postal_code || 
              rawMetadata.zip_code || 
-             rawMetadata.postal_code || 
+             rawMetadata.postal_code ||
+             profile.zip_code ||
              '',
     country: metadata.country || 
              rawMetadata.country || 
+             profile.country ||
              user.country_code || 
              ''
   };
@@ -58,12 +65,28 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
     userId: user.id,
     extractedAddress: addressInfo,
     hasAnyAddressData: Object.values(addressInfo).some(val => val && val.trim() !== ''),
-    metadata_values: {
-      street_address: metadata.street_address,
-      city: metadata.city,
-      state: metadata.state,
-      zip_code: metadata.zip_code,
-      country: metadata.country
+    sources: {
+      metadata_address: {
+        street_address: metadata.street_address,
+        city: metadata.city,
+        state: metadata.state,
+        zip_code: metadata.zip_code,
+        country: metadata.country
+      },
+      rawMetadata_address: {
+        street_address: rawMetadata.street_address,
+        city: rawMetadata.city,
+        state: rawMetadata.state,
+        zip_code: rawMetadata.zip_code,
+        country: rawMetadata.country
+      },
+      profile_address: {
+        street_address: profile.street_address,
+        city: profile.city,
+        state: profile.state,
+        zip_code: profile.zip_code,
+        country: profile.country
+      }
     }
   });
 
@@ -114,13 +137,23 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
           <pre>{JSON.stringify({ 
             metadata_keys: Object.keys(metadata), 
             rawMetadata_keys: Object.keys(rawMetadata),
+            profile_keys: Object.keys(profile),
             extractedAddress: addressInfo,
-            actual_metadata_values: {
-              street_address: metadata.street_address,
-              city: metadata.city,
-              state: metadata.state,
-              zip_code: metadata.zip_code,
-              country: metadata.country
+            sources: {
+              metadata_values: {
+                street_address: metadata.street_address,
+                city: metadata.city,
+                state: metadata.state,
+                zip_code: metadata.zip_code,
+                country: metadata.country
+              },
+              profile_values: {
+                street_address: profile.street_address,
+                city: profile.city,
+                state: profile.state,
+                zip_code: profile.zip_code,
+                country: profile.country
+              }
             }
           }, null, 2)}</pre>
         </div>

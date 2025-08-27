@@ -40,7 +40,7 @@ serve(async (req) => {
       throw new Error('Failed to fetch users from auth');
     }
     
-    // Get all profiles with complete subscription data AND country_code
+    // Get all profiles with complete subscription data AND address fields
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select(`
@@ -55,7 +55,12 @@ serve(async (req) => {
         subscription_currency,
         stripe_customer_id,
         stripe_subscription_id,
-        country_code
+        country_code,
+        street_address,
+        city,
+        state,
+        zip_code,
+        country
       `);
     
     if (profilesError) {
@@ -106,6 +111,15 @@ serve(async (req) => {
       const fullName = constructFullName(firstName, lastName);
       const displayName = fullName || authUser.email?.split('@')[0] || 'User';
       
+      // Enhanced address extraction from profile table AND metadata
+      const addressData = {
+        street_address: safeString(profile.street_address) || safeString(metadata.street_address) || safeString(metadata.address),
+        city: safeString(profile.city) || safeString(metadata.city),
+        state: safeString(profile.state) || safeString(metadata.state) || safeString(metadata.province),
+        zip_code: safeString(profile.zip_code) || safeString(metadata.zip_code) || safeString(metadata.postal_code),
+        country: safeString(profile.country) || safeString(metadata.country)
+      };
+      
       return {
         ...authUser,
         // Direct fields from profiles table
@@ -129,7 +143,7 @@ serve(async (req) => {
         // Include phone and country_code from profiles table
         phone: safeString(profile.phone) || safeString(metadata.phone),
         country_code: safeString(profile.country_code) || safeString(metadata.country_code) || 'US',
-        // Enhanced user_metadata with proper fallbacks
+        // Enhanced user_metadata with proper fallbacks INCLUDING ADDRESS DATA
         user_metadata: {
           first_name: firstName,
           last_name: lastName,
@@ -138,32 +152,33 @@ serve(async (req) => {
           email: safeString(authUser.email),
           phone: safeString(metadata.phone) || safeString(profile.phone),
           country_code: safeString(metadata.country_code) || safeString(profile.country_code) || 'US',
-          // PRESERVE ALL ADDRESS METADATA FIELDS
-          street_address: safeString(metadata.street_address),
-          address: safeString(metadata.address),
-          city: safeString(metadata.city),
-          state: safeString(metadata.state),
-          province: safeString(metadata.province),
-          zip_code: safeString(metadata.zip_code),
-          postal_code: safeString(metadata.postal_code),
-          country: safeString(metadata.country),
+          // INCLUDE ADDRESS DATA FROM PROFILE TABLE
+          street_address: addressData.street_address,
+          address: addressData.street_address, // Also set 'address' field as fallback
+          city: addressData.city,
+          state: addressData.state,
+          province: addressData.state, // Also set 'province' field as fallback
+          zip_code: addressData.zip_code,
+          postal_code: addressData.zip_code, // Also set 'postal_code' field as fallback
+          country: addressData.country,
         },
-        // ENSURE raw_user_meta_data is preserved with ALL original fields
+        // ENSURE raw_user_meta_data is preserved with ALL original fields AND profile address data
         raw_user_meta_data: {
           ...metadata,
-          // Ensure these specific fields are always present
-          first_name: safeString(metadata.first_name),
-          last_name: safeString(metadata.last_name),
-          phone: safeString(metadata.phone),
-          country_code: safeString(metadata.country_code),
-          street_address: safeString(metadata.street_address),
-          address: safeString(metadata.address),
-          city: safeString(metadata.city),
-          state: safeString(metadata.state),
-          province: safeString(metadata.province),
-          zip_code: safeString(metadata.zip_code),
-          postal_code: safeString(metadata.postal_code),
-          country: safeString(metadata.country),
+          // Override with profile data if available
+          first_name: safeString(metadata.first_name) || firstName,
+          last_name: safeString(metadata.last_name) || lastName,
+          phone: safeString(metadata.phone) || safeString(profile.phone),
+          country_code: safeString(metadata.country_code) || safeString(profile.country_code),
+          // INCLUDE ADDRESS DATA FROM PROFILE TABLE
+          street_address: addressData.street_address,
+          address: addressData.street_address,
+          city: addressData.city,
+          state: addressData.state,
+          province: addressData.state,
+          zip_code: addressData.zip_code,
+          postal_code: addressData.zip_code,
+          country: addressData.country,
         },
         profile: {
           username: safeString(profile.username) || fullName || authUser.email?.split('@')[0] || '',
@@ -184,6 +199,12 @@ serve(async (req) => {
           subscription_currency: safeString(profile.subscription_currency) || 'usd',
           stripe_customer_id: safeString(profile.stripe_customer_id) || null,
           stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
+          // Include address data in profile object
+          street_address: addressData.street_address,
+          city: addressData.city,
+          state: addressData.state,
+          zip_code: addressData.zip_code,
+          country: addressData.country,
           created_at: profile.created_at,
           updated_at: profile.updated_at
         }
