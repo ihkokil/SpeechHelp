@@ -33,27 +33,22 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
                   metadata.address || 
                   rawMetadata.street_address || 
                   rawMetadata.address || 
-                  user.street_address ||
                   '',
     city: metadata.city || 
           rawMetadata.city || 
-          user.city ||
           '',
     state: metadata.state || 
            metadata.province || 
            rawMetadata.state || 
            rawMetadata.province || 
-           user.state ||
            '',
     zipCode: metadata.zip_code || 
              metadata.postal_code || 
              rawMetadata.zip_code || 
              rawMetadata.postal_code || 
-             user.zip_code ||
              '',
     country: metadata.country || 
              rawMetadata.country || 
-             user.country ||
              user.country_code || 
              ''
   };
@@ -62,7 +57,14 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
   console.log('AddressInfo Debug - Extracted address:', {
     userId: user.id,
     extractedAddress: addressInfo,
-    hasAnyAddressData: Object.values(addressInfo).some(val => val && val.trim() !== '')
+    hasAnyAddressData: Object.values(addressInfo).some(val => val && val.trim() !== ''),
+    metadata_values: {
+      street_address: metadata.street_address,
+      city: metadata.city,
+      state: metadata.state,
+      zip_code: metadata.zip_code,
+      country: metadata.country
+    }
   });
 
   return (
@@ -112,7 +114,14 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
           <pre>{JSON.stringify({ 
             metadata_keys: Object.keys(metadata), 
             rawMetadata_keys: Object.keys(rawMetadata),
-            extractedAddress: addressInfo 
+            extractedAddress: addressInfo,
+            actual_metadata_values: {
+              street_address: metadata.street_address,
+              city: metadata.city,
+              state: metadata.state,
+              zip_code: metadata.zip_code,
+              country: metadata.country
+            }
           }, null, 2)}</pre>
         </div>
       </CardContent>
