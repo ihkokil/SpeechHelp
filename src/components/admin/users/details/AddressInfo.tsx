@@ -9,7 +9,7 @@ interface AddressInfoProps {
 }
 
 export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
-  // Get address information from all possible sources
+  // Get address information from all possible sources with better fallback logic
   const metadata = user.user_metadata || {};
   const rawMetadata = user.raw_user_meta_data || {};
   const profile = (user as any).profile || {};
@@ -29,45 +29,68 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
     }
   });
   
-  // Extract address info from multiple sources with comprehensive fallbacks
+  // Helper function to get the first non-empty value
+  const getFirstNonEmpty = (...values: (string | undefined | null)[]): string => {
+    for (const value of values) {
+      if (value && typeof value === 'string' && value.trim() !== '') {
+        return value.trim();
+      }
+    }
+    return '';
+  };
+  
+  // Extract address info with comprehensive fallbacks
   const addressInfo = {
-    streetAddress: metadata.street_address || 
-                  metadata.address || 
-                  rawMetadata.street_address || 
-                  rawMetadata.address ||
-                  profile.street_address ||
-                  '',
-    city: metadata.city || 
-          rawMetadata.city || 
-          profile.city ||
-          '',
-    state: metadata.state || 
-           metadata.province || 
-           rawMetadata.state || 
-           rawMetadata.province ||
-           profile.state ||
-           '',
-    zipCode: metadata.zip_code || 
-             metadata.postal_code || 
-             rawMetadata.zip_code || 
-             rawMetadata.postal_code ||
-             profile.zip_code ||
-             '',
-    country: metadata.country || 
-             rawMetadata.country || 
-             profile.country ||
-             user.country_code || 
-             ''
+    streetAddress: getFirstNonEmpty(
+      profile.street_address,
+      metadata.street_address,
+      metadata.address,
+      rawMetadata.street_address,
+      rawMetadata.address
+    ),
+    city: getFirstNonEmpty(
+      profile.city,
+      metadata.city,
+      rawMetadata.city
+    ),
+    state: getFirstNonEmpty(
+      profile.state,
+      metadata.state,
+      metadata.province,
+      rawMetadata.state,
+      rawMetadata.province
+    ),
+    zipCode: getFirstNonEmpty(
+      profile.zip_code,
+      metadata.zip_code,
+      metadata.postal_code,
+      rawMetadata.zip_code,
+      rawMetadata.postal_code
+    ),
+    country: getFirstNonEmpty(
+      profile.country,
+      metadata.country,
+      rawMetadata.country,
+      user.country_code
+    )
   };
 
   // Enhanced debug logging
   console.log('AddressInfo Debug - Extracted address:', {
     userId: user.id,
     extractedAddress: addressInfo,
-    hasAnyAddressData: Object.values(addressInfo).some(val => val && val.trim() !== ''),
+    hasAnyAddressData: Object.values(addressInfo).some(val => val !== ''),
     sources: {
+      profile_address: {
+        street_address: profile.street_address,
+        city: profile.city,
+        state: profile.state,
+        zip_code: profile.zip_code,
+        country: profile.country
+      },
       metadata_address: {
         street_address: metadata.street_address,
+        address: metadata.address,
         city: metadata.city,
         state: metadata.state,
         zip_code: metadata.zip_code,
@@ -75,17 +98,11 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
       },
       rawMetadata_address: {
         street_address: rawMetadata.street_address,
+        address: rawMetadata.address,
         city: rawMetadata.city,
         state: rawMetadata.state,
         zip_code: rawMetadata.zip_code,
         country: rawMetadata.country
-      },
-      profile_address: {
-        street_address: profile.street_address,
-        city: profile.city,
-        state: profile.state,
-        zip_code: profile.zip_code,
-        country: profile.country
       }
     }
   });
@@ -139,21 +156,13 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
             rawMetadata_keys: Object.keys(rawMetadata),
             profile_keys: Object.keys(profile),
             extractedAddress: addressInfo,
-            sources: {
-              metadata_values: {
-                street_address: metadata.street_address,
-                city: metadata.city,
-                state: metadata.state,
-                zip_code: metadata.zip_code,
-                country: metadata.country
-              },
-              profile_values: {
-                street_address: profile.street_address,
-                city: profile.city,
-                state: profile.state,
-                zip_code: profile.zip_code,
-                country: profile.country
-              }
+            actual_values: {
+              profile_street: profile.street_address,
+              metadata_street: metadata.street_address,
+              raw_street: rawMetadata.street_address,
+              profile_city: profile.city,
+              metadata_city: metadata.city,
+              raw_city: rawMetadata.city
             }
           }, null, 2)}</pre>
         </div>

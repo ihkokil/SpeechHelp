@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0';
 
@@ -111,7 +110,7 @@ serve(async (req) => {
       const fullName = constructFullName(firstName, lastName);
       const displayName = fullName || authUser.email?.split('@')[0] || 'User';
       
-      // Enhanced address extraction from profile table AND metadata
+      // Enhanced address extraction - prioritize profile table, then fall back to metadata
       const addressData = {
         street_address: safeString(profile.street_address) || safeString(metadata.street_address) || safeString(metadata.address),
         city: safeString(profile.city) || safeString(metadata.city),
@@ -119,6 +118,26 @@ serve(async (req) => {
         zip_code: safeString(profile.zip_code) || safeString(metadata.zip_code) || safeString(metadata.postal_code),
         country: safeString(profile.country) || safeString(metadata.country)
       };
+      
+      // Log address data extraction for debugging
+      console.log(`Address data for user ${authUser.id}:`, {
+        profile_address: {
+          street_address: profile.street_address,
+          city: profile.city,
+          state: profile.state,
+          zip_code: profile.zip_code,
+          country: profile.country
+        },
+        metadata_address: {
+          street_address: metadata.street_address,
+          address: metadata.address,
+          city: metadata.city,
+          state: metadata.state,
+          zip_code: metadata.zip_code,
+          country: metadata.country
+        },
+        final_address: addressData
+      });
       
       return {
         ...authUser,
@@ -152,7 +171,7 @@ serve(async (req) => {
           email: safeString(authUser.email),
           phone: safeString(metadata.phone) || safeString(profile.phone),
           country_code: safeString(metadata.country_code) || safeString(profile.country_code) || 'US',
-          // INCLUDE ADDRESS DATA FROM PROFILE TABLE
+          // INCLUDE ADDRESS DATA - prioritize profile, then metadata
           street_address: addressData.street_address,
           address: addressData.street_address, // Also set 'address' field as fallback
           city: addressData.city,
@@ -162,15 +181,15 @@ serve(async (req) => {
           postal_code: addressData.zip_code, // Also set 'postal_code' field as fallback
           country: addressData.country,
         },
-        // ENSURE raw_user_meta_data is preserved with ALL original fields AND profile address data
+        // ENSURE raw_user_meta_data includes address data from profile
         raw_user_meta_data: {
           ...metadata,
-          // Override with profile data if available
+          // Override with profile data if available - THIS IS KEY FOR ADDRESS DISPLAY
           first_name: safeString(metadata.first_name) || firstName,
           last_name: safeString(metadata.last_name) || lastName,
           phone: safeString(metadata.phone) || safeString(profile.phone),
           country_code: safeString(metadata.country_code) || safeString(profile.country_code),
-          // INCLUDE ADDRESS DATA FROM PROFILE TABLE
+          // CRITICAL: Include address data from profile table in raw metadata
           street_address: addressData.street_address,
           address: addressData.street_address,
           city: addressData.city,
@@ -199,7 +218,7 @@ serve(async (req) => {
           subscription_currency: safeString(profile.subscription_currency) || 'usd',
           stripe_customer_id: safeString(profile.stripe_customer_id) || null,
           stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
-          // Include address data in profile object
+          // Include address data in profile object with the extracted values
           street_address: addressData.street_address,
           city: addressData.city,
           state: addressData.state,
