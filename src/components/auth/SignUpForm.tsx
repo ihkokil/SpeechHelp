@@ -47,6 +47,12 @@ const SignUpForm = ({ onSwitchToSignIn, autoFocus = false }: SignUpFormProps) =>
 
     try {
       await signUp(email, password, toast, firstName, lastName);
+      
+      // After successful registration, redirect to sign-in page
+      setTimeout(() => {
+        onSwitchToSignIn();
+      }, 2000); // Wait 2 seconds to let the user see the success toast
+      
     } catch (error: any) {
       console.error('Sign up error:', error);
       
