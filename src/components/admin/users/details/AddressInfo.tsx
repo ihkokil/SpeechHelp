@@ -12,82 +12,40 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
   // Get address information from all possible sources
   const metadata = user.user_metadata || {};
   const rawMetadata = user.raw_user_meta_data || {};
-  const profile = (user as any).profile || {};
-  
-  // Debug: Log all the data sources to understand what's available
-  console.log('AddressInfo Debug - All user data sources:', {
-    userId: user.id,
-    email: user.email,
-    user_metadata: metadata,
-    raw_user_meta_data: rawMetadata,
-    profile: profile,
-    direct_fields: {
-      first_name: user.first_name,
-      last_name: user.last_name,
-      phone: user.phone,
-      country_code: user.country_code
-    }
-  });
   
   // Extract address info from multiple sources with comprehensive fallbacks
   const addressInfo = {
     streetAddress: metadata.street_address || 
                   metadata.address || 
                   rawMetadata.street_address || 
-                  rawMetadata.address ||
-                  profile.street_address ||
+                  rawMetadata.address || 
                   '',
     city: metadata.city || 
           rawMetadata.city || 
-          profile.city ||
           '',
     state: metadata.state || 
            metadata.province || 
            rawMetadata.state || 
-           rawMetadata.province ||
-           profile.state ||
+           rawMetadata.province || 
            '',
     zipCode: metadata.zip_code || 
              metadata.postal_code || 
              rawMetadata.zip_code || 
-             rawMetadata.postal_code ||
-             profile.zip_code ||
+             rawMetadata.postal_code || 
              '',
     country: metadata.country || 
              rawMetadata.country || 
-             profile.country ||
              user.country_code || 
              ''
   };
 
-  // Enhanced debug logging
-  console.log('AddressInfo Debug - Extracted address:', {
+  console.log('AddressInfo Debug - Full user object:', {
     userId: user.id,
-    extractedAddress: addressInfo,
-    hasAnyAddressData: Object.values(addressInfo).some(val => val && val.trim() !== ''),
-    sources: {
-      metadata_address: {
-        street_address: metadata.street_address,
-        city: metadata.city,
-        state: metadata.state,
-        zip_code: metadata.zip_code,
-        country: metadata.country
-      },
-      rawMetadata_address: {
-        street_address: rawMetadata.street_address,
-        city: rawMetadata.city,
-        state: rawMetadata.state,
-        zip_code: rawMetadata.zip_code,
-        country: rawMetadata.country
-      },
-      profile_address: {
-        street_address: profile.street_address,
-        city: profile.city,
-        state: profile.state,
-        zip_code: profile.zip_code,
-        country: profile.country
-      }
-    }
+    email: user.email,
+    user_metadata: user.user_metadata,
+    raw_user_meta_data: user.raw_user_meta_data,
+    country_code: user.country_code,
+    extractedAddress: addressInfo
   });
 
   return (
@@ -129,33 +87,6 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
               <p className="text-sm">{addressInfo.country || 'Not provided'}</p>
             </div>
           </div>
-        </div>
-        
-        {/* Debug section - remove this after fixing */}
-        <div className="mt-4 p-3 bg-gray-50 rounded text-xs">
-          <strong>Debug Info:</strong>
-          <pre>{JSON.stringify({ 
-            metadata_keys: Object.keys(metadata), 
-            rawMetadata_keys: Object.keys(rawMetadata),
-            profile_keys: Object.keys(profile),
-            extractedAddress: addressInfo,
-            sources: {
-              metadata_values: {
-                street_address: metadata.street_address,
-                city: metadata.city,
-                state: metadata.state,
-                zip_code: metadata.zip_code,
-                country: metadata.country
-              },
-              profile_values: {
-                street_address: profile.street_address,
-                city: profile.city,
-                state: profile.state,
-                zip_code: profile.zip_code,
-                country: profile.country
-              }
-            }
-          }, null, 2)}</pre>
         </div>
       </CardContent>
     </Card>
