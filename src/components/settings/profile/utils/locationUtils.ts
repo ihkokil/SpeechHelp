@@ -1,11 +1,12 @@
 
-import countries from '@/data/countries';
+import { countriesComplete } from '@/data/countriesComplete';
 import statesProvinces from '@/data/statesProvinces';
 
 export interface CountryEntry {
   code: string;
   name: string;
   dialCode: string;
+  flag: string;
 }
 
 export interface StateEntry {
@@ -15,7 +16,7 @@ export interface StateEntry {
 }
 
 export const getCountryByCode = (code: string): CountryEntry | undefined => {
-  return countries.find(country => country.code === code);
+  return countriesComplete.find(country => country.code === code);
 };
 
 export const getStatesForCountry = (countryCode: string): StateEntry[] => {
@@ -28,7 +29,7 @@ export const getStatesForCountry = (countryCode: string): StateEntry[] => {
 };
 
 export const getAllCountries = (): CountryEntry[] => {
-  return countries;
+  return countriesComplete;
 };
 
 export const getAllStates = (): StateEntry[] => {

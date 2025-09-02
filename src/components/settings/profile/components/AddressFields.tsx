@@ -6,7 +6,6 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getAllCountries, getStatesForCountry } from '../utils/locationUtils';
-import { countriesComplete } from '@/data/countriesComplete';
 
 interface AddressFieldsProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -19,12 +18,6 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
 
   console.log('AddressFields - Current selected country code:', selectedCountryCode);
   console.log('AddressFields - Available states for country:', statesForCountry);
-
-  // Get country flag by code
-  const getCountryFlag = (countryCode: string) => {
-    const countryWithFlag = countriesComplete.find(country => country.code === countryCode);
-    return countryWithFlag?.flag || '🌍';
-  };
 
   const handleCountryChange = (value: string) => {
     console.log('Address country changing to:', value);
@@ -64,7 +57,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                   <SelectValue placeholder="Select country">
                     {field.value && (
                       <span className="flex items-center gap-2">
-                        <span>{getCountryFlag(field.value)}</span>
+                        <span>{countries.find(c => c.code === field.value)?.flag}</span>
                         <span>{countries.find(c => c.code === field.value)?.name}</span>
                       </span>
                     )}
@@ -75,7 +68,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                 {countries.map((country) => (
                   <SelectItem key={country.code} value={country.code}>
                     <span className="flex items-center gap-2">
-                      <span>{getCountryFlag(country.code)}</span>
+                      <span>{country.flag}</span>
                       <span>{country.name}</span>
                     </span>
                   </SelectItem>
