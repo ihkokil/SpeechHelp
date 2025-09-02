@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
@@ -60,6 +59,18 @@ const SignUpForm = ({ onSwitchToSignIn, autoFocus = false }: SignUpFormProps) =>
         toast({
           title: "Account already exists",
           description: "An account with this email already exists. Please sign in instead.",
+          variant: "destructive"
+        });
+      } else if (error.message && error.message.includes('rate limit')) {
+        toast({
+          title: "Too many requests",
+          description: "We've sent too many emails recently. Please wait a few minutes and try again, or contact support if this persists.",
+          variant: "destructive"
+        });
+      } else if (error.message && error.message.includes('email rate limit exceeded')) {
+        toast({
+          title: "Email sending temporarily limited",
+          description: "Please wait a few minutes before trying to sign up again. You can also try signing in if you already have an account.",
           variant: "destructive"
         });
       } else {
