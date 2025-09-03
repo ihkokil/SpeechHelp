@@ -2,8 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Phone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Phone, Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { UseFormReturn } from 'react-hook-form';
 import { getAllCountries, getCountryByCode, formatPhoneNumber, stripNonNumeric } from '@/utils/phoneUtils';
 
@@ -25,6 +28,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   required = false
 }) => {
   const [formattedPhone, setFormattedPhone] = useState('');
+  const [countryOpen, setCountryOpen] = useState(false);
   const countries = getAllCountries();
   
   const watchedPhone = form.watch(phoneFieldName);
@@ -50,6 +54,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
     console.log('Phone country changing to:', countryCode);
     form.setValue(countryFieldName, countryCode);
     form.trigger(countryFieldName);
+    setCountryOpen(false);
   };
   
   const selectedCountry = getCountryByCode(watchedCountry);
@@ -64,43 +69,63 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
         control={form.control}
         name={countryFieldName}
         render={({ field }) => (
-          <FormItem>
+          <FormItem className="flex flex-col">
             <FormLabel>Country {required && <span className="text-red-500">*</span>}</FormLabel>
-            <Select
-              onValueChange={handleCountryChange}
-              value={field.value || ''}
-              defaultValue={field.value || ''}
-            >
-              <FormControl>
-                <div className="relative">
-                  <SelectTrigger className="w-full pl-10">
-                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10">
+            <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={countryOpen}
+                    className="w-full justify-between pl-10"
+                  >
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                       <Phone className="h-4 w-4 text-gray-500" />
                     </div>
-                    <SelectValue placeholder="Select Country">
-                      {field.value && selectedCountry && (
-                        <span className="flex items-center gap-2">
-                          <span className="text-lg">{selectedCountry.flag}</span>
-                          <span>+{selectedCountry.dialCode}</span>
-                          <span>{selectedCountry.name}</span>
-                        </span>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                </div>
-              </FormControl>
-              <SelectContent className="bg-white max-h-60 overflow-y-auto">
-                {countries.map((country) => (
-                  <SelectItem key={country.code} value={country.code}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{country.flag}</span>
-                      <span>+{country.dialCode}</span>
-                      <span>{country.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                    {selectedCountry ? (
+                      <span className="flex items-center gap-2">
+                        <span className="text-lg">{selectedCountry.flag}</span>
+                        <span>+{selectedCountry.dialCode}</span>
+                        <span>{selectedCountry.name}</span>
+                      </span>
+                    ) : (
+                      "Select Country..."
+                    )}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search countries..." />
+                  <CommandList>
+                    <CommandEmpty>No country found.</CommandEmpty>
+                    <CommandGroup>
+                      {countries.map((country) => (
+                        <CommandItem
+                          key={country.code}
+                          value={`${country.name} ${country.code} +${country.dialCode}`}
+                          onSelect={() => handleCountryChange(country.code)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              watchedCountry === country.code ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{country.flag}</span>
+                            <span>+{country.dialCode}</span>
+                            <span>{country.name}</span>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <FormMessage />
           </FormItem>
         )}

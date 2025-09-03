@@ -1,10 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { ProfileFormValues } from '../types';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { getAllCountries, getStatesForCountry } from '../utils/locationUtils';
 
 interface AddressFieldsProps {
@@ -12,6 +16,9 @@ interface AddressFieldsProps {
 }
 
 const AddressFields = ({ form }: AddressFieldsProps) => {
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [stateOpen, setStateOpen] = useState(false);
+  
   const countries = getAllCountries();
   const selectedCountryCode = form.watch('country');
   const statesForCountry = getStatesForCountry(selectedCountryCode || '');
@@ -30,13 +37,19 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
     
     // Trigger validation for both fields
     form.trigger(['country', 'state']);
+    
+    setCountryOpen(false);
   };
 
   const handleStateChange = (value: string) => {
     console.log('State changing to:', value);
     form.setValue('state', value, { shouldValidate: true, shouldDirty: true });
     form.trigger('state');
+    setStateOpen(false);
   };
+
+  const selectedCountry = countries.find(c => c.code === selectedCountryCode);
+  const selectedState = statesForCountry.find(s => s.code === form.watch('state'));
 
   return (
     <div className="space-y-4">
@@ -45,36 +58,58 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
         control={form.control}
         name="country"
         render={({ field }) => (
-          <FormItem>
+          <FormItem className="flex flex-col">
             <FormLabel>Country</FormLabel>
-            <Select 
-              onValueChange={handleCountryChange}
-              value={field.value || ''}
-              key={`country-${field.value}`}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select country">
-                    {field.value && (
+            <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={countryOpen}
+                    className="w-full justify-between"
+                  >
+                    {selectedCountry ? (
                       <span className="flex items-center gap-2">
-                        <span>{countries.find(c => c.code === field.value)?.flag}</span>
-                        <span>{countries.find(c => c.code === field.value)?.name}</span>
+                        <span>{selectedCountry.flag}</span>
+                        <span>{selectedCountry.name}</span>
                       </span>
+                    ) : (
+                      "Select country..."
                     )}
-                  </SelectValue>
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {countries.map((country) => (
-                  <SelectItem key={country.code} value={country.code}>
-                    <span className="flex items-center gap-2">
-                      <span>{country.flag}</span>
-                      <span>{country.name}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search countries..." />
+                  <CommandList>
+                    <CommandEmpty>No country found.</CommandEmpty>
+                    <CommandGroup>
+                      {countries.map((country) => (
+                        <CommandItem
+                          key={country.code}
+                          value={`${country.name} ${country.code}`}
+                          onSelect={() => handleCountryChange(country.code)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedCountryCode === country.code ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <span className="flex items-center gap-2">
+                            <span>{country.flag}</span>
+                            <span>{country.name}</span>
+                          </span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <FormMessage />
           </FormItem>
         )}
@@ -124,26 +159,48 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
           control={form.control}
           name="state"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>State / Province</FormLabel>
-              <Select 
-                onValueChange={handleStateChange}
-                value={field.value || ''}
-                key={`states-${selectedCountryCode}-${statesForCountry.length}`}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select state / province" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {statesForCountry.map((state) => (
-                    <SelectItem key={`${selectedCountryCode}-${state.code}`} value={state.code}>
-                      {state.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={stateOpen} onOpenChange={setStateOpen}>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={stateOpen}
+                      className="w-full justify-between"
+                    >
+                      {selectedState ? selectedState.name : "Select state / province..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search states..." />
+                    <CommandList>
+                      <CommandEmpty>No state found.</CommandEmpty>
+                      <CommandGroup>
+                        {statesForCountry.map((state) => (
+                          <CommandItem
+                            key={`${selectedCountryCode}-${state.code}`}
+                            value={`${state.name} ${state.code}`}
+                            onSelect={() => handleStateChange(state.code)}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                form.watch('state') === state.code ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {state.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}
