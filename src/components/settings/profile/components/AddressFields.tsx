@@ -83,7 +83,12 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
                 <Command>
-                  <CommandInput placeholder="Search countries..." />
+                  <CommandInput 
+                    placeholder="Search countries..." 
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
+                  />
                   <CommandList>
                     <CommandEmpty>No country found.</CommandEmpty>
                     <CommandGroup>
@@ -127,6 +132,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                 {...field}
                 placeholder="Enter your street address"
                 value={field.value || ''}
+                autoComplete="off"
               />
             </FormControl>
             <FormMessage />
@@ -146,6 +152,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                 {...field}
                 placeholder="Enter your city"
                 value={field.value || ''}
+                autoComplete="off"
               />
             </FormControl>
             <FormMessage />
@@ -177,7 +184,12 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-0" align="start">
                   <Command>
-                    <CommandInput placeholder="Search states..." />
+                    <CommandInput 
+                      placeholder="Search states..." 
+                      autoComplete="off"
+                      autoCorrect="off"
+                      spellCheck="false"
+                    />
                     <CommandList>
                       <CommandEmpty>No state found.</CommandEmpty>
                       <CommandGroup>
@@ -194,18 +206,18 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                               )}
                             />
                             {state.name}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )}
+                          </Check>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
       {/* ZIP/Postal Code - Fifth Field */}
       <FormField
@@ -219,6 +231,7 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                 {...field}
                 placeholder="Enter ZIP/postal code"
                 value={field.value || ''}
+                autoComplete="off"
               />
             </FormControl>
             <FormMessage />

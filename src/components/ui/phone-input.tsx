@@ -98,7 +98,12 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
                 <Command>
-                  <CommandInput placeholder="Search countries..." />
+                  <CommandInput 
+                    placeholder="Search countries..." 
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck="false"
+                  />
                   <CommandList>
                     <CommandEmpty>No country found.</CommandEmpty>
                     <CommandGroup>
@@ -151,6 +156,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
                     value={formattedPhone}
                     onChange={handlePhoneChange}
                     className="flex-grow rounded-l-none border-l-0"
+                    autoComplete="off"
                     {...field}
                   />
                 </div>
