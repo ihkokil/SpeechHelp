@@ -67,15 +67,15 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                     variant="outline"
                     role="combobox"
                     aria-expanded={countryOpen}
-                    className="w-full justify-between"
+                    className="w-full justify-between text-black hover:text-black"
                   >
                     {selectedCountry ? (
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 text-black">
                         <span>{selectedCountry.flag}</span>
                         <span>{selectedCountry.name}</span>
                       </span>
                     ) : (
-                      "Select country..."
+                      <span className="text-gray-500">Select country...</span>
                     )}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
@@ -175,9 +175,13 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                       variant="outline"
                       role="combobox"
                       aria-expanded={stateOpen}
-                      className="w-full justify-between"
+                      className="w-full justify-between text-black hover:text-black"
                     >
-                      {selectedState ? selectedState.name : "Select state / province..."}
+                      {selectedState ? (
+                        <span className="text-black">{selectedState.name}</span>
+                      ) : (
+                        <span className="text-gray-500">Select state / province...</span>
+                      )}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>

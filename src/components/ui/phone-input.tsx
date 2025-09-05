@@ -78,19 +78,19 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
                     variant="outline"
                     role="combobox"
                     aria-expanded={countryOpen}
-                    className="w-full justify-between pl-10"
+                    className="w-full justify-between pl-10 text-black hover:text-black"
                   >
                     <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                       <Phone className="h-4 w-4 text-gray-500" />
                     </div>
                     {selectedCountry ? (
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 text-black">
                         <span className="text-lg">{selectedCountry.flag}</span>
                         <span>+{selectedCountry.dialCode}</span>
                         <span>{selectedCountry.name}</span>
                       </span>
                     ) : (
-                      "Select Country..."
+                      <span className="text-gray-500">Select Country...</span>
                     )}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
