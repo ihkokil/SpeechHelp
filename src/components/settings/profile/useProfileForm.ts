@@ -9,6 +9,7 @@ import { useProfileFormSubmit } from './hooks/useProfileFormSubmit';
 export const useProfileForm = () => {
   const { profile, isLoading, originalEmail, addressData } = useUserProfileData();
   const { onSubmit } = useProfileFormSubmit();
+  const [isInitialized, setIsInitialized] = React.useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -25,23 +26,20 @@ export const useProfileForm = () => {
       country: 'US',
       currentPassword: '',
     },
-    mode: 'onChange', // This helps with real-time validation
+    mode: 'onChange',
   });
 
-  // Update form when profile data is loaded, but don't override user changes
+  // Initialize form data only once when profile is loaded and not already initialized
   React.useEffect(() => {
-    if (profile && originalEmail && !form.formState.isDirty) {
-      console.log('Initializing form with profile data:', profile);
-      console.log('Original email:', originalEmail);
-      console.log('Address data:', addressData);
+    if (profile && originalEmail && !isInitialized && !isLoading) {
+      console.log('Initializing form with profile data (one time):', profile);
       
       const formData = {
         firstName: profile.first_name || '',
         lastName: profile.last_name || '',
-        email: originalEmail || '', // Make sure email is always set
+        email: originalEmail || '',
         phone: profile.phone || '',
         countryCode: profile.country_code || 'US',
-        // Address fields from user metadata
         streetAddress: addressData.streetAddress || '',
         city: addressData.city || '',
         state: addressData.state || '',
@@ -50,23 +48,22 @@ export const useProfileForm = () => {
         currentPassword: '',
       };
       
-      console.log('Setting form data:', formData);
       form.reset(formData);
+      setIsInitialized(true);
     }
-  }, [profile, originalEmail, addressData, form]);
+  }, [profile, originalEmail, addressData, isInitialized, isLoading, form]);
 
-  // Force email field update if it's empty but we have originalEmail
+  // Only set email if it's empty and we have originalEmail (backup safety check)
   React.useEffect(() => {
-    const currentEmail = form.getValues('email');
-    if (originalEmail && !currentEmail) {
-      console.log('Setting email field to originalEmail:', originalEmail);
-      form.setValue('email', originalEmail);
+    if (isInitialized && originalEmail && !form.getValues('email')) {
+      console.log('Setting email field as backup:', originalEmail);
+      form.setValue('email', originalEmail, { shouldDirty: false });
     }
-  }, [originalEmail, form]);
+  }, [originalEmail, form, isInitialized]);
 
   return {
     form,
-    isLoading,
+    isLoading: isLoading || !isInitialized,
     originalEmail,
     onSubmit: form.handleSubmit(onSubmit)
   };
