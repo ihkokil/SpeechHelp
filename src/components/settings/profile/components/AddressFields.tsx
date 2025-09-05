@@ -206,18 +206,18 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                               )}
                             />
                             {state.name}
-                          </Check>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
 
       {/* ZIP/Postal Code - Fifth Field */}
       <FormField
