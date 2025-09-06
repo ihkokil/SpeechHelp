@@ -31,8 +31,13 @@ export const usePricingTierLogic = (planType: SubscriptionPlan) => {
   // Check if user has already used free trial
   const hasUsedFreeTrial = profile?.subscription_plan === 'free_trial' || 
     (profile?.subscription_start_date && profile?.subscription_plan !== null);
+  
+  // Check if current trial is expired
+  const isTrialExpired = profile?.subscription_end_date && 
+    new Date(profile.subscription_end_date) < new Date();
+  
   const isFreeTrial = planType === SubscriptionPlan.FREE_TRIAL;
-  const cannotUseFreeTrialAgain = isFreeTrial && hasUsedFreeTrial;
+  const cannotUseFreeTrialAgain = isFreeTrial && (hasUsedFreeTrial || isTrialExpired);
 
   // Determine if this plan should be disabled
   const isPlanDisabled = isLowerTierPlan || cannotUseFreeTrialAgain;
@@ -42,7 +47,7 @@ export const usePricingTierLogic = (planType: SubscriptionPlan) => {
       return `You already have a ${profile?.subscription_plan} plan, which is higher than this plan.`;
     }
     if (cannotUseFreeTrialAgain) {
-      return 'You have already used your free trial. Please choose a paid plan to continue.';
+      return 'You have already used your free trial. Free trials are limited to one per lifetime. Please choose a paid plan to continue.';
     }
     return '';
   };
@@ -53,6 +58,7 @@ export const usePricingTierLogic = (planType: SubscriptionPlan) => {
     isPlanDisabled,
     cannotUseFreeTrialAgain,
     hasUsedFreeTrial,
+    isTrialExpired,
     disabledReason: getDisabledReason()
   };
 };

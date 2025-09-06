@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionPlan } from '@/lib/plan_rules.ts';
 
@@ -183,6 +182,46 @@ export const completeLogin = async (
 	}
 };
 
+// Helper function to check if user has used free trial
+const checkFreeTrialUsage = async (email: string) => {
+	try {
+		// Check if any user with this email has ever had a free trial
+		const { data, error } = await supabase
+			.from('profiles')
+			.select('subscription_plan, subscription_start_date')
+			.eq('id', (await supabase.auth.getUser()).data.user?.id);
+
+		if (error) {
+			console.error('Error checking free trial usage:', error);
+			return { hasUsedTrial: false };
+		}
+
+		// Also check if there's any auth user with this email that might have used free trial
+		const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+		
+		if (!authError && authUsers) {
+			const existingUser = authUsers.users.find(user => user.email === email);
+			if (existingUser) {
+				// Check if this user's profile shows they've used free trial
+				const { data: profile } = await supabase
+					.from('profiles')
+					.select('subscription_plan, subscription_start_date')
+					.eq('id', existingUser.id)
+					.single();
+
+				if (profile && profile.subscription_plan) {
+					return { hasUsedTrial: true };
+				}
+			}
+		}
+
+		return { hasUsedTrial: false };
+	} catch (error) {
+		console.error('Error in checkFreeTrialUsage:', error);
+		return { hasUsedTrial: false };
+	}
+};
+
 export const signUp = async (
 	email: string,
 	password: string,
@@ -209,14 +248,32 @@ export const signUp = async (
 			throw error;
 		}
 
+		// Check if this email has been used for free trial before
+		const { hasUsedTrial } = await checkFreeTrialUsage(email);
+		
+		let subscriptionPlan = SubscriptionPlan.FREE_TRIAL;
+		let subscriptionStatus = 'active';
+		let subscriptionStartDate = new Date().toISOString();
+		let subscriptionEndDate = new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+		// If user has used free trial before, they don't get another one
+		if (hasUsedTrial) {
+			console.log('SignUp: User has already used free trial, no trial will be granted');
+			subscriptionPlan = SubscriptionPlan.FREE_TRIAL;
+			subscriptionStatus = 'expired';
+			subscriptionEndDate = new Date().toISOString(); // Set to now (expired)
+			
+			showToast({
+				title: "Account created",
+				description: "Your free trial has already been used. Please choose a paid plan to continue using SpeechHelp.",
+				variant: "default"
+			});
+		}
+
 		console.log('SignUp: User does not exist, proceeding with signup...');
 		
 		// Clean up any existing auth state first
 		await supabase.auth.signOut({ scope: 'global' });
-		
-		// Calculate subscription dates
-		const subscriptionStartDate = new Date().toISOString();
-		const subscriptionEndDate = new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
 		
 		const res = await supabase.auth.signUp({
 			email,
@@ -226,8 +283,8 @@ export const signUp = async (
 					first_name: firstName,
 					last_name: lastName,
 					is_active: true,
-					subscription_plan: SubscriptionPlan.FREE_TRIAL,
-					subscription_status: 'active',
+					subscription_plan: subscriptionPlan,
+					subscription_status: subscriptionStatus,
 					subscription_start_date: subscriptionStartDate,
 					subscription_end_date: subscriptionEndDate,
 				}
@@ -262,11 +319,18 @@ export const signUp = async (
 		if (res.data.user && !res.error) {
 			console.log('SignUp: User created successfully, sending confirmation email...');
 			
-			// Show immediate success message
-			showToast({
-				title: "Account created successfully",
-				description: "Please check your email to confirm your account and complete the setup.",
-			});
+			// Show appropriate success message based on trial status
+			if (hasUsedTrial) {
+				showToast({
+					title: "Account created",
+					description: "Please check your email to confirm your account. Note: Your free trial has already been used.",
+				});
+			} else {
+				showToast({
+					title: "Account created successfully",
+					description: "Please check your email to confirm your account and start your 7-day free trial.",
+				});
+			}
 
 			try {
 				// Call the send-confirmation edge function
