@@ -214,6 +214,10 @@ export const signUp = async (
 		// Clean up any existing auth state first
 		await supabase.auth.signOut({ scope: 'global' });
 		
+		// Calculate subscription dates
+		const subscriptionStartDate = new Date().toISOString();
+		const subscriptionEndDate = new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+		
 		const res = await supabase.auth.signUp({
 			email,
 			password,
@@ -221,10 +225,11 @@ export const signUp = async (
 				data: {
 					first_name: firstName,
 					last_name: lastName,
-					is_active: false,
+					is_active: true,
 					subscription_plan: SubscriptionPlan.FREE_TRIAL,
-					subscription_start_date: new Date().toISOString(),
-					subscription_end_date: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+					subscription_status: 'active',
+					subscription_start_date: subscriptionStartDate,
+					subscription_end_date: subscriptionEndDate,
 				}
 			}
 		});

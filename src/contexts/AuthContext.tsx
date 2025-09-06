@@ -1,10 +1,10 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Speech } from '@/types/speech';
 import { useToast } from '@/hooks/use-toast';
 import { profileService, UserProfile } from '@/services/profileService';
+import { SubscriptionPlan } from '@/lib/plan_rules';
 
 interface AuthContextType {
   user: User | null;
@@ -128,6 +128,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Attempting to sign up with email:', email);
       
+      // Calculate subscription dates for 7-day free trial
+      const subscriptionStartDate = new Date().toISOString();
+      const subscriptionEndDate = new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -136,6 +140,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             first_name: firstName || '',
             last_name: lastName || '',
             full_name: firstName && lastName ? `${firstName} ${lastName}` : '',
+            is_active: true,
+            subscription_plan: SubscriptionPlan.FREE_TRIAL,
+            subscription_status: 'active',
+            subscription_start_date: subscriptionStartDate,
+            subscription_end_date: subscriptionEndDate,
           },
         },
       });
