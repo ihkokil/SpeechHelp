@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionPlan } from '@/lib/plan_rules.ts';
 
@@ -201,7 +200,7 @@ const checkFreeTrialUsage = async (email: string) => {
 		const { data: authUsersData, error: authError } = await supabase.auth.admin.listUsers();
 		
 		if (!authError && authUsersData && authUsersData.users) {
-			const existingUser = authUsersData.users.find(user => user.email === email);
+			const existingUser = authUsersData.users.find((user: any) => user.email === email);
 			if (existingUser) {
 				// Check if this user's profile shows they've used free trial
 				const { data: profile } = await supabase
