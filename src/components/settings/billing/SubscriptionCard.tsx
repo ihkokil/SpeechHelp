@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -117,6 +116,12 @@ const SubscriptionCard = ({
       default:
         return subscriptionData.plan; // Return as-is if we can't determine
     }
+  };
+
+  // Check if the current plan is a free trial
+  const isFreeTrial = () => {
+    const planName = subscriptionData.plan.toLowerCase();
+    return planName.includes('free') || planName.includes('trial');
   };
 
   const handleReactivateSubscription = async () => {
@@ -315,7 +320,7 @@ const SubscriptionCard = ({
               <div className="flex items-center gap-2 text-sm">
                 <RefreshCw className="h-4 w-4" />
                 <span>
-                  {subscriptionData.status === 'active' ? 'Renews' : 'Ends'}: {format(subscriptionData.endDate, 'MMM dd, yyyy')}
+                  {subscriptionData.status === 'active' && !isFreeTrial() ? 'Renews' : 'Ends'}: {format(subscriptionData.endDate, 'MMM dd, yyyy')}
                 </span>
               </div>
               {subscriptionData.paymentMethod && (
@@ -330,8 +335,8 @@ const SubscriptionCard = ({
           </div>
         </div>
 
-        {/* Auto-renewal toggle and Cancel button on same row */}
-        {subscriptionData.status === 'active' && (
+        {/* Auto-renewal toggle and Cancel button - only show for paid subscriptions */}
+        {subscriptionData.status === 'active' && !isFreeTrial() && (
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Switch
