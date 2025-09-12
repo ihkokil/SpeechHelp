@@ -83,6 +83,40 @@ serve(async (req) => {
       if (last) return last;
       return '';
     };
+
+    // Enhanced address field mapping - handle both camelCase and snake_case
+    const extractAddressData = (metadata: any) => {
+      console.log('🏠 Extracting address data from metadata:', metadata);
+      
+      const addressData = {
+        // Street address - check multiple possible field names
+        streetAddress: safeString(metadata.streetAddress) || 
+                      safeString(metadata.street_address) || 
+                      safeString(metadata.address) || '',
+        
+        // City
+        city: safeString(metadata.city) || '',
+        
+        // State/Province - check multiple possible field names
+        state: safeString(metadata.state) || 
+               safeString(metadata.province) || 
+               safeString(metadata.stateProvince) || '',
+        
+        // ZIP/Postal Code - check multiple possible field names
+        zipCode: safeString(metadata.zipCode) || 
+                 safeString(metadata.zip_code) || 
+                 safeString(metadata.postal_code) || 
+                 safeString(metadata.postalCode) || '',
+        
+        // Country - check multiple possible field names
+        country: safeString(metadata.country) || 
+                 safeString(metadata.country_code) || 
+                 safeString(metadata.countryCode) || ''
+      };
+
+      console.log('🏠 Extracted address data:', addressData);
+      return addressData;
+    };
     
     // Create a map of profiles for quick lookup
     const profileMap = new Map();
@@ -98,13 +132,24 @@ serve(async (req) => {
       // Extract metadata safely - PRESERVE ALL ADDRESS FIELDS
       const metadata = authUser.raw_user_meta_data || {};
       
+      // Enhanced address extraction
+      const addressData = extractAddressData(metadata);
+      
       // Get first and last names with priority: profile table > metadata > empty
-      const firstName = safeString(profile.first_name) || safeString(metadata.first_name);
-      const lastName = safeString(profile.last_name) || safeString(metadata.last_name);
+      const firstName = safeString(profile.first_name) || safeString(metadata.first_name) || safeString(metadata.firstName);
+      const lastName = safeString(profile.last_name) || safeString(metadata.last_name) || safeString(metadata.lastName);
       
       // Construct full name from first and last name components
       const fullName = constructFullName(firstName, lastName);
       const displayName = fullName || authUser.email?.split('@')[0] || 'User';
+      
+      // Debug logging for each user
+      console.log(`📊 Processing user ${authUser.id}:`, {
+        email: authUser.email,
+        metadata: metadata,
+        addressData: addressData,
+        hasAddressData: Object.values(addressData).some(val => val !== '')
+      });
       
       return {
         ...authUser,
@@ -128,8 +173,8 @@ serve(async (req) => {
         stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
         // Include phone and country_code from profiles table
         phone: safeString(profile.phone) || safeString(metadata.phone),
-        country_code: safeString(profile.country_code) || safeString(metadata.country_code) || 'US',
-        // Enhanced user_metadata with proper fallbacks
+        country_code: safeString(profile.country_code) || safeString(metadata.country_code) || safeString(metadata.countryCode) || 'US',
+        // Enhanced user_metadata with proper fallbacks AND comprehensive address mapping
         user_metadata: {
           first_name: firstName,
           last_name: lastName,
@@ -137,38 +182,52 @@ serve(async (req) => {
           name: fullName,
           email: safeString(authUser.email),
           phone: safeString(metadata.phone) || safeString(profile.phone),
-          country_code: safeString(metadata.country_code) || safeString(profile.country_code) || 'US',
-          // PRESERVE ALL ADDRESS METADATA FIELDS
-          street_address: safeString(metadata.street_address),
-          address: safeString(metadata.address),
-          city: safeString(metadata.city),
-          state: safeString(metadata.state),
-          province: safeString(metadata.province),
-          zip_code: safeString(metadata.zip_code),
-          postal_code: safeString(metadata.postal_code),
-          country: safeString(metadata.country),
+          country_code: safeString(metadata.country_code) || safeString(metadata.countryCode) || safeString(profile.country_code) || 'US',
+          // COMPREHENSIVE ADDRESS MAPPING - support both naming conventions
+          street_address: addressData.streetAddress,
+          streetAddress: addressData.streetAddress,
+          address: addressData.streetAddress,
+          city: addressData.city,
+          state: addressData.state,
+          province: addressData.state,
+          stateProvince: addressData.state,
+          zip_code: addressData.zipCode,
+          zipCode: addressData.zipCode,
+          postal_code: addressData.zipCode,
+          postalCode: addressData.zipCode,
+          country: addressData.country,
+          countryCode: addressData.country,
         },
-        // ENSURE raw_user_meta_data is preserved with ALL original fields
+        // ENSURE raw_user_meta_data is preserved with ALL original fields PLUS normalized versions
         raw_user_meta_data: {
           ...metadata,
-          // Ensure these specific fields are always present
-          first_name: safeString(metadata.first_name),
-          last_name: safeString(metadata.last_name),
+          // Ensure these specific fields are always present in both formats
+          first_name: firstName,
+          firstName: firstName,
+          last_name: lastName,
+          lastName: lastName,
           phone: safeString(metadata.phone),
-          country_code: safeString(metadata.country_code),
-          street_address: safeString(metadata.street_address),
-          address: safeString(metadata.address),
-          city: safeString(metadata.city),
-          state: safeString(metadata.state),
-          province: safeString(metadata.province),
-          zip_code: safeString(metadata.zip_code),
-          postal_code: safeString(metadata.postal_code),
-          country: safeString(metadata.country),
+          country_code: safeString(metadata.country_code) || safeString(metadata.countryCode),
+          countryCode: safeString(metadata.countryCode) || safeString(metadata.country_code),
+          // ADDRESS FIELDS - ensure both camelCase and snake_case versions exist
+          street_address: addressData.streetAddress,
+          streetAddress: addressData.streetAddress,
+          address: addressData.streetAddress,
+          city: addressData.city,
+          state: addressData.state,
+          province: addressData.state,
+          stateProvince: addressData.state,
+          zip_code: addressData.zipCode,
+          zipCode: addressData.zipCode,
+          postal_code: addressData.zipCode,
+          postalCode: addressData.zipCode,
+          country: addressData.country,
+          countryCode: addressData.country,
         },
         profile: {
           username: safeString(profile.username) || fullName || authUser.email?.split('@')[0] || '',
           phone: safeString(profile.phone) || safeString(metadata.phone),
-          country_code: safeString(profile.country_code) || safeString(metadata.country_code) || 'US',
+          country_code: safeString(profile.country_code) || safeString(metadata.country_code) || safeString(metadata.countryCode) || 'US',
           is_active: profile.is_active !== false,
           is_admin: profile.is_admin || false,
           admin_role: safeString(profile.admin_role) || null,
@@ -191,6 +250,19 @@ serve(async (req) => {
     });
     
     console.log('Successfully combined users with profiles');
+    console.log('📈 Address data summary:', {
+      totalUsers: usersWithProfiles.length,
+      usersWithAddressData: usersWithProfiles.filter(user => 
+        user.raw_user_meta_data && (
+          user.raw_user_meta_data.street_address || 
+          user.raw_user_meta_data.streetAddress ||
+          user.raw_user_meta_data.city ||
+          user.raw_user_meta_data.state ||
+          user.raw_user_meta_data.zip_code ||
+          user.raw_user_meta_data.zipCode
+        )
+      ).length
+    });
     
     return new Response(
       JSON.stringify({ users: usersWithProfiles }),

@@ -23,11 +23,11 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
   const selectedCountryCode = form.watch('country');
   const statesForCountry = getStatesForCountry(selectedCountryCode || '');
 
-  console.log('AddressFields - Current selected country code:', selectedCountryCode);
-  console.log('AddressFields - Available states for country:', statesForCountry);
+  console.log('🏠 AddressFields - Current selected country code:', selectedCountryCode);
+  console.log('🏠 AddressFields - Available states for country:', statesForCountry);
 
   const handleCountryChange = (value: string) => {
-    console.log('Address country changing to:', value);
+    console.log('🏠 Address country changing to:', value);
     
     // Update country field
     form.setValue('country', value, { shouldValidate: true, shouldDirty: true });
@@ -42,10 +42,19 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
   };
 
   const handleStateChange = (value: string) => {
-    console.log('State changing to:', value);
+    console.log('🏠 State changing to:', value);
     form.setValue('state', value, { shouldValidate: true, shouldDirty: true });
     form.trigger('state');
     setStateOpen(false);
+  };
+
+  // Enhanced field change handlers to ensure consistent data saving
+  const handleAddressFieldChange = (fieldName: string, value: string) => {
+    console.log(`🏠 AddressFields - ${fieldName} changed to:`, value);
+    form.setValue(fieldName as keyof ProfileFormValues, value, { 
+      shouldValidate: true, 
+      shouldDirty: true 
+    });
   };
 
   const selectedCountry = countries.find(c => c.code === selectedCountryCode);
@@ -132,6 +141,10 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                 {...field}
                 placeholder="Enter your street address"
                 value={field.value || ''}
+                onChange={(e) => {
+                  field.onChange(e);
+                  handleAddressFieldChange('streetAddress', e.target.value);
+                }}
                 autoComplete="off"
               />
             </FormControl>
@@ -152,6 +165,10 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                 {...field}
                 placeholder="Enter your city"
                 value={field.value || ''}
+                onChange={(e) => {
+                  field.onChange(e);
+                  handleAddressFieldChange('city', e.target.value);
+                }}
                 autoComplete="off"
               />
             </FormControl>
@@ -235,6 +252,10 @@ const AddressFields = ({ form }: AddressFieldsProps) => {
                 {...field}
                 placeholder="Enter ZIP/postal code"
                 value={field.value || ''}
+                onChange={(e) => {
+                  field.onChange(e);
+                  handleAddressFieldChange('zipCode', e.target.value);
+                }}
                 autoComplete="off"
               />
             </FormControl>

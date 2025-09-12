@@ -40,17 +40,54 @@ export const useUserProfileData = () => {
     loadProfile();
   }, [user]);
 
+  // Enhanced address data extraction with comprehensive field mapping
+  const extractAddressField = (fieldVariants: string[]) => {
+    const metadata = user?.user_metadata || {};
+    const rawMetadata = user?.raw_user_meta_data || {};
+    
+    // Check user_metadata first, then raw_user_meta_data
+    for (const variant of fieldVariants) {
+      if (metadata[variant] && String(metadata[variant]).trim()) {
+        return String(metadata[variant]).trim();
+      }
+    }
+    for (const variant of fieldVariants) {
+      if (rawMetadata[variant] && String(rawMetadata[variant]).trim()) {
+        return String(rawMetadata[variant]).trim();
+      }
+    }
+    return '';
+  };
+
+  const addressData = {
+    streetAddress: extractAddressField([
+      'streetAddress', 'street_address', 'address'
+    ]),
+    city: extractAddressField([
+      'city'
+    ]),
+    state: extractAddressField([
+      'state', 'province', 'stateProvince'
+    ]),
+    zipCode: extractAddressField([
+      'zipCode', 'zip_code', 'postal_code', 'postalCode'
+    ]),
+    country: extractAddressField([
+      'country', 'countryCode', 'country_code'
+    ]) || user?.user_metadata?.country_code || 'US',
+  };
+
+  console.log('🏠 useUserProfileData - Address extraction debug:', {
+    userId: user?.id,
+    user_metadata: user?.user_metadata,
+    raw_user_meta_data: user?.raw_user_meta_data,
+    extractedAddress: addressData
+  });
+
   return {
     profile,
     isLoading,
     originalEmail,
-    // Include address data from user metadata
-    addressData: {
-      streetAddress: user?.user_metadata?.street_address || '',
-      city: user?.user_metadata?.city || '',
-      state: user?.user_metadata?.state || '',
-      zipCode: user?.user_metadata?.zip_code || '',
-      country: user?.user_metadata?.country || user?.user_metadata?.country_code || 'US',
-    }
+    addressData
   };
 };
