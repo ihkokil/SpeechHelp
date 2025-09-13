@@ -9,49 +9,21 @@ interface AddressInfoProps {
 }
 
 export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
-  // Get address information from all possible sources with enhanced debugging
-  const metadata = user.user_metadata || {};
+  // Get address information from raw_user_meta_data which contains the actual address data
   const rawMetadata = user.raw_user_meta_data || {};
+  const userMetadata = user.user_metadata || {};
   
   console.log('🏠 AddressInfo Debug - User ID:', user.id);
-  console.log('🏠 AddressInfo Debug - user_metadata:', metadata);
   console.log('🏠 AddressInfo Debug - raw_user_meta_data:', rawMetadata);
+  console.log('🏠 AddressInfo Debug - user_metadata:', userMetadata);
   
-  // Comprehensive address extraction with multiple field name variants
-  const extractAddressField = (fieldVariants: string[]) => {
-    // Check user_metadata first, then raw_user_meta_data
-    for (const variant of fieldVariants) {
-      if (metadata[variant] && String(metadata[variant]).trim()) {
-        console.log(`🔍 Found ${variant} in user_metadata:`, metadata[variant]);
-        return String(metadata[variant]).trim();
-      }
-    }
-    for (const variant of fieldVariants) {
-      if (rawMetadata[variant] && String(rawMetadata[variant]).trim()) {
-        console.log(`🔍 Found ${variant} in raw_user_meta_data:`, rawMetadata[variant]);
-        return String(rawMetadata[variant]).trim();
-      }
-    }
-    return '';
-  };
-  
-  // Extract address info with comprehensive field name support
+  // Extract address info directly from raw_user_meta_data first, then fallback to user_metadata
   const addressInfo = {
-    streetAddress: extractAddressField([
-      'street_address', 'streetAddress', 'address'
-    ]),
-    city: extractAddressField([
-      'city'
-    ]),
-    state: extractAddressField([
-      'state', 'province', 'stateProvince'
-    ]),
-    zipCode: extractAddressField([
-      'zip_code', 'zipCode', 'postal_code', 'postalCode'
-    ]),
-    country: extractAddressField([
-      'country', 'country_code', 'countryCode'
-    ]) || user.country_code || ''
+    streetAddress: rawMetadata.street_address || userMetadata.street_address || userMetadata.streetAddress || '',
+    city: rawMetadata.city || userMetadata.city || '',
+    state: rawMetadata.state || userMetadata.state || userMetadata.province || '',
+    zipCode: rawMetadata.zip_code || userMetadata.zip_code || userMetadata.zipCode || userMetadata.postal_code || '',
+    country: rawMetadata.country || userMetadata.country || userMetadata.countryCode || user.country_code || ''
   };
 
   console.log('🏠 AddressInfo Debug - Final extracted address:', addressInfo);
@@ -81,11 +53,6 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
             <div>
               <h4 className="text-sm font-medium text-gray-500 mb-1">Street Address</h4>
               <p className="text-sm">{addressInfo.streetAddress || 'Not provided'}</p>
-              {!addressInfo.streetAddress && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Checked: street_address, streetAddress, address
-                </p>
-              )}
             </div>
 
             <div>
@@ -98,31 +65,16 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
             <div>
               <h4 className="text-sm font-medium text-gray-500 mb-1">State/Province</h4>
               <p className="text-sm">{addressInfo.state || 'Not provided'}</p>
-              {!addressInfo.state && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Checked: state, province, stateProvince
-                </p>
-              )}
             </div>
 
             <div>
               <h4 className="text-sm font-medium text-gray-500 mb-1">ZIP/Postal Code</h4>
               <p className="text-sm">{addressInfo.zipCode || 'Not provided'}</p>
-              {!addressInfo.zipCode && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Checked: zip_code, zipCode, postal_code, postalCode
-                </p>
-              )}
             </div>
 
             <div>
               <h4 className="text-sm font-medium text-gray-500 mb-1">Country</h4>
               <p className="text-sm">{addressInfo.country || 'Not provided'}</p>
-              {!addressInfo.country && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Checked: country, country_code, countryCode
-                </p>
-              )}
             </div>
           </div>
         </div>
@@ -135,10 +87,10 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
             </summary>
             <div className="mt-2 space-y-2 text-xs">
               <div>
-                <strong>user_metadata keys:</strong> {Object.keys(metadata).join(', ') || 'None'}
+                <strong>raw_user_meta_data keys:</strong> {Object.keys(rawMetadata).join(', ') || 'None'}
               </div>
               <div>
-                <strong>raw_user_meta_data keys:</strong> {Object.keys(rawMetadata).join(', ') || 'None'}
+                <strong>user_metadata keys:</strong> {Object.keys(userMetadata).join(', ') || 'None'}
               </div>
               <div>
                 <strong>Raw metadata sample:</strong>

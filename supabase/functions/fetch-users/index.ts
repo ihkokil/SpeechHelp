@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0';
 
@@ -83,40 +82,6 @@ serve(async (req) => {
       if (last) return last;
       return '';
     };
-
-    // Enhanced address field mapping - handle both camelCase and snake_case
-    const extractAddressData = (metadata: any) => {
-      console.log('🏠 Extracting address data from metadata:', metadata);
-      
-      const addressData = {
-        // Street address - check multiple possible field names
-        streetAddress: safeString(metadata.streetAddress) || 
-                      safeString(metadata.street_address) || 
-                      safeString(metadata.address) || '',
-        
-        // City
-        city: safeString(metadata.city) || '',
-        
-        // State/Province - check multiple possible field names
-        state: safeString(metadata.state) || 
-               safeString(metadata.province) || 
-               safeString(metadata.stateProvince) || '',
-        
-        // ZIP/Postal Code - check multiple possible field names
-        zipCode: safeString(metadata.zipCode) || 
-                 safeString(metadata.zip_code) || 
-                 safeString(metadata.postal_code) || 
-                 safeString(metadata.postalCode) || '',
-        
-        // Country - check multiple possible field names
-        country: safeString(metadata.country) || 
-                 safeString(metadata.country_code) || 
-                 safeString(metadata.countryCode) || ''
-      };
-
-      console.log('🏠 Extracted address data:', addressData);
-      return addressData;
-    };
     
     // Create a map of profiles for quick lookup
     const profileMap = new Map();
@@ -129,27 +94,21 @@ serve(async (req) => {
       // Get the profile data
       const profile = profileMap.get(authUser.id) || {};
       
-      // Extract metadata safely - PRESERVE ALL ADDRESS FIELDS
-      const metadata = authUser.raw_user_meta_data || {};
+      // PRESERVE the original raw_user_meta_data exactly as it is
+      const originalRawMetadata = authUser.raw_user_meta_data || {};
       
-      // Enhanced address extraction
-      const addressData = extractAddressData(metadata);
+      console.log(`📊 Processing user ${authUser.id}:`, {
+        email: authUser.email,
+        original_raw_metadata: originalRawMetadata,
+        has_address_in_raw: !!(originalRawMetadata.street_address || originalRawMetadata.city || originalRawMetadata.state || originalRawMetadata.zip_code)
+      });
       
       // Get first and last names with priority: profile table > metadata > empty
-      const firstName = safeString(profile.first_name) || safeString(metadata.first_name) || safeString(metadata.firstName);
-      const lastName = safeString(profile.last_name) || safeString(metadata.last_name) || safeString(metadata.lastName);
+      const firstName = safeString(profile.first_name) || safeString(originalRawMetadata.first_name) || safeString(originalRawMetadata.firstName);
+      const lastName = safeString(profile.last_name) || safeString(originalRawMetadata.last_name) || safeString(originalRawMetadata.lastName);
       
       // Construct full name from first and last name components
       const fullName = constructFullName(firstName, lastName);
-      const displayName = fullName || authUser.email?.split('@')[0] || 'User';
-      
-      // Debug logging for each user
-      console.log(`📊 Processing user ${authUser.id}:`, {
-        email: authUser.email,
-        metadata: metadata,
-        addressData: addressData,
-        hasAddressData: Object.values(addressData).some(val => val !== '')
-      });
       
       return {
         ...authUser,
@@ -161,84 +120,54 @@ serve(async (req) => {
         admin_role: safeString(profile.admin_role) || null,
         permissions: profile.permissions || [],
         // Complete subscription fields
-        subscription_plan: safeString(profile.subscription_plan) || null,
+        subscription_plan: safeString(profile.subscription_plan) || safeString(originalRawMetadata.subscription_plan) || null,
         subscription_period: safeString(profile.subscription_period) || null,
         subscription_amount: profile.subscription_amount || null,
-        subscription_status: safeString(profile.subscription_status) || null,
-        subscription_start_date: profile.subscription_start_date || null,
-        subscription_end_date: profile.subscription_end_date || null,
+        subscription_status: safeString(profile.subscription_status) || safeString(originalRawMetadata.subscription_status) || null,
+        subscription_start_date: profile.subscription_start_date || originalRawMetadata.subscription_start_date || null,
+        subscription_end_date: profile.subscription_end_date || originalRawMetadata.subscription_end_date || null,
         subscription_price_id: safeString(profile.subscription_price_id) || null,
         subscription_currency: safeString(profile.subscription_currency) || 'usd',
         stripe_customer_id: safeString(profile.stripe_customer_id) || null,
         stripe_subscription_id: safeString(profile.stripe_subscription_id) || null,
         // Include phone and country_code from profiles table
-        phone: safeString(profile.phone) || safeString(metadata.phone),
-        country_code: safeString(profile.country_code) || safeString(metadata.country_code) || safeString(metadata.countryCode) || 'US',
-        // Enhanced user_metadata with proper fallbacks AND comprehensive address mapping
+        phone: safeString(profile.phone) || safeString(originalRawMetadata.phone),
+        country_code: safeString(profile.country_code) || safeString(originalRawMetadata.country_code) || safeString(originalRawMetadata.countryCode) || 'US',
+        // Enhanced user_metadata with proper fallbacks
         user_metadata: {
           first_name: firstName,
           last_name: lastName,
           full_name: fullName,
           name: fullName,
           email: safeString(authUser.email),
-          phone: safeString(metadata.phone) || safeString(profile.phone),
-          country_code: safeString(metadata.country_code) || safeString(metadata.countryCode) || safeString(profile.country_code) || 'US',
-          // COMPREHENSIVE ADDRESS MAPPING - support both naming conventions
-          street_address: addressData.streetAddress,
-          streetAddress: addressData.streetAddress,
-          address: addressData.streetAddress,
-          city: addressData.city,
-          state: addressData.state,
-          province: addressData.state,
-          stateProvince: addressData.state,
-          zip_code: addressData.zipCode,
-          zipCode: addressData.zipCode,
-          postal_code: addressData.zipCode,
-          postalCode: addressData.zipCode,
-          country: addressData.country,
-          countryCode: addressData.country,
+          phone: safeString(originalRawMetadata.phone) || safeString(profile.phone),
+          country_code: safeString(originalRawMetadata.country_code) || safeString(originalRawMetadata.countryCode) || safeString(profile.country_code) || 'US',
+          // Address fields from original metadata
+          street_address: safeString(originalRawMetadata.street_address),
+          streetAddress: safeString(originalRawMetadata.street_address), // Also provide camelCase version
+          city: safeString(originalRawMetadata.city),
+          state: safeString(originalRawMetadata.state),
+          zip_code: safeString(originalRawMetadata.zip_code),
+          zipCode: safeString(originalRawMetadata.zip_code), // Also provide camelCase version
+          country: safeString(originalRawMetadata.country),
         },
-        // ENSURE raw_user_meta_data is preserved with ALL original fields PLUS normalized versions
-        raw_user_meta_data: {
-          ...metadata,
-          // Ensure these specific fields are always present in both formats
-          first_name: firstName,
-          firstName: firstName,
-          last_name: lastName,
-          lastName: lastName,
-          phone: safeString(metadata.phone),
-          country_code: safeString(metadata.country_code) || safeString(metadata.countryCode),
-          countryCode: safeString(metadata.countryCode) || safeString(metadata.country_code),
-          // ADDRESS FIELDS - ensure both camelCase and snake_case versions exist
-          street_address: addressData.streetAddress,
-          streetAddress: addressData.streetAddress,
-          address: addressData.streetAddress,
-          city: addressData.city,
-          state: addressData.state,
-          province: addressData.state,
-          stateProvince: addressData.state,
-          zip_code: addressData.zipCode,
-          zipCode: addressData.zipCode,
-          postal_code: addressData.zipCode,
-          postalCode: addressData.zipCode,
-          country: addressData.country,
-          countryCode: addressData.country,
-        },
+        // CRITICAL: Keep the original raw_user_meta_data exactly as stored in the database
+        raw_user_meta_data: originalRawMetadata,
         profile: {
           username: safeString(profile.username) || fullName || authUser.email?.split('@')[0] || '',
-          phone: safeString(profile.phone) || safeString(metadata.phone),
-          country_code: safeString(profile.country_code) || safeString(metadata.country_code) || safeString(metadata.countryCode) || 'US',
+          phone: safeString(profile.phone) || safeString(originalRawMetadata.phone),
+          country_code: safeString(profile.country_code) || safeString(originalRawMetadata.country_code) || safeString(originalRawMetadata.countryCode) || 'US',
           is_active: profile.is_active !== false,
           is_admin: profile.is_admin || false,
           admin_role: safeString(profile.admin_role) || null,
           permissions: profile.permissions || [],
           // Complete subscription data in profile object
-          subscription_plan: safeString(profile.subscription_plan) || null,
+          subscription_plan: safeString(profile.subscription_plan) || safeString(originalRawMetadata.subscription_plan) || null,
           subscription_period: safeString(profile.subscription_period) || null,
           subscription_amount: profile.subscription_amount || null,
-          subscription_status: safeString(profile.subscription_status) || null,
-          subscription_start_date: profile.subscription_start_date || null,
-          subscription_end_date: profile.subscription_end_date || null,
+          subscription_status: safeString(profile.subscription_status) || safeString(originalRawMetadata.subscription_status) || null,
+          subscription_start_date: profile.subscription_start_date || originalRawMetadata.subscription_start_date || null,
+          subscription_end_date: profile.subscription_end_date || originalRawMetadata.subscription_end_date || null,
           subscription_price_id: safeString(profile.subscription_price_id) || null,
           subscription_currency: safeString(profile.subscription_currency) || 'usd',
           stripe_customer_id: safeString(profile.stripe_customer_id) || null,
@@ -255,11 +184,9 @@ serve(async (req) => {
       usersWithAddressData: usersWithProfiles.filter(user => 
         user.raw_user_meta_data && (
           user.raw_user_meta_data.street_address || 
-          user.raw_user_meta_data.streetAddress ||
           user.raw_user_meta_data.city ||
           user.raw_user_meta_data.state ||
-          user.raw_user_meta_data.zip_code ||
-          user.raw_user_meta_data.zipCode
+          user.raw_user_meta_data.zip_code
         )
       ).length
     });
