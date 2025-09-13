@@ -1,5 +1,4 @@
 
-
 export interface User {
   id: string;
   email: string;
@@ -67,6 +66,12 @@ export interface User {
   phone?: string;
   country_code?: string;
   avatar_url?: string;
+  // Dedicated address columns from profiles table
+  address_street_address?: string;
+  address_city?: string;
+  address_state?: string;
+  address_zip_code?: string;
+  address_country_code?: string;
   // Subscription fields
   subscription_status?: string;
   subscription_plan?: string;
@@ -93,4 +98,3 @@ export interface AdminPermission {
   name: string;
   description?: string;
 }
-

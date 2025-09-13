@@ -17,6 +17,12 @@ export interface UserProfile {
   subscription_status: string | null;
   subscription_start_date: string | null;
   subscription_end_date: string | null;
+  // Address columns
+  address_street_address: string | null;
+  address_city: string | null;
+  address_state: string | null;
+  address_zip_code: string | null;
+  address_country_code: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -86,6 +92,13 @@ class ProfileService {
         const lastName = updates.last_name ?? data.last_name ?? '';
         metadataUpdates.full_name = `${firstName} ${lastName}`.trim();
       }
+
+      // Include address data in metadata for backward compatibility
+      if (updates.address_street_address !== undefined) metadataUpdates.street_address = updates.address_street_address;
+      if (updates.address_city !== undefined) metadataUpdates.city = updates.address_city;
+      if (updates.address_state !== undefined) metadataUpdates.state = updates.address_state;
+      if (updates.address_zip_code !== undefined) metadataUpdates.zip_code = updates.address_zip_code;
+      if (updates.address_country_code !== undefined) metadataUpdates.country = updates.address_country_code;
 
       if (Object.keys(metadataUpdates).length > 0) {
         const { error: authError } = await supabase.auth.updateUser({
@@ -167,6 +180,12 @@ class ProfileService {
                  (metadata.first_name && metadata.last_name ? 
                   `${metadata.first_name} ${metadata.last_name}` : 
                   user.email?.split('@')[0]) || null,
+        // Sync address data to dedicated columns
+        address_street_address: metadata.street_address || metadata.streetAddress || null,
+        address_city: metadata.city || null,
+        address_state: metadata.state || metadata.province || null,
+        address_zip_code: metadata.zip_code || metadata.zipCode || metadata.postal_code || null,
+        address_country_code: metadata.country || metadata.country_code || 'US',
         updated_at: new Date().toISOString()
       };
 

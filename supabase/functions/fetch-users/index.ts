@@ -1,3 +1,4 @@
+
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0';
 
@@ -39,7 +40,7 @@ serve(async (req) => {
       throw new Error('Failed to fetch users from auth');
     }
     
-    // Get all profiles with complete subscription data AND country_code
+    // Get all profiles with complete data including address columns
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select(`
@@ -54,7 +55,12 @@ serve(async (req) => {
         subscription_currency,
         stripe_customer_id,
         stripe_subscription_id,
-        country_code
+        country_code,
+        address_street_address,
+        address_city,
+        address_state,
+        address_zip_code,
+        address_country_code
       `);
     
     if (profilesError) {
@@ -99,8 +105,14 @@ serve(async (req) => {
       
       console.log(`📊 Processing user ${authUser.id}:`, {
         email: authUser.email,
-        original_raw_metadata: originalRawMetadata,
-        has_address_in_raw: !!(originalRawMetadata.street_address || originalRawMetadata.city || originalRawMetadata.state || originalRawMetadata.zip_code)
+        has_address_columns: !!(profile.address_street_address || profile.address_city || profile.address_state || profile.address_zip_code),
+        address_data: {
+          street: profile.address_street_address,
+          city: profile.address_city,
+          state: profile.address_state,
+          zip: profile.address_zip_code,
+          country: profile.address_country_code
+        }
       });
       
       // Get first and last names with priority: profile table > metadata > empty
@@ -119,6 +131,12 @@ serve(async (req) => {
         is_admin: profile.is_admin || false,
         admin_role: safeString(profile.admin_role) || null,
         permissions: profile.permissions || [],
+        // Address fields from dedicated columns
+        address_street_address: safeString(profile.address_street_address),
+        address_city: safeString(profile.address_city),
+        address_state: safeString(profile.address_state),
+        address_zip_code: safeString(profile.address_zip_code),
+        address_country_code: safeString(profile.address_country_code) || 'US',
         // Complete subscription fields
         subscription_plan: safeString(profile.subscription_plan) || safeString(originalRawMetadata.subscription_plan) || null,
         subscription_period: safeString(profile.subscription_period) || null,
@@ -142,14 +160,14 @@ serve(async (req) => {
           email: safeString(authUser.email),
           phone: safeString(originalRawMetadata.phone) || safeString(profile.phone),
           country_code: safeString(originalRawMetadata.country_code) || safeString(originalRawMetadata.countryCode) || safeString(profile.country_code) || 'US',
-          // Address fields from original metadata
-          street_address: safeString(originalRawMetadata.street_address),
-          streetAddress: safeString(originalRawMetadata.street_address), // Also provide camelCase version
-          city: safeString(originalRawMetadata.city),
-          state: safeString(originalRawMetadata.state),
-          zip_code: safeString(originalRawMetadata.zip_code),
-          zipCode: safeString(originalRawMetadata.zip_code), // Also provide camelCase version
-          country: safeString(originalRawMetadata.country),
+          // Legacy address fields for backward compatibility
+          street_address: safeString(profile.address_street_address),
+          streetAddress: safeString(profile.address_street_address),
+          city: safeString(profile.address_city),
+          state: safeString(profile.address_state),
+          zip_code: safeString(profile.address_zip_code),
+          zipCode: safeString(profile.address_zip_code),
+          country: safeString(profile.address_country_code),
         },
         // CRITICAL: Keep the original raw_user_meta_data exactly as stored in the database
         raw_user_meta_data: originalRawMetadata,
@@ -182,12 +200,10 @@ serve(async (req) => {
     console.log('📈 Address data summary:', {
       totalUsers: usersWithProfiles.length,
       usersWithAddressData: usersWithProfiles.filter(user => 
-        user.raw_user_meta_data && (
-          user.raw_user_meta_data.street_address || 
-          user.raw_user_meta_data.city ||
-          user.raw_user_meta_data.state ||
-          user.raw_user_meta_data.zip_code
-        )
+        user.address_street_address || 
+        user.address_city ||
+        user.address_state ||
+        user.address_zip_code
       ).length
     });
     

@@ -9,21 +9,16 @@ interface AddressInfoProps {
 }
 
 export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
-  // Get address information from raw_user_meta_data which contains the actual address data
-  const rawMetadata = user.raw_user_meta_data || {};
-  const userMetadata = user.user_metadata || {};
-  
   console.log('🏠 AddressInfo Debug - User ID:', user.id);
-  console.log('🏠 AddressInfo Debug - raw_user_meta_data:', rawMetadata);
-  console.log('🏠 AddressInfo Debug - user_metadata:', userMetadata);
+  console.log('🏠 AddressInfo Debug - User object:', user);
   
-  // Extract address info directly from raw_user_meta_data first, then fallback to user_metadata
+  // Get address information from the profiles table dedicated columns
   const addressInfo = {
-    streetAddress: rawMetadata.street_address || userMetadata.street_address || userMetadata.streetAddress || '',
-    city: rawMetadata.city || userMetadata.city || '',
-    state: rawMetadata.state || userMetadata.state || userMetadata.province || '',
-    zipCode: rawMetadata.zip_code || userMetadata.zip_code || userMetadata.zipCode || userMetadata.postal_code || '',
-    country: rawMetadata.country || userMetadata.country || userMetadata.countryCode || user.country_code || ''
+    streetAddress: user.address_street_address || '',
+    city: user.address_city || '',
+    state: user.address_state || '',
+    zipCode: user.address_zip_code || '',
+    country: user.address_country_code || ''
   };
 
   console.log('🏠 AddressInfo Debug - Final extracted address:', addressInfo);
@@ -87,15 +82,15 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
             </summary>
             <div className="mt-2 space-y-2 text-xs">
               <div>
-                <strong>raw_user_meta_data keys:</strong> {Object.keys(rawMetadata).join(', ') || 'None'}
-              </div>
-              <div>
-                <strong>user_metadata keys:</strong> {Object.keys(userMetadata).join(', ') || 'None'}
-              </div>
-              <div>
-                <strong>Raw metadata sample:</strong>
+                <strong>Address columns:</strong>
                 <pre className="mt-1 p-2 bg-white rounded text-xs overflow-auto">
-                  {JSON.stringify(rawMetadata, null, 2)}
+                  {JSON.stringify({
+                    address_street_address: user.address_street_address,
+                    address_city: user.address_city,
+                    address_state: user.address_state,
+                    address_zip_code: user.address_zip_code,
+                    address_country_code: user.address_country_code
+                  }, null, 2)}
                 </pre>
               </div>
             </div>

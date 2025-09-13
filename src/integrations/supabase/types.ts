@@ -449,6 +449,11 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address_city: string | null
+          address_country_code: string | null
+          address_state: string | null
+          address_street_address: string | null
+          address_zip_code: string | null
           avatar_url: string | null
           country_code: string | null
           created_at: string
@@ -472,6 +477,11 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          address_city?: string | null
+          address_country_code?: string | null
+          address_state?: string | null
+          address_street_address?: string | null
+          address_zip_code?: string | null
           avatar_url?: string | null
           country_code?: string | null
           created_at?: string
@@ -495,6 +505,11 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          address_city?: string | null
+          address_country_code?: string | null
+          address_state?: string | null
+          address_street_address?: string | null
+          address_zip_code?: string | null
           avatar_url?: string | null
           country_code?: string | null
           created_at?: string
@@ -675,6 +690,10 @@ export type Database = {
           user_agent_input?: string
         }
         Returns: string
+      }
+      migrate_address_data_to_columns: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       toggle_user_admin_access: {
         Args: { user_id_param: string; enable_admin: boolean }

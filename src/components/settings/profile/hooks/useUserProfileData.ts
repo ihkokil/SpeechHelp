@@ -40,47 +40,24 @@ export const useUserProfileData = () => {
     loadProfile();
   }, [user]);
 
-  // Enhanced address data extraction with comprehensive field mapping
-  const extractAddressField = (fieldVariants: string[]) => {
-    const metadata = user?.user_metadata || {};
-    const rawMetadata = (user as any)?.raw_user_meta_data || {};
-    
-    // Check user_metadata first, then raw_user_meta_data
-    for (const variant of fieldVariants) {
-      if (metadata[variant] && String(metadata[variant]).trim()) {
-        return String(metadata[variant]).trim();
-      }
-    }
-    for (const variant of fieldVariants) {
-      if (rawMetadata[variant] && String(rawMetadata[variant]).trim()) {
-        return String(rawMetadata[variant]).trim();
-      }
-    }
-    return '';
-  };
-
+  // Extract address data from profile's dedicated columns
   const addressData = {
-    streetAddress: extractAddressField([
-      'streetAddress', 'street_address', 'address'
-    ]),
-    city: extractAddressField([
-      'city'
-    ]),
-    state: extractAddressField([
-      'state', 'province', 'stateProvince'
-    ]),
-    zipCode: extractAddressField([
-      'zipCode', 'zip_code', 'postal_code', 'postalCode'
-    ]),
-    country: extractAddressField([
-      'country', 'countryCode', 'country_code'
-    ]) || user?.user_metadata?.country_code || 'US',
+    streetAddress: profile?.address_street_address || '',
+    city: profile?.address_city || '',
+    state: profile?.address_state || '',
+    zipCode: profile?.address_zip_code || '',
+    country: profile?.address_country_code || 'US'
   };
 
   console.log('🏠 useUserProfileData - Address extraction debug:', {
     userId: user?.id,
-    user_metadata: user?.user_metadata,
-    raw_user_meta_data: (user as any)?.raw_user_meta_data,
+    profile_address_data: {
+      address_street_address: profile?.address_street_address,
+      address_city: profile?.address_city,
+      address_state: profile?.address_state,
+      address_zip_code: profile?.address_zip_code,
+      address_country_code: profile?.address_country_code
+    },
     extractedAddress: addressData
   });
 

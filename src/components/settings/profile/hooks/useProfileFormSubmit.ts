@@ -56,21 +56,25 @@ export const useProfileFormSubmit = () => {
         }
       }
 
-      // Update profile in profiles table
+      // Update profile in profiles table with address data
       const updateResult = await profileService.updateUserProfile(user.id, {
         first_name: data.firstName,
         last_name: data.lastName,
         phone: data.phone || null,
         country_code: data.countryCode,
-        // Address fields will be stored in user metadata for now
-        // In a future update, these could be moved to dedicated columns
+        // Address fields stored in dedicated columns
+        address_street_address: data.streetAddress || null,
+        address_city: data.city || null,
+        address_state: data.state || null,
+        address_zip_code: data.zipCode || null,
+        address_country_code: data.country || 'US',
       });
 
       if (!updateResult.success) {
         throw new Error(updateResult.error || 'Failed to update profile');
       }
 
-      // Update auth metadata with address information
+      // Update auth metadata with address information for backward compatibility
       const { error: metadataError } = await supabase.auth.updateUser({
         data: {
           first_name: data.firstName,
