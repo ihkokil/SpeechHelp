@@ -1,4 +1,5 @@
 
+
 export interface User {
   id: string;
   email: string;
@@ -41,7 +42,6 @@ export interface User {
     email?: string;
     phone?: string;
     country_code?: string;
-    countryCode?: string;
     street_address?: string;
     streetAddress?: string;
     address?: string;
@@ -54,7 +54,6 @@ export interface User {
     postal_code?: string;
     postalCode?: string;
     country?: string;
-    countryCode?: string;
     [key: string]: any;
   };
   is_active?: boolean;
@@ -94,3 +93,4 @@ export interface AdminPermission {
   name: string;
   description?: string;
 }
+

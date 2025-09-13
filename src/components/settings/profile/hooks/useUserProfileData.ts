@@ -43,7 +43,7 @@ export const useUserProfileData = () => {
   // Enhanced address data extraction with comprehensive field mapping
   const extractAddressField = (fieldVariants: string[]) => {
     const metadata = user?.user_metadata || {};
-    const rawMetadata = user?.raw_user_meta_data || {};
+    const rawMetadata = (user as any)?.raw_user_meta_data || {};
     
     // Check user_metadata first, then raw_user_meta_data
     for (const variant of fieldVariants) {
@@ -80,7 +80,7 @@ export const useUserProfileData = () => {
   console.log('🏠 useUserProfileData - Address extraction debug:', {
     userId: user?.id,
     user_metadata: user?.user_metadata,
-    raw_user_meta_data: user?.raw_user_meta_data,
+    raw_user_meta_data: (user as any)?.raw_user_meta_data,
     extractedAddress: addressData
   });
 
