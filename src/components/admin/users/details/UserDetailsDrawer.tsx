@@ -1,6 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { User } from '../types';
 import { DrawerContent } from './DrawerContent';
 import { useUserDetails } from './hooks/useUserDetails';
@@ -59,14 +60,34 @@ const UserDetailsDrawer: React.FC<UserDetailsDrawerProps> = ({
 
   return (
     <Sheet open={open} onOpenChange={handleSheetOpenChange}>
-      <SheetContent className="w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl overflow-y-auto">
-        {user && (
-          <DrawerContent
-            user={user}
-            onClose={onClose}
-            userJoinedDays={userJoinedDays}
-          />
-        )}
+      <SheetContent className="p-0 w-full max-w-none">
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          {/* Main content area - takes remaining space */}
+          <ResizablePanel defaultSize={70} minSize={50}>
+            <div className="h-full bg-gray-50" />
+          </ResizablePanel>
+          
+          {/* Resizable handle */}
+          <ResizableHandle withHandle />
+          
+          {/* User details panel - resizable */}
+          <ResizablePanel 
+            defaultSize={30} 
+            minSize={20} 
+            maxSize={80}
+            className="bg-white"
+          >
+            <div className="h-full overflow-y-auto p-6">
+              {user && (
+                <DrawerContent
+                  user={user}
+                  onClose={onClose}
+                  userJoinedDays={userJoinedDays}
+                />
+              )}
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </SheetContent>
     </Sheet>
   );
