@@ -131,7 +131,7 @@ serve(async (req) => {
         is_admin: profile.is_admin || false,
         admin_role: safeString(profile.admin_role) || null,
         permissions: profile.permissions || [],
-        // Address fields from dedicated columns
+        // CRITICAL: Address fields from dedicated columns in profiles table
         address_street_address: safeString(profile.address_street_address),
         address_city: safeString(profile.address_city),
         address_state: safeString(profile.address_state),
@@ -151,7 +151,7 @@ serve(async (req) => {
         // Include phone and country_code from profiles table
         phone: safeString(profile.phone) || safeString(originalRawMetadata.phone),
         country_code: safeString(profile.country_code) || safeString(originalRawMetadata.country_code) || safeString(originalRawMetadata.countryCode) || 'US',
-        // Enhanced user_metadata with proper fallbacks
+        // Enhanced user_metadata with proper fallbacks - includes address from dedicated columns
         user_metadata: {
           first_name: firstName,
           last_name: lastName,
@@ -160,7 +160,7 @@ serve(async (req) => {
           email: safeString(authUser.email),
           phone: safeString(originalRawMetadata.phone) || safeString(profile.phone),
           country_code: safeString(originalRawMetadata.country_code) || safeString(originalRawMetadata.countryCode) || safeString(profile.country_code) || 'US',
-          // Legacy address fields for backward compatibility
+          // Address fields for backward compatibility - sourced from dedicated columns
           street_address: safeString(profile.address_street_address),
           streetAddress: safeString(profile.address_street_address),
           city: safeString(profile.address_city),

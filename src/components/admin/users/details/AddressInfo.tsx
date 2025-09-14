@@ -82,7 +82,7 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
             </summary>
             <div className="mt-2 space-y-2 text-xs">
               <div>
-                <strong>Address columns:</strong>
+                <strong>Address columns from profiles table:</strong>
                 <pre className="mt-1 p-2 bg-white rounded text-xs overflow-auto">
                   {JSON.stringify({
                     address_street_address: user.address_street_address,
@@ -90,6 +90,18 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
                     address_state: user.address_state,
                     address_zip_code: user.address_zip_code,
                     address_country_code: user.address_country_code
+                  }, null, 2)}
+                </pre>
+              </div>
+              <div>
+                <strong>Legacy metadata (for comparison):</strong>
+                <pre className="mt-1 p-2 bg-white rounded text-xs overflow-auto">
+                  {JSON.stringify({
+                    street_address: user.user_metadata?.street_address,
+                    city: user.user_metadata?.city,
+                    state: user.user_metadata?.state,
+                    zip_code: user.user_metadata?.zip_code,
+                    country: user.user_metadata?.country
                   }, null, 2)}
                 </pre>
               </div>

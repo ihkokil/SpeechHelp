@@ -56,13 +56,21 @@ export const useProfileFormSubmit = () => {
         }
       }
 
-      // Update profile in profiles table with address data
+      console.log('🏠 ProfileFormSubmit - Submitting address data:', {
+        streetAddress: data.streetAddress,
+        city: data.city,
+        state: data.state,
+        zipCode: data.zipCode,
+        country: data.country
+      });
+
+      // Update profile in profiles table with address data in dedicated columns
       const updateResult = await profileService.updateUserProfile(user.id, {
         first_name: data.firstName,
         last_name: data.lastName,
         phone: data.phone || null,
         country_code: data.countryCode,
-        // Address fields stored in dedicated columns
+        // Address fields stored in dedicated columns - CRITICAL: These must match exactly
         address_street_address: data.streetAddress || null,
         address_city: data.city || null,
         address_state: data.state || null,
@@ -74,26 +82,7 @@ export const useProfileFormSubmit = () => {
         throw new Error(updateResult.error || 'Failed to update profile');
       }
 
-      // Update auth metadata with address information for backward compatibility
-      const { error: metadataError } = await supabase.auth.updateUser({
-        data: {
-          first_name: data.firstName,
-          last_name: data.lastName,
-          full_name: `${data.firstName} ${data.lastName}`,
-          phone: data.phone || '',
-          country_code: data.countryCode,
-          street_address: data.streetAddress || '',
-          city: data.city || '',
-          state: data.state || '',
-          zip_code: data.zipCode || '',
-          country: data.country,
-        }
-      });
-
-      if (metadataError) {
-        console.error('Error updating user metadata:', metadataError);
-        // Don't throw error as profile update was successful
-      }
+      console.log('🏠 ProfileFormSubmit - Profile update successful');
 
       // Update email if changed
       if (isEmailChanged) {
@@ -111,7 +100,7 @@ export const useProfileFormSubmit = () => {
         });
       }
 
-      // Refresh user data
+      // Refresh user data to reflect changes
       await refreshUser();
 
       toast({
