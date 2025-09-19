@@ -17,12 +17,14 @@ interface DrawerSheetContentProps {
   user: UserType;
   onClose: (e: React.MouseEvent) => void;
   userJoinedDays: number;
+  onUserUpdated?: (updatedUser: UserType) => void;
 }
 
 export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
   user,
   onClose,
-  userJoinedDays
+  userJoinedDays,
+  onUserUpdated
 }) => {
   // Handler that takes and passes the event properly
   const handleCloseClick = (e: React.MouseEvent) => {
@@ -54,7 +56,7 @@ export const DrawerSheetContent: React.FC<DrawerSheetContentProps> = ({
       </SheetHeader>
       
       <div className="space-y-6">
-        <UserHeader user={user} />
+        <UserHeader user={user} onUserUpdated={onUserUpdated} />
         
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="grid w-full grid-cols-5">

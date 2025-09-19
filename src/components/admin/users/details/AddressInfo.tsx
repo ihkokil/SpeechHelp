@@ -73,41 +73,6 @@ export const AddressInfo: React.FC<AddressInfoProps> = ({ user }) => {
             </div>
           </div>
         </div>
-
-        {/* Debug section - only show in development */}
-        {process.env.NODE_ENV === 'development' && (
-          <details className="mt-6 p-4 bg-blue-50 rounded-md">
-            <summary className="text-sm font-medium text-blue-800 cursor-pointer">
-              Debug Information (Dev Only)
-            </summary>
-            <div className="mt-2 space-y-2 text-xs">
-              <div>
-                <strong>Address columns from profiles table:</strong>
-                <pre className="mt-1 p-2 bg-white rounded text-xs overflow-auto">
-                  {JSON.stringify({
-                    address_street_address: user.address_street_address,
-                    address_city: user.address_city,
-                    address_state: user.address_state,
-                    address_zip_code: user.address_zip_code,
-                    address_country_code: user.address_country_code
-                  }, null, 2)}
-                </pre>
-              </div>
-              <div>
-                <strong>Legacy metadata (for comparison):</strong>
-                <pre className="mt-1 p-2 bg-white rounded text-xs overflow-auto">
-                  {JSON.stringify({
-                    street_address: user.user_metadata?.street_address,
-                    city: user.user_metadata?.city,
-                    state: user.user_metadata?.state,
-                    zip_code: user.user_metadata?.zip_code,
-                    country: user.user_metadata?.country
-                  }, null, 2)}
-                </pre>
-              </div>
-            </div>
-          </details>
-        )}
       </CardContent>
     </Card>
   );

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -94,6 +93,22 @@ const UserManagement = () => {
         description: `${newUser.email} has been added successfully.`
       });
     }
+  };
+
+  // Handler for when a user is updated via the details drawer
+  const handleUserUpdated = (updatedUser: User) => {
+    console.log("User updated:", updatedUser);
+    setUsers(prevUsers => 
+      prevUsers.map(user => 
+        user.id === updatedUser.id ? updatedUser : user
+      )
+    );
+    // Also update the selected user
+    setSelectedUser(updatedUser);
+    toast({
+      title: "User updated",
+      description: `${updatedUser.email} has been updated successfully.`
+    });
   };
 
   // Handler for opening the subscription dialog
@@ -224,7 +239,8 @@ const UserManagement = () => {
         <UserDetailsDrawer 
           user={selectedUser} 
           open={isDetailsOpen} 
-          onClose={handleCloseUserDetails} 
+          onClose={handleCloseUserDetails}
+          onUserUpdated={handleUserUpdated}
         />
       )}
       
