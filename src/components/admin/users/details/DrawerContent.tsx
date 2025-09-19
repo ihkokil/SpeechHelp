@@ -7,14 +7,12 @@ interface DrawerContentProps {
   user: User;
   onClose: () => void;
   userJoinedDays: number;
-  onUserUpdated?: (updatedUser: User) => void;
 }
 
 export const DrawerContent: React.FC<DrawerContentProps> = ({
   user,
   onClose,
-  userJoinedDays,
-  onUserUpdated
+  userJoinedDays
 }) => {
   // Wrap onClose in a function that accepts an event to prevent immediate closure
   const handleClose = (e: React.MouseEvent) => {
@@ -30,7 +28,6 @@ export const DrawerContent: React.FC<DrawerContentProps> = ({
       user={user}
       onClose={handleClose}
       userJoinedDays={userJoinedDays}
-      onUserUpdated={onUserUpdated}
     />
   );
 };
