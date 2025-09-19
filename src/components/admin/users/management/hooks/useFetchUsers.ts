@@ -47,7 +47,7 @@ export const useFetchUsers = () => {
       console.log('📦 Raw edge function response:', authUsersData);
       console.log('👤 First user raw data from edge function:', authUsersData?.users?.[0]);
       
-      // Enhanced user mapping with better address data handling
+      // Enhanced user mapping with proper address data handling
       const mappedUsers: User[] = authUsersData?.users?.map((authUser: any) => {
         console.log('🔄 Processing user:', authUser.id);
         console.log('📊 User subscription fields from edge function:', {
@@ -59,6 +59,15 @@ export const useFetchUsers = () => {
           subscription_end_date: authUser.subscription_end_date,
           stripe_customer_id: authUser.stripe_customer_id,
           stripe_subscription_id: authUser.stripe_subscription_id
+        });
+        
+        // CRITICAL: Log and map address fields from edge function response
+        console.log('🏠 Address fields from edge function for user', authUser.id, ':', {
+          address_street_address: authUser.address_street_address,
+          address_city: authUser.address_city,
+          address_state: authUser.address_state,
+          address_zip_code: authUser.address_zip_code,
+          address_country_code: authUser.address_country_code
         });
         
         // Get the profile data from our enhanced structure
@@ -80,7 +89,7 @@ export const useFetchUsers = () => {
           finalCountryCode: profileCountryCode || metadataCountryCode || 'US'
         });
 
-        // Enhanced address data extraction and debugging
+        // Enhanced address data extraction from edge function response
         const rawMetadata = authUser.raw_user_meta_data || {};
         const userMetadata = authUser.user_metadata || {};
         
@@ -133,18 +142,18 @@ export const useFetchUsers = () => {
             email: authUser.email,
             phone: profilePhone || metadataPhone,
             country_code: profileCountryCode || metadataCountryCode || 'US',
-            // Enhanced address mapping - ensure both camelCase and snake_case versions
-            street_address: authUser.user_metadata?.street_address || authUser.user_metadata?.streetAddress || rawMetadata.street_address || rawMetadata.streetAddress || rawMetadata.address || '',
-            streetAddress: authUser.user_metadata?.streetAddress || authUser.user_metadata?.street_address || rawMetadata.streetAddress || rawMetadata.street_address || rawMetadata.address || '',
-            address: authUser.user_metadata?.address || rawMetadata.address || rawMetadata.street_address || rawMetadata.streetAddress || '',
-            city: authUser.user_metadata?.city || rawMetadata.city || '',
-            state: authUser.user_metadata?.state || authUser.user_metadata?.province || rawMetadata.state || rawMetadata.province || '',
-            province: authUser.user_metadata?.province || authUser.user_metadata?.state || rawMetadata.province || rawMetadata.state || '',
-            zip_code: authUser.user_metadata?.zip_code || authUser.user_metadata?.zipCode || rawMetadata.zip_code || rawMetadata.zipCode || rawMetadata.postal_code || '',
-            zipCode: authUser.user_metadata?.zipCode || authUser.user_metadata?.zip_code || rawMetadata.zipCode || rawMetadata.zip_code || rawMetadata.postal_code || '',
-            postal_code: authUser.user_metadata?.postal_code || authUser.user_metadata?.zip_code || rawMetadata.postal_code || rawMetadata.zip_code || rawMetadata.zipCode || '',
-            country: authUser.user_metadata?.country || authUser.user_metadata?.countryCode || rawMetadata.country || rawMetadata.countryCode || '',
-            countryCode: authUser.user_metadata?.countryCode || authUser.user_metadata?.country || rawMetadata.countryCode || rawMetadata.country || '',
+            // Enhanced address mapping - prioritize edge function data over metadata
+            street_address: authUser.address_street_address || authUser.user_metadata?.street_address || authUser.user_metadata?.streetAddress || rawMetadata.street_address || rawMetadata.streetAddress || rawMetadata.address || '',
+            streetAddress: authUser.address_street_address || authUser.user_metadata?.streetAddress || authUser.user_metadata?.street_address || rawMetadata.streetAddress || rawMetadata.street_address || rawMetadata.address || '',
+            address: authUser.address_street_address || authUser.user_metadata?.address || rawMetadata.address || rawMetadata.street_address || rawMetadata.streetAddress || '',
+            city: authUser.address_city || authUser.user_metadata?.city || rawMetadata.city || '',
+            state: authUser.address_state || authUser.user_metadata?.state || authUser.user_metadata?.province || rawMetadata.state || rawMetadata.province || '',
+            province: authUser.address_state || authUser.user_metadata?.province || authUser.user_metadata?.state || rawMetadata.province || rawMetadata.state || '',
+            zip_code: authUser.address_zip_code || authUser.user_metadata?.zip_code || authUser.user_metadata?.zipCode || rawMetadata.zip_code || rawMetadata.zipCode || rawMetadata.postal_code || '',
+            zipCode: authUser.address_zip_code || authUser.user_metadata?.zipCode || authUser.user_metadata?.zip_code || rawMetadata.zipCode || rawMetadata.zip_code || rawMetadata.postal_code || '',
+            postal_code: authUser.address_zip_code || authUser.user_metadata?.postal_code || authUser.user_metadata?.zip_code || rawMetadata.postal_code || rawMetadata.zip_code || rawMetadata.zipCode || '',
+            country: authUser.address_country_code || authUser.user_metadata?.country || authUser.user_metadata?.countryCode || rawMetadata.country || rawMetadata.countryCode || '',
+            countryCode: authUser.address_country_code || authUser.user_metadata?.countryCode || authUser.user_metadata?.country || rawMetadata.countryCode || rawMetadata.country || '',
           },
           // Include raw_user_meta_data for address information access - PRESERVE EVERYTHING
           raw_user_meta_data: authUser.raw_user_meta_data || {},
@@ -167,6 +176,12 @@ export const useFetchUsers = () => {
           last_name: profile.last_name || authUser.last_name || authUser.raw_user_meta_data?.last_name || authUser.raw_user_meta_data?.lastName || '',
           phone: profilePhone || metadataPhone,
           country_code: profileCountryCode || metadataCountryCode || 'US',
+          // CRITICAL FIX: Map address fields directly from edge function response
+          address_street_address: authUser.address_street_address || '',
+          address_city: authUser.address_city || '',
+          address_state: authUser.address_state || '',
+          address_zip_code: authUser.address_zip_code || '',
+          address_country_code: authUser.address_country_code || 'US',
           // Stripe related fields
           stripe_customer_id: authUser.stripe_customer_id || null,
           stripe_subscription_id: authUser.stripe_subscription_id || null,
@@ -177,6 +192,14 @@ export const useFetchUsers = () => {
           phone: user.phone,
           country_code: user.country_code,
           user_metadata_phone: user.user_metadata?.phone,
+          // CRITICAL: Log final address mapping
+          address_fields_final: {
+            address_street_address: user.address_street_address,
+            address_city: user.address_city,
+            address_state: user.address_state,
+            address_zip_code: user.address_zip_code,
+            address_country_code: user.address_country_code
+          },
           user_metadata_address: {
             street_address: user.user_metadata?.street_address,
             streetAddress: user.user_metadata?.streetAddress,
@@ -213,12 +236,24 @@ export const useFetchUsers = () => {
           is_admin: true,
           admin_role: 'Super Admin',
           permissions: ['view_users', 'manage_users', 'view_speeches', 'manage_speeches', 'system_settings'],
+          // Add empty address fields for admin user
+          address_street_address: '',
+          address_city: '',
+          address_state: '',
+          address_zip_code: '',
+          address_country_code: 'US',
         });
       }
       
       console.log('📈 Final mapping summary:', {
         totalUsers: mappedUsers.length,
         usersWithPhone: mappedUsers.filter(u => u.phone && u.phone !== '').length,
+        usersWithAddressFromColumns: mappedUsers.filter(u => 
+          u.address_street_address || 
+          u.address_city ||
+          u.address_state ||
+          u.address_zip_code
+        ).length,
         usersWithAddress: mappedUsers.filter(u => 
           u.raw_user_meta_data && (
             u.raw_user_meta_data.street_address || 
