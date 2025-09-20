@@ -88,10 +88,7 @@ export const useSubscriptionActions = () => {
         description: `User has been ${!isActive ? 'activated' : 'deactivated'} successfully.`,
       });
 
-      // Refresh the page to ensure data consistency
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // REMOVED: No more page refresh - using AJAX updates only
       
     } catch (error) {
       console.error('Error toggling user status:', error);
@@ -154,10 +151,7 @@ export const useSubscriptionActions = () => {
         description: `User's subscription has been updated to ${subscriptionTier} plan.`,
       });
       
-      // Refresh the page to ensure data consistency
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // REMOVED: No more page refresh - using AJAX updates only
       
     } catch (error) {
       console.error('Error updating subscription:', error);

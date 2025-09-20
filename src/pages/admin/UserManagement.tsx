@@ -123,10 +123,10 @@ const UserManagement = () => {
     baseHandleToggleAdmin(user, users, setUsers);
   };
 
-  // FIXED: Properly handle toggle user status with wrapper function
+  // FIXED: Properly handle toggle user status with correct arguments
   const handleToggleUserStatus = (userId: string, currentStatus: boolean) => {
     console.log("Toggle user status called for user:", userId, "current status:", currentStatus);
-    baseHandleToggleUserStatus(userId, currentStatus, users, setUsers);
+    baseHandleToggleUserStatus(userId, currentStatus);
   };
 
   // Create a wrapped toggle all users function that handles filtered users

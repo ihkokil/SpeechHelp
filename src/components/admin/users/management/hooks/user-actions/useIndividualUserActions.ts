@@ -68,7 +68,7 @@ export const useIndividualUserActions = () => {
     }
   }, [toast, adminUser]);
 
-  // Toggle user active status - FIXED VERSION
+  // Toggle user active status - IMPROVED VERSION with proper state updates
   const handleToggleUserStatus = useCallback(async (
     userId: string, 
     currentStatus: boolean,
