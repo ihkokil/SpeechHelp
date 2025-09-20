@@ -68,10 +68,10 @@ export const useIndividualUserActions = () => {
     }
   }, [toast, adminUser]);
 
-  // Toggle user active status
+  // Toggle user active status - FIXED VERSION
   const handleToggleUserStatus = useCallback(async (
     userId: string, 
-    isActive: boolean,
+    currentStatus: boolean,
     users: User[] = [], 
     setUsers: ((users: User[]) => void) | null = null
   ) => {
@@ -80,15 +80,17 @@ export const useIndividualUserActions = () => {
     setIsActionLoading(true);
     
     try {
-      console.log(`Toggling user status: ${userId} to ${!isActive}`);
+      const newStatus = !currentStatus;
+      console.log(`Toggling user status: ${userId} from ${currentStatus} to ${newStatus}`);
       
       // Update the user's active status in the database
       const { error } = await supabase
         .from('profiles')
-        .update({ is_active: !isActive })
+        .update({ is_active: newStatus })
         .eq('id', userId);
       
       if (error) {
+        console.error('Database error when updating user status:', error);
         throw error;
       }
       
@@ -97,22 +99,22 @@ export const useIndividualUserActions = () => {
         setUsers(
           users.map(user => 
             user.id === userId 
-              ? { ...user, is_active: !isActive } 
+              ? { ...user, is_active: newStatus } 
               : user
           )
         );
       }
       
       toast({
-        title: `User ${!isActive ? 'Activated' : 'Deactivated'}`,
-        description: `User has been ${!isActive ? 'activated' : 'deactivated'} successfully.`,
+        title: `User ${newStatus ? 'Activated' : 'Deactivated'}`,
+        description: `User has been ${newStatus ? 'activated' : 'deactivated'} successfully.`,
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error toggling user status:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update user status. Please try again.',
+        description: error.message || 'Failed to update user status. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -189,11 +191,11 @@ export const useIndividualUserActions = () => {
         description: `User's subscription has been extended by ${days} days.`,
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating subscription:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update subscription. Please try again.',
+        description: error.message || 'Failed to update subscription. Please try again.',
         variant: 'destructive',
       });
     } finally {

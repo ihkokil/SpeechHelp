@@ -42,6 +42,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   // Check if user is the original admin that cannot be removed
   const isProtectedAdmin = user.email === 'speechhelpmaster@example.com' || user.username === 'speechhelpmaster';
   const isCurrentlyAdmin = user.is_admin === true;
+  const isCurrentlyActive = user.is_active !== false; // Default to true if undefined
 
   // Prevent default event behavior and propagation for all handlers
   const handleAction = (
@@ -56,13 +57,13 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     callback(arg);
   };
 
-  // Special handler for toggle active which requires two arguments
+  // Special handler for toggle active which requires the current status
   const handleToggleActive = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    console.log(`Toggle active triggered for user ${user.id}, current state: ${user.is_active !== false}`);
-    onToggleUserActive(user.id, user.is_active !== false);
+    console.log(`Toggle active triggered for user ${user.id}, current state: ${isCurrentlyActive}`);
+    onToggleUserActive(user.id, isCurrentlyActive);
   };
 
   // Handler for admin toggle - ALWAYS use password dialog for any admin changes
@@ -144,9 +145,9 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
         
         <DropdownMenuItem 
           onClick={handleToggleActive} 
-          id={`${user.is_active !== false ? 'deactivate' : 'activate'}-user-${user.id}`}
+          id={`${isCurrentlyActive ? 'deactivate' : 'activate'}-user-${user.id}`}
         >
-          {user.is_active !== false ? (
+          {isCurrentlyActive ? (
             <>
               <UserMinus className="mr-2 h-4 w-4" />
               <span>{translate('admin.actions.deactivateUser')}</span>

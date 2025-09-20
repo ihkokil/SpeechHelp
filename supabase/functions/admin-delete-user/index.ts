@@ -30,6 +30,7 @@ serve(async (req) => {
     const { userId, adminUserId } = await req.json()
     
     if (!userId) {
+      console.error('User ID is missing from request')
       return new Response(
         JSON.stringify({ success: false, error: 'User ID is required' }),
         { 
@@ -40,6 +41,7 @@ serve(async (req) => {
     }
 
     if (!adminUserId) {
+      console.error('Admin user ID is missing from request')
       return new Response(
         JSON.stringify({ success: false, error: 'Admin user ID is required' }),
         { 

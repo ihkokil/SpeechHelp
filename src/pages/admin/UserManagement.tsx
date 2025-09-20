@@ -41,7 +41,7 @@ const UserManagement = () => {
     toggleAllUsers: baseToggleAllUsers,
     handleDeleteUsers: baseHandleDeleteUsers,
     handleDeleteUser,
-    handleToggleUserStatus,
+    handleToggleUserStatus: baseHandleToggleUserStatus,
     handleViewUserDetails,
     handleCloseUserDetails,
     handleBulkDelete,
@@ -121,6 +121,12 @@ const UserManagement = () => {
   // Handler for admin toggle (called after password confirmation)
   const handleToggleAdmin = (user: User) => {
     baseHandleToggleAdmin(user, users, setUsers);
+  };
+
+  // FIXED: Properly handle toggle user status
+  const handleToggleUserStatus = (userId: string, currentStatus: boolean) => {
+    console.log("Toggle user status called for user:", userId, "current status:", currentStatus);
+    baseHandleToggleUserStatus(userId, currentStatus, users, setUsers);
   };
 
   // Create a wrapped toggle all users function that handles filtered users
