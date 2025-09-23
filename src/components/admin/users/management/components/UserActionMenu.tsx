@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { User } from '../../types';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,11 @@ import {
   ShieldCheck,
   ShieldX,
   BadgePercent,
+  Trash2,
 } from 'lucide-react';
 import { useTranslatedContent } from '@/hooks/useTranslatedContent';
+import { useDeleteUser } from '../hooks/user-actions/useDeleteUser';
+import { DeleteUserConfirmDialog } from './DeleteUserConfirmDialog';
 
 interface UserActionMenuProps {
   user: User;
@@ -25,6 +28,7 @@ interface UserActionMenuProps {
   onDeleteUser: (userId: string) => void;
   onSendEmail?: (user: User) => void;
   onUpdateSubscription?: (user: User) => void;
+  onUserDeleted?: () => void;
 }
 
 const UserActionMenu: React.FC<UserActionMenuProps> = ({
@@ -35,9 +39,12 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onToggleUserActive,
   onDeleteUser,
   onSendEmail,
-  onUpdateSubscription
+  onUpdateSubscription,
+  onUserDeleted
 }) => {
   const { translate } = useTranslatedContent();
+  const { deleteUser, isDeleting } = useDeleteUser();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Check if user is the original admin that cannot be removed
   const isProtectedAdmin = user.email === 'speechhelpmaster@example.com' || user.username === 'speechhelpmaster';
@@ -86,92 +93,134 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     }
   };
 
+  // NEW: Clean delete handler
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log(`Delete user requested for: ${user.id}`);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // NEW: Confirm delete handler
+  const handleConfirmDelete = async () => {
+    console.log(`Confirming delete for user: ${user.id}`);
+    
+    const success = await deleteUser(user.id, () => {
+      // On successful deletion
+      setIsDeleteDialogOpen(false);
+      
+      // Notify parent components
+      if (onUserDeleted) {
+        onUserDeleted();
+      }
+      
+      // Also call the original handler for compatibility
+      onDeleteUser(user.id);
+    });
+    
+    if (success) {
+      console.log('User deletion completed successfully');
+    }
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <Button variant="ghost" size="icon" className="h-8 w-8 p-0" aria-label={translate('admin.actions.openMenu')}>
-          <MoreVertical className="h-4 w-4" />
-          <span className="sr-only">{translate('admin.actions.openMenu')}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
-        <DropdownMenuItem 
-          onClick={(e) => handleAction(e, onViewDetails, user)} 
-          id={`view-details-${user.id}`}
-        >
-          <Eye className="mr-2 h-4 w-4" />
-          <span>{translate('admin.actions.viewDetails')}</span>
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem 
-          onClick={handleToggleAdmin}
-          disabled={isProtectedAdmin && isCurrentlyAdmin}
-          id={`toggle-admin-${user.id}`}
-        >
-          {isCurrentlyAdmin ? (
-            <>
-              <ShieldX className="mr-2 h-4 w-4" />
-              <span>{isProtectedAdmin ? translate('admin.role.protectedAdmin') : translate('admin.role.removeFromAdmin')}</span>
-            </>
-          ) : (
-            <>
-              <ShieldCheck className="mr-2 h-4 w-4" />
-              <span>{translate('admin.role.makeAdmin')}</span>
-            </>
-          )}
-        </DropdownMenuItem>
-        
-        {onSendEmail && (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 p-0" aria-label={translate('admin.actions.openMenu')}>
+            <MoreVertical className="h-4 w-4" />
+            <span className="sr-only">{translate('admin.actions.openMenu')}</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[200px]" sideOffset={5} collisionPadding={10}>
           <DropdownMenuItem 
-            onClick={(e) => handleAction(e, onSendEmail, user)} 
-            id={`send-email-${user.id}`}
+            onClick={(e) => handleAction(e, onViewDetails, user)} 
+            id={`view-details-${user.id}`}
           >
-            <Mail className="mr-2 h-4 w-4" />
-            <span>{translate('admin.actions.sendEmail')}</span>
+            <Eye className="mr-2 h-4 w-4" />
+            <span>{translate('admin.actions.viewDetails')}</span>
           </DropdownMenuItem>
-        )}
-
-        {onUpdateSubscription && (
+          
           <DropdownMenuItem 
-            onClick={(e) => handleAction(e, onUpdateSubscription, user)} 
-            id={`update-subscription-${user.id}`}
+            onClick={handleToggleAdmin}
+            disabled={isProtectedAdmin && isCurrentlyAdmin}
+            id={`toggle-admin-${user.id}`}
           >
-            <BadgePercent className="mr-2 h-4 w-4" />
-            <span>{translate('admin.actions.updateSubscription')}</span>
+            {isCurrentlyAdmin ? (
+              <>
+                <ShieldX className="mr-2 h-4 w-4" />
+                <span>{isProtectedAdmin ? translate('admin.role.protectedAdmin') : translate('admin.role.removeFromAdmin')}</span>
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                <span>{translate('admin.role.makeAdmin')}</span>
+              </>
+            )}
           </DropdownMenuItem>
-        )}
-
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuItem 
-          onClick={handleToggleActive} 
-          id={`${isCurrentlyActive ? 'deactivate' : 'activate'}-user-${user.id}`}
-        >
-          {isCurrentlyActive ? (
-            <>
-              <UserMinus className="mr-2 h-4 w-4" />
-              <span>{translate('admin.actions.deactivateUser')}</span>
-            </>
-          ) : (
-            <>
-              <UserCheck className="mr-2 h-4 w-4" />
-              <span>{translate('admin.actions.activateUser')}</span>
-            </>
+          
+          {onSendEmail && (
+            <DropdownMenuItem 
+              onClick={(e) => handleAction(e, onSendEmail, user)} 
+              id={`send-email-${user.id}`}
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              <span>{translate('admin.actions.sendEmail')}</span>
+            </DropdownMenuItem>
           )}
-        </DropdownMenuItem>
-        
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuItem 
-          className="text-red-600 focus:text-red-700 focus:bg-red-50"
-          onClick={(e) => handleAction(e, onDeleteUser, user.id)}
-          id={`delete-user-${user.id}`}
-        >
-          <UserMinus className="mr-2 h-4 w-4" />
-          <span>{translate('admin.actions.deleteUser')}</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+
+          {onUpdateSubscription && (
+            <DropdownMenuItem 
+              onClick={(e) => handleAction(e, onUpdateSubscription, user)} 
+              id={`update-subscription-${user.id}`}
+            >
+              <BadgePercent className="mr-2 h-4 w-4" />
+              <span>{translate('admin.actions.updateSubscription')}</span>
+            </DropdownMenuItem>
+          )}
+
+          <DropdownMenuSeparator />
+          
+          <DropdownMenuItem 
+            onClick={handleToggleActive} 
+            id={`${isCurrentlyActive ? 'deactivate' : 'activate'}-user-${user.id}`}
+          >
+            {isCurrentlyActive ? (
+              <>
+                <UserMinus className="mr-2 h-4 w-4" />
+                <span>{translate('admin.actions.deactivateUser')}</span>
+              </>
+            ) : (
+              <>
+                <UserCheck className="mr-2 h-4 w-4" />
+                <span>{translate('admin.actions.activateUser')}</span>
+              </>
+            )}
+          </DropdownMenuItem>
+          
+          <DropdownMenuSeparator />
+          
+          <DropdownMenuItem 
+            className="text-red-600 focus:text-red-700 focus:bg-red-50"
+            onClick={handleDeleteClick}
+            id={`delete-user-${user.id}`}
+            disabled={isDeleting}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            <span>{isDeleting ? 'Deleting...' : translate('admin.actions.deleteUser')}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <DeleteUserConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        user={user}
+        isDeleting={isDeleting}
+      />
+    </>
   );
 };
 

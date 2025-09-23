@@ -1,3 +1,4 @@
+
 import React, { useMemo, useEffect } from 'react';
 import { Table, TableBody } from '@/components/ui/table';
 import { User } from '../types';
@@ -28,6 +29,7 @@ interface UserTableProps {
   handleSendEmail?: (user: User) => void;
   handleUpdateSubscription?: (user: User) => void;
   handleRequestAdminPassword?: (user: User) => void;
+  onRefreshUsers?: () => void;
 }
 
 export const UserTable: React.FC<UserTableProps> = ({
@@ -48,7 +50,8 @@ export const UserTable: React.FC<UserTableProps> = ({
   handleDeleteUser,
   handleSendEmail,
   handleUpdateSubscription,
-  handleRequestAdminPassword
+  handleRequestAdminPassword,
+  onRefreshUsers
 }) => {
   console.log('UserTable rendering with', users.length, 'users,', selectedUsers.length, 'selected');
   
@@ -100,6 +103,19 @@ export const UserTable: React.FC<UserTableProps> = ({
     }
   };
 
+  // NEW: Handle user deletion and refresh
+  const handleUserDeleted = () => {
+    console.log('User was deleted, refreshing user list...');
+    
+    // Refresh the users list if handler is provided
+    if (onRefreshUsers) {
+      onRefreshUsers();
+    }
+    
+    // Clear any selections that might include the deleted user
+    setSelectedUsers([]);
+  };
+
   return (
     <div className="space-y-4">
       <div className="rounded-md border bg-white shadow-sm">
@@ -132,6 +148,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                       onDeleteUser={handleDeleteUser}
                       onSendEmail={handleSendEmail}
                       onUpdateSubscription={handleUpdateSubscription}
+                      onUserDeleted={handleUserDeleted}
                     />
                   ))
                 )}

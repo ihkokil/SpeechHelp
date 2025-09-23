@@ -13,6 +13,7 @@ interface UserTableRowActionsProps {
   onDeleteUser: (userId: string) => void;
   onSendEmail?: (user: User) => void;
   onUpdateSubscription?: (user: User) => void;
+  onUserDeleted?: () => void;
 }
 
 export const UserTableRowActions: React.FC<UserTableRowActionsProps> = ({
@@ -23,7 +24,8 @@ export const UserTableRowActions: React.FC<UserTableRowActionsProps> = ({
   onToggleActive,
   onDeleteUser,
   onSendEmail,
-  onUpdateSubscription
+  onUpdateSubscription,
+  onUserDeleted
 }) => (
   <TableCell className="px-2 text-right">
     <UserActionMenu
@@ -35,6 +37,7 @@ export const UserTableRowActions: React.FC<UserTableRowActionsProps> = ({
       onDeleteUser={onDeleteUser}
       onSendEmail={onSendEmail}
       onUpdateSubscription={onUpdateSubscription}
+      onUserDeleted={onUserDeleted}
     />
   </TableCell>
 );

@@ -134,10 +134,11 @@ const UserManagement = () => {
     baseHandleToggleUserStatus(userId, currentStatus, users, setUsers);
   };
 
-  // FIXED: Use the consolidated delete user function
+  // UPDATED: Simplified delete user handler (the new hook handles everything)
   const handleDeleteSingleUser = (userId: string) => {
     console.log("Delete user called for user:", userId);
-    handleDeleteUser(userId, users, setUsers);
+    // The new delete functionality is handled entirely by the UserActionMenu
+    // This is kept for compatibility but the actual deletion happens in the menu
   };
 
   // Create a wrapped toggle all users function that handles filtered users
@@ -171,6 +172,12 @@ const UserManagement = () => {
       });
       // Dialog will remain open on error so user can retry
     }
+  };
+
+  // NEW: Handler to refresh users after deletion
+  const handleRefreshUsers = () => {
+    console.log("Refreshing users list...");
+    fetchUsers();
   };
 
   return (
@@ -225,6 +232,7 @@ const UserManagement = () => {
             handleSendEmail={handleSendEmail}
             handleUpdateSubscription={handleOpenSubscriptionDialog}
             handleRequestAdminPassword={handleRequestAdminPassword}
+            onRefreshUsers={handleRefreshUsers}
           />
         </CardContent>
       </Card>
