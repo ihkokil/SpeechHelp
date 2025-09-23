@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -11,6 +12,7 @@ import UpdateSubscriptionDialog from '@/components/admin/users/management/compon
 import UserFilters from '@/components/admin/users/management/components/UserFilters';
 import AdminPasswordDialog from '@/components/admin/users/management/components/AdminPasswordDialog';
 import { useSimpleAdminToggle } from '@/components/admin/users/management/hooks/user-actions/useSimpleAdminToggle';
+import { useIndividualUserActions } from '@/components/admin/users/management/hooks/user-actions/useIndividualUserActions';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@/components/admin/users/types';
 import { useTranslatedContent } from '@/hooks/useTranslatedContent';
@@ -30,7 +32,6 @@ const UserManagement = () => {
     users,
     setUsers,
     isLoading,
-    isActionLoading,
     selectedUser,
     setSelectedUser,
     isDetailsOpen,
@@ -39,8 +40,6 @@ const UserManagement = () => {
     toggleUserSelection,
     toggleAllUsers: baseToggleAllUsers,
     handleDeleteUsers: baseHandleDeleteUsers,
-    handleDeleteUser,
-    handleToggleUserStatus: baseHandleToggleUserStatus,
     handleViewUserDetails,
     handleCloseUserDetails,
     handleBulkDelete,
@@ -63,6 +62,13 @@ const UserManagement = () => {
     setSelectedPlan,
     clearFilters,
   } = useUserFilters(filteredUsers);
+  
+  // Use the consolidated individual user actions
+  const { 
+    isActionLoading, 
+    handleDeleteUser,
+    handleToggleUserStatus: baseHandleToggleUserStatus 
+  } = useIndividualUserActions();
   
   // New state for subscription dialog
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
@@ -122,10 +128,16 @@ const UserManagement = () => {
     baseHandleToggleAdmin(user, users, setUsers);
   };
 
-  // FIXED: Pass all required parameters including users and setUsers
+  // FIXED: Use the consolidated toggle user status function with proper parameters
   const handleToggleUserStatus = (userId: string, currentStatus: boolean) => {
     console.log("Toggle user status called for user:", userId, "current status:", currentStatus);
     baseHandleToggleUserStatus(userId, currentStatus, users, setUsers);
+  };
+
+  // FIXED: Use the consolidated delete user function
+  const handleDeleteSingleUser = (userId: string) => {
+    console.log("Delete user called for user:", userId);
+    handleDeleteUser(userId, users, setUsers);
   };
 
   // Create a wrapped toggle all users function that handles filtered users
@@ -209,7 +221,7 @@ const UserManagement = () => {
             handleBulkDelete={handleBulkDelete}
             handleBulkActivate={handleBulkActivate}
             handleBulkDeactivate={handleBulkDeactivate}
-            handleDeleteUser={handleDeleteUser}
+            handleDeleteUser={handleDeleteSingleUser}
             handleSendEmail={handleSendEmail}
             handleUpdateSubscription={handleOpenSubscriptionDialog}
             handleRequestAdminPassword={handleRequestAdminPassword}

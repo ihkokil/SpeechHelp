@@ -7,7 +7,6 @@ import { useUserActions } from './hooks/useUserActions';
 import { useUserManagementUIState } from './hooks/useUserManagementUIState';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
-import { useSubscriptionActions } from './hooks/user-actions/useSubscriptionActions';
 
 export const useUserManagement = () => {
   console.log("Initializing useUserManagement");
@@ -63,12 +62,6 @@ export const useUserManagement = () => {
     // States
     isActionLoading
   } = useUserActions();
-
-  // Get subscription actions
-  const {
-    handleToggleUserStatus: baseHandleToggleUserStatus,
-    handleUpdateSubscription: baseHandleUpdateSubscription
-  } = useSubscriptionActions();
   
   // Direct action handlers
   const handleViewUserDetails = useCallback((user: User) => {
@@ -111,18 +104,30 @@ export const useUserManagement = () => {
       description: `Email dialog for ${user.email} would open here.`,
     });
   }, [setSelectedUser, setIsEmailDialogOpen, toast]);
-  
-  // Wrapper functions to include users and setUsers
-  const handleToggleUserStatus = useCallback((userId: string, isActive: boolean) => {
-    console.log("useUserManagement: Toggle user status called for user:", userId, isActive);
-    return baseHandleToggleUserStatus(userId, isActive, users, setUsers);
-  }, [baseHandleToggleUserStatus, users, setUsers]);
 
-  // Handle update subscription
+  // Handle update subscription - simplified to just pass through the user
   const handleUpdateSubscription = useCallback((userId: string, subscriptionTier: string, subscriptionEndDate: Date, users: User[], setUsers: (users: User[]) => void) => {
     console.log("useUserManagement: Update subscription called for user:", userId);
-    return baseHandleUpdateSubscription(userId, subscriptionTier, subscriptionEndDate, users, setUsers);
-  }, [baseHandleUpdateSubscription]);
+    
+    // Update local state
+    setUsers(
+      users.map(user => 
+        user.id === userId 
+          ? { 
+              ...user, 
+              subscription_status: 'active',
+              subscription_plan: subscriptionTier,
+              subscription_end_date: subscriptionEndDate.toISOString() 
+            } 
+          : user
+      )
+    );
+    
+    toast({
+      title: 'Subscription Updated',
+      description: `User's subscription has been updated to ${subscriptionTier} plan.`,
+    });
+  }, [toast]);
   
   const handleDeleteUsers = useCallback(() => {
     baseHandleDeleteUsers(selectedUsers, users, setUsers);
@@ -178,7 +183,6 @@ export const useUserManagement = () => {
     selectedUsers,
     setSelectedUsers,
     isLoading,
-    isActionLoading,
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
     isAddUserDialogOpen,
@@ -198,7 +202,6 @@ export const useUserManagement = () => {
     toggleAllUsers,
     handleDeleteUsers,
     handleDeleteUser,
-    handleToggleUserStatus,
     handleViewUserDetails,
     handleCloseUserDetails,
     handleManagePermissions,
