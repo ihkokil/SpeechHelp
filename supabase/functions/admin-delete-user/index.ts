@@ -53,17 +53,13 @@ serve(async (req) => {
 
     console.log('Admin delete request from:', adminUserId, 'for user:', userId)
 
-    // Verify that the requesting user is an admin
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', adminUserId)
-      .single()
-
-    if (profileError) {
-      console.error('Error checking admin status:', profileError)
+    // Check if the requesting user exists in auth.users and get their admin status
+    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.getUserById(adminUserId)
+    
+    if (authError || !authUser.user) {
+      console.error('Admin user not found in auth.users:', authError)
       return new Response(
-        JSON.stringify({ success: false, error: 'Unable to verify admin permissions' }),
+        JSON.stringify({ success: false, error: 'Admin user not found in authentication system' }),
         { 
           status: 403, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -71,10 +67,35 @@ serve(async (req) => {
       )
     }
 
-    if (!profile?.is_admin) {
+    // Check if admin user has a profile with admin privileges, or check admin_users table
+    let isAdmin = false;
+    
+    // First check the profiles table
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', adminUserId)
+      .single()
+
+    if (profile?.is_admin) {
+      isAdmin = true;
+    } else {
+      // If no profile or not admin in profiles, check admin_users table
+      const { data: adminUser, error: adminUserError } = await supabaseAdmin
+        .from('admin_users')
+        .select('is_active, is_super_admin')
+        .eq('id', adminUserId)
+        .single()
+      
+      if (adminUser?.is_active) {
+        isAdmin = true;
+      }
+    }
+
+    if (!isAdmin) {
       console.error('User is not an admin:', adminUserId)
       return new Response(
-        JSON.stringify({ success: false, error: 'Insufficient permissions' }),
+        JSON.stringify({ success: false, error: 'Insufficient permissions - user is not an admin' }),
         { 
           status: 403, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

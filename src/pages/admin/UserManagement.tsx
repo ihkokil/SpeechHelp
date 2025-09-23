@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserManagement } from '@/components/admin/users/management/useUserManagement';
@@ -123,10 +122,10 @@ const UserManagement = () => {
     baseHandleToggleAdmin(user, users, setUsers);
   };
 
-  // FIXED: Properly handle toggle user status with correct arguments
+  // FIXED: Pass all required parameters including users and setUsers
   const handleToggleUserStatus = (userId: string, currentStatus: boolean) => {
     console.log("Toggle user status called for user:", userId, "current status:", currentStatus);
-    baseHandleToggleUserStatus(userId, currentStatus);
+    baseHandleToggleUserStatus(userId, currentStatus, users, setUsers);
   };
 
   // Create a wrapped toggle all users function that handles filtered users

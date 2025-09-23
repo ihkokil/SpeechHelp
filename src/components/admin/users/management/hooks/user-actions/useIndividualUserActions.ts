@@ -68,7 +68,7 @@ export const useIndividualUserActions = () => {
     }
   }, [toast, adminUser]);
 
-  // Toggle user active status - IMPROVED VERSION with proper state updates
+  // Toggle user active status - FIXED VERSION with direct database update
   const handleToggleUserStatus = useCallback(async (
     userId: string, 
     currentStatus: boolean,
@@ -83,7 +83,7 @@ export const useIndividualUserActions = () => {
       const newStatus = !currentStatus;
       console.log(`Toggling user status: ${userId} from ${currentStatus} to ${newStatus}`);
       
-      // Update the user's active status in the database
+      // Update the user's active status directly in the profiles table
       const { error } = await supabase
         .from('profiles')
         .update({ is_active: newStatus })
@@ -94,8 +94,11 @@ export const useIndividualUserActions = () => {
         throw error;
       }
       
+      console.log('Successfully updated user status in database');
+      
       // Update local state if setUsers is provided
       if (setUsers && users.length > 0) {
+        console.log('Updating local state for user:', userId, 'to status:', newStatus);
         setUsers(
           users.map(user => 
             user.id === userId 
