@@ -14,7 +14,13 @@ export const useDeleteUser = () => {
     userId: string,
     onSuccess?: () => void
   ) => {
-    if (!userId || !adminUser) {
+    if (!userId || !adminUser?.id) {
+      console.error('Missing required data:', {
+        userId: userId || 'MISSING',
+        adminUserId: adminUser?.id || 'MISSING',
+        adminUser: adminUser
+      });
+      
       toast({
         title: 'Error',
         description: 'Invalid user ID or admin not authenticated',
@@ -26,9 +32,13 @@ export const useDeleteUser = () => {
     setIsDeleting(true);
     
     try {
-      console.log('Starting delete user process for:', userId);
+      console.log('Starting delete user process:', {
+        targetUserId: userId,
+        adminUserId: adminUser.id,
+        adminEmail: adminUser.email
+      });
       
-      // Call the admin-delete-user function
+      // Call the admin-delete-user function with the correct admin user ID
       const { data, error } = await supabase.functions.invoke('admin-delete-user', {
         body: { 
           userId,
