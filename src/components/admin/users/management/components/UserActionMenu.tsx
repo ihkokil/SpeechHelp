@@ -93,21 +93,22 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     }
   };
 
-  // NEW: Clean delete handler
+  // FIXED: Clean delete handler with proper event handling
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    console.log(`Delete user requested for: ${user.id}`);
+    console.log(`Delete user requested for: ${user.id} (${user.email})`);
     setIsDeleteDialogOpen(true);
   };
 
-  // NEW: Confirm delete handler
+  // FIXED: Confirm delete handler
   const handleConfirmDelete = async () => {
-    console.log(`Confirming delete for user: ${user.id}`);
+    console.log(`Confirming delete for user: ${user.id} (${user.email})`);
     
     const success = await deleteUser(user.id, () => {
       // On successful deletion
+      console.log('User deletion completed, closing dialog and refreshing');
       setIsDeleteDialogOpen(false);
       
       // Notify parent components
@@ -121,14 +122,30 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     
     if (success) {
       console.log('User deletion completed successfully');
+    } else {
+      console.log('User deletion failed');
+      // Dialog stays open on failure so user can retry
     }
+  };
+
+  // FIXED: Handle dropdown trigger click to prevent event propagation
+  const handleDropdownTrigger = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log(`Opening action menu for user: ${user.email}`);
   };
 
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-          <Button variant="ghost" size="icon" className="h-8 w-8 p-0" aria-label={translate('admin.actions.openMenu')}>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 p-0" 
+            aria-label={translate('admin.actions.openMenu')}
+            onClick={handleDropdownTrigger}
+          >
             <MoreVertical className="h-4 w-4" />
             <span className="sr-only">{translate('admin.actions.openMenu')}</span>
           </Button>

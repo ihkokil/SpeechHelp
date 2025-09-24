@@ -41,8 +41,23 @@ const UserTableRow: React.FC<UserTableRowProps> = ({
   onUpdateSubscription,
   onUserDeleted
 }) => {
-  // Handle row click to view details
-  const handleRowClick = () => {
+  // FIXED: Handle row click to view details with proper event handling
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Only trigger if clicking on the row itself, not on interactive elements
+    const target = e.target as HTMLElement;
+    
+    // Don't trigger row click if clicking on buttons, dropdowns, checkboxes, or their children
+    if (
+      target.closest('button') ||
+      target.closest('[role="menuitem"]') ||
+      target.closest('input[type="checkbox"]') ||
+      target.closest('[data-radix-collection-item]')
+    ) {
+      console.log('Row click ignored - clicked on interactive element');
+      return;
+    }
+    
+    console.log(`Row clicked for user: ${user.email}, opening details`);
     onViewDetails(user);
   };
 
