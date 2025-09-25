@@ -5,6 +5,7 @@ import { useTranslation } from '@/translations';
 import { Link } from 'react-router-dom';
 import { ButtonCustom } from './ui/button-custom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import Translate from '@/components/Translate';
 
 const Hero = () => {
@@ -58,17 +59,36 @@ const Hero = () => {
             height: `calc(100% - ${navbarHeight}px + ${isMobile ? '5vh' : '20vh'})` 
           }}
         >
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover object-center"
-            poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
-          >
-            <source src={videoUrl} type="video/quicktime" />
-            <source src={videoUrlMP4} type="video/mp4" />
-          </video>
+          {/* Use AspectRatio for 16:9 on large devices, fallback to full height on mobile */}
+          {!isMobile ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <AspectRatio ratio={16 / 9} className="w-full">
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover object-center"
+                  poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
+                >
+                  <source src={videoUrl} type="video/quicktime" />
+                  <source src={videoUrlMP4} type="video/mp4" />
+                </video>
+              </AspectRatio>
+            </div>
+          ) : (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover object-center"
+              poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
+            >
+              <source src={videoUrl} type="video/quicktime" />
+              <source src={videoUrlMP4} type="video/mp4" />
+            </video>
+          )}
           {/* Enhanced video overlay with improved readability */}
           <div className="absolute inset-0 bg-black/50 backdrop-brightness-75 backdrop-contrast-125"></div>
         </div>
