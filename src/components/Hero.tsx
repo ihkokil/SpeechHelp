@@ -62,7 +62,7 @@ const Hero = () => {
           {/* Use AspectRatio for 16:9 on large devices, fallback to full height on mobile */}
           {!isMobile ? (
             <div className="w-full h-full flex items-center justify-center">
-              <AspectRatio ratio={16 / 9} className="w-full">
+              <AspectRatio ratio={16 / 9} className="w-full max-h-full">
                 <video
                   autoPlay
                   muted
