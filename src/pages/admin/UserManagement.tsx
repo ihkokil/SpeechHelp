@@ -66,8 +66,7 @@ const UserManagement = () => {
   // Use the consolidated individual user actions
   const { 
     isActionLoading, 
-    handleDeleteUser,
-    handleToggleUserStatus: baseHandleToggleUserStatus 
+    handleDeleteUser
   } = useIndividualUserActions();
   
   // New state for subscription dialog
@@ -128,11 +127,7 @@ const UserManagement = () => {
     baseHandleToggleAdmin(user, users, setUsers);
   };
 
-  // FIXED: Use the consolidated toggle user status function with proper parameters
-  const handleToggleUserStatus = (userId: string, currentStatus: boolean) => {
-    console.log("Toggle user status called for user:", userId, "current status:", currentStatus);
-    baseHandleToggleUserStatus(userId, currentStatus, users, setUsers);
-  };
+  // REMOVED: handleToggleUserStatus - now handled directly in UserActionMenu
 
   // UPDATED: Simplified delete user handler (the new hook handles everything)
   const handleDeleteSingleUser = (userId: string) => {
@@ -221,7 +216,6 @@ const UserManagement = () => {
             toggleAllUsers={toggleAllUsersWithFilter}
             handleViewUserDetails={handleViewUserDetails}
             handleToggleAdmin={handleToggleAdmin}
-            handleToggleUserStatus={handleToggleUserStatus}
             setSelectedUsers={setSelectedUsers}
             setIsDeleteDialogOpen={setIsDeleteDialogOpen}
             searchTerm={searchTerm}

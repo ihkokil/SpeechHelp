@@ -23,7 +23,6 @@ export const useUserActions = () => {
   } = useBulkActions();
   
   const {
-    handleToggleUserStatus,
     handleDeleteUser
   } = useIndividualUserActions();
   
@@ -116,9 +115,6 @@ export const useUserActions = () => {
     handleBulkDelete,
     handleBulkActivate,
     handleBulkDeactivate,
-    
-    // User subscription and status operations
-    handleToggleUserStatus,
     
     // User details operations
     handleViewUserDetails,

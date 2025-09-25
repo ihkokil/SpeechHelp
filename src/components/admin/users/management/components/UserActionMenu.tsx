@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 import { useDeleteUser } from '../hooks/user-actions/useDeleteUser';
+import { useToggleUserStatus } from '../hooks/user-actions/useToggleUserStatus';
 import { DeleteUserConfirmDialog } from './DeleteUserConfirmDialog';
 
 interface UserActionMenuProps {
@@ -24,7 +25,6 @@ interface UserActionMenuProps {
   onViewDetails: (user: User) => void;
   onToggleAdmin: (user: User) => void;
   onRequestAdminPassword?: (user: User) => void;
-  onToggleUserActive: (userId: string, isActive: boolean) => void;
   onDeleteUser: (userId: string) => void;
   onSendEmail?: (user: User) => void;
   onUpdateSubscription?: (user: User) => void;
@@ -36,7 +36,6 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
   onViewDetails,
   onToggleAdmin,
   onRequestAdminPassword,
-  onToggleUserActive,
   onDeleteUser,
   onSendEmail,
   onUpdateSubscription,
@@ -44,6 +43,7 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
 }) => {
   const { translate } = useTranslatedContent();
   const { deleteUser, isDeleting } = useDeleteUser();
+  const { toggleUserStatus, isToggling } = useToggleUserStatus();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Check if user is the original admin that cannot be removed
@@ -64,13 +64,25 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
     callback(arg);
   };
 
-  // Special handler for toggle active which requires the current status
-  const handleToggleActive = (e: React.MouseEvent) => {
+  // NEW: Handler for toggle active status using the new hook
+  const handleToggleActive = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     console.log(`Toggle active triggered for user ${user.id}, current state: ${isCurrentlyActive}`);
-    onToggleUserActive(user.id, isCurrentlyActive);
+    
+    const success = await toggleUserStatus(user.id, isCurrentlyActive, () => {
+      // On successful toggle, refresh the user list if callback provided
+      if (onUserDeleted) {
+        onUserDeleted();
+      }
+    });
+    
+    if (success) {
+      console.log('User status toggled successfully');
+    } else {
+      console.log('User status toggle failed');
+    }
   };
 
   // Handler for admin toggle - ALWAYS use password dialog for any admin changes
@@ -202,16 +214,17 @@ const UserActionMenu: React.FC<UserActionMenuProps> = ({
           <DropdownMenuItem 
             onClick={handleToggleActive} 
             id={`${isCurrentlyActive ? 'deactivate' : 'activate'}-user-${user.id}`}
+            disabled={isToggling}
           >
             {isCurrentlyActive ? (
               <>
                 <UserMinus className="mr-2 h-4 w-4" />
-                <span>{translate('admin.actions.deactivateUser')}</span>
+                <span>{isToggling ? 'Deactivating...' : translate('admin.actions.deactivateUser')}</span>
               </>
             ) : (
               <>
                 <UserCheck className="mr-2 h-4 w-4" />
-                <span>{translate('admin.actions.activateUser')}</span>
+                <span>{isToggling ? 'Activating...' : translate('admin.actions.activateUser')}</span>
               </>
             )}
           </DropdownMenuItem>

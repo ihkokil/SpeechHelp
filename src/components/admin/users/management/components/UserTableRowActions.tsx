@@ -9,7 +9,6 @@ interface UserTableRowActionsProps {
   onViewDetails: (user: User) => void;
   onToggleAdmin: (user: User) => void;
   onRequestAdminPassword?: (user: User) => void;
-  onToggleActive: (userId: string, isActive: boolean) => void;
   onDeleteUser: (userId: string) => void;
   onSendEmail?: (user: User) => void;
   onUpdateSubscription?: (user: User) => void;
@@ -21,7 +20,6 @@ export const UserTableRowActions: React.FC<UserTableRowActionsProps> = ({
   onViewDetails,
   onToggleAdmin,
   onRequestAdminPassword,
-  onToggleActive,
   onDeleteUser,
   onSendEmail,
   onUpdateSubscription,
@@ -33,7 +31,6 @@ export const UserTableRowActions: React.FC<UserTableRowActionsProps> = ({
       onViewDetails={onViewDetails}
       onToggleAdmin={onToggleAdmin}
       onRequestAdminPassword={onRequestAdminPassword}
-      onToggleUserActive={onToggleActive}
       onDeleteUser={onDeleteUser}
       onSendEmail={onSendEmail}
       onUpdateSubscription={onUpdateSubscription}

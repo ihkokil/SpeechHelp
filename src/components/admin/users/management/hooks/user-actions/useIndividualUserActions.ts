@@ -68,62 +68,7 @@ export const useIndividualUserActions = () => {
     }
   }, [toast, adminUser]);
 
-  // Toggle user active status - FIXED VERSION with direct database update
-  const handleToggleUserStatus = useCallback(async (
-    userId: string, 
-    currentStatus: boolean,
-    users: User[] = [], 
-    setUsers: ((users: User[]) => void) | null = null
-  ) => {
-    if (!userId) return;
-    
-    setIsActionLoading(true);
-    
-    try {
-      const newStatus = !currentStatus;
-      console.log(`Toggling user status: ${userId} from ${currentStatus} to ${newStatus}`);
-      
-      // Update the user's active status directly in the profiles table
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_active: newStatus })
-        .eq('id', userId);
-      
-      if (error) {
-        console.error('Database error when updating user status:', error);
-        throw error;
-      }
-      
-      console.log('Successfully updated user status in database');
-      
-      // Update local state if setUsers is provided
-      if (setUsers && users.length > 0) {
-        console.log('Updating local state for user:', userId, 'to status:', newStatus);
-        setUsers(
-          users.map(user => 
-            user.id === userId 
-              ? { ...user, is_active: newStatus } 
-              : user
-          )
-        );
-      }
-      
-      toast({
-        title: `User ${newStatus ? 'Activated' : 'Deactivated'}`,
-        description: `User has been ${newStatus ? 'activated' : 'deactivated'} successfully.`,
-      });
-      
-    } catch (error: any) {
-      console.error('Error toggling user status:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to update user status. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsActionLoading(false);
-    }
-  }, [toast]);
+  // REMOVED: handleToggleUserStatus - replaced with new useToggleUserStatus hook
 
   // Toggle user subscription
   const handleToggleUserSubscription = useCallback(async (
@@ -209,7 +154,6 @@ export const useIndividualUserActions = () => {
   return {
     isActionLoading,
     handleDeleteUser,
-    handleToggleUserStatus,
     handleToggleUserSubscription
   };
 };
