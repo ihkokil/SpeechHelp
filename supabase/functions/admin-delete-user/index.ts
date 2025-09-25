@@ -61,127 +61,22 @@ serve(async (req) => {
     console.log('🔍 STARTING ADMIN VERIFICATION PROCESS')
     console.log('👤 Verifying admin user:', adminUserId)
 
-    // Check if the requesting user exists in auth.users
-    console.log('📞 Checking if admin user exists in auth.users...')
-    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.getUserById(adminUserId)
-    
-    if (authError) {
-      console.error('❌ Error fetching admin user from auth.users:', authError)
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Admin user not found in authentication system',
-          details: authError.message
-        }),
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
-    
-    if (!authUser.user) {
-      console.error('❌ Admin user not found in auth.users')
-      return new Response(
-        JSON.stringify({ success: false, error: 'Admin user not found in authentication system' }),
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
-
-    console.log('✅ Admin user found in auth.users:', {
-      id: authUser.user.id,
-      email: authUser.user.email,
-      created_at: authUser.user.created_at
-    })
-
-    // Check admin permissions in both profiles and admin_users tables
-    let isAdmin = false;
-    let adminSource = 'none';
-    
-    console.log('🔍 Checking admin status in profiles table...')
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('is_admin, username, email')
+    // FIXED: Check if the requesting user is an admin in the admin_users table
+    console.log('📞 Checking if admin user exists in admin_users table...')
+    const { data: adminUser, error: adminError } = await supabaseAdmin
+      .from('admin_users')
+      .select('id, email, username, is_active, is_super_admin')
       .eq('id', adminUserId)
+      .eq('is_active', true)
       .single()
-
-    if (profileError) {
-      console.log('⚠️ Error or no profile found:', profileError.message)
-    } else {
-      console.log('📋 Profile found:', {
-        id: adminUserId,
-        is_admin: profile?.is_admin,
-        username: profile?.username,
-        email: profile?.email || 'not in profile'
-      })
-      
-      if (profile?.is_admin) {
-        isAdmin = true;
-        adminSource = 'profiles';
-        console.log('✅ Admin status confirmed via profiles table')
-      }
-    }
-
-    if (!isAdmin) {
-      console.log('🔍 Checking admin status in admin_users table...')
-      const { data: adminUser, error: adminUserError } = await supabaseAdmin
-        .from('admin_users')
-        .select('is_active, is_super_admin, email, username')
-        .eq('id', adminUserId)
-        .single()
-      
-      if (adminUserError) {
-        console.log('⚠️ Error or no admin_user found:', adminUserError.message)
-      } else {
-        console.log('📋 Admin user record found:', {
-          id: adminUserId,
-          is_active: adminUser?.is_active,
-          is_super_admin: adminUser?.is_super_admin,
-          email: adminUser?.email,
-          username: adminUser?.username
-        })
-        
-        if (adminUser?.is_active) {
-          isAdmin = true;
-          adminSource = 'admin_users';
-          console.log('✅ Admin status confirmed via admin_users table')
-        }
-      }
-    }
-
-    console.log('🎯 ADMIN VERIFICATION RESULT:', {
-      isAdmin,
-      adminSource,
-      adminUserId,
-      authUserEmail: authUser.user.email
-    })
-
-    if (!isAdmin) {
-      console.error('❌ PERMISSION DENIED: User is not an admin')
-      console.error('📋 Failed verification details:', {
-        adminUserId,
-        checkedProfiles: !!profile,
-        profileIsAdmin: profile?.is_admin || false,
-        checkedAdminUsers: !!adminUser,
-        adminUserIsActive: adminUser?.is_active || false,
-        authUserExists: !!authUser.user
-      })
-      
+    
+    if (adminError || !adminUser) {
+      console.error('❌ Error fetching admin user from admin_users:', adminError?.message || 'User not found')
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Insufficient permissions - user is not an admin',
-          debug: {
-            adminUserId,
-            foundInAuth: true,
-            foundInProfiles: !!profile,
-            foundInAdminUsers: !!adminUser,
-            isAdminInProfiles: profile?.is_admin || false,
-            isActiveInAdminUsers: adminUser?.is_active || false
-          }
+          error: 'Admin user not found or not active',
+          details: adminError?.message || 'Admin user not found in admin_users table'
         }),
         { 
           status: 403, 
@@ -189,6 +84,14 @@ serve(async (req) => {
         }
       )
     }
+
+    console.log('✅ Admin user found in admin_users table:', {
+      id: adminUser.id,
+      email: adminUser.email,
+      username: adminUser.username,
+      is_active: adminUser.is_active,
+      is_super_admin: adminUser.is_super_admin
+    })
 
     console.log('🚀 ADMIN VERIFIED - PROCEEDING WITH USER DELETION')
     console.log('🎯 Target user for deletion:', userId)
@@ -292,7 +195,7 @@ serve(async (req) => {
           details: {
             deleted_user_id: userId,
             deleted_by_admin: adminUserId,
-            admin_source: adminSource,
+            admin_email: adminUser.email,
             timestamp: new Date().toISOString()
           }
         })
@@ -308,7 +211,7 @@ serve(async (req) => {
         message: 'User and all related data deleted successfully',
         userId: userId,
         deletedBy: adminUserId,
-        adminSource: adminSource
+        adminEmail: adminUser.email
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
