@@ -59,23 +59,22 @@ const Hero = () => {
             height: `calc(100% - ${navbarHeight}px + ${isMobile ? '5vh' : '20vh'})` 
           }}
         >
-          {/* Video fills entire background, with 16:9 constraint on large devices */}
+          {/* Video with 16:9 aspect ratio constraint on large devices */}
           {!isMobile ? (
-            <div className="w-full h-full relative">
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="absolute inset-0 w-full h-full object-cover object-center min-w-full min-h-full"
-                style={{
-                  aspectRatio: '16/9'
-                }}
-                poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
-              >
-                <source src={videoUrl} type="video/quicktime" />
-                <source src={videoUrlMP4} type="video/mp4" />
-              </video>
+            <div className="w-full h-full flex items-center justify-center">
+              <AspectRatio ratio={16 / 9} className="w-full max-w-full">
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover object-center"
+                  poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
+                >
+                  <source src={videoUrl} type="video/quicktime" />
+                  <source src={videoUrlMP4} type="video/mp4" />
+                </video>
+              </AspectRatio>
             </div>
           ) : (
             <video
