@@ -48,22 +48,22 @@ const Hero = () => {
     <>
       <section 
         ref={heroRef}
-        className="text-white pb-8 sm:pb-16 md:pb-24 overflow-hidden relative xl:aspect-video"
+        className="text-white pb-8 sm:pb-16 md:pb-24 overflow-hidden relative"
         style={{ paddingTop: navbarHeight + 20 }}
       >
         <div 
           className="absolute inset-0 z-0 overflow-hidden" 
           style={{ 
-            top: navbarHeight
+            top: navbarHeight,
+            height: `calc(100% - ${navbarHeight}px + ${isMobile ? '5vh' : '20vh'})` 
           }}
         >
-          {/* Video fills entire background */}
           <video
             autoPlay
             muted
             loop
             playsInline
-            className="absolute inset-0 w-full h-full object-cover object-center hero-video-zoom"
+            className="w-full h-full object-cover object-center"
             poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
           >
             <source src={videoUrl} type="video/quicktime" />
