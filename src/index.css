@@ -204,3 +204,20 @@ html {
     max-width: 90rem;
   }
 }
+
+/* Hero video zoom for ultra-wide displays */
+.hero-video-zoom {
+  transition: transform 0.3s ease-out;
+}
+
+@media (min-width: 2000px) {
+  .hero-video-zoom {
+    transform: scale(1.25);
+  }
+}
+
+@media (min-width: 2400px) {
+  .hero-video-zoom {
+    transform: scale(1.5);
+  }
+}

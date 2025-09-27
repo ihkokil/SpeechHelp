@@ -63,7 +63,7 @@ const Hero = () => {
             muted
             loop
             playsInline
-            className="absolute inset-0 w-full h-full object-cover object-center"
+            className="absolute inset-0 w-full h-full object-cover object-center hero-video-zoom"
             poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
           >
             <source src={videoUrl} type="video/quicktime" />
