@@ -205,6 +205,24 @@ html {
   }
 }
 
+/* Site-wide zoom for ultra-wide displays */
+.site-zoom {
+  transform-origin: top center;
+  transition: transform 0.3s ease-out;
+}
+
+@media (min-width: 2000px) {
+  .site-zoom {
+    transform: scale(1.25);
+  }
+}
+
+@media (min-width: 2400px) {
+  .site-zoom {
+    transform: scale(1.5);
+  }
+}
+
 /* Hero video zoom for ultra-wide displays */
 .hero-video-zoom {
   transition: transform 0.3s ease-out;
