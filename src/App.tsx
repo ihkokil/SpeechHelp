@@ -40,7 +40,7 @@ function App() {
               <Toaster />
               <Sonner />
               <Router>
-                <div className="min-h-screen bg-background">
+                <div className="min-h-screen bg-background site-zoom">
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/auth" element={<Auth />} />
