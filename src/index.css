@@ -185,24 +185,6 @@ html {
   background-size: cover;
 }
 
-/* Site-wide zoom for ultra-wide displays */
-.site-zoom {
-  transform-origin: top left;
-  transition: transform 0.3s ease-in-out;
-}
-
-@media (min-width: 2000px) {
-  .site-zoom {
-    transform: scale(1.25);
-  }
-}
-
-@media (min-width: 2400px) {
-  .site-zoom {
-    transform: scale(1.5);
-  }
-}
-
 /* Large screen optimizations */
 @media (min-width: 1536px) {
   .container {
