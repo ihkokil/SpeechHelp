@@ -185,21 +185,6 @@ html {
   background-size: cover;
 }
 
-/* Site-wide content width for ultra-wide displays */
-@media (min-width: 2000px) {
-  .site-zoom {
-    max-width: 80vw;
-    margin: 0 auto;
-  }
-}
-
-@media (min-width: 2400px) {
-  .site-zoom {
-    max-width: 75vw;
-    margin: 0 auto;
-  }
-}
-
 /* Large screen optimizations */
 @media (min-width: 1536px) {
   .container {
