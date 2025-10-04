@@ -20,7 +20,7 @@ export function getScaleFactor(screenWidth: number): number {
   const scaleFactor = targetWidth / BASE_WIDTH;
   
   // Cap maximum scale to prevent excessive zooming
-  return Math.min(scaleFactor, 2.0);
+  return Math.min(scaleFactor, 2.5);
 }
 
 /**
