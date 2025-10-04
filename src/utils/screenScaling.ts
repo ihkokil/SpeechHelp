@@ -40,13 +40,39 @@ export function applyBodyScaling(scaleFactor: number): void {
 }
 
 /**
+ * Check if current route should have scaling applied
+ */
+function shouldApplyScaling(): boolean {
+  const pathname = window.location.pathname;
+  
+  // Backend routes that should NOT be scaled
+  const backendRoutes = [
+    '/dashboard',
+    '/speech-lab', 
+    '/my-speeches',
+    '/writing-tips',
+    '/help',
+    '/settings',
+    '/admin'
+  ];
+  
+  // Check if current path starts with any backend route
+  return !backendRoutes.some(route => pathname.startsWith(route));
+}
+
+/**
  * Initialize dynamic scaling system
  */
 export function initializeScaling(): void {
   // Apply initial scaling
   const handleResize = () => {
-    const scaleFactor = getScaleFactor(window.innerWidth);
-    applyBodyScaling(scaleFactor);
+    if (shouldApplyScaling()) {
+      const scaleFactor = getScaleFactor(window.innerWidth);
+      applyBodyScaling(scaleFactor);
+    } else {
+      // Remove scaling for backend routes
+      applyBodyScaling(1);
+    }
   };
   
   // Debounce resize handler
@@ -61,4 +87,7 @@ export function initializeScaling(): void {
   
   // Listen for resize events
   window.addEventListener('resize', debouncedResize);
+  
+  // Listen for route changes (for SPA navigation)
+  window.addEventListener('popstate', debouncedResize);
 }
