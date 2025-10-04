@@ -81,6 +81,9 @@
     @apply bg-background text-foreground font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transform-origin: top center;
+    transition: transform 0.3s ease;
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {

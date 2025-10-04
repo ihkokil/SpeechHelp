@@ -3,6 +3,7 @@
 
 const TARGET_WIDTH_PERCENTAGE = 0.8;
 const MIN_ACTIVATION_WIDTH = 2000;
+const BASE_WIDTH = 1600;
 
 /**
  * Calculate scale factor based on screen width
@@ -16,7 +17,7 @@ export function getScaleFactor(screenWidth: number): number {
   
   // Calculate scale to use 80% of screen width
   const targetWidth = screenWidth * TARGET_WIDTH_PERCENTAGE;
-  const scaleFactor = targetWidth / MIN_ACTIVATION_WIDTH;
+  const scaleFactor = targetWidth / BASE_WIDTH;
   
   // Cap maximum scale to prevent excessive zooming
   return Math.min(scaleFactor, 2.0);
@@ -32,15 +33,9 @@ export function applyBodyScaling(scaleFactor: number): void {
   if (scaleFactor === 1) {
     // Remove scaling
     body.style.transform = '';
-    body.style.transformOrigin = '';
-    body.style.width = '';
-    body.style.height = '';
   } else {
     // Apply scaling
-    body.style.transformOrigin = 'top left';
     body.style.transform = `scale(${scaleFactor})`;
-    body.style.width = `${100 / scaleFactor}%`;
-    body.style.height = `${100 / scaleFactor}%`;
   }
 }
 
