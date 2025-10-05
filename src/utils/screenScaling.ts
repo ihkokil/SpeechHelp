@@ -52,7 +52,8 @@ function shouldApplyScaling(): boolean {
     '/pricing', 
     '/privacy-policy',
     '/terms-of-service',
-    '/cookie-policy'
+    '/cookie-policy',
+    '/admin/auth'
   ];
   
   // Backend routes that should NOT be scaled
@@ -60,9 +61,6 @@ function shouldApplyScaling(): boolean {
     '/dashboard',
     '/speech-lab', 
     '/my-speeches',
-    '/writing-tips',
-    '/help',
-    '/settings',
     '/admin'
   ];
   
