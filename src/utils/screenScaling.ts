@@ -45,6 +45,16 @@ export function applyBodyScaling(scaleFactor: number): void {
 function shouldApplyScaling(): boolean {
   const pathname = window.location.pathname;
   
+  // Frontend routes that SHOULD be scaled
+  const frontendRoutes = [
+    '/',
+    '/auth',
+    '/pricing', 
+    '/privacy-policy',
+    '/terms-of-service',
+    '/cookie-policy'
+  ];
+  
   // Backend routes that should NOT be scaled
   const backendRoutes = [
     '/dashboard',
@@ -57,7 +67,17 @@ function shouldApplyScaling(): boolean {
   ];
   
   // Check if current path starts with any backend route
-  return !backendRoutes.some(route => pathname.startsWith(route));
+  if (backendRoutes.some(route => pathname.startsWith(route))) {
+    return false;
+  }
+  
+  // Check if current path matches any frontend route exactly or is the root
+  if (frontendRoutes.some(route => pathname === route || pathname === '/')) {
+    return true;
+  }
+  
+  // Default to no scaling for unknown routes
+  return false;
 }
 
 /**
