@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { ArrowRight, Check } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -31,12 +32,13 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {speechTypesData.map((type) => (
-            <div 
+            <AspectRatio
               key={type.id}
-              onClick={() => setSelectedSpeechType(type.id)}
-              className={`group relative rounded-md overflow-hidden cursor-pointer transition-all duration-300 h-48 ${
+              ratio={4/3}
+              className={`group relative rounded-md overflow-hidden cursor-pointer transition-all duration-300 ${
                 selectedSpeechType === type.id ? 'ring-4 ring-pink-500 ring-offset-2' : 'hover:shadow-lg'
               }`}
+              onClick={() => setSelectedSpeechType(type.id)}
             >
               <img 
                 src={type.image} 
@@ -60,7 +62,7 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
                   <p className="text-white/70 text-xs mt-1">{type.description}</p>
                 )}
               </div>
-            </div>
+            </AspectRatio>
           ))}
         </div>
       </CardContent>
