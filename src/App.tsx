@@ -27,6 +27,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AllSpeeches from './pages/admin/AllSpeeches';
+import ScalingController from './components/ScalingController';
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ function App() {
               <Toaster />
               <Sonner />
               <Router>
+                <ScalingController />
                 <div className="min-h-screen bg-background">
                   <Routes>
                     <Route path="/" element={<Index />} />
