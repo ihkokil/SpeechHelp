@@ -21,6 +21,7 @@ export const useSpeechSave = ({
 }: UseSpeechSaveProps) => {
 	const [isSaving, setIsSaving] = useState(false);
 	const [speechId, setSpeechId] = useState<string | null>(initialSpeechId || null);
+	const [showSaveEffects, setShowSaveEffects] = useState(false);
 	const { toast } = useToast();
 	const { user } = useAuth();
 	const speechService = useSpeechService();
@@ -77,8 +78,13 @@ export const useSpeechSave = ({
 			if (currentSpeechId) {
 				// Update existing speech
 				await speechService.updateSpeech(user.id, currentSpeechId, title, contentToSave);
+				
+				// Trigger celebration effects for successful edit
+				setShowSaveEffects(true);
+				setTimeout(() => setShowSaveEffects(false), 5000);
+				
 				toast({
-					title: "Speech Updated",
+					title: "Speech Updated! 🎉",
 					description: "Your speech has been updated successfully.",
 				});
 			} else {
@@ -95,8 +101,12 @@ export const useSpeechSave = ({
 					setSpeechId(speechResponse.id as string);
 				}
 				
+				// Trigger celebration effects for successful save
+				setShowSaveEffects(true);
+				setTimeout(() => setShowSaveEffects(false), 5000);
+				
 				toast({
-					title: "Speech Saved",
+					title: "Speech Saved! 🎉",
 					description: "Your speech has been saved successfully.",
 				});
 			}
@@ -115,6 +125,7 @@ export const useSpeechSave = ({
 	return {
 		isSaving,
 		handleSave,
-		speechId: speechId || initialSpeechId
+		speechId: speechId || initialSpeechId,
+		showSaveEffects
 	};
 };
