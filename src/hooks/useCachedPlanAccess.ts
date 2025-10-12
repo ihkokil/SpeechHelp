@@ -96,6 +96,7 @@ export const useCachedPlanAccess = (limitType: LimitType, featureName: string) =
     if (cacheKey) {
       localStorage.removeItem(cacheKey);
       setCachedAccess(null);
+      setIsInitialCheck(true); // Reset to force fresh fetch
       console.log(`🧹 Cleared cache for ${featureName}`);
     }
   }, [cacheKey, featureName]);

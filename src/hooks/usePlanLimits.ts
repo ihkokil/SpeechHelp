@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,6 +53,7 @@ export interface UserPlanLimits {
 	isFeatureAvailable: (feature: 'aiAnalysis' | 'teamCollaboration' | 'customBranding' | 'exportOptions') => boolean | string[];
 	hasReachedLimit: (limitType: LimitType) => boolean;
 	shouldShowUpgradePrompt: boolean;
+	refreshPlanData: () => Promise<void>;
 }
 
 /**
@@ -62,6 +62,7 @@ export interface UserPlanLimits {
 export function usePlanLimits(): UserPlanLimits {
 	const { user } = useAuth();
 	const [loadingPlanLimits, setLoadingPlanLimits] = useState(true);
+	const [refreshCounter, setRefreshCounter] = useState(0);
 	const [userSubscription, setUserSubscription] = useState<{
 		userId: string;
 		planType: SubscriptionPlan;
@@ -83,6 +84,19 @@ export function usePlanLimits(): UserPlanLimits {
 			teamMembersAdded: 0,
 		}
 	});
+
+	// Function to force refresh plan data
+	const refreshPlanData = useCallback(async () => {
+		console.log('🔄 Force refreshing plan data');
+		
+		// Clear plan access cache
+		const planAccessKeys = Object.keys(localStorage).filter(key => key.startsWith('planAccess_'));
+		planAccessKeys.forEach(key => localStorage.removeItem(key));
+		console.log('🧹 Cleared plan access cache keys:', planAccessKeys.length);
+		
+		// Trigger re-fetch by incrementing counter
+		setRefreshCounter(prev => prev + 1);
+	}, []);
 
 	// Fetch user profile and subscription data from database
 	useEffect(() => {
@@ -168,7 +182,7 @@ export function usePlanLimits(): UserPlanLimits {
 		};
 
 		fetchUserSubscriptionData();
-	}, [user]);
+	}, [user, refreshCounter]);
 
 	// Check if feature is available using effective plan
 	const checkFeatureAvailability = useCallback(
@@ -274,5 +288,6 @@ export function usePlanLimits(): UserPlanLimits {
 		isFeatureAvailable: checkFeatureAvailability,
 		hasReachedLimit,
 		shouldShowUpgradePrompt: effectiveStatus.shouldShowUpgrade,
+		refreshPlanData,
 	};
 }

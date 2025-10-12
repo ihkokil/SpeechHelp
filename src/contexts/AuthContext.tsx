@@ -14,8 +14,8 @@ interface AuthContextType {
   speeches: Speech[];
   signOut: () => Promise<void>;
   fetchSpeeches: () => Promise<void>;
-  refreshUser: () => Promise<void>;
-  refreshUserData: () => Promise<void>;
+  refreshUser: (forceRefresh?: boolean) => Promise<void>;
+  refreshUserData: (forceRefresh?: boolean) => Promise<void>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
   saveSpeech: (title: string, content: string, speechType: string) => Promise<void>;
   updateSpeech: (id: string, title: string, content: string) => Promise<void>;
@@ -72,9 +72,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = async (userId: string, forceRefresh: boolean = false) => {
     try {
+      console.log('👤 Fetching user profile, forceRefresh:', forceRefresh);
+      
+      // If forcing refresh, clear any cached data first
+      if (forceRefresh) {
+        // Clear plan access cache
+        const planAccessKeys = Object.keys(localStorage).filter(key => key.startsWith('planAccess_'));
+        planAccessKeys.forEach(key => localStorage.removeItem(key));
+        console.log('🧹 Cleared plan access cache during profile refresh');
+      }
+      
       const userProfile = await profileService.getCurrentUserProfile();
+      console.log('👤 Current user profile data:', {
+        userId,
+        email: user?.email,
+        profile: userProfile,
+        displayName: userProfile ? profileService.getDisplayName(userProfile, user || undefined) : 'Unknown',
+        fullName: userProfile ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() : 'Unknown',
+        avatarUrl: userProfile?.avatar_url || "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//user-account.svg"
+      });
       setProfile(userProfile);
       
       // If no profile exists, sync from auth metadata
@@ -89,8 +107,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const refreshUser = async () => {
+  const refreshUser = async (forceRefresh: boolean = false) => {
     try {
+      console.log('♻️ Refreshing user data, forceRefresh:', forceRefresh);
+      
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error) {
         console.error('Error refreshing user:', error);
@@ -108,17 +128,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(session);
       
       if (user) {
-        await fetchUserProfile(user.id);
+        await fetchUserProfile(user.id, forceRefresh);
       }
       
-      console.log('User refreshed successfully:', user?.id);
+      console.log('✅ User refreshed successfully:', user?.id);
     } catch (error) {
       console.error('Error in refreshUser:', error);
     }
   };
 
-  const refreshUserData = async () => {
-    await refreshUser();
+  const refreshUserData = async (forceRefresh: boolean = false) => {
+    console.log('🔄 Refreshing all user data, forceRefresh:', forceRefresh);
+    await refreshUser(forceRefresh);
     if (user) {
       await fetchSpeeches();
     }
@@ -293,7 +314,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           if (session?.user) {
             setTimeout(() => {
-              fetchUserProfile(session.user.id);
+              fetchUserProfile(session.user.id, false);
             }, 0);
           }
         }
@@ -317,7 +338,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           if (session?.user) {
             setTimeout(() => {
-              fetchUserProfile(session.user.id);
+              fetchUserProfile(session.user.id, false);
               fetchSpeeches();
             }, 0);
           }

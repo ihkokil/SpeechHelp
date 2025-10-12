@@ -10,6 +10,7 @@ import RecentActivities from '@/components/dashboard/RecentActivities';
 import PerformanceMetrics from '@/components/dashboard/PerformanceMetrics';
 import LanguageSelector from '@/components/common/LanguageSelector';
 import PreviousSpeeches from '@/components/dashboard/PreviousSpeeches';
+import { SubscriptionDebug } from '@/components/debug/SubscriptionDebug';
 import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -194,6 +195,13 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+
+          {/* Subscription Debug Panel - Only show for development/troubleshooting */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-6">
+              <SubscriptionDebug />
+            </div>
+          )}
         </main>
       </div>
     </div>
