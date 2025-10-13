@@ -11,6 +11,8 @@ import PerformanceMetrics from '@/components/dashboard/PerformanceMetrics';
 import LanguageSelector from '@/components/common/LanguageSelector';
 import PreviousSpeeches from '@/components/dashboard/PreviousSpeeches';
 import { SubscriptionDebug } from '@/components/debug/SubscriptionDebug';
+import { SubscriptionSyncAlert } from '@/components/subscription/SubscriptionSyncAlert';
+import { useSubscriptionPolling } from '@/hooks/useSubscriptionPolling';
 import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -27,6 +29,13 @@ const Dashboard = () => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
+  
+  // Enable subscription polling to automatically detect admin changes
+  useSubscriptionPolling({
+    intervalMs: 2 * 60 * 1000, // Check every 2 minutes
+    enabled: true,
+    aggressiveOnSpeechPages: true
+  });
   
   // Debug logging
   useEffect(() => {
@@ -143,6 +152,11 @@ const Dashboard = () => {
             firstName={firstName} 
             lastName={lastName}
           />
+          
+          {/* Subscription Sync Alert - Shows when there are sync issues */}
+          <div className="mt-4">
+            <SubscriptionSyncAlert />
+          </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8">
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">

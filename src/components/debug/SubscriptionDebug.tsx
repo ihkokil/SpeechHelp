@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
  * Shows current subscription state and provides manual refresh controls
  */
 export const SubscriptionDebug: React.FC = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshUserData } = useAuth();
   const planLimits = usePlanLimits();
   const { syncSubscriptionData } = useSubscriptionSync();
   const [isOpen, setIsOpen] = useState(false);
@@ -21,8 +21,17 @@ export const SubscriptionDebug: React.FC = () => {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await syncSubscriptionData(true);
-    setIsRefreshing(false);
+    try {
+      console.log('🔄 Force refreshing subscription data from debug panel');
+      // Force refresh both AuthContext and plan limits
+      await syncSubscriptionData(true);
+      // Also force refresh user data to clear any caches
+      await refreshUserData(true);
+    } catch (error) {
+      console.error('Error during force refresh:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const formatDate = (dateString: string | null | undefined) => {

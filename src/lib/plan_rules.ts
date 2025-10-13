@@ -225,3 +225,59 @@ export function getEffectivePlanStatus(subscription: UserSubscription): {
 		shouldShowUpgrade
 	};
 }
+
+/**
+ * Cache management utilities for subscription data
+ */
+export const SubscriptionCacheManager = {
+	/**
+	 * Clear all subscription-related cache data
+	 */
+	clearAllSubscriptionCache: () => {
+		const cacheKeys = Object.keys(localStorage).filter(key => 
+			key.startsWith('planAccess_') ||
+			key.startsWith('subscription_') ||
+			key.includes('plan') ||
+			key.includes('subscription') ||
+			key.includes('speech_generation') ||
+			key.includes('user_limits')
+		);
+		
+		cacheKeys.forEach(key => localStorage.removeItem(key));
+		console.log('🧹 Cleared subscription cache keys:', cacheKeys.length);
+		return cacheKeys.length;
+	},
+
+	/**
+	 * Force refresh subscription data by clearing cache and triggering reload
+	 */
+	forceRefreshSubscription: async () => {
+		console.log('🔄 Force refreshing subscription data...');
+		
+		// Clear all relevant cache
+		const clearedCount = SubscriptionCacheManager.clearAllSubscriptionCache();
+		
+		// Also clear any session storage related to subscriptions
+		const sessionKeys = Object.keys(sessionStorage).filter(key => 
+			key.includes('plan') || key.includes('subscription')
+		);
+		sessionKeys.forEach(key => sessionStorage.removeItem(key));
+		
+		// Trigger a page reload if needed (as last resort)
+		if (clearedCount > 10) {
+			console.log('⚠️ Large amount of cache cleared, consider page refresh');
+		}
+		
+		return { clearedLocalStorage: clearedCount, clearedSessionStorage: sessionKeys.length };
+	},
+
+	/**
+	 * Check if subscription cache might be stale
+	 */
+	isSubscriptionCacheStale: (lastUpdateTime?: Date): boolean => {
+		if (!lastUpdateTime) return true;
+		
+		const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+		return lastUpdateTime < fiveMinutesAgo;
+	}
+};

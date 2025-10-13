@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Speech } from '@/types/speech';
 import { useToast } from '@/hooks/use-toast';
 import { profileService, UserProfile } from '@/services/profileService';
-import { SubscriptionPlan } from '@/lib/plan_rules';
+import { SubscriptionPlan, SubscriptionCacheManager } from '@/lib/plan_rules';
 
 interface AuthContextType {
   user: User | null;
@@ -139,6 +139,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUserData = async (forceRefresh: boolean = false) => {
     console.log('🔄 Refreshing all user data, forceRefresh:', forceRefresh);
+    
+    // Force clear all subscription-related caches when refreshing
+    if (forceRefresh) {
+      const subscriptionKeys = Object.keys(localStorage).filter(key => 
+        key.startsWith('planAccess_') || 
+        key.startsWith('subscription_') || 
+        key.includes('plan') || 
+        key.includes('subscription')
+      );
+      subscriptionKeys.forEach(key => localStorage.removeItem(key));
+      console.log('🧹 Cleared all subscription cache keys:', subscriptionKeys);
+    }
+    
     await refreshUser(forceRefresh);
     if (user) {
       await fetchSpeeches();
@@ -340,14 +353,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           if (session?.user) {
+            // Clear subscription caches on login to ensure fresh data
+            console.log('🧹 Clearing subscription caches on auth event:', event);
+            SubscriptionCacheManager.clearAllSubscriptionCache();
+            
             setTimeout(() => {
-              fetchUserProfile(session.user.id, false);
+              fetchUserProfile(session.user.id, true); // Force refresh on sign in
               fetchSpeeches();
             }, 0);
           }
         } else if (event === 'SIGNED_OUT') {
           setProfile(null);
           setSpeeches([]);
+          // Clear all caches on logout
+          SubscriptionCacheManager.clearAllSubscriptionCache();
         }
       }
     );
