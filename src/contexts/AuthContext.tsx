@@ -17,7 +17,7 @@ interface AuthContextType {
   refreshUser: (forceRefresh?: boolean) => Promise<void>;
   refreshUserData: (forceRefresh?: boolean) => Promise<void>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
-  saveSpeech: (title: string, content: string, speechType: string) => Promise<void>;
+  saveSpeech: (title: string, content: string, speechType: string) => Promise<any>;
   updateSpeech: (id: string, title: string, content: string) => Promise<void>;
   deleteSpeech: (id: string) => Promise<void>;
 }
@@ -222,6 +222,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('Speech saved successfully:', data.id);
       await fetchSpeeches();
+      
+      // Return the created speech data so the caller can get the ID
+      return data;
     } catch (error) {
       console.error('Error saving speech:', error);
       throw error;

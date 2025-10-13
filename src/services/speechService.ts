@@ -113,6 +113,14 @@ export const useSpeechService = () => {
 
 	const updateSpeech = useCallback(async (userId: string, id: string, title: string, content: string) => {
 		if (!userId) throw new Error('User not authenticated');
+		
+		console.log('updateSpeech called with:', { userId, id, title: title?.substring(0, 50), idType: typeof id });
+		
+		// Validate the ID is a proper string
+		if (!id || typeof id !== 'string' || id === '[object Object]') {
+			console.error('Invalid speech ID provided:', id, typeof id);
+			throw new Error('Invalid speech ID provided');
+		}
 
 		const { error } = await supabase
 			.from('speeches')

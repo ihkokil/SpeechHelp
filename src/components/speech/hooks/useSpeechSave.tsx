@@ -75,7 +75,9 @@ export const useSpeechSave = ({
 			// Always check if we have an existing speech ID (either from auto-save or previous saves)
 			const currentSpeechId = speechId || initialSpeechId;
 
-			if (currentSpeechId) {
+			console.log('Saving speech with ID:', currentSpeechId, 'Type:', typeof currentSpeechId);
+
+			if (currentSpeechId && typeof currentSpeechId === 'string') {
 				// Update existing speech
 				await speechService.updateSpeech(user.id, currentSpeechId, title, contentToSave);
 				

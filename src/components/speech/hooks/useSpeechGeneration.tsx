@@ -120,24 +120,18 @@ export const useSpeechGeneration = ({
 				};
 				const contentToSave = JSON.stringify(speechWithMetadata);
 				
-				// Call saveSpeech and handle the response properly
-				await saveSpeech(speechTitle, contentToSave, speechType);
+				// Call saveSpeech and get the returned speech data
+				const savedSpeechData = await saveSpeech(speechTitle, contentToSave, speechType);
 				
-				// Find the most recently created speech that matches our title from existing speeches
+				console.log('Speech saved successfully, received data:', savedSpeechData);
+				
+				// Extract the ID from the returned speech data
 				let savedSpeechId: string | null = null;
-				if (speeches && Array.isArray(speeches) && speeches.length > 0) {
-					// Sort by creation date and find the most recent speech with matching title
-					const sortedSpeeches = [...speeches].sort((a: any, b: any) => 
-						new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-					);
-					
-					const recentSpeech = sortedSpeeches.find((speech: any) => 
-						speech.title === speechTitle
-					);
-					
-					if (recentSpeech && recentSpeech.id) {
-						savedSpeechId = recentSpeech.id;
-					}
+				if (savedSpeechData && savedSpeechData.id && typeof savedSpeechData.id === 'string') {
+					savedSpeechId = savedSpeechData.id;
+					console.log('Successfully extracted speech ID:', savedSpeechId);
+				} else {
+					console.log('No valid ID in saved speech data:', savedSpeechData);
 				}
 				
 				setAutoSavedSpeechId(savedSpeechId);
