@@ -2,6 +2,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { profileService } from '@/services/profileService';
+import { UserCircle } from 'lucide-react';
 
 export const UserProfile = () => {
   const { user, profile } = useAuth();
@@ -35,19 +36,13 @@ export const UserProfile = () => {
   return (
     <div className="px-6 py-4 border-b border-gray-100">
       <div className="flex items-center">
-        <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center">
-          <img 
-            src={avatarUrl} 
-            alt="User avatar" 
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              // Fallback to default if image fails to load
-              const target = e.target as HTMLImageElement;
-              if (target.src !== defaultAvatarUrl) {
-                target.src = defaultAvatarUrl;
-              }
-            }}
-          />
+        <div className="h-10 w-10 rounded-full overflow-hidden relative flex items-center justify-center">
+          {/* Custom pink and purple user icon */}
+          <UserCircle className="h-full w-full text-pink-500" />
+          {/* Purple head overlay */}
+          <div className="absolute top-0 left-0 w-full h-4 overflow-hidden">
+            <UserCircle className="h-full w-full text-purple-500 scale-110" />
+          </div>
         </div>
         <div className="ml-3">
           <p className="text-sm font-medium text-gray-900 truncate">{fullName}</p>
