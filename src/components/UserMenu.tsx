@@ -97,11 +97,31 @@ const UserMenu = () => {
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-gray-100">
           <div className="h-8 w-8 rounded-full overflow-hidden relative">
-            {/* Custom pink and purple user icon */}
-            <UserCircle className="h-full w-full text-pink-500" />
+            {/* Original avatar with custom pink/purple coloring */}
+            <img 
+              src={avatarUrl} 
+              alt="User avatar" 
+              className="h-full w-full object-cover"
+              style={{
+                filter: 'hue-rotate(300deg) saturate(1.5) brightness(1.2)'
+              }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src !== defaultAvatarUrl) {
+                  target.src = defaultAvatarUrl;
+                }
+              }}
+            />
             {/* Purple head overlay */}
             <div className="absolute top-0 left-0 w-full h-3 overflow-hidden">
-              <UserCircle className="h-full w-full text-purple-500 scale-110" />
+              <img 
+                src={avatarUrl} 
+                alt="User avatar head" 
+                className="h-full w-full object-cover scale-110"
+                style={{
+                  filter: 'hue-rotate(260deg) saturate(2) brightness(1.1)'
+                }}
+              />
             </div>
           </div>
           <span className="text-sm font-medium hidden md:block">
