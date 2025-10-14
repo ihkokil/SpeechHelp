@@ -36,7 +36,8 @@ export const UserProfile = () => {
   return (
     <div className="px-6 py-4 border-b border-gray-100">
       <div className="flex items-center">
-        <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center">
+        <div className="h-10 w-10 rounded-full overflow-hidden relative flex items-center justify-center">
+          {/* Pink body */}
           <img 
             src={avatarUrl} 
             alt="User avatar" 
@@ -51,6 +52,17 @@ export const UserProfile = () => {
               }
             }}
           />
+          {/* Purple head overlay */}
+          <div className="absolute top-0 left-0 w-full h-4 overflow-hidden">
+            <img 
+              src={avatarUrl} 
+              alt="User avatar head" 
+              className="h-full w-full object-cover scale-110"
+              style={{
+                filter: 'hue-rotate(260deg) saturate(2) brightness(1.1)'
+              }}
+            />
+          </div>
         </div>
         <div className="ml-3">
           <p className="text-sm font-medium text-gray-900 truncate">{fullName}</p>
