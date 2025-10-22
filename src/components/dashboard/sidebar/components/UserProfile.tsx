@@ -36,13 +36,14 @@ export const UserProfile = () => {
   return (
     <div className="px-6 py-4 border-b border-gray-100">
       <div className="flex items-center">
-        <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center">
+        <div className="h-10 w-10 rounded-full overflow-hidden relative flex items-center justify-center">
+          {/* Purple body base */}
           <img 
             src={avatarUrl} 
             alt="User avatar" 
             className="h-full w-full object-cover"
             style={{
-              filter: 'sepia(1) saturate(2) hue-rotate(290deg) brightness(1.4) contrast(1.1)'
+              filter: 'sepia(1) saturate(3) hue-rotate(260deg) brightness(1.2)'
             }}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -51,6 +52,17 @@ export const UserProfile = () => {
               }
             }}
           />
+          {/* Pink head overlay - covers top 40% for head area */}
+          <div className="absolute top-0 left-0 w-full h-4 overflow-hidden">
+            <img 
+              src={avatarUrl} 
+              alt="User avatar head" 
+              className="h-full w-full object-cover"
+              style={{
+                filter: 'sepia(1) saturate(3) hue-rotate(300deg) brightness(1.4)'
+              }}
+            />
+          </div>
         </div>
         <div className="ml-3">
           <p className="text-sm font-medium text-gray-900 truncate">{fullName}</p>
