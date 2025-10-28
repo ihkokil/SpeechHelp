@@ -96,14 +96,13 @@ const UserMenu = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-gray-100">
-          <div className="h-8 w-8 rounded-full overflow-hidden relative">
-            {/* Base purple body */}
+          <div className="h-8 w-8 rounded-full overflow-hidden">
             <img 
               src={avatarUrl} 
               alt="User avatar" 
               className="h-full w-full object-cover"
               style={{
-                filter: 'invert(1) sepia(1) saturate(5) hue-rotate(260deg) brightness(0.8)'
+                filter: 'invert(1) sepia(1) saturate(3) hue-rotate(290deg) brightness(1)'
               }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -112,17 +111,6 @@ const UserMenu = () => {
                 }
               }}
             />
-            {/* Pink head overlay */}
-            <div className="absolute top-0 left-0 w-full h-3 overflow-hidden">
-              <img 
-                src={avatarUrl} 
-                alt="User avatar head" 
-                className="h-full w-full object-cover"
-                style={{
-                  filter: 'invert(1) sepia(1) saturate(5) hue-rotate(320deg) brightness(1)'
-                }}
-              />
-            </div>
           </div>
           <span className="text-sm font-medium hidden md:block">
             {displayFullName}
