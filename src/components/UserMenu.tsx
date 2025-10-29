@@ -102,7 +102,7 @@ const UserMenu = () => {
               alt="User avatar" 
               className="h-full w-full object-cover"
               style={{
-                filter: 'invert(1) sepia(1) saturate(5) hue-rotate(290deg) brightness(1.3)'
+                filter: 'invert(1) sepia(1) saturate(2) hue-rotate(290deg) brightness(0.8)'
               }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
