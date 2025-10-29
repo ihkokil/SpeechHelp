@@ -5,7 +5,7 @@ import { SubscriptionCacheManager } from '@/lib/plan_rules';
 import { supabase } from '@/integrations/supabase/client';
 
 interface SubscriptionPollingOptions {
-  /** Polling interval in milliseconds (default: 5 minutes) */
+  /** Polling interval in milliseconds (default: 30 seconds) */
   intervalMs?: number;
   /** Whether to enable polling (default: true) */
   enabled?: boolean;
@@ -20,7 +20,7 @@ interface SubscriptionPollingOptions {
  */
 export const useSubscriptionPolling = (options: SubscriptionPollingOptions = {}) => {
   const {
-    intervalMs = 5 * 60 * 1000, // 5 minutes default
+    intervalMs = 30 * 1000, // Reduced to 30 seconds default for faster admin update detection
     enabled = true,
     aggressiveOnSpeechPages = true
   } = options;
