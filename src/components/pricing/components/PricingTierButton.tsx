@@ -8,6 +8,9 @@ interface PricingTierButtonProps {
   isCurrentPlan: boolean;
   isPlanDisabled: boolean;
   cannotUseFreeTrialAgain: boolean;
+  isRenewal?: boolean;
+  isUpgrade?: boolean;
+  isSwitch?: boolean;
   onClick?: () => void;
 }
 
@@ -16,11 +19,23 @@ const PricingTierButton: React.FC<PricingTierButtonProps> = ({
   isCurrentPlan,
   isPlanDisabled,
   cannotUseFreeTrialAgain,
+  isRenewal = false,
+  isUpgrade = false,
+  isSwitch = false,
   onClick
 }) => {
   const getButtonText = () => {
-    if (isCurrentPlan) {
+    if (isCurrentPlan && !isRenewal) {
       return 'Current Plan';
+    }
+    if (isRenewal) {
+      return 'Renew Plan';
+    }
+    if (isUpgrade) {
+      return 'Upgrade';
+    }
+    if (isSwitch) {
+      return 'Switch Plan';
     }
     if (cannotUseFreeTrialAgain) {
       return 'Already Used';
@@ -31,17 +46,19 @@ const PricingTierButton: React.FC<PricingTierButtonProps> = ({
     return 'Choose Plan';
   };
 
+  const shouldBeDisabled = isPlanDisabled || (isCurrentPlan && !isRenewal);
+
   return (
     <Button
       className={`w-full mt-auto ${
-        isCurrentPlan 
+        (isCurrentPlan && !isRenewal) 
           ? 'bg-purple-600 hover:bg-purple-700 cursor-default opacity-75' 
-          : isPlanDisabled
+          : shouldBeDisabled
           ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-60'
           : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700'
       }`}
-      onClick={isCurrentPlan || isPlanDisabled ? undefined : onClick}
-      disabled={isCurrentPlan || isPlanDisabled}
+      onClick={shouldBeDisabled ? undefined : onClick}
+      disabled={shouldBeDisabled}
     >
       {getButtonText()}
     </Button>

@@ -43,8 +43,16 @@ const PricingTier: React.FC<PricingTierProps> = ({
 		isPlanDisabled,
 		cannotUseFreeTrialAgain,
 		hasUsedFreeTrial,
-		disabledReason
+		disabledReason,
+		isRenewal,
+		isUpgrade,
+		isSwitch,
+		effectiveStatus
 	} = usePricingTierLogic(planType);
+
+	// Use effective status to determine if this is the current plan
+	const actuallyCurrentPlan = effectiveStatus?.isActive && 
+		effectiveStatus.effectivePlan === planType;
 
 	const { handleStripeCheckout } = usePricingTierCheckout({
 		planType,
@@ -56,10 +64,10 @@ const PricingTier: React.FC<PricingTierProps> = ({
 	});
 
 	return (
-		<PricingTierCard isCurrentPlan={isCurrentPlan} isPlanDisabled={isPlanDisabled}>
+		<PricingTierCard isCurrentPlan={actuallyCurrentPlan} isPlanDisabled={isPlanDisabled}>
 			<PricingTierHeader 
 				name={name}
-				isCurrentPlan={isCurrentPlan}
+				isCurrentPlan={actuallyCurrentPlan}
 				isPlanDisabled={isPlanDisabled}
 			/>
 			
@@ -67,7 +75,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
 				price={price}
 				pricingPeriod={pricingPeriod}
 				planType={planType}
-				isCurrentPlan={isCurrentPlan}
+				isCurrentPlan={actuallyCurrentPlan}
 				isPlanDisabled={isPlanDisabled}
 			/>
 			
@@ -81,16 +89,19 @@ const PricingTier: React.FC<PricingTierProps> = ({
 			/>
 
 			<PricingTierDisabledMessage
-				isCurrentPlan={isCurrentPlan}
+				isCurrentPlan={actuallyCurrentPlan}
 				isPlanDisabled={isPlanDisabled}
 				disabledReason={disabledReason}
 			/>
 
 			<PricingTierButton
 				planType={planType}
-				isCurrentPlan={isCurrentPlan}
+				isCurrentPlan={actuallyCurrentPlan}
 				isPlanDisabled={isPlanDisabled}
-				cannotUseFreeTrialAgain={cannotUseFreeTrialAgain && !isCurrentPlan}
+				cannotUseFreeTrialAgain={cannotUseFreeTrialAgain && !actuallyCurrentPlan}
+				isRenewal={isRenewal}
+				isUpgrade={isUpgrade}
+				isSwitch={isSwitch}
 				onClick={handleStripeCheckout}
 			/>
 		</PricingTierCard>

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Check, Sparkle, Unlock, Clock, Mail, Edit, MessageCircle, Star } from 'lucide-react';
 import PricingTier from './PricingTier';
-import { SubscriptionPlan } from '@/lib/plan_rules';
+import { SubscriptionPlan, getEffectivePlanStatus } from '@/lib/plan_rules';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '../speech/hooks/useProfile';
 
@@ -25,9 +25,24 @@ const PricingTiers: React.FC<PricingTiersProps> = ({ pricingPeriod }) => {
 
 	const isCurrentPlan = (planType: SubscriptionPlan) => {
 		if (!user || !profile) return false;
-		const currentPlan = profile.subscription_plan?.toLowerCase();
-		const targetPlan = planType.toLowerCase();
-		return currentPlan === targetPlan && profile.subscription_status === 'active';
+		
+		// Use effective plan status to determine current plan
+		const userSubscription = {
+			id: profile.id,
+			userId: user.id,
+			planType: profile.subscription_plan as SubscriptionPlan,
+			status: profile.subscription_status || 'inactive',
+			startDate: profile.subscription_start_date ? new Date(profile.subscription_start_date) : new Date(),
+			endDate: profile.subscription_end_date ? new Date(profile.subscription_end_date) : null,
+			usageStats: {
+				speechesUsed: 0,
+				storageUsed: 0,
+				teamMembersAdded: 0
+			}
+		};
+
+		const effectiveStatus = getEffectivePlanStatus(userSubscription);
+		return effectiveStatus.isActive && effectiveStatus.effectivePlan === planType;
 	};
 
 	const pricingTiers = [
