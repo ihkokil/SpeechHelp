@@ -69,12 +69,17 @@ export const useSubscriptionPolling = (options: SubscriptionPollingOptions = {})
       const latestUpdateTime = new Date(latestProfile.updated_at);
       const wasUpdatedSinceLastPoll = latestUpdateTime > lastPollRef.current;
 
-      if (hasSubscriptionChanged || wasUpdatedSinceLastPoll) {
+      // ADMIN UPDATE PROTECTION: If the profile was updated very recently (within last 2 minutes),
+      // it might be an admin update, so we should refresh to show the new data
+      const veryRecentUpdate = (Date.now() - latestUpdateTime.getTime()) < (2 * 60 * 1000);
+
+      if (hasSubscriptionChanged || wasUpdatedSinceLastPoll || veryRecentUpdate) {
         console.log('📊 Subscription change detected, refreshing data...', {
           planChanged: latestProfile.subscription_plan !== profile.subscription_plan,
           statusChanged: latestProfile.subscription_status !== profile.subscription_status,
           endDateChanged: latestProfile.subscription_end_date !== profile.subscription_end_date,
           updatedSinceLastPoll: wasUpdatedSinceLastPoll,
+          veryRecentUpdate: veryRecentUpdate,
           lastPoll: lastPollRef.current.toISOString(),
           latestUpdate: latestUpdateTime.toISOString()
         });
