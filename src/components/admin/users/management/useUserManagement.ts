@@ -5,6 +5,7 @@ import { useUserSearch } from './hooks/useUserSearch';
 import { useUserSelection } from './hooks/useUserSelection';
 import { useUserActions } from './hooks/useUserActions';
 import { useUserManagementUIState } from './hooks/useUserManagementUIState';
+import { useSubscriptionActions } from './hooks/user-actions/useSubscriptionActions';
 import { User } from '../types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -63,6 +64,11 @@ export const useUserManagement = () => {
     isActionLoading
   } = useUserActions();
   
+  // Get subscription actions
+  const {
+    handleUpdateSubscription: baseHandleUpdateSubscription
+  } = useSubscriptionActions();
+  
   // Direct action handlers
   const handleViewUserDetails = useCallback((user: User) => {
     console.log("useUserManagement: View details called for user:", user.id);
@@ -105,29 +111,27 @@ export const useUserManagement = () => {
     });
   }, [setSelectedUser, setIsEmailDialogOpen, toast]);
 
-  // Handle update subscription - simplified to just pass through the user
-  const handleUpdateSubscription = useCallback((userId: string, subscriptionTier: string, subscriptionEndDate: Date, users: User[], setUsers: (users: User[]) => void) => {
+  // Handle update subscription - call database update first, then update local state
+  const handleUpdateSubscription = useCallback(async (userId: string, subscriptionTier: string, subscriptionEndDate: Date, users: User[], setUsers: (users: User[]) => void) => {
     console.log("useUserManagement: Update subscription called for user:", userId);
     
-    // Update local state
-    setUsers(
-      users.map(user => 
-        user.id === userId 
-          ? { 
-              ...user, 
-              subscription_status: 'active',
-              subscription_plan: subscriptionTier,
-              subscription_end_date: subscriptionEndDate.toISOString() 
-            } 
-          : user
-      )
-    );
-    
-    toast({
-      title: 'Subscription Updated',
-      description: `User's subscription has been updated to ${subscriptionTier} plan.`,
-    });
-  }, [toast]);
+    try {
+      // First update the database
+      await baseHandleUpdateSubscription(userId, subscriptionTier, subscriptionEndDate, users, setUsers);
+      
+      toast({
+        title: 'Subscription Updated',
+        description: `User's subscription has been updated to ${subscriptionTier} plan.`,
+      });
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update subscription. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  }, [baseHandleUpdateSubscription, toast]);
   
   const handleDeleteUsers = useCallback(() => {
     baseHandleDeleteUsers(selectedUsers, users, setUsers);
