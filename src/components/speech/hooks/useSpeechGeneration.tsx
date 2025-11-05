@@ -21,6 +21,7 @@ export const useSpeechGeneration = ({
 	const { toast } = useToast();
 	const { user, saveSpeech, speeches } = useAuth();
 	const [generating, setGenerating] = useState(false);
+	const [generationLocked, setGenerationLocked] = useState(false);
 	const [showConfetti, setShowConfetti] = useState(false);
 	const [generatedSpeech, setGeneratedSpeech] = useState('');
 	const [autoSavedSpeechId, setAutoSavedSpeechId] = useState<string | null>(null);
@@ -55,17 +56,12 @@ export const useSpeechGeneration = ({
 	}, [recoverWorkFromLocalStorage, generatedSpeech, toast]);
 
 	useEffect(() => {
-		let timer: NodeJS.Timeout;
 		if (showConfetti) {
-			timer = setTimeout(() => {
-				setShowConfetti(false);
-				clearSavedWork(); // Clear saved work after successful completion
-				onSuccess(autoSavedSpeechId || undefined);
-			}, 5000); // Show confetti for 5 seconds before moving to next step
+			// Immediately proceed to next step - no delay
+			setShowConfetti(false);
+			clearSavedWork(); // Clear saved work after successful completion
+			onSuccess(autoSavedSpeechId || undefined);
 		}
-		return () => {
-			if (timer) clearTimeout(timer);
-		};
 	}, [showConfetti, onSuccess, clearSavedWork, autoSavedSpeechId]);
 
 	const validateTitle = () => {
@@ -94,9 +90,19 @@ export const useSpeechGeneration = ({
 			return;
 		}
 
+		// Prevent multiple simultaneous generations
+		if (generating || generationLocked) {
+			console.log('Generation already in progress, ignoring request');
+			return;
+		}
+
+		// Clear all previous states and lock generation
 		setGenerating(true);
+		setGenerationLocked(true);
 		setError(null);
 		setAutoSavedSpeechId(null);
+		setGeneratedSpeech('');
+		setShowConfetti(false);
 
 		// Immediately save work state before starting generation
 		autoSaveToLocalStorage();
@@ -165,11 +171,12 @@ export const useSpeechGeneration = ({
 			});
 		} finally {
 			setGenerating(false);
+			setGenerationLocked(false);
 		}
 	};
 
 	return {
-		generating,
+		generating: generating || generationLocked,
 		showConfetti,
 		generatedSpeech,
 		autoSavedSpeechId,

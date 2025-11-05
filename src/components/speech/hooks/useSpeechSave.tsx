@@ -72,14 +72,21 @@ export const useSpeechSave = ({
 
 			const contentToSave = JSON.stringify(speechWithMetadata);
 
-			// Always check if we have an existing speech ID (either from auto-save or previous saves)
+			// Priority order: speechId (current state) > initialSpeechId (from props)
 			const currentSpeechId = speechId || initialSpeechId;
 
 			console.log('Saving speech with ID:', currentSpeechId, 'Type:', typeof currentSpeechId);
+			console.log('speechId state:', speechId, 'initialSpeechId prop:', initialSpeechId);
 
-			if (currentSpeechId && typeof currentSpeechId === 'string') {
+			if (currentSpeechId && typeof currentSpeechId === 'string' && currentSpeechId.trim() !== '') {
 				// Update existing speech
+				console.log('Updating existing speech with ID:', currentSpeechId);
 				await speechService.updateSpeech(user.id, currentSpeechId, title, contentToSave);
+				
+				// If we used initialSpeechId, update our local state
+				if (!speechId && initialSpeechId) {
+					setSpeechId(initialSpeechId);
+				}
 				
 				// Trigger celebration effects for successful edit
 				setShowSaveEffects(true);
@@ -91,6 +98,7 @@ export const useSpeechSave = ({
 				});
 			} else {
 				// Create new speech only if no existing ID
+				console.log('Creating new speech');
 				const speechResponse = await speechService.saveSpeech(user.id, title, contentToSave, speechType);
 				
 				// Extract the speech ID correctly from the response
@@ -98,9 +106,11 @@ export const useSpeechSave = ({
 					const firstItem = speechResponse[0];
 					if (firstItem && typeof firstItem === 'object' && 'id' in firstItem) {
 						setSpeechId(firstItem.id as string);
+						console.log('Set new speech ID from array response:', firstItem.id);
 					}
 				} else if (speechResponse && typeof speechResponse === 'object' && 'id' in speechResponse) {
 					setSpeechId(speechResponse.id as string);
+					console.log('Set new speech ID from object response:', speechResponse.id);
 				}
 				
 				// Trigger celebration effects for successful save
