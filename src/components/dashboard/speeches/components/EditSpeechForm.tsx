@@ -68,7 +68,7 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="text-pink-600 font-medium uppercase">
-                <Translate text="speechLab.content" fallback="Speech Content" />
+                <Translate text="speechLab.generatedSpeech" fallback="Generated Speech" />
               </label>
               <button 
                 onClick={() => setViewMode('preview')}
@@ -91,7 +91,7 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="text-pink-600 font-medium uppercase">
-                <Translate text="speechLab.content" fallback="Speech Content" />
+                <Translate text="speechLab.generatedSpeech" fallback="Generated Speech" />
               </label>
               <button 
                 onClick={() => setViewMode('edit')}
