@@ -68,7 +68,7 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
       </CardContent>
       <CardFooter className="flex justify-end">
         <ButtonCustom onClick={nextStep} variant="magenta" disabled={!selectedSpeechType}>
-          <Translate text="speechLab.nextButton" />
+          <Translate text="speechLab.next" />
           <ArrowRight className="ml-2 h-4 w-4" />
         </ButtonCustom>
       </CardFooter>

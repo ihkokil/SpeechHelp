@@ -16,17 +16,25 @@ export const speechLab = {
   // Step 3 - Generate Speech
   'speechLab.generateSpeech': 'Genera tu Discurso',
   'speechLab.speechTitle': 'Título del Discurso',
-  'speechLab.generateButton': 'Generar Discurso',
+  'speechLab.generate': 'Generar Discurso',
   
   // Step 4 - Edit Speech
   'speechLab.editTitle': 'Edita y Perfecciona tu Discurso',
   'speechLab.editDesc': 'Revisa, edita y personaliza tu discurso generado por IA',
-  'speechLab.saveButton': 'Guardar Discurso',
+  'speechLab.save': 'Guardar Discurso',
   'speechLab.saveChanges': 'Guardar Cambios',
   
   // Navigation buttons
-  'speechLab.nextButton': 'Siguiente',
-  'speechLab.backButton': 'Atrás',
+  'speechLab.next': 'Siguiente',
+  'speechLab.back': 'Atrás',
+  
+  // Action buttons
+  'speechLab.play': 'Reproducir',
+  'speechLab.stop': 'Detener',
+  'speechLab.download': 'Descargar',
+  'speechLab.reset': 'Restablecer',
+  'speechLab.email': 'Correo',
+  'speechLab.send': 'Enviar',
   
   // Speech quick modifiers
   'speechLab.makeLonger': 'Hacerlo más largo',

@@ -130,7 +130,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
       <div className="flex justify-between pt-4">
         <ButtonCustom onClick={handlePrevQuestion} variant="outline">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          <Translate text="speechLab.backButton" />
+          <Translate text="speechLab.back" />
         </ButtonCustom>
         <ButtonCustom onClick={handleNextQuestion} variant="magenta">
           {currentQuestionIndex < questions.length - 1 ? (
@@ -140,7 +140,7 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
             </>
           ) : (
             <>
-              <Translate text="speechLab.nextButton" />
+              <Translate text="speechLab.next" />
               <ArrowRight className="ml-2 h-4 w-4" />
             </>
           )}

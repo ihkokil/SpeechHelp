@@ -204,7 +204,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 				<CardFooter className="flex justify-between">
 					<ButtonCustom onClick={prevStep} variant="outline">
 						<ArrowLeft className="mr-2 h-4 w-4" />
-						<Translate text="speechLab.backButton" />
+						<Translate text="speechLab.back" />
 					</ButtonCustom>
 					<ButtonCustom
 						variant="magenta"
@@ -227,7 +227,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 						) : (
 							<>
 								<Save className="mr-2 h-4 w-4" />
-								<Translate text="speechLab.saveButton" />
+								<Translate text="speechLab.save" />
 							</>
 						)}
 					</ButtonCustom>

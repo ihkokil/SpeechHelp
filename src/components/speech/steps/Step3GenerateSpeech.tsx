@@ -80,7 +80,7 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
             disabled={generating}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            <Translate text="speechLab.backButton" />
+            <Translate text="speechLab.back" />
           </ButtonCustom>
           
           <ButtonCustom 
@@ -88,7 +88,7 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
             variant="magenta"
             disabled={generating}
           >
-            <Translate text="speechLab.generateButton" fallback="Generate Speech" />
+            <Translate text="speechLab.generate" fallback="Generate Speech" />
             <ArrowRight className="ml-2 h-4 w-4" />
           </ButtonCustom>
         </div>

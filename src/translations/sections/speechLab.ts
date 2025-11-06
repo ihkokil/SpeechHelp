@@ -16,17 +16,25 @@ export const speechLabTranslations = {
   // Step 3 - Generate Speech
   'speechLab.generateSpeech': 'Generate Your Speech',
   'speechLab.speechTitle': 'Speech Title',
-  'speechLab.generateButton': 'Generate Speech',
+  'speechLab.generate': 'Generate Speech',
   
   // Step 4 - Edit Speech
   'speechLab.editTitle': 'Edit & Perfect Your Speech',
   'speechLab.editDesc': 'Review, edit, and customize your AI-generated speech',
-  'speechLab.saveButton': 'Save Speech',
+  'speechLab.save': 'Save Speech',
   'speechLab.saveChanges': 'Save Changes',
   
   // Navigation buttons
-  'speechLab.nextButton': 'Next',
-  'speechLab.backButton': 'Back',
+  'speechLab.next': 'Next',
+  'speechLab.back': 'Back',
+  
+  // Action buttons
+  'speechLab.play': 'Play',
+  'speechLab.stop': 'Stop',
+  'speechLab.download': 'Download',
+  'speechLab.reset': 'Reset',
+  'speechLab.email': 'Email',
+  'speechLab.send': 'Send',
   
   // Speech quick modifiers
   'speechLab.makeLonger': 'Make Longer',

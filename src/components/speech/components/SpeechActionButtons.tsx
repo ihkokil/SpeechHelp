@@ -164,24 +164,24 @@ const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({
         >
           {isPlaying ? (
             <>
-              <Translate text="speechLab.stopButton" fallback="Stop" />
+              <Translate text="speechLab.stop" fallback="Stop" />
               <Square className="ml-2 h-4 w-4" />
             </>
           ) : (
             <>
-              <Translate text="speechLab.playButton" fallback="Play" />
+              <Translate text="speechLab.play" fallback="Play" />
               <Play className="ml-2 h-4 w-4" />
             </>
           )}
         </ButtonCustom>
         
         <ButtonCustom variant="outline" size="sm" onClick={onDownload}>
-          <Translate text="speechLab.downloadButton" fallback="Download" />
+          <Translate text="speechLab.download" fallback="Download" />
           <Download className="ml-2 h-4 w-4" />
         </ButtonCustom>
         
         <ButtonCustom variant="outline" size="sm" onClick={onReset}>
-          <Translate text="speechLab.resetButton" fallback="Reset" />
+          <Translate text="speechLab.reset" fallback="Reset" />
           <RefreshCw className="ml-2 h-4 w-4" />
         </ButtonCustom>
 
@@ -190,7 +190,7 @@ const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({
           size="sm"
           onClick={() => setIsEmailDialogOpen(true)}
         >
-          <Translate text="speechLab.emailButton" fallback="Email" />
+          <Translate text="speechLab.email" fallback="Email" />
           <Mail className="ml-2 h-4 w-4" />
         </ButtonCustom>
       </div>
@@ -238,7 +238,7 @@ const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({
                   <Translate text="common.sending" fallback="Sending..." />
                 </span>
               ) : (
-                <Translate text="speechLab.sendButton" fallback="Send" />
+                <Translate text="speechLab.send" fallback="Send" />
               )}
             </ButtonCustom>
           </DialogFooter>
