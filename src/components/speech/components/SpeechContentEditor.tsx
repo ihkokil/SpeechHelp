@@ -56,7 +56,7 @@ const SpeechContentEditor: React.FC<SpeechContentEditorProps> = ({
             htmlFor="speechContent" 
             className="text-pink-600 font-medium uppercase"
           >
-            <Translate text="speechLab.content" fallback="Speech Content" />
+            <Translate text="speechLab.generatedSpeech" fallback="Generated Speech" />
           </Label>
           
           <ViewModeToggle viewMode={viewMode} onViewModeChange={handleViewModeChange} />

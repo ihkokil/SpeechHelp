@@ -43,5 +43,6 @@ export const speechLabTranslations = {
   'speechLab.addHumor': 'Add More Humor',
   'speechLab.customInstruction': 'Custom Instruction',
   'speechLab.customInstructionPlaceholder': 'How would you like to modify your speech?',
-  'speechLab.content': 'Speech Content'
+  'speechLab.content': 'Speech Content',
+  'speechLab.generatedSpeech': 'Generated Speech'
 };

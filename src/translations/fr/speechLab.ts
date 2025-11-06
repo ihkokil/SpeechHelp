@@ -43,5 +43,6 @@ export const speechLab = {
   'speechLab.addHumor': 'Ajouter plus d\'humour',
   'speechLab.customInstruction': 'Instruction personnalisée',
   'speechLab.customInstructionPlaceholder': 'Comment souhaitez-vous modifier votre discours?',
-  'speechLab.content': 'Contenu du discours'
+  'speechLab.content': 'Contenu du discours',
+  'speechLab.generatedSpeech': 'Discours Généré'
 };
