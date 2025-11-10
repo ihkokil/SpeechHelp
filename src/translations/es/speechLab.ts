@@ -44,5 +44,7 @@ export const speechLab = {
   'speechLab.customInstruction': 'Instrucción personalizada',
   'speechLab.customInstructionPlaceholder': '¿Cómo te gustaría modificar tu discurso?',
   'speechLab.content': 'Contenido del discurso',
-  'speechLab.generatedSpeech': 'Discurso Generado'
+  'speechLab.generatedSpeech': 'Discurso Generado',
+  'speechLab.edit': 'Editar',
+  'speechLab.preview': 'Vista previa'
 };

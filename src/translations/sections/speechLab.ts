@@ -44,5 +44,7 @@ export const speechLabTranslations = {
   'speechLab.customInstruction': 'Custom Instruction',
   'speechLab.customInstructionPlaceholder': 'How would you like to modify your speech?',
   'speechLab.content': 'Speech Content',
-  'speechLab.generatedSpeech': 'Generated Speech'
+  'speechLab.generatedSpeech': 'Generated Speech',
+  'speechLab.edit': 'Edit',
+  'speechLab.preview': 'Preview'
 };
