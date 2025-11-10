@@ -64,53 +64,47 @@ const EditSpeechForm: React.FC<EditSpeechFormProps> = ({
         />
       </div>
       <div className="mt-4">
+        <div className="flex justify-between items-center mb-2">
+          <label className="text-pink-600 font-medium uppercase">
+            <Translate text="speechLab.generatedSpeech" fallback="Generated Speech" />
+          </label>
+          <div className="flex bg-gray-100 rounded-md p-1">
+            <button 
+              onClick={() => setViewMode('edit')}
+              className={`px-3 py-1 text-sm rounded-md flex items-center transition-colors ${
+                viewMode === 'edit' 
+                  ? 'bg-white shadow-sm text-gray-900' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              <Translate text="speechLab.edit" fallback="Edit" />
+            </button>
+            <button 
+              onClick={() => setViewMode('preview')}
+              className={`px-3 py-1 text-sm rounded-md flex items-center transition-colors ${
+                viewMode === 'preview' 
+                  ? 'bg-white shadow-sm text-gray-900' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              disabled={!editContent.trim()}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <Translate text="speechLab.preview" fallback="Preview" />
+            </button>
+          </div>
+        </div>
+        
         {viewMode === 'edit' ? (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-pink-600 font-medium uppercase">
-                <Translate text="speechLab.generatedSpeech" fallback="Generated Speech" />
-              </label>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => setViewMode('preview')}
-                  className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center"
-                  disabled={!editContent.trim()}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                  <Translate text="speechLab.preview" fallback="Preview" />
-                </button>
-                <button 
-                  className="px-3 py-1 text-sm bg-blue-100 hover:bg-blue-200 rounded-md flex items-center"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                  <Translate text="speechLab.edit" fallback="Edit" />
-                </button>
-              </div>
-            </div>
-            <SpeechContentEditor 
-              content={editContent}  
-              onContentChange={handleContentChange}
-              preserveHtml={false}
-              forceEditMode={true}
-              showFormattedContent={false}
-            />
-          </div>
+          <SpeechContentEditor 
+            content={editContent}  
+            onContentChange={handleContentChange}
+            preserveHtml={false}
+            forceEditMode={true}
+            showFormattedContent={false}
+          />
         ) : (
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-pink-600 font-medium uppercase">
-                <Translate text="speechLab.generatedSpeech" fallback="Generated Speech" />
-              </label>
-              <button 
-                onClick={() => setViewMode('edit')}
-                className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                <Translate text="speechLab.edit" fallback="Edit" />
-              </button>
-            </div>
-            <SpeechPreview content={editContent} />
-          </div>
+          <SpeechPreview content={editContent} />
         )}
       </div>
       <SpeechExportButtons 
