@@ -1,12 +1,4 @@
-
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Speech } from '@/types/speech';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import Translate from '@/components/Translate';
@@ -15,7 +7,6 @@ import QuickSpeechModifiers from '@/components/speech/components/QuickSpeechModi
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-
 interface EditSpeechModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -26,18 +17,19 @@ interface EditSpeechModalProps {
   setEditContent: (content: string) => void;
   onSave: () => void;
 }
-
-const EditSpeechModal = ({ 
-  isOpen, 
-  onOpenChange, 
-  speech, 
-  editTitle, 
-  editContent, 
-  setEditTitle, 
-  setEditContent, 
-  onSave 
+const EditSpeechModal = ({
+  isOpen,
+  onOpenChange,
+  speech,
+  editTitle,
+  editContent,
+  setEditTitle,
+  setEditContent,
+  onSave
 }: EditSpeechModalProps) => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [isModifying, setIsModifying] = useState(false);
 
   // Debug log
@@ -49,7 +41,6 @@ const EditSpeechModal = ({
     editContentLength: editContent?.length || 0,
     hasContent: Boolean(editContent)
   });
-
   const modifySpeech = async (modifierType: string, customInstruction?: string) => {
     if (!editContent.trim()) {
       toast({
@@ -59,12 +50,9 @@ const EditSpeechModal = ({
       });
       return;
     }
-    
     setIsModifying(true);
-    
     try {
       let instruction = "";
-      
       switch (modifierType) {
         case 'longer':
           instruction = "Make this speech longer with more details and examples, but keep the same tone and purpose.";
@@ -84,45 +72,42 @@ const EditSpeechModal = ({
         default:
           instruction = "Improve this speech.";
       }
-      
+
       // Try to modify the speech using Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke('openai-gen', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('openai-gen', {
         body: {
           existingSpeech: editContent,
           instruction: instruction,
           isModification: true
         }
       });
-      
       if (error) {
         console.error('Error from Supabase function:', error);
         throw error;
       }
-      
       if (!data || !data.speech) {
         console.error('Invalid response format:', data);
         throw new Error('Invalid response from modification service');
       }
-      
       setEditContent(data.speech);
-      
       toast({
         title: "Speech Modified",
-        description: getModificationMessage(modifierType),
+        description: getModificationMessage(modifierType)
       });
-      
     } catch (error) {
       console.error('Error modifying speech:', error);
       toast({
         title: "Modification Failed",
         description: "Could not modify the speech. Please try again later.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsModifying(false);
     }
   };
-
   const getModificationMessage = (modifierType: string): string => {
     switch (modifierType) {
       case 'longer':
@@ -139,51 +124,27 @@ const EditSpeechModal = ({
         return "The speech has been successfully modified.";
     }
   };
-
   if (!speech) return null;
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+  return <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
         <DialogHeader>
           <DialogTitle><Translate text="dashboard.editSpeech" /></DialogTitle>
-          <DialogDescription>
-            <Translate text="dashboard.editSpeechDesc" />
-          </DialogDescription>
+          
         </DialogHeader>
         
-        <QuickSpeechModifiers 
-          onModify={modifySpeech} 
-          isProcessing={isModifying}
-          className="mb-2"
-        />
+        <QuickSpeechModifiers onModify={modifySpeech} isProcessing={isModifying} className="mb-2" />
         
-        <EditSpeechForm
-          speech={speech}
-          editTitle={editTitle}
-          editContent={editContent}
-          setEditTitle={setEditTitle}
-          setEditContent={setEditContent}
-        />
+        <EditSpeechForm speech={speech} editTitle={editTitle} editContent={editContent} setEditTitle={setEditTitle} setEditContent={setEditContent} />
         
         <DialogFooter className="mt-4">
-          <ButtonCustom 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-          >
+          <ButtonCustom variant="outline" onClick={() => onOpenChange(false)}>
             <Translate text="common.cancel" />
           </ButtonCustom>
-          <ButtonCustom 
-            variant="default" 
-            onClick={onSave}
-            disabled={!editTitle.trim() || !editContent.trim()}
-          >
+          <ButtonCustom variant="default" onClick={onSave} disabled={!editTitle.trim() || !editContent.trim()}>
             <Translate text="common.saveChanges" />
           </ButtonCustom>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
-
 export default EditSpeechModal;
