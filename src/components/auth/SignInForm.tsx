@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import TwoFactorVerification from './TwoFactorVerification';
-import { verifyEmail, verifyPassword, verify2FA, completeLogin } from '@/services/authService';
+import { verifyEmail, verifyPassword, verify2FA, completeLogin, resendConfirmationEmail } from '@/services/authService';
 
 interface SignInFormProps {
   onSwitchToSignUp: () => void;
@@ -17,9 +17,10 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [step, setStep] = useState<'email' | 'password' | '2fa'>('email');
+  const [step, setStep] = useState<'email' | 'password' | '2fa' | 'email_confirmation'>('email');
   const [userId, setUserId] = useState('');
   const [has2FA, setHas2FA] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
   const { toast } = useToast();
   const { refreshUser } = useAuth();
 
@@ -58,6 +59,9 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
           });
         }
       }
+    } else if (result.error === "email_not_confirmed") {
+      setConfirmationMessage(result.message || "Please confirm your email address before signing in.");
+      setStep('email_confirmation');
     }
     
     setLoading(false);
@@ -87,8 +91,67 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
     setPassword('');
   };
 
+  const handleResendConfirmation = async () => {
+    setLoading(true);
+    await resendConfirmationEmail(email, toast);
+    setLoading(false);
+  };
+
+  const handleBackToPassword = () => {
+    setStep('password');
+  };
+
   if (step === '2fa') {
     return <TwoFactorVerification userId={userId} onVerificationSuccess={handle2FASuccess} onCancel={handle2FACancel} />;
+  }
+
+  if (step === 'email_confirmation') {
+    return (
+      <div className="text-center space-y-6">
+        <div className="mb-8">
+          <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+            <Mail className="h-8 w-8 text-yellow-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Email Confirmation Required</h1>
+          <p className="text-gray-600 mb-4">{confirmationMessage}</p>
+          <p className="text-sm text-gray-500">
+            Check your inbox for <strong>{email}</strong> and click the confirmation link.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <ButtonCustom
+            onClick={handleResendConfirmation}
+            variant="magenta"
+            className="w-full py-3 font-semibold"
+            disabled={loading}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Sending...
+              </span>
+            ) : (
+              <span className="flex items-center justify-center">
+                <Mail className="mr-2 h-4 w-4" />
+                Resend Confirmation Email
+              </span>
+            )}
+          </ButtonCustom>
+
+          <button
+            type="button"
+            onClick={handleBackToPassword}
+            className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
+          >
+            Back to Sign In
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

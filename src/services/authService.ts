@@ -81,6 +81,15 @@ export const verifyPassword = async (
 				userId: data.userId 
 			};
 		} else {
+			// Check if the error is due to email not confirmed
+			if (data.error === "email_not_confirmed") {
+				return { 
+					success: false, 
+					error: "email_not_confirmed",
+					message: data.message 
+				};
+			}
+			
 			showToast({
 				title: "Invalid password",
 				description: "The password you entered is incorrect.",
@@ -359,6 +368,50 @@ export const signUp = async (
 	} catch (error: any) {
 		console.error('Sign up error:', error);
 		throw error;
+	}
+};
+
+export const resendConfirmationEmail = async (
+	email: string, 
+	showToast: ShowToastFunction
+) => {
+	try {
+		const { data, error } = await supabase.functions.invoke('resend-confirmation', {
+			body: { email }
+		});
+
+		if (error) {
+			console.error('Resend confirmation error:', error);
+			showToast({
+				title: "Failed to resend",
+				description: "Unable to resend confirmation email. Please try again.",
+				variant: "destructive"
+			});
+			return { success: false };
+		}
+
+		if (data.success) {
+			showToast({
+				title: "Email sent",
+				description: "A new confirmation email has been sent to your inbox.",
+			});
+			return { success: true };
+		} else {
+			showToast({
+				title: "Failed to resend",
+				description: "Unable to resend confirmation email. Please try again.",
+				variant: "destructive"
+			});
+			return { success: false };
+		}
+	} catch (error: any) {
+		console.error('Resend confirmation error:', error);
+		showToast({
+			title: "Failed to resend",
+			description: "Unable to resend confirmation email. Please try again.",
+			variant: "destructive"
+		});
+		return { success: false };
 	}
 };
 

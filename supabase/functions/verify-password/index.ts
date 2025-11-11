@@ -38,6 +38,18 @@ serve(async (req) => {
 
     if (error) {
       console.error('Password verification failed:', error.message);
+      
+      // Check if the error is due to email not confirmed
+      if (error.message.includes('Email not confirmed')) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: "email_not_confirmed",
+          message: "Please confirm your email address before signing in."
+        }), {
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+      
       return new Response(JSON.stringify({
         success: false,
         error: "Invalid credentials"
