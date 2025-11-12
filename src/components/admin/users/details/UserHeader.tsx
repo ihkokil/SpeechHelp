@@ -11,7 +11,7 @@ interface UserHeaderProps {
 }
 
 export const UserHeader: React.FC<UserHeaderProps> = ({ user }) => {
-  const defaultAvatarUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//user-account.svg";
+  const defaultAvatarUrl = "/abstract-user-flat.svg";
   
   const getEmailHash = (email: string) => {
     // This is not a real MD5 hash, just for demo purposes

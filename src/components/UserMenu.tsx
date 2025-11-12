@@ -22,7 +22,7 @@ const UserMenu = () => {
   const { user, profile, signOut, isLoading } = useAuth();
   const navigate = useNavigate();
   
-  const defaultAvatarUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//user-account.svg";
+  const defaultAvatarUrl = "/abstract-user-flat.svg";
 
   const handleSignOut = async () => {
     console.log('UserMenu: Handling sign out');

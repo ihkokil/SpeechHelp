@@ -16,7 +16,7 @@ export const UserProfile = () => {
     : displayName;
 
   // Default avatar URL
-  const defaultAvatarUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//user-account.svg";
+  const defaultAvatarUrl = "/abstract-user-flat.svg";
   
   // Get avatar URL from profile or use default
   const avatarUrl = profile?.avatar_url || defaultAvatarUrl;
