@@ -55,7 +55,7 @@ const PricingTierButton: React.FC<PricingTierButtonProps> = ({
           ? 'bg-purple-600 hover:bg-purple-700 cursor-default opacity-75' 
           : shouldBeDisabled
           ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-60'
-          : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700'
+          : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white hover:text-white'
       }`}
       onClick={shouldBeDisabled ? undefined : onClick}
       disabled={shouldBeDisabled}

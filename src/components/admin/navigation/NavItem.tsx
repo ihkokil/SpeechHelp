@@ -28,7 +28,7 @@ const NavItem = ({ icon: Icon, label, href, active, onClick }: NavItemProps) => 
         onClick={handleClick}
         className={cn(
           "transition-colors",
-          active ? "bg-pink-50 text-pink-700" : "hover:bg-pink-50 hover:text-pink-700"
+          active ? "bg-pink-50 text-pink-700" : "hover:bg-pink-500 hover:text-white"
         )}
       >
         <Icon className="h-5 w-5" />
