@@ -40,7 +40,7 @@ export const UserProfile = () => {
           <img 
             src={avatarUrl} 
             alt="User avatar" 
-            className="h-full w-full object-cover"
+            className="w-10 h-10 object-cover rounded-full"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               if (target.src !== defaultAvatarUrl) {
