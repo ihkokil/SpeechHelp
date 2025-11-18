@@ -228,7 +228,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
                 size="sm"
                 onClick={handleRemoveAvatar}
                 disabled={isUploading}
-                className="flex items-center gap-2 text-destructive hover:text-destructive"
+                className="flex items-center gap-2 text-destructive hover:text-white"
               >
                 <X className="h-4 w-4" />
                 Remove
