@@ -40,8 +40,7 @@ const PersonalInfoForm = ({ form, originalEmail }: PersonalInfoFormProps) => {
     <div className="space-y-8">
       {/* Profile Picture Section */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <User className="h-5 w-5 text-pink-500" />
+        <div className="text-center">
           <h4 className="text-lg font-medium">Profile Picture</h4>
         </div>
         <p className="text-sm text-gray-500">
