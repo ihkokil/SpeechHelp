@@ -21,8 +21,8 @@ const GalleryItem = ({
   icon
 }: GalleryItemProps) => {
   return (
-    <div className={`group relative rounded-md overflow-hidden opacity-0 ${isVisible ? `animate-fade-in delay-${index % 5 * 100}` : ''}`}>
-      <img src={image} alt={title} className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110" />
+    <div className={`group relative rounded-md overflow-hidden opacity-0 aspect-[4/3] ${isVisible ? `animate-fade-in delay-${index % 5 * 100}` : ''}`}>
+      <img src={image} alt={title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-70"></div>
       <div className="absolute top-3 right-3 bg-pink-600 rounded-full p-1.5 text-white">
         {icon}
