@@ -33,19 +33,25 @@ export const UserProfile = () => {
     });
   }
 
-  // Get user initials for fallback
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(part => part.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  // Split long names into two lines
+  const splitNameForDisplay = (name: string) => {
+    if (name.length <= 20) return { firstLine: name, secondLine: null };
+    
+    const words = name.split(' ');
+    if (words.length === 1) {
+      // Single long word - show first part with ellipsis
+      return { firstLine: name.slice(0, 15) + '...', secondLine: null };
+    }
+    
+    // Multiple words - try to split reasonably
+    const midPoint = Math.ceil(words.length / 2);
+    const firstLine = words.slice(0, midPoint).join(' ');
+    const secondLine = words.slice(midPoint).join(' ');
+    
+    return { firstLine, secondLine };
   };
 
-  // Check if name is too long (more than 20 characters)
-  const isLongName = fullName.length > 20;
-  const finalDisplayName = isLongName ? getInitials(fullName) : fullName;
+  const { firstLine, secondLine } = splitNameForDisplay(fullName);
 
   return (
     <div className="px-6 py-4 border-b border-gray-100">
@@ -72,9 +78,16 @@ export const UserProfile = () => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <p className="text-sm font-medium text-gray-900 truncate cursor-help">
-                  {finalDisplayName}
-                </p>
+                <div className="cursor-help">
+                  <p className="text-sm font-medium text-gray-900 truncate leading-tight">
+                    {firstLine}
+                  </p>
+                  {secondLine && (
+                    <p className="text-sm font-medium text-gray-900 truncate leading-tight">
+                      {secondLine}
+                    </p>
+                  )}
+                </div>
               </TooltipTrigger>
               <TooltipContent side="right">
                 <p>{fullName}</p>
