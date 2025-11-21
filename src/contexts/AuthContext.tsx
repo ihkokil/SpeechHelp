@@ -91,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         profile: userProfile,
         displayName: userProfile ? profileService.getDisplayName(userProfile, user || undefined) : 'Unknown',
         fullName: userProfile ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() : 'Unknown',
-        avatarUrl: userProfile?.avatar_url || "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//user-account.svg"
+        avatarUrl: userProfile?.avatar_url || "/abstract-user-flat.svg"
       });
       setProfile(userProfile);
       

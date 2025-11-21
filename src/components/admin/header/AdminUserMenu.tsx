@@ -18,7 +18,7 @@ const AdminUserMenu = () => {
   const { adminUser, signOut } = useAdminAuth();
   const navigate = useNavigate();
   
-  const defaultAvatarUrl = "https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//user-account.svg";
+  const defaultAvatarUrl = "/abstract-user-flat.svg";
 
   const handleSignOut = async () => {
     await signOut();
