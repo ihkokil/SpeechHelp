@@ -40,7 +40,7 @@ const PersonalInfoForm = ({ form, originalEmail }: PersonalInfoFormProps) => {
     <div className="space-y-8">
       {/* Profile Picture Section */}
       <div className="space-y-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           <div className="flex-shrink-0">
             <AvatarUpload
               currentAvatarUrl={profile?.avatar_url}
@@ -49,10 +49,28 @@ const PersonalInfoForm = ({ form, originalEmail }: PersonalInfoFormProps) => {
               initials={getUserInitials()}
             />
           </div>
-          <div className="flex-1">
-            <div className="space-y-1">
-              <p className="text-sm text-gray-600">JPG, PNG or GIF. Max size 2MB.</p>
+          <div className="flex-1 space-y-3">
+            <div className="flex gap-3">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                id="avatar-upload"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    // Handle file upload logic here
+                  }
+                }}
+              />
+              <label
+                htmlFor="avatar-upload"
+                className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 cursor-pointer transition-colors text-sm font-medium"
+              >
+                Upload Photo
+              </label>
             </div>
+            <p className="text-sm text-gray-600">JPG, PNG or GIF. Max size 2MB.</p>
           </div>
         </div>
       </div>
