@@ -6,9 +6,11 @@ import EmailField from './components/EmailField';
 import PasswordConfirmField from './components/PasswordConfirmField';
 import AddressFields from './components/AddressFields';
 import PhoneInput from '@/components/ui/phone-input';
-import { AvatarUpload } from '@/components/ui/avatar-upload';
+import { AvatarDisplay } from '@/components/ui/avatar-display';
+import { AvatarUploadControls } from './components/AvatarUploadControls';
 import { MapPin, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 
 interface PersonalInfoFormProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -17,6 +19,8 @@ interface PersonalInfoFormProps {
 
 const PersonalInfoForm = ({ form, originalEmail }: PersonalInfoFormProps) => {
   const { user, profile, refreshUser } = useAuth();
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Watch the email field to detect changes
   const currentEmail = form.watch('email');
@@ -40,22 +44,30 @@ const PersonalInfoForm = ({ form, originalEmail }: PersonalInfoFormProps) => {
     <div className="space-y-8">
       {/* Profile Picture Section */}
       <div className="space-y-4">
-        <div className="flex items-center gap-4">
-          {/* Image on the left */}
+        <div className="flex items-start gap-6">
+          {/* Avatar Image on the left */}
           <div className="flex-shrink-0">
-            <AvatarUpload
+            <AvatarDisplay
               currentAvatarUrl={profile?.avatar_url}
-              onAvatarChange={handleAvatarChange}
+              previewUrl={previewUrl}
               size="md"
               initials={getUserInitials()}
+              isUploading={isUploading}
             />
           </div>
           
-          {/* Upload button and text on the right */}
-          <div className="flex-1">
-            <div className="space-y-1">
+          {/* Upload controls and text on the right */}
+          <div className="flex-1 space-y-3">
+            <div>
+              <h4 className="text-sm font-medium mb-1">Profile Picture</h4>
               <p className="text-sm text-gray-600">JPG, PNG or GIF. Max size 2MB.</p>
             </div>
+            <AvatarUploadControls
+              currentAvatarUrl={profile?.avatar_url}
+              onAvatarChange={handleAvatarChange}
+              onPreviewChange={setPreviewUrl}
+              onUploadingChange={setIsUploading}
+            />
           </div>
         </div>
       </div>
