@@ -41,6 +41,7 @@ const PersonalInfoForm = ({ form, originalEmail }: PersonalInfoFormProps) => {
       {/* Profile Picture Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-4">
+          {/* Image on the left */}
           <div className="flex-shrink-0">
             <AvatarUpload
               currentAvatarUrl={profile?.avatar_url}
@@ -49,6 +50,8 @@ const PersonalInfoForm = ({ form, originalEmail }: PersonalInfoFormProps) => {
               initials={getUserInitials()}
             />
           </div>
+          
+          {/* Upload button and text on the right */}
           <div className="flex-1">
             <div className="space-y-1">
               <p className="text-sm text-gray-600">JPG, PNG or GIF. Max size 2MB.</p>
