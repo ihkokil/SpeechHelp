@@ -58,16 +58,15 @@ const PersonalInfoForm = ({ form, originalEmail }: PersonalInfoFormProps) => {
           
           {/* Upload controls and text on the right */}
           <div className="flex-1 space-y-3">
-            <div>
-              <h4 className="text-sm font-medium mb-1">Profile Picture</h4>
-              <p className="text-sm text-gray-600">JPG, PNG or GIF. Max size 2MB.</p>
-            </div>
             <AvatarUploadControls
               currentAvatarUrl={profile?.avatar_url}
               onAvatarChange={handleAvatarChange}
               onPreviewChange={setPreviewUrl}
               onUploadingChange={setIsUploading}
             />
+            <div>
+              <p className="text-sm text-gray-600">JPG, PNG or GIF. Max size 2MB.</p>
+            </div>
           </div>
         </div>
       </div>
