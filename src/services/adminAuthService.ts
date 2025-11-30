@@ -455,5 +455,27 @@ export const adminAuthService = {
     } catch (err) {
       console.error('Log activity error:', err);
     }
+  },
+
+  // Verify admin password
+  async verifyAdminPassword(username: string, password: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-auth', {
+        body: {
+          username,
+          password
+        }
+      });
+
+      if (error) {
+        console.error('Error verifying admin password:', error);
+        return false;
+      }
+
+      return data?.success === true;
+    } catch (error) {
+      console.error('Error verifying admin password:', error);
+      return false;
+    }
   }
 };

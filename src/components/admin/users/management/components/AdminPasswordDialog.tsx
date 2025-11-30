@@ -14,6 +14,8 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertTriangle } from 'lucide-react';
 import { User } from '../../types';
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { adminAuthService } from '@/services/adminAuthService';
 
 interface AdminPasswordDialogProps {
   user: User | null;
@@ -28,6 +30,7 @@ const AdminPasswordDialog: React.FC<AdminPasswordDialogProps> = ({
   onOpenChange,
   onConfirm
 }) => {
+  const { adminUser } = useAdminAuth();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,19 +38,24 @@ const AdminPasswordDialog: React.FC<AdminPasswordDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) return;
+    if (!user || !adminUser) return;
     
     setIsLoading(true);
     setError('');
     
-    // Check if password is correct
-    if (password !== '2215') {
-      setError('Incorrect password. Please try again.');
-      setIsLoading(false);
-      return;
-    }
-    
     try {
+      // Verify the password with the current admin's credentials
+      const isPasswordValid = await adminAuthService.verifyAdminPassword(
+        adminUser.username, 
+        password
+      );
+      
+      if (!isPasswordValid) {
+        setError('Incorrect password. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+      
       // Password is correct, proceed with admin toggle
       onConfirm(user);
       
