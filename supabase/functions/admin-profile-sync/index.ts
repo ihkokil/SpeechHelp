@@ -12,6 +12,19 @@ interface AdminProfileRequest {
   profile_data?: any;
 }
 
+interface ProfileData {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  country_code: string;
+  street_address: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  country: string;
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -46,14 +59,26 @@ Deno.serve(async (req) => {
       let email = admin_email;
       
       if (!email && admin_user_id) {
-        // Get admin email first
+        // Get admin email first - use service role to bypass RLS
         const { data: adminData, error: adminError } = await supabase
           .from('admin_users')
           .select('email')
           .eq('id', admin_user_id)
-          .single();
+          .maybeSingle();
 
-        if (adminError || !adminData) {
+        if (adminError) {
+          console.error('Error fetching admin user:', adminError);
+          return new Response(
+            JSON.stringify({ success: false, error: `Failed to fetch admin user: ${adminError.message}` }),
+            { 
+              status: 500, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+            }
+          );
+        }
+
+        if (!adminData) {
+          console.log('Admin user not found for ID:', admin_user_id);
           return new Response(
             JSON.stringify({ success: false, error: 'Admin user not found' }),
             { 
@@ -100,14 +125,26 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Get the user's profile
+      // Get the user's profile - use service role to bypass RLS
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (profileError || !profile) {
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        return new Response(
+          JSON.stringify({ success: false, error: `Failed to fetch profile: ${profileError.message}` }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      if (!profile) {
+        console.log('Profile not found for user ID:', user.id);
         return new Response(
           JSON.stringify({ success: false, error: 'Profile not found' }),
           { 
@@ -136,6 +173,97 @@ Deno.serve(async (req) => {
           success: true, 
           data: profileData 
         }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    if (action === 'sync_profile') {
+      const { profile_data } = body as { profile_data: ProfileData };
+      
+      if (!admin_user_id || !profile_data) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Admin user ID and profile data are required for sync' }),
+          { 
+            status: 400, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      // Get admin email first
+      const { data: adminData, error: adminError } = await supabase
+        .from('admin_users')
+        .select('email')
+        .eq('id', admin_user_id)
+        .maybeSingle();
+
+      if (adminError || !adminData) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Admin user not found' }),
+          { 
+            status: 404, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      // Find corresponding auth user
+      const { data: authUser, error: authError } = await supabase.auth.admin.listUsers();
+      
+      if (authError) {
+        console.error('Error fetching auth users:', authError);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Failed to fetch auth users' }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      const user = authUser.users.find(u => u.email === adminData.email);
+      if (!user) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'User not found in auth' }),
+          { 
+            status: 404, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      // Update the user's profile
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          first_name: profile_data.first_name,
+          last_name: profile_data.last_name,
+          phone: profile_data.phone,
+          country_code: profile_data.country_code,
+          address_street_address: profile_data.street_address,
+          address_city: profile_data.city,
+          address_state: profile_data.state,
+          address_zip_code: profile_data.zip_code,
+          address_country_code: profile_data.country,
+          updated_at: new Date().toISOString()
+        });
+
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        return new Response(
+          JSON.stringify({ success: false, error: `Failed to update profile: ${updateError.message}` }),
+          { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, message: 'Profile synced successfully' }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }

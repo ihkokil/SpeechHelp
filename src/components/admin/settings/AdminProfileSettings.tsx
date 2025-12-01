@@ -216,46 +216,44 @@ const AdminProfileSettings = () => {
   };
 
   const saveToBothSources = async (data: ProfileFormValues) => {
-    if (!adminUser) return;
+    if (!adminUser?.id) return;
 
     try {
-      // Find the user profile using the admin's email
-      const { data: authUsers, error: authError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', (await supabase.auth.getUser()).data.user?.id)
-        .maybeSingle();
-
-      // If we have a corresponding user profile, update it
-      if (!authError && authUsers) {
-        const profileUpdates = {
-          first_name: data.firstName,
-          last_name: data.lastName,
-          phone: data.phone || '',
-          country_code: data.countryCode,
-          address_street_address: data.streetAddress || '',
-          address_city: data.city || '',
-          address_state: data.state || '',
-          address_zip_code: data.zipCode || '',
-          address_country_code: data.country,
-          updated_at: new Date().toISOString()
-        };
-
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update(profileUpdates)
-          .eq('id', authUsers.id);
-
-        if (profileError) {
-          console.error('Error updating profile:', profileError);
+      // Use the admin-profile-sync function to update the profiles table
+      const { data: syncResult, error: syncError } = await supabase.functions.invoke('admin-profile-sync', {
+        body: {
+          action: 'sync_profile',
+          admin_user_id: adminUser.id,
+          profile_data: {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            email: data.email,
+            phone: data.phone || '',
+            country_code: data.countryCode,
+            street_address: data.streetAddress || '',
+            city: data.city || '',
+            state: data.state || '',
+            zip_code: data.zipCode || '',
+            country: data.country
+          }
         }
-      }
-    } catch (error) {
-      console.error('Error finding user profile:', error);
-    }
+      });
 
-    // Always save to admin settings for consistency
-    await saveToAdminSettings(data);
+      if (syncError) {
+        console.error('Error syncing profile:', syncError);
+        // Don't throw error, just log it and continue with admin settings
+      } else if (!syncResult?.success) {
+        console.error('Profile sync failed:', syncResult?.error);
+        // Don't throw error, just log it and continue with admin settings
+      }
+
+      // Always save to admin settings for consistency
+      await saveToAdminSettings(data);
+    } catch (error) {
+      console.error('Error in saveToBothSources:', error);
+      // Still try to save to admin settings
+      await saveToAdminSettings(data);
+    }
   };
 
   if (isLoadingData) {
