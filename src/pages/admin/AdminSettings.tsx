@@ -20,16 +20,16 @@ const AdminSettings = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-3 bg-muted/50">
+          <TabsTrigger value="profile" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <User className="h-4 w-4" />
             Profile
           </TabsTrigger>
-          <TabsTrigger value="timezone" className="flex items-center gap-2">
+          <TabsTrigger value="timezone" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <Globe className="h-4 w-4" />
             Timezone
           </TabsTrigger>
-          <TabsTrigger value="stripe" className="flex items-center gap-2">
+          <TabsTrigger value="stripe" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
             <CreditCard className="h-4 w-4" />
             Stripe Settings
           </TabsTrigger>

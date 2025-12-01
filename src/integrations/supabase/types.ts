@@ -671,6 +671,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_admin_profile_from_user_profile: {
+        Args: { admin_user_id_param: string }
+        Returns: Json
+      }
       get_admin_settings: {
         Args: { category_filter?: string }
         Returns: {

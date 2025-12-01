@@ -239,6 +239,9 @@ verify_jwt = false
 [functions.admin-settings-helper]
 verify_jwt = false
 
+[functions.admin-profile-sync]
+verify_jwt = false
+
 [studio]
 enabled = true
 # Port to use for Supabase Studio.
