@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
+import { Resend } from "npm:resend@4.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -62,14 +63,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const displayName = firstName && lastName ? `${firstName} ${lastName}` : firstName || 'there';
     
-    // Email content
-    const emailContent = `Subject: Welcome to SpeechHelp - Confirm Your Account
-From: SpeechHelp <${smtpUser}>
-To: ${email}
-MIME-Version: 1.0
-Content-Type: text/html; charset=UTF-8
-
-<!DOCTYPE html>
+    // Email HTML content
+    const emailHtml = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -151,14 +146,42 @@ Content-Type: text/html; charset=UTF-8
 </html>
 `;
 
-    // Use a proper SMTP implementation via fetch to an external service
-    // Since direct SMTP in Deno edge functions is problematic, we'll use a simpler approach
-    console.log('Email prepared successfully, marking as sent');
+    // Initialize Resend
+    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+    console.log('Sending confirmation email via Resend...');
+
+    // Send email using Resend
+    const emailResponse = await resend.emails.send({
+      from: "Speech Help <noreply@speechhelp.co>",
+      to: [email],
+      subject: "Confirm Your Email Address - Speech Help",
+      html: emailHtml,
+    });
+
+    if (emailResponse.error) {
+      console.error('Failed to send email via Resend:', emailResponse.error);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Failed to send confirmation email' 
+        }),
+        {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders,
+          },
+        }
+      );
+    }
+
+    console.log('Confirmation email sent successfully:', emailResponse.data);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Confirmation email prepared successfully' 
+        message: 'Confirmation email sent successfully' 
       }),
       {
         status: 200,
