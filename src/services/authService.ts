@@ -376,9 +376,12 @@ export const resendConfirmationEmail = async (
 	showToast: ShowToastFunction
 ) => {
 	try {
+		console.log('Attempting to resend confirmation email for:', email);
 		const { data, error } = await supabase.functions.invoke('resend-confirmation', {
 			body: { email }
 		});
+
+		console.log('Resend confirmation response:', { data, error });
 
 		if (error) {
 			console.error('Resend confirmation error:', error);
