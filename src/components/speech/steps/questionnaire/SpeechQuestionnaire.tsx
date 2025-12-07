@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -141,17 +140,8 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
           </ButtonCustom>
         </div>
         <ButtonCustom onClick={handleNextQuestion} variant="magenta">
-          {currentQuestionIndex < questions.length - 1 ? (
-            <>
-              <Translate text="speechLab.nextQuestion" fallback="Next Question" />
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            <>
-              <Translate text="speechLab.next" />
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </>
-          )}
+          <Translate text="speechLab.next" />
+          <ArrowRight className="ml-2 h-4 w-4" />
         </ButtonCustom>
       </div>
 
