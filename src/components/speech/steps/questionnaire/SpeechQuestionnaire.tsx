@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { QuestionItem } from '../../questionnaires';
 import QuestionRenderer from './QuestionRenderer';
 import Translate from '@/components/Translate';
@@ -15,6 +15,7 @@ interface SpeechQuestionnaireProps {
   onFormDataChange: (data: Record<string, string>) => void;
   onNext: () => void;
   onPrev: () => void;
+  onStartOver: () => void;
 }
 
 const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
@@ -22,7 +23,8 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
   formData,
   onFormDataChange,
   onNext,
-  onPrev
+  onPrev,
+  onStartOver
 }) => {
   const { t } = useTranslation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -128,10 +130,16 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
 
       {/* Navigation buttons */}
       <div className="flex justify-between pt-4">
-        <ButtonCustom onClick={handlePrevQuestion} variant="outline">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          <Translate text="speechLab.back" />
-        </ButtonCustom>
+        <div className="flex gap-4">
+          <ButtonCustom onClick={handlePrevQuestion} variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            <Translate text="speechLab.back" />
+          </ButtonCustom>
+          <ButtonCustom onClick={onStartOver} variant="outline">
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Start Over
+          </ButtonCustom>
+        </div>
         <ButtonCustom onClick={handleNextQuestion} variant="magenta">
           {currentQuestionIndex < questions.length - 1 ? (
             <>

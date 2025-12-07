@@ -1,143 +1,109 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTranslation } from '@/translations';
-import Translate from '@/components/Translate';
-import { getSpeechTypeLabel } from '@/components/dashboard/speeches/speech-utils';
-import { questionnaires, QuestionItem } from '../questionnaires';
+import React, { useState, useEffect } from 'react';
+import { ButtonCustom } from '@/components/ui/button-custom';
+import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
+import { speechTypesData } from '../data/speechTypesData';
+import { getQuestionnaire } from '../questionnaires';
 import SpeechQuestionnaire from './questionnaire/SpeechQuestionnaire';
+import Translate from '@/components/Translate';
 
 interface Step2Props {
   nextStep: () => void;
   prevStep: () => void;
   selectedSpeechType: string;
   onDetailsChange: (details: Record<string, string>) => void;
+  onStartOver: () => void;
 }
 
-const Step2SpeechDetails: React.FC<Step2Props> = ({ 
-  nextStep, 
-  prevStep, 
+const Step2SpeechDetails: React.FC<Step2Props> = ({
+  nextStep,
+  prevStep,
   selectedSpeechType,
-  onDetailsChange 
+  onDetailsChange,
+  onStartOver
 }) => {
-  const { currentLanguage } = useLanguage();
-  const { t } = useTranslation();
   const [formData, setFormData] = useState<Record<string, string>>({});
-  const [filteredQuestions, setFilteredQuestions] = useState<QuestionItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   
-  // Get questionnaire based on speech type
-  const getQuestionnaire = useCallback(() => {
-    const questionnaire = questionnaires[selectedSpeechType] || questionnaires.other;
-    console.log(`Got ${questionnaire.length} questions for speech type: ${selectedSpeechType}`);
-    return questionnaire;
-  }, [selectedSpeechType]);
+  const speechTypeData = speechTypesData.find(type => type.value === selectedSpeechType);
+  const questionnaire = getQuestionnaire(selectedSpeechType);
 
-  // Filter questions based on conditions
-  const updateFilteredQuestions = useCallback(() => {
-    try {
-      const allQuestions = getQuestionnaire();
-      
-      console.log('Filtering questions with formData:', formData);
-      
-      // Use a Map to track questions by ID and prevent duplicates
-      const questionMap = new Map<string, QuestionItem>();
-      
-      // First add all questions without conditions (basic questions)
-      allQuestions.filter(question => !question.condition)
-        .forEach(question => {
-          questionMap.set(question.question, question);
-        });
-      
-      // Then add conditional questions if they match their conditions
-      allQuestions.forEach(question => {
-        if (question.condition) {
-          const { condition } = question;
-          const conditionValue = formData[condition.question];
-          
-          if (conditionValue === condition.value) {
-            // Only add if not already present
-            if (!questionMap.has(question.question)) {
-              questionMap.set(question.question, question);
-            }
-          } else {
-            // If the condition is not met, and this question is in the map, remove it
-            if (questionMap.has(question.question)) {
-              questionMap.delete(question.question);
-            }
-          }
-        }
-      });
-      
-      // Convert map back to array and sort to maintain original order
-      const sortedQuestions = Array.from(questionMap.values())
-        .sort((a, b) => {
-          return allQuestions.findIndex(q => q.question === a.question) - 
-                 allQuestions.findIndex(q => q.question === b.question);
-        });
-      
-      console.log('Filtered questions count:', sortedQuestions.length);
-      console.log('Filtered questions:', sortedQuestions.map(q => q.question));
-      setFilteredQuestions(sortedQuestions);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error updating filtered questions:', error);
-      setIsLoading(false);
-    }
-  }, [formData, getQuestionnaire]);
-
-  // Initialize questions on first load
   useEffect(() => {
-    try {
-      const initialQuestions = getQuestionnaire().filter(q => !q.condition);
-      console.log('Initial questions on load:', initialQuestions.length);
-      setFilteredQuestions(initialQuestions);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error loading initial questions:', error);
-      setIsLoading(false);
-    }
-  }, [getQuestionnaire]);
+    onDetailsChange(formData);
+  }, [formData, onDetailsChange]);
 
-  // Update filtered questions when form data changes
-  useEffect(() => {
-    updateFilteredQuestions();
-  }, [formData, updateFilteredQuestions]);
+  const handleFormDataChange = (data: Record<string, string>) => {
+    setFormData(data);
+  };
 
-  // Handle form data changes
-  const handleFormDataChange = useCallback((newFormData: Record<string, string>) => {
-    console.log('Form data changed:', newFormData);
-    setFormData(newFormData);
-    onDetailsChange(newFormData);
-  }, [onDetailsChange]);
+  const handleNext = () => {
+    onDetailsChange(formData);
+    nextStep();
+  };
+
+  const handlePrev = () => {
+    prevStep();
+  };
+
+  if (!questionnaire || questionnaire.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <h2 className="text-2xl font-bold mb-6">
+          <Translate text="speechLab.detailsTitle" />
+        </h2>
+        <p className="text-gray-600 mb-8">
+          <Translate text="speechLab.detailsDesc" />
+        </p>
+        <div className="flex justify-between">
+          <div className="flex gap-4">
+            <ButtonCustom onClick={handlePrev} variant="outline">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              <Translate text="speechLab.back" />
+            </ButtonCustom>
+            <ButtonCustom onClick={onStartOver} variant="outline">
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Start Over
+            </ButtonCustom>
+          </div>
+          <ButtonCustom onClick={handleNext} variant="magenta">
+            <Translate text="speechLab.next" />
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </ButtonCustom>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{getSpeechTypeLabel(selectedSpeechType)} <Translate text="speechLab.detailsTitle" /></CardTitle>
-        <CardDescription><Translate text="speechLab.detailsDesc" /></CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex justify-center items-center p-8">
-            <p>Loading questions...</p>
-          </div>
-        ) : filteredQuestions.length > 0 ? (
-          <SpeechQuestionnaire
-            questions={filteredQuestions}
-            formData={formData}
-            onFormDataChange={handleFormDataChange}
-            onNext={nextStep}
-            onPrev={prevStep}
-          />
-        ) : (
-          <div className="flex justify-center items-center p-8">
-            <p>No questions available for this speech type.</p>
+    <div className="max-w-2xl mx-auto">
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-2">
+          <Translate text="speechLab.detailsTitle" />
+        </h2>
+        <p className="text-gray-600">
+          <Translate text="speechLab.detailsDesc" />
+        </p>
+        {speechTypeData && (
+          <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+            <div className="flex items-center space-x-3">
+              <div className="text-purple-600">{speechTypeData.icon}</div>
+              <div>
+                <h3 className="font-medium text-purple-900">{speechTypeData.label}</h3>
+                <p className="text-sm text-purple-700">{speechTypeData.description}</p>
+              </div>
+            </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+
+      <SpeechQuestionnaire
+        questions={questionnaire}
+        formData={formData}
+        onFormDataChange={handleFormDataChange}
+        onNext={handleNext}
+        onPrev={handlePrev}
+        onStartOver={onStartOver}
+      />
+    </div>
   );
 };
 

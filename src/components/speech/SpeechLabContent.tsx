@@ -6,9 +6,6 @@ import Step1SelectOccasion from './steps/Step1SelectOccasion';
 import Step2SpeechDetails from './steps/Step2SpeechDetails';
 import Step3GenerateSpeech from './steps/Step3GenerateSpeech';
 import Step4EditSpeech from './steps/Step4EditSpeech';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { RotateCcw, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 const SpeechLabContent = () => {
   const {
@@ -27,24 +24,6 @@ const SpeechLabContent = () => {
     clearState
   } = useSpeechLabState();
 
-  const [showRestorationAlert, setShowRestorationAlert] = useState(false);
-
-  // Show restoration alert if we restored from a step > 1
-  useEffect(() => {
-    if (isStateRestored && currentStep > 1) {
-      setShowRestorationAlert(true);
-    }
-  }, [isStateRestored, currentStep]);
-
-  const handleDismissAlert = () => {
-    setShowRestorationAlert(false);
-  };
-
-  const handleStartOver = () => {
-    clearState();
-    setShowRestorationAlert(false);
-  };
-
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -62,6 +41,7 @@ const SpeechLabContent = () => {
             prevStep={prevStep}
             selectedSpeechType={selectedSpeechType}
             onDetailsChange={handleSpeechDetailsChange}
+            onStartOver={clearState}
           />
         );
       case 3:
@@ -73,6 +53,7 @@ const SpeechLabContent = () => {
             speechTitle={speechTitle}
             setSpeechTitle={handleSpeechTitleChange}
             speechDetails={speechDetails}
+            onStartOver={clearState}
           />
         );
       case 4:
@@ -84,6 +65,7 @@ const SpeechLabContent = () => {
             onTitleChange={handleSpeechTitleChange}
             speechDetails={speechDetails}
             autoSavedSpeechId={autoSavedSpeechId}
+            onStartOver={clearState}
           />
         );
       default:
@@ -93,35 +75,6 @@ const SpeechLabContent = () => {
 
   return (
     <div className="w-full p-6 space-y-8">
-      {showRestorationAlert && (
-        <Alert className="border-green-200 bg-green-50">
-          <RotateCcw className="h-4 w-4 text-green-600" />
-          <AlertDescription className="flex items-center justify-between">
-            <span className="text-green-800">
-              Please try to fillup every details for best results.
-            </span>
-            <div className="flex items-center space-x-2 ml-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleStartOver}
-                className="h-8 text-xs"
-              >
-                Start Over
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDismissAlert}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
-      
       <SpeechStepIndicator currentStep={currentStep} steps={steps} />
       {renderStep()}
     </div>
