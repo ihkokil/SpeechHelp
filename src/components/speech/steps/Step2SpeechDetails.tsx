@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { speechTypesData } from '../data/speechTypesData';
-import { questionnaires } from '../questionnaires';
+import { getQuestionnaire } from '../questionnaires';
 import SpeechQuestionnaire from './questionnaire/SpeechQuestionnaire';
 import Translate from '@/components/Translate';
 
@@ -24,8 +24,8 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
 }) => {
   const [formData, setFormData] = useState<Record<string, string>>({});
   
-  const speechTypeData = speechTypesData.find(type => type.id === selectedSpeechType);
-  const questionnaire = questionnaires[selectedSpeechType as keyof typeof questionnaires];
+  const speechTypeData = speechTypesData.find(type => type.value === selectedSpeechType);
+  const questionnaire = getQuestionnaire(selectedSpeechType);
 
   useEffect(() => {
     onDetailsChange(formData);
