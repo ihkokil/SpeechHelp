@@ -7,6 +7,7 @@ import Translate from '@/components/Translate';
 import { getSpeechTypeLabel } from '@/components/dashboard/speeches/speech-utils';
 import { questionnaires, QuestionItem } from '../questionnaires';
 import SpeechQuestionnaire from './questionnaire/SpeechQuestionnaire';
+import { useSpeechLabState } from '../hooks/useSpeechLabState';
 
 interface Step2Props {
   nextStep: () => void;
@@ -23,6 +24,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
 }) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
+  const { clearState } = useSpeechLabState();
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [filteredQuestions, setFilteredQuestions] = useState<QuestionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -130,6 +132,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
             onFormDataChange={handleFormDataChange}
             onNext={nextStep}
             onPrev={prevStep}
+            onStartOver={clearState}
           />
         ) : (
           <div className="flex justify-center items-center p-8">
