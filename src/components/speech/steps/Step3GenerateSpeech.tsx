@@ -2,7 +2,7 @@
 import React from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useSpeechGeneration } from '../hooks/useSpeechGeneration';
 import SpeechDetailsSummary from '../components/SpeechDetailsSummary';
 import SpeechGenerationProgress from '../components/SpeechGenerationProgress';
@@ -17,7 +17,6 @@ interface Step3GenerateSpeechProps {
   speechTitle: string;
   setSpeechTitle: (title: string) => void;
   speechDetails?: SpeechDetails;
-  onStartOver: () => void;
 }
 
 const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
@@ -26,8 +25,7 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
   selectedSpeechType,
   speechTitle,
   setSpeechTitle,
-  speechDetails = {},
-  onStartOver
+  speechDetails = {}
 }) => {
   const { 
     generating, 
@@ -76,24 +74,14 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
         )}
 
         <div className="flex justify-between pt-4">
-          <div className="flex gap-4">
-            <ButtonCustom 
-              onClick={prevStep} 
-              variant="outline"
-              disabled={generating}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              <Translate text="speechLab.back" />
-            </ButtonCustom>
-            <ButtonCustom 
-              onClick={onStartOver} 
-              variant="outline"
-              disabled={generating}
-            >
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Start Over
-            </ButtonCustom>
-          </div>
+          <ButtonCustom 
+            onClick={prevStep} 
+            variant="outline"
+            disabled={generating}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            <Translate text="speechLab.back" />
+          </ButtonCustom>
           
           <ButtonCustom 
             onClick={generateSpeech} 

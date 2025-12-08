@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { ArrowLeft, Save, AlertCircle, CheckCircle, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, CheckCircle } from 'lucide-react';
 import Translate from '@/components/Translate';
 import SpeechEditor from '../components/SpeechEditor';
 import SpeechGenerationProgress from '../components/SpeechGenerationProgress';
@@ -20,7 +20,6 @@ interface Step4Props {
 	onTitleChange: (title: string) => void;
 	speechDetails?: Record<string, string>;
 	autoSavedSpeechId?: string;
-	onStartOver: () => void;
 }
 
 const Step4EditSpeech: React.FC<Step4Props> = ({
@@ -29,8 +28,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 	speechType,
 	onTitleChange,
 	speechDetails = {},
-	autoSavedSpeechId,
-	onStartOver
+	autoSavedSpeechId
 }) => {
 	const { toast } = useToast();
 	const [title, setTitle] = useState(speechTitle);
@@ -204,16 +202,10 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 					/>
 				</CardContent>
 				<CardFooter className="flex justify-between">
-					<div className="flex gap-4">
-						<ButtonCustom onClick={prevStep} variant="outline">
-							<ArrowLeft className="mr-2 h-4 w-4" />
-							<Translate text="speechLab.back" />
-						</ButtonCustom>
-						<ButtonCustom onClick={onStartOver} variant="outline">
-							<RotateCcw className="mr-2 h-4 w-4" />
-							Start Over
-						</ButtonCustom>
-					</div>
+					<ButtonCustom onClick={prevStep} variant="outline">
+						<ArrowLeft className="mr-2 h-4 w-4" />
+						<Translate text="speechLab.back" />
+					</ButtonCustom>
 					<ButtonCustom
 						variant="magenta"
 						onClick={handleSaveWithBackup}
