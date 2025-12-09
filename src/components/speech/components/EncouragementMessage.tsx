@@ -90,7 +90,7 @@ const EncouragementMessage: React.FC<EncouragementMessageProps> = ({
           variants={circleVariants}
           initial="hidden"
           animate={isVisible ? "visible" : "hidden"}
-          className="w-52 h-52 bg-gradient-to-br from-purple-100 to-indigo-50 rounded-full shadow-lg flex items-center justify-center p-4 border border-purple-200 overflow-hidden"
+          className="w-52 h-52 bg-gradient-to-br from-purple-100 to-indigo-50 rounded-full shadow-lg flex items-center justify-center p-4 border border-purple-200 overflow-hidden lg:mt-20"
         >
           <motion.div 
             className="text-center"
