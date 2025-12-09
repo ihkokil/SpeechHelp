@@ -44,7 +44,7 @@ const SpeechLabContent = () => {
       case 1:
         return <Step1SelectOccasion nextStep={nextStep} selectedSpeechType={selectedSpeechType} setSelectedSpeechType={setSelectedSpeechType} />;
       case 2:
-        return <Step2SpeechDetails nextStep={nextStep} prevStep={prevStep} selectedSpeechType={selectedSpeechType} onDetailsChange={handleSpeechDetailsChange} />;
+        return <Step2SpeechDetails nextStep={nextStep} prevStep={prevStep} selectedSpeechType={selectedSpeechType} onDetailsChange={handleSpeechDetailsChange} onStartOver={clearState} />;
       case 3:
         return <Step3GenerateSpeech nextStep={nextStep} prevStep={prevStep} selectedSpeechType={selectedSpeechType} speechTitle={speechTitle} setSpeechTitle={handleSpeechTitleChange} speechDetails={speechDetails} />;
       case 4:

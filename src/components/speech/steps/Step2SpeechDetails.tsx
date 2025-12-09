@@ -7,24 +7,24 @@ import Translate from '@/components/Translate';
 import { getSpeechTypeLabel } from '@/components/dashboard/speeches/speech-utils';
 import { questionnaires, QuestionItem } from '../questionnaires';
 import SpeechQuestionnaire from './questionnaire/SpeechQuestionnaire';
-import { useSpeechLabState } from '../hooks/useSpeechLabState';
 
 interface Step2Props {
   nextStep: () => void;
   prevStep: () => void;
   selectedSpeechType: string;
   onDetailsChange: (details: Record<string, string>) => void;
+  onStartOver: () => void;
 }
 
 const Step2SpeechDetails: React.FC<Step2Props> = ({ 
   nextStep, 
   prevStep, 
   selectedSpeechType,
-  onDetailsChange 
+  onDetailsChange,
+  onStartOver
 }) => {
   const { currentLanguage } = useLanguage();
   const { t } = useTranslation();
-  const { clearState } = useSpeechLabState();
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [filteredQuestions, setFilteredQuestions] = useState<QuestionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -132,7 +132,7 @@ const Step2SpeechDetails: React.FC<Step2Props> = ({
             onFormDataChange={handleFormDataChange}
             onNext={nextStep}
             onPrev={prevStep}
-            onStartOver={clearState}
+            onStartOver={onStartOver}
           />
         ) : (
           <div className="flex justify-center items-center p-8">
