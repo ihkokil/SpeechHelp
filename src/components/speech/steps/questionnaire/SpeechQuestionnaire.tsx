@@ -143,17 +143,10 @@ const SpeechQuestionnaire: React.FC<SpeechQuestionnaireProps> = ({
           )}
         </div>
         <ButtonCustom onClick={handleNextQuestion} variant="magenta">
-          {currentQuestionIndex < questions.length - 1 ? (
-            <>
-              <Translate text="speechLab.nextQuestion" fallback="Next Question" />
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            <>
-              <Translate text="speechLab.next" />
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </>
-          )}
+          <>
+            <Translate text="speechLab.next" />
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </>
         </ButtonCustom>
       </div>
 
