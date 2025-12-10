@@ -10,57 +10,98 @@ import { estimateSpeechDuration } from './durationUtils';
  * @param targetDuration Target duration in minutes (parsed from user input)
  * @returns Enhanced speech content
  */
-export const enhanceSpeechForDuration = (speech: string, targetDuration: number): string => {
-  const currentDuration = estimateSpeechDuration(speech);
-  console.log(`Enhancing speech: current duration ${currentDuration.toFixed(1)} minutes, target ${targetDuration} minutes`);
+export const enhanceSpeechForDuration = (speechText: string, targetMinutes: number): string => {
+  const currentDuration = estimateSpeechDuration(speechText);
   
-  // If the target duration is significantly longer (like 1 hour = 60 minutes), we need substantial expansion
-  if (targetDuration >= 30) {
-    return enhanceForLongSpeech(speech, targetDuration);
+  console.log(`Current speech duration: ${currentDuration.toFixed(1)} minutes, target: ${targetMinutes} minutes`);
+  
+  // If the speech is already close to the target duration (within 15%), return as is
+  const tolerance = Math.max(targetMinutes * 0.15, 0.5); // At least 0.5 minute tolerance
+  if (Math.abs(currentDuration - targetMinutes) <= tolerance) {
+    console.log('Speech duration is already within acceptable range');
+    return speechText;
   }
   
-  // For shorter speeches, use the existing enhancement logic
-  const sections = speech.split('\n\n');
-  let enhancedSpeech = '';
+  // If target is 30 minutes or more, use the specialized long speech enhancement
+  if (targetMinutes >= 30) {
+    return enhanceForLongSpeech(speechText, targetMinutes);
+  }
   
-  // Identify important sections
-  const introIndex = sections.findIndex(s => s.includes('## Introduction'));
-  const mainIndex = sections.findIndex(s => s.includes('## Main Content'));
-  const conclusionIndex = sections.findIndex(s => s.includes('## Conclusion'));
+  // Calculate how much content we need to add or remove
+  const durationDifference = targetMinutes - currentDuration;
+  const wordsToAdd = Math.round(durationDifference * 130); // 130 words per minute
   
-  // Add content to each section with better transitions
-  sections.forEach((section, index) => {
-    enhancedSpeech += section + '\n\n';
+  console.log(`Need to ${durationDifference > 0 ? 'add' : 'remove'} approximately ${Math.abs(wordsToAdd)} words`);
+  
+  if (durationDifference > 0) {
+    // Need to expand the speech
+    return expandSpeech(speechText, wordsToAdd, targetMinutes);
+  } else {
+    // Need to trim the speech
+    return trimSpeech(speechText, Math.abs(wordsToAdd));
+  }
+};
+
+const expandSpeech = (speechText: string, wordsToAdd: number, targetMinutes: number): string => {
+  const sections = speechText.split('\n\n').filter(s => s.trim());
+  const wordsPerSection = Math.ceil(wordsToAdd / sections.length);
+  
+  const enhancedSections = sections.map((section, index) => {
+    if (section.trim() === '') return section;
     
-    // Always add elaboration after introduction
-    if (index === introIndex && introIndex >= 0) {
-      enhancedSpeech += "As I stand before you today, I'm reminded of the significance of this moment and the privilege it is to share these words with you. The connections we forge and the memories we create together are what truly matter in life.\n\n";
+    let enhanced = section;
+    
+    // Add transitional phrases and elaborations
+    if (index > 0 && index < sections.length - 1) {
+      const transitions = [
+        "Now, let me elaborate on this important point...",
+        "This brings me to a crucial consideration...",
+        "Building on what I just shared with you...",
+        "Let me take a moment to expand on this idea...",
+        "This is particularly significant because..."
+      ];
+      const randomTransition = transitions[Math.floor(Math.random() * transitions.length)];
+      enhanced = `${randomTransition}\n\n${enhanced}`;
     }
     
-    // Add elaboration after main content sections if needed to reach target duration
-    if (index === mainIndex + 1 && mainIndex >= 0) {
-      enhancedSpeech += "Let me elaborate further on this important point. The experiences we share and the moments we create together form the foundation of our relationships. These connections we build with one another enrich our lives in countless ways, providing support, joy, and meaning throughout our journey.\n\n";
+    // Add detailed examples for key points
+    if (section.includes(':') || section.includes('important') || section.includes('key')) {
+      enhanced += "\n\nLet me give you a specific example to illustrate this point. This demonstrates exactly what I mean and why it matters so much in this context.";
     }
     
-    // Add transition before conclusion
-    if (index === conclusionIndex - 1 && conclusionIndex >= 0) {
-      enhancedSpeech += "As I reflect on everything I've shared today, I'm reminded of how special this occasion truly is. The memories we make here will stay with us for years to come.\n\n";
+    // Add pause instructions for longer speeches
+    if (targetMinutes >= 10 && index === Math.floor(sections.length / 2)) {
+      enhanced += "\n\n[Pause for a moment to let this sink in]";
     }
+    
+    return enhanced;
   });
   
-  // If we still need more content to reach the target duration
-  if (currentDuration < targetDuration && Math.abs(currentDuration - targetDuration) >= 0.5) {
-    // Add additional content near the conclusion for emotional impact
-    if (conclusionIndex >= 0) {
-      const insertPosition = enhancedSpeech.lastIndexOf('## Conclusion');
-      if (insertPosition !== -1) {
-        const additionalContent = "\nBefore I conclude, I want to take a moment to express my sincere gratitude for being part of this occasion. It's moments like these that remind us of what truly matters in life – the connections we build, the love we share, and the memories we create together.\n\n";
-        enhancedSpeech = enhancedSpeech.slice(0, insertPosition) + additionalContent + enhancedSpeech.slice(insertPosition);
-      }
-    }
-  }
+  return enhancedSections.join('\n\n');
+};
+
+const trimSpeech = (speechText: string, wordsToRemove: number): string => {
+  // For trimming, remove redundant phrases and shorten examples
+  let trimmed = speechText;
   
-  return enhancedSpeech;
+  // Remove common filler phrases
+  const fillerPhrases = [
+    'Let me tell you,',
+    'As I mentioned before,',
+    'It\'s important to note that',
+    'You might be wondering',
+    'In other words,'
+  ];
+  
+  fillerPhrases.forEach(phrase => {
+    const regex = new RegExp(phrase + '\\s*', 'gi');
+    trimmed = trimmed.replace(regex, '');
+  });
+  
+  // Shorten overly long sentences by removing unnecessary adjectives
+  trimmed = trimmed.replace(/\b(very|extremely|incredibly|absolutely|completely)\s+/gi, '');
+  
+  return trimmed;
 };
 
 /**

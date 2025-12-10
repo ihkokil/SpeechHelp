@@ -29,13 +29,14 @@ const SpeechGenerationProgress: React.FC<SpeechGenerationProgressProps> = ({ sho
 	}, []);
 
 	const getProgressMessage = () => {
-		if (progress < 20) return "Hmm, let me think about this...";
-		if (progress < 40) return "Gathering inspiration from the speech gods...";
-		if (progress < 60) return "Writing... no wait, that's not quite right...";
-		if (progress < 80) return "Ah yes! This is much better!";
-		if (progress < 95) return "Adding the perfect finishing touches...";
-		if (progress < 100) return "Almost there... just straightening my tie...";
-		return "DELIVERY! Your speech is ready! 🎉";
+		if (progress < 15) return "Analyzing your requirements...";
+		if (progress < 30) return "Crafting the perfect opening...";
+		if (progress < 45) return "Building compelling content...";
+		if (progress < 60) return "Enhancing for optimal length...";
+		if (progress < 75) return "Adding personal touches...";
+		if (progress < 90) return "Polishing and perfecting...";
+		if (progress < 100) return "Saving to your account...";
+		return "Your speech is ready for editing! 🎉";
 	};
 
 	return (

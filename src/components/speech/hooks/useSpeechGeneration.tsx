@@ -57,10 +57,14 @@ export const useSpeechGeneration = ({
 
 	useEffect(() => {
 		if (showConfetti) {
-			// Immediately proceed to next step - no delay
-			setShowConfetti(false);
-			clearSavedWork(); // Clear saved work after successful completion
-			onSuccess(autoSavedSpeechId || undefined);
+			// Wait a bit longer to show the "Speech Ready" message properly
+			const timer = setTimeout(() => {
+				setShowConfetti(false);
+				clearSavedWork(); // Clear saved work after successful completion
+				onSuccess(autoSavedSpeechId || undefined);
+			}, 2000); // Give time for the user to see the completion
+
+			return () => clearTimeout(timer);
 		}
 	}, [showConfetti, onSuccess, clearSavedWork, autoSavedSpeechId]);
 
@@ -118,6 +122,12 @@ export const useSpeechGeneration = ({
 			// Auto-save the current state
 			autoSaveToLocalStorage();
 
+			// Show progress completion first - don't show confetti until everything is done
+			toast({
+				title: "Speech Generated Successfully!",
+				description: "Now saving to your account...",
+			});
+
 			// Automatically save the speech to the database
 			try {
 				const speechWithMetadata = {
@@ -142,9 +152,10 @@ export const useSpeechGeneration = ({
 				
 				setAutoSavedSpeechId(savedSpeechId);
 
+				// Only show final success message after everything is complete
 				toast({
-					title: "Speech Generated & Saved",
-					description: "Your AI-powered speech has been created and automatically saved to your account",
+					title: "Your Speech is Ready!",
+					description: "Generated, enhanced, and saved to your account. Ready for editing!",
 				});
 
 				setShowConfetti(true);
@@ -154,8 +165,8 @@ export const useSpeechGeneration = ({
 				
 				// Even if save fails, still show success for generation and keep the speech in localStorage
 				toast({
-					title: "Speech Generated",
-					description: "Your speech was generated successfully. You can manually save it in the next step.",
+					title: "Speech Generated Successfully!",
+					description: "Your speech is ready! You can manually save it in the next step.",
 				});
 				
 				setShowConfetti(true);

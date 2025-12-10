@@ -213,49 +213,53 @@ async function handleSpeechGeneration(
 		role: 'system',
 		content: `You are a world-class professional speechwriter with expertise in crafting exceptional speeches for all occasions. You have written speeches for presidents, CEOs, wedding parties, and graduation ceremonies.
 
-SPEECH GENERATION EXCELLENCE STANDARDS:
-- Create speeches that are engaging, memorable, and emotionally resonant
-- Use sophisticated yet accessible language appropriate for the occasion
-- Incorporate storytelling techniques, vivid imagery, and compelling narratives
-- Structure speeches with powerful openings, coherent development, and memorable conclusions
-- Adapt tone, style, and content precisely to the audience and occasion
-- Include natural speech patterns, pauses, and emphasis for effective delivery
-- Ensure every element serves the speech's overall purpose and message
+CRITICAL REQUIREMENTS:
+1. **EXACT LENGTH**: The speech must be approximately ${durationDetails.targetWords} words to achieve ${durationDetails.targetMinutes} minutes at 130 words/minute speaking pace
+2. **WORD COUNT COMPLIANCE**: This is essential - the speech length must match the requested duration exactly
+3. **PROFESSIONAL QUALITY**: This is a professional speech that will be delivered to a real audience
+4. **PERSONAL CONNECTION**: Use the provided personal details to make the speech authentic and meaningful
+5. **NATURAL FLOW**: Ensure smooth transitions between ideas and sections
 
-DURATION REQUIREMENTS:
+SPEECH STRUCTURE REQUIREMENTS:
+- Compelling opening that immediately grabs attention (10% of total length)
+- Clear main points with detailed supporting content (70% of total length)
+- Personal anecdotes and examples strategically placed throughout
+- Strong, memorable conclusion that reinforces key messages (20% of total length)
+
 ${durationDetails.isLongSpeech ? `
-CRITICAL: This is a LONG SPEECH (${durationDetails.targetMinutes} minutes). You MUST create substantial content that justifies this duration:
-- Target word count: approximately ${durationDetails.targetWords} words
-- Include multiple detailed sections with comprehensive coverage
-- Add extensive examples, stories, and elaborations
-- Incorporate multiple perspectives and angles on the topic
-- Include substantial introduction, multiple main sections, and comprehensive conclusion
-- Use detailed storytelling and comprehensive explanations throughout
-- Ensure the content is rich, detailed, and thoroughly developed
-- Add philosophical reflections, practical applications, and meaningful insights
+EXTENDED SPEECH INSTRUCTIONS (${durationDetails.targetMinutes} minutes = ${durationDetails.targetWords} words):
+- Develop 5-7 major themes/points with rich detail
+- Include multiple detailed personal stories and anecdotes (2-3 minutes each)
+- Add philosophical reflections and deeper insights
+- Incorporate audience interaction cues and strategic pauses
+- Build multiple emotional peaks throughout the speech
+- Include transitional sections between major points
+- Create memorable moments and quotable phrases
+- Allow for natural breathing room and emphasis
+- End with an extended, inspiring conclusion
 ` : `
-This is a standard speech (${durationDetails.targetMinutes} minutes).
-- Target word count: approximately ${durationDetails.targetWords} words
-- Focus on clear, concise, and impactful content
+STANDARD SPEECH INSTRUCTIONS (${durationDetails.targetMinutes} minutes = ${durationDetails.targetWords} words):
+- Focus on 3-4 key points with clear supporting evidence
+- Include 1-2 well-developed personal examples
+- Keep examples concise but emotionally impactful
+- Maintain engaging pace with natural transitions
+- End with a clear call to action or memorable thought
 `}
 
-DETAILED REQUIREMENTS:
-1. OPENING: Create a compelling hook that immediately captures attention
-2. STRUCTURE: Organize content logically with smooth transitions
-3. CONTENT: Weave in all provided details naturally and meaningfully
-4. LANGUAGE: Use varied sentence structure and engaging vocabulary
-5. EMOTION: Include appropriate emotional moments that resonate with the audience
-6. CONCLUSION: End with a powerful, memorable statement that reinforces the key message
-7. DELIVERY: Write for spoken delivery with natural rhythm and flow
+TONE AND STYLE REQUIREMENTS:
+- Match the formality level appropriate for a ${speechType}
+- Use language that feels natural and conversational
+- Include appropriate humor if suitable for the occasion
+- Show genuine emotion and personality throughout
+- Ensure every sentence adds value toward the total word count goal
 
-PERSONALIZATION:
-- Incorporate ALL provided questionnaire details meaningfully
-- Reflect the specific speech type and occasion appropriately
-- Match the requested tone, length, and style precisely
-- Include personal anecdotes and stories as provided
-- Address the specific audience mentioned in the details
+WORD COUNT VALIDATION:
+- Count your words as you write to ensure you meet exactly ${durationDetails.targetWords} words
+- If under target, add more detailed examples, stories, or elaboration
+- If over target, refine and focus your content while maintaining quality
+- Remember: ${durationDetails.targetMinutes} minutes = ${durationDetails.targetWords} words is the non-negotiable target
 
-Generate a complete, professionally crafted speech that exceeds expectations and delivers real impact. ${durationDetails.isLongSpeech ? 'Remember: this must be a substantial, comprehensive speech that fills the requested time.' : ''}`
+Please create a complete, ready-to-deliver speech that meets these exact specifications, especially the word count requirement.`
 	};
 
 	// Generate enhanced user message with all speech details
@@ -330,48 +334,64 @@ function analyzeDurationRequirements(speechDetails: SpeechDetails) {
 	});
 
 	let targetMinutes = 5; // default
-	let isLongSpeech = false;
+	let durationInput = '';
 
 	if (durationInfo && durationInfo[1]) {
-		const input = durationInfo[1].toLowerCase().trim();
+		durationInput = durationInfo[1];
+		const input = durationInput.toLowerCase().trim();
 		
-		// Parse various duration formats
+		// Enhanced duration parsing logic
 		if (input.includes('hour') || input.includes('hr')) {
 			const hourMatch = input.match(/(\d+(?:\.\d+)?)\s*(?:hour|hr)/);
 			if (hourMatch) {
 				targetMinutes = parseFloat(hourMatch[1]) * 60;
-				isLongSpeech = targetMinutes >= 30;
 			}
 		} else if (input.includes('minute') || input.includes('min')) {
 			const minuteMatch = input.match(/(\d+(?:\.\d+)?)\s*(?:minute|min)/);
 			if (minuteMatch) {
 				targetMinutes = parseFloat(minuteMatch[1]);
-				isLongSpeech = targetMinutes >= 30;
+			}
+		} else if (input.includes('second') || input.includes('sec')) {
+			const secondMatch = input.match(/(\d+(?:\.\d+)?)\s*(?:second|sec)/);
+			if (secondMatch) {
+				targetMinutes = parseFloat(secondMatch[1]) / 60;
 			}
 		} else {
-			// Try to extract just numbers
-			const numberMatch = input.match(/(\d+(?:\.\d+)?)/);
-			if (numberMatch) {
-				const number = parseFloat(numberMatch[1]);
-				if (number >= 60) {
-					targetMinutes = number; // Assume minutes
-				} else if (number <= 3) {
-					targetMinutes = number * 60; // Likely hours
-				} else {
-					targetMinutes = number; // Assume minutes
+			// Handle time formats and simple numbers
+			const timeMatch = input.match(/(\d+):(\d+)/);
+			if (timeMatch) {
+				const minutes = parseInt(timeMatch[1]);
+				const seconds = parseInt(timeMatch[2]);
+				targetMinutes = minutes + (seconds / 60);
+			} else {
+				const numberMatch = input.match(/(\d+(?:\.\d+)?)/);
+				if (numberMatch) {
+					const number = parseFloat(numberMatch[1]);
+					if (number >= 60) {
+						targetMinutes = number; // Large numbers likely minutes
+					} else if (number >= 10) {
+						targetMinutes = number; // Medium numbers likely minutes
+					} else if (number <= 3 && !input.includes('min')) {
+						targetMinutes = number * 60; // Small numbers likely hours
+					} else {
+						targetMinutes = number; // Default to minutes
+					}
 				}
-				isLongSpeech = targetMinutes >= 30;
 			}
 		}
 	}
 
+	// Ensure reasonable bounds
+	targetMinutes = Math.max(1, Math.min(targetMinutes, 180)); // 1 minute to 3 hours max
+
 	const targetWords = Math.round(targetMinutes * 130); // 130 words per minute
+	const isLongSpeech = targetMinutes >= 30;
 
 	return {
 		targetMinutes,
 		targetWords,
 		isLongSpeech,
-		durationInput: durationInfo ? durationInfo[1] : null
+		durationInput
 	};
 }
 
