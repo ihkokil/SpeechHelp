@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Download, RefreshCw, Play, Square, Mail } from 'lucide-react';
@@ -8,27 +7,26 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-
 interface SpeechActionButtonsProps {
   content?: string;
   title?: string;
   onDownload: () => void;
   onReset: () => void;
 }
-
-const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({ 
+const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({
   content = '',
   title = '',
-  onDownload, 
-  onReset 
+  onDownload,
+  onReset
 }) => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [emailAddress, setEmailAddress] = useState('');
   const [isSending, setIsSending] = useState(false);
   const speechSynthRef = React.useRef<SpeechSynthesisUtterance | null>(null);
-
   const handleTextToSpeech = () => {
     // If speech is currently playing, stop it
     if (isPlaying) {
@@ -42,52 +40,48 @@ const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({
       toast({
         title: "Speech Synthesis Not Supported",
         description: "Your browser doesn't support the speech synthesis feature.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
 
     // Clean the content by removing markdown formatting
-    const cleanContent = content
-      .replace(/^#+ (.+)$/gm, '$1') // Remove headings
-      .replace(/\*\*(.+?)\*\*/g, '$1') // Remove bold
-      .replace(/\*(.+?)\*/g, '$1') // Remove italic
-      .replace(/---/g, '') // Remove horizontal rules
-      .trim();
-
+    const cleanContent = content.replace(/^#+ (.+)$/gm, '$1') // Remove headings
+    .replace(/\*\*(.+?)\*\*/g, '$1') // Remove bold
+    .replace(/\*(.+?)\*/g, '$1') // Remove italic
+    .replace(/---/g, '') // Remove horizontal rules
+    .trim();
     try {
       // Create a new speech synthesis utterance
       speechSynthRef.current = new SpeechSynthesisUtterance(cleanContent);
-      
+
       // Add event listeners
       speechSynthRef.current.onend = () => {
         setIsPlaying(false);
       };
-      
-      speechSynthRef.current.onerror = (event) => {
+      speechSynthRef.current.onerror = event => {
         console.error('Speech synthesis error:', event);
         setIsPlaying(false);
         toast({
           title: "Text-to-Speech Error",
           description: "An error occurred while trying to read the speech.",
-          variant: "destructive",
+          variant: "destructive"
         });
       };
-      
+
       // Start speaking
       window.speechSynthesis.speak(speechSynthRef.current);
       setIsPlaying(true);
-      
       toast({
         title: "Reading Speech",
-        description: "Your speech is being read aloud. Click the stop button to end.",
+        description: "Your speech is being read aloud. Click the stop button to end."
       });
     } catch (error) {
       console.error('Speech synthesis error:', error);
       toast({
         title: "Text-to-Speech Error",
         description: "An error occurred while trying to read the speech.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
@@ -100,7 +94,6 @@ const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({
       }
     };
   }, []);
-
   const handleSendEmail = async () => {
     if (!emailAddress.trim() || !content.trim() || !title.trim()) {
       toast({
@@ -121,23 +114,22 @@ const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({
       });
       return;
     }
-
     setIsSending(true);
-
     try {
-      const { data, error } = await supabase.functions.invoke('send-speech', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('send-speech', {
         body: {
           title,
           content,
           recipientEmail: emailAddress
         }
       });
-
       if (error) throw error;
-
       toast({
         title: "Email Sent",
-        description: "Your speech has been sent to the provided email address.",
+        description: "Your speech has been sent to the provided email address."
       });
       setIsEmailDialogOpen(false);
       setEmailAddress('');
@@ -152,27 +144,16 @@ const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({
       setIsSending(false);
     }
   };
-
-  return (
-    <>
+  return <>
       <div className="flex flex-wrap gap-2">
-        <ButtonCustom 
-          variant="outline" 
-          size="sm" 
-          onClick={handleTextToSpeech}
-          className={isPlaying ? "bg-pink-100" : ""}
-        >
-          {isPlaying ? (
-            <>
+        <ButtonCustom variant="outline" size="sm" onClick={handleTextToSpeech} className={isPlaying ? "bg-pink-100" : ""}>
+          {isPlaying ? <>
               <Translate text="speechLab.stop" fallback="Stop" />
               <Square className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            <>
+            </> : <>
               <Translate text="speechLab.play" fallback="Play" />
               <Play className="ml-2 h-4 w-4" />
-            </>
-          )}
+            </>}
         </ButtonCustom>
         
         <ButtonCustom variant="outline" size="sm" onClick={onDownload}>
@@ -180,16 +161,9 @@ const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({
           <Download className="ml-2 h-4 w-4" />
         </ButtonCustom>
         
-        <ButtonCustom variant="outline" size="sm" onClick={onReset}>
-          <Translate text="speechLab.reset" fallback="Reset" />
-          <RefreshCw className="ml-2 h-4 w-4" />
-        </ButtonCustom>
+        
 
-        <ButtonCustom
-          variant="outline"
-          size="sm"
-          onClick={() => setIsEmailDialogOpen(true)}
-        >
+        <ButtonCustom variant="outline" size="sm" onClick={() => setIsEmailDialogOpen(true)}>
           <Translate text="speechLab.email" fallback="Email" />
           <Mail className="ml-2 h-4 w-4" />
         </ButtonCustom>
@@ -207,45 +181,25 @@ const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({
               <Label htmlFor="email" className="text-purple-700">
                 <Translate text="speechLab.emailAddressLabel" fallback="Email Address" />
               </Label>
-              <Input
-                id="email"
-                type="email"
-                value={emailAddress}
-                onChange={(e) => setEmailAddress(e.target.value)}
-                placeholder="Enter recipient's email address"
-              />
+              <Input id="email" type="email" value={emailAddress} onChange={e => setEmailAddress(e.target.value)} placeholder="Enter recipient's email address" />
             </div>
           </div>
           <DialogFooter>
-            <ButtonCustom
-              variant="outline"
-              onClick={() => setIsEmailDialogOpen(false)}
-              disabled={isSending}
-            >
+            <ButtonCustom variant="outline" onClick={() => setIsEmailDialogOpen(false)} disabled={isSending}>
               <Translate text="common.cancel" fallback="Cancel" />
             </ButtonCustom>
-            <ButtonCustom
-              onClick={handleSendEmail}
-              disabled={isSending}
-              variant="magenta"
-            >
-              {isSending ? (
-                <span className="inline-flex items-center">
+            <ButtonCustom onClick={handleSendEmail} disabled={isSending} variant="magenta">
+              {isSending ? <span className="inline-flex items-center">
                   <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   <Translate text="common.sending" fallback="Sending..." />
-                </span>
-              ) : (
-                <Translate text="speechLab.send" fallback="Send" />
-              )}
+                </span> : <Translate text="speechLab.send" fallback="Send" />}
             </ButtonCustom>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
-  );
+    </>;
 };
-
 export default SpeechActionButtons;
