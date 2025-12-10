@@ -5,7 +5,7 @@ import { ButtonCustom } from '@/components/ui/button-custom';
 import { ArrowLeft, Save, AlertCircle, CheckCircle } from 'lucide-react';
 import Translate from '@/components/Translate';
 import SpeechEditor from '../components/SpeechEditor';
-import SimpleSaveProgress from '../components/SimpleSaveProgress';
+import SpeechGenerationProgress from '../components/SpeechGenerationProgress';
 import { useSpeechSave } from '../hooks/useSpeechSave';
 import { useSpeechReset } from '../hooks/useSpeechReset';
 import { useSpeechDownload } from '../hooks/useSpeechDownload';
@@ -165,8 +165,10 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 
 	return (
 		<>
-			{/* Simple Save Progress */}
-			<SimpleSaveProgress isVisible={showSaveEffects} />
+			{/* Celebration Effects for Save */}
+			{showSaveEffects && (
+				<SpeechGenerationProgress showConfetti={true} />
+			)}
 			
 			<Card>
 				<CardHeader>
