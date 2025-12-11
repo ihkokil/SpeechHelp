@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [speeches, setSpeeches] = useState<Speech[]>([]);
+  const [hasBeenAuthenticated, setHasBeenAuthenticated] = useState(false);
   const { toast } = useToast();
 
   const fetchSpeeches = async () => {
@@ -329,6 +330,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(session?.user ?? null);
           
           if (session?.user) {
+            setHasBeenAuthenticated(true);
             setTimeout(() => {
               fetchUserProfile(session.user.id, false);
             }, 0);
@@ -347,12 +349,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id || 'No user');
+        
+        // Check for session termination
+        if (hasBeenAuthenticated && !session && event !== 'SIGNED_OUT') {
+          console.log('Session terminated unexpectedly');
+          toast({
+            title: "Session expired",
+            description: "Your session has expired. Please sign in again.",
+            variant: "destructive"
+          });
+          
+          // Redirect to login page
+          setTimeout(() => {
+            window.location.href = '/auth';
+          }, 2000); // Give time for toast to show
+          
+          setHasBeenAuthenticated(false);
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
 
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           if (session?.user) {
+            setHasBeenAuthenticated(true);
             // Clear subscription caches on login to ensure fresh data
             console.log('🧹 Clearing subscription caches on auth event:', event);
             SubscriptionCacheManager.clearAllSubscriptionCache();
@@ -363,6 +384,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }, 0);
           }
         } else if (event === 'SIGNED_OUT') {
+          setHasBeenAuthenticated(false);
           setProfile(null);
           setSpeeches([]);
           // Clear all caches on logout
