@@ -50,7 +50,7 @@ export const useSpeechSave = ({
 
 	const handleSave = async () => {
 		if (!validateInputs()) {
-			return;
+			return { success: false };
 		}
 
 		if (!user) {
@@ -59,7 +59,7 @@ export const useSpeechSave = ({
 				description: "Please sign in to save your speech.",
 				variant: "destructive",
 			});
-			return;
+			return { success: false };
 		}
 
 		setIsSaving(true);
@@ -96,6 +96,8 @@ export const useSpeechSave = ({
 					title: "Speech Updated! 🎉",
 					description: "Your speech has been updated successfully.",
 				});
+				
+				return { success: true };
 			} else {
 				// Create new speech only if no existing ID
 				console.log('Creating new speech');
@@ -121,6 +123,8 @@ export const useSpeechSave = ({
 					title: "Speech Saved! 🎉",
 					description: "Your speech has been saved successfully.",
 				});
+				
+				return { success: true };
 			}
 		} catch (error) {
 			toast({
@@ -129,6 +133,7 @@ export const useSpeechSave = ({
 				variant: "destructive",
 			});
 			console.error("Error saving speech:", error);
+			return { success: false };
 		} finally {
 			setIsSaving(false);
 		}

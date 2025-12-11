@@ -48,7 +48,7 @@ const SpeechLabContent = () => {
       case 3:
         return <Step3GenerateSpeech nextStep={nextStep} prevStep={prevStep} selectedSpeechType={selectedSpeechType} speechTitle={speechTitle} setSpeechTitle={handleSpeechTitleChange} speechDetails={speechDetails} />;
       case 4:
-        return <Step4EditSpeech prevStep={prevStep} speechTitle={speechTitle} speechType={selectedSpeechType} onTitleChange={handleSpeechTitleChange} speechDetails={speechDetails} autoSavedSpeechId={autoSavedSpeechId} />;
+        return <Step4EditSpeech prevStep={prevStep} speechTitle={speechTitle} speechType={selectedSpeechType} onTitleChange={handleSpeechTitleChange} speechDetails={speechDetails} autoSavedSpeechId={autoSavedSpeechId} onSaveSuccess={clearState} />;
       default:
         return null;
     }

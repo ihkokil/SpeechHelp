@@ -20,6 +20,7 @@ interface Step4Props {
 	onTitleChange: (title: string) => void;
 	speechDetails?: Record<string, string>;
 	autoSavedSpeechId?: string;
+	onSaveSuccess?: () => void;
 }
 
 const Step4EditSpeech: React.FC<Step4Props> = ({
@@ -28,7 +29,8 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 	speechType,
 	onTitleChange,
 	speechDetails = {},
-	autoSavedSpeechId
+	autoSavedSpeechId,
+	onSaveSuccess
 }) => {
 	const { toast } = useToast();
 	const [title, setTitle] = useState(speechTitle);
@@ -151,8 +153,8 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 
 	const handleSaveWithBackup = async () => {
 		// Save the speech (either create new or update existing)
-		await handleSave();
-		if (!isSaving) {
+		const result = await handleSave();
+		if (result?.success) {
 			setIsAutoSaved(true);
 			updateLastSaveTime();
 			// Clear recovery data after successful manual save
@@ -160,6 +162,8 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 			localStorage.removeItem('speechBackup');
 			localStorage.removeItem('tempGeneratedSpeech');
 			clearSavedWork();
+			// Clear speech lab state for fresh start next time
+			onSaveSuccess?.();
 		}
 	};
 
