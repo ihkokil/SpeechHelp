@@ -45,9 +45,9 @@ export const tedtalkQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., General public, 300 attendees" 
   },
   { 
-    question: "Desired length of the talk?", 
+    question: "Desired length of the talk (in minutes)?", 
     type: "text", 
-    placeholder: "E.g., 15 minutes" 
+    placeholder: "E.g., 15 minutes"
   },
   { 
     question: "Tone of the talk?", 

@@ -46,9 +46,9 @@ export const graduationQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., pandemic disruptions, specific academic challenges..." 
   },
   { 
-    question: "Desired length of the speech?", 
+    question: "Desired length of the speech (in minutes)?", 
     type: "text", 
-    placeholder: "E.g., 5-7 minutes" 
+    placeholder: "E.g., 5-7 minutes"
   },
   { 
     question: "Tone of the speech?", 

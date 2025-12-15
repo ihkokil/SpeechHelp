@@ -51,9 +51,9 @@ export const awardQuestionnaire: QuestionItem[] = [
     condition: { question: "Are you presenting or accepting the award?", value: "Accepting the award" }
   },
   { 
-    question: "Desired length of the speech?", 
+    question: "Desired length of the speech (in minutes)?", 
     type: "text", 
-    placeholder: "E.g., 3 minutes" 
+    placeholder: "E.g., 3 minutes"
   },
   { 
     question: "Tone of the speech?", 

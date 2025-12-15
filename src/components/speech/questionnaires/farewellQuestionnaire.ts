@@ -40,9 +40,9 @@ export const farewellQuestionnaire: QuestionItem[] = [
     placeholder: "Share what's next in your journey..." 
   },
   { 
-    question: "Desired length of the speech?", 
+    question: "Desired length of the speech (in minutes)?", 
     type: "text", 
-    placeholder: "E.g., 5 minutes" 
+    placeholder: "E.g., 5 minutes"
   },
   { 
     question: "Tone of the speech?", 

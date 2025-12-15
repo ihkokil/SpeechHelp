@@ -46,7 +46,7 @@ export const weddingQuestionnaire: QuestionItem[] = [
     placeholder: "Share the story of how they came together..." 
   },
   { 
-    question: "How long should the speech be?", 
+    question: "How long should the speech be (in minutes)?", 
     type: "text", 
     placeholder: "E.g., 3-5 minutes" 
   },

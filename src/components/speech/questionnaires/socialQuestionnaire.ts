@@ -45,9 +45,9 @@ export const socialQuestionnaire: QuestionItem[] = [
     options: ["Toast", "Roast", "Welcome Address", "Thank You Speech", "Casual Remarks"] 
   },
   { 
-    question: "Desired length of the speech?", 
+    question: "Desired length of the speech (in minutes)?", 
     type: "text", 
-    placeholder: "E.g., 2 minutes" 
+    placeholder: "E.g., 2 minutes"
   },
   { 
     question: "Tone of the speech?", 

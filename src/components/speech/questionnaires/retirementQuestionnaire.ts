@@ -45,9 +45,9 @@ export const retirementQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., Travel, Hobbies, New ventures" 
   },
   { 
-    question: "Desired length of the speech?", 
+    question: "Desired length of the speech (in minutes)?", 
     type: "text", 
-    placeholder: "E.g., 5 minutes" 
+    placeholder: "E.g., 5 minutes"
   },
   { 
     question: "Tone of the speech?", 

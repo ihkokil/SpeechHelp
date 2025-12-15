@@ -40,9 +40,9 @@ export const motivationalQuestionnaire: QuestionItem[] = [
     placeholder: "Share your personal experience with similar situations..." 
   },
   { 
-    question: "Speech duration preference?", 
+    question: "Speech duration preference (in minutes)?", 
     type: "text", 
-    placeholder: "E.g., 20 minutes" 
+    placeholder: "E.g., 20 minutes"
   },
   { 
     question: "Tone of the speech?", 

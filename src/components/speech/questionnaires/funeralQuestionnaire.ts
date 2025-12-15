@@ -39,9 +39,9 @@ export const funeralQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., Teacher, Engineer, Parent" 
   },
   { 
-    question: "Desired length of the speech?", 
+    question: "Desired length of the speech (in minutes)?", 
     type: "text", 
-    placeholder: "E.g., 5 minutes" 
+    placeholder: "E.g., 5 minutes"
   },
   { 
     question: "Tone of the speech?", 

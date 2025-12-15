@@ -40,7 +40,7 @@ export const birthdayQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., 15 years, Entire life"
   },
   { 
-    question: "Speech length preference?", 
+    question: "Speech length preference (in minutes)?", 
     type: "text", 
     placeholder: "E.g., 2-3 minutes" 
   },

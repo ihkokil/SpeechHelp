@@ -45,9 +45,9 @@ export const otherQuestionnaire: QuestionItem[] = [
     options: ["Very familiar", "Somewhat familiar", "Little familiarity", "No familiarity"] 
   },
   { 
-    question: "Desired length of the speech?", 
+    question: "Desired length of the speech (in minutes)?", 
     type: "text", 
-    placeholder: "E.g., 5 minutes" 
+    placeholder: "E.g., 5 minutes"
   },
   { 
     question: "Tone of the speech?", 

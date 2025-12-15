@@ -45,9 +45,9 @@ export const keynoteQuestionnaire: QuestionItem[] = [
     placeholder: "Describe relevant trends, challenges, or opportunities..." 
   },
   { 
-    question: "Desired length of the address?", 
+    question: "Desired length of the address (in minutes)?", 
     type: "text", 
-    placeholder: "E.g., 30 minutes" 
+    placeholder: "E.g., 30 minutes"
   },
   { 
     question: "Tone of the address?", 

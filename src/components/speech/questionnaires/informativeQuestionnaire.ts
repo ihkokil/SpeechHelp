@@ -45,9 +45,9 @@ export const informativeQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., 100 college students, Community group" 
   },
   { 
-    question: "Desired length of the speech?", 
+    question: "Desired length of the speech (in minutes)?", 
     type: "text", 
-    placeholder: "E.g., 15 minutes" 
+    placeholder: "E.g., 15 minutes"
   },
   { 
     question: "Tone of the speech?", 

@@ -45,7 +45,7 @@ export const businessQuestionnaire: QuestionItem[] = [
     placeholder: "List relevant competitors if applicable..." 
   },
   { 
-    question: "Desired speech length?", 
+    question: "Desired speech length (in minutes)?", 
     type: "text", 
     placeholder: "E.g., 10 minutes" 
   },
