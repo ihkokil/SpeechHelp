@@ -2,7 +2,7 @@ import React from 'react';
 import { Progress } from '@/components/ui/progress';
 import { useEffect, useState } from 'react';
 import Confetti from 'react-confetti';
-import AnimatedGenie from './AnimatedGenie';
+import { Loader2 } from 'lucide-react';
 
 interface SpeechGenerationProgressProps {
 	showConfetti: boolean;
@@ -40,13 +40,15 @@ const SpeechGenerationProgress: React.FC<SpeechGenerationProgressProps> = ({ sho
 
 	return (
 		<div className="space-y-6">
-			{/* Animated Genie */}
+			{/* Loading Indicator */}
 			<div className="flex justify-center">
-				<AnimatedGenie progress={progress} />
+				<div className="flex flex-col items-center space-y-4">
+					<Loader2 className="h-12 w-12 animate-spin text-primary" />
+				</div>
 			</div>
 
 			<div className="text-center font-medium">
-				<p className="mb-2 text-lg">Your AI Speech Genie is at work!</p>
+				<p className="mb-2 text-lg">Generating your speech...</p>
 				<p className="text-sm text-muted-foreground min-h-[1.25rem]">
 					{getProgressMessage()}
 				</p>
