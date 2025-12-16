@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -19,30 +18,39 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
-
 const Dashboard = () => {
-  const { user, isLoading, speeches, fetchSpeeches } = useAuth();
+  const {
+    user,
+    isLoading,
+    speeches,
+    fetchSpeeches
+  } = useAuth();
   const navigate = useNavigate();
   const [userName, setUserName] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const { currentLanguage } = useLanguage();
-  const { t } = useTranslation();
+  const {
+    currentLanguage
+  } = useLanguage();
+  const {
+    t
+  } = useTranslation();
   const isMobile = useIsMobile();
-  
+
   // Enable subscription polling to automatically detect admin changes
   useSubscriptionPolling({
-    intervalMs: 2 * 60 * 1000, // Check every 2 minutes
+    intervalMs: 2 * 60 * 1000,
+    // Check every 2 minutes
     enabled: true,
     aggressiveOnSpeechPages: true
   });
-  
+
   // Debug logging
   useEffect(() => {
     console.log('Dashboard - User authenticated:', !!user);
     console.log('Dashboard - Speeches count:', speeches?.length || 0);
   }, [user, speeches]);
-  
+
   // Fetch speeches when component mounts
   useEffect(() => {
     if (user) {
@@ -53,65 +61,50 @@ const Dashboard = () => {
       });
     }
   }, [user, fetchSpeeches, t, currentLanguage.code]);
-  
   useEffect(() => {
     if (!isLoading && !user) {
       navigate('/auth');
     }
   }, [user, isLoading, navigate]);
-  
   useEffect(() => {
     if (user) {
       const metadata = user.user_metadata;
       const firstNameFromMeta = metadata?.first_name || '';
       const lastNameFromMeta = metadata?.last_name || '';
-      
       setFirstName(firstNameFromMeta);
       setLastName(lastNameFromMeta);
-      
       if (!firstNameFromMeta && !lastNameFromMeta && user.email) {
         const nameFromEmail = user.email.split('@')[0];
-        const formattedName = nameFromEmail
-          .split(/[._-]/)
-          .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-          .join(' ');
+        const formattedName = nameFromEmail.split(/[._-]/).map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
         setUserName(formattedName);
       } else {
         setUserName(`${firstNameFromMeta} ${lastNameFromMeta}`);
       }
     }
   }, [user]);
-
   const dashboardMetrics = useMemo(() => {
     const totalSpeeches = speeches?.length || 0;
-    
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
-    
     const thisMonthSpeeches = speeches?.filter(speech => {
       if (!speech?.created_at) return false;
       const speechDate = new Date(speech.created_at);
-      return speechDate.getMonth() === currentMonth && 
-             speechDate.getFullYear() === currentYear;
+      return speechDate.getMonth() === currentMonth && speechDate.getFullYear() === currentYear;
     }) || [];
-    
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
     const last30DaysSpeeches = speeches?.filter(speech => {
       if (!speech?.created_at) return false;
       const speechDate = new Date(speech.created_at);
       return speechDate >= thirtyDaysAgo;
     }) || [];
-    
     const speechTypeDistribution = (speeches || []).reduce((acc, speech) => {
       if (speech?.speech_type) {
         acc[speech.speech_type] = (acc[speech.speech_type] || 0) + 1;
       }
       return acc;
     }, {} as Record<string, number>);
-    
     return {
       totalSpeeches,
       inProgressCount: thisMonthSpeeches.length,
@@ -119,20 +112,15 @@ const Dashboard = () => {
       speechTypeDistribution
     };
   }, [speeches]);
-
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
+    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
           <p className="mt-4 text-white text-lg font-medium">{t('loading', currentLanguage.code)}...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen flex bg-gray-50">
+  return <div className="min-h-screen flex bg-gray-50">
       <DashboardSidebar />
       
       <div className={`flex-1 overflow-x-hidden ${isMobile ? "pt-16" : "ml-64"}`}>
@@ -147,11 +135,7 @@ const Dashboard = () => {
         </header>
 
         <main className="px-4 sm:px-6 pb-12 max-w-full">
-          <WelcomeCard 
-            userName={userName} 
-            firstName={firstName} 
-            lastName={lastName}
-          />
+          <WelcomeCard userName={userName} firstName={firstName} lastName={lastName} />
           
           {/* Subscription Sync Alert - Shows when there are sync issues */}
           <div className="mt-4">
@@ -164,29 +148,11 @@ const Dashboard = () => {
                 <h2 className="text-xl font-bold text-gray-800 mb-3 sm:mb-4">{t('dashboard.summary', currentLanguage.code)}</h2>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                  <SpeechSummaryCard 
-                    icon={<FileTextIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />}
-                    count={dashboardMetrics.totalSpeeches}
-                    label="dashboard.totalSpeeches"
-                    period="dashboard.allTime"
-                    bgColor="bg-gray-100"
-                  />
+                  <SpeechSummaryCard icon={<FileTextIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} count={dashboardMetrics.totalSpeeches} label="dashboard.totalSpeeches" period="dashboard.allTime" bgColor="bg-gray-100" />
                   
-                  <SpeechSummaryCard 
-                    icon={<ShieldIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />}
-                    count={dashboardMetrics.inProgressCount}
-                    label="dashboard.inProgress"
-                    period="dashboard.thisMonth"
-                    bgColor="bg-red-50"
-                  />
+                  <SpeechSummaryCard icon={<ShieldIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} count={dashboardMetrics.inProgressCount} label="dashboard.inProgress" period="dashboard.thisMonth" bgColor="bg-red-50" />
                   
-                  <SpeechSummaryCard 
-                    icon={<TrendingUpIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />}
-                    count={dashboardMetrics.recentImprovementCount}
-                    label="dashboard.improvement"
-                    period="dashboard.last30Days"
-                    bgColor="bg-green-50"
-                  />
+                  <SpeechSummaryCard icon={<TrendingUpIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} count={dashboardMetrics.recentImprovementCount} label="dashboard.improvement" period="dashboard.last30Days" bgColor="bg-green-50" />
                 </div>
               </div>
               
@@ -211,15 +177,9 @@ const Dashboard = () => {
           </div>
 
           {/* Subscription Debug Panel - Only show for development/troubleshooting */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-6">
-              <SubscriptionDebug />
-            </div>
-          )}
+          {process.env.NODE_ENV === 'development'}
         </main>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Dashboard;
