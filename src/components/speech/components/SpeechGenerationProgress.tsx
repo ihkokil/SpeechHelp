@@ -15,18 +15,21 @@ const SpeechGenerationProgress: React.FC<SpeechGenerationProgressProps> = ({ sho
 	useEffect(() => {
 		const interval = setInterval(() => {
 			setProgress(prevProgress => {
+				// Show delivery message at around 80% (approximately 10 seconds)
+				if (prevProgress >= 80 && !showDeliveryMessage) {
+					setShowDeliveryMessage(true);
+				}
+				
 				if (prevProgress >= 100) {
 					clearInterval(interval);
-					// Trigger delivery message before confetti
-					setTimeout(() => setShowDeliveryMessage(true), 500);
 					return 100;
 				}
 				return prevProgress + 1;
 			});
-		}, 50);
+		}, 125); // Slower progression: 125ms per 1% = ~12.5 seconds total
 
 		return () => clearInterval(interval);
-	}, []);
+	}, [showDeliveryMessage]);
 
 	const getProgressMessage = () => {
 		if (progress < 20) return "Hmm, let me think about this...";
@@ -56,10 +59,10 @@ const SpeechGenerationProgress: React.FC<SpeechGenerationProgressProps> = ({ sho
 
 			<Progress value={progress} className="h-3" />
 
-			{/* Delivery Message */}
-			{showDeliveryMessage && progress >= 100 && (
+			{/* Delivery Message - Shows at ~10 seconds */}
+			{showDeliveryMessage && (
 				<div className="text-center animate-scale-in">
-					<div className="text-2xl font-bold text-primary mb-2">
+					<div className="text-2xl font-bold text-primary mb-2 animate-pulse">
 						🎁 DELIVERY! 🎁
 					</div>
 					<p className="text-lg text-muted-foreground">
