@@ -157,10 +157,11 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 		if (result?.success) {
 			setIsAutoSaved(true);
 			updateLastSaveTime();
-			// Clear recovery data after successful manual save
+			// Clear all speech-related data after successful manual save
 			localStorage.removeItem('generatedSpeech');
 			localStorage.removeItem('speechBackup');
 			localStorage.removeItem('tempGeneratedSpeech');
+			localStorage.removeItem('lastSpeechRequest');
 			clearSavedWork();
 			// Clear speech lab state for fresh start next time
 			onSaveSuccess?.();

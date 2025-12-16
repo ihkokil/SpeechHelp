@@ -49,11 +49,6 @@ export const useSpeechLabState = () => {
         }
       }
 
-      // Also check for legacy generatedSpeech in localStorage
-      const savedSpeech = localStorage.getItem('generatedSpeech');
-      if (savedSpeech && !generatedSpeech) {
-        setGeneratedSpeech(savedSpeech);
-      }
     } catch (error) {
       console.error('Error loading Speech Lab state:', error);
     } finally {
@@ -121,9 +116,15 @@ export const useSpeechLabState = () => {
     setSpeechTitle('');
     setGeneratedSpeech('');
     setAutoSavedSpeechId(undefined);
+    
+    // Clear all speech-related localStorage keys
     localStorage.removeItem(SPEECH_LAB_STATE_KEY);
     localStorage.removeItem('generatedSpeech');
-    console.log('🗑️ Speech Lab state cleared');
+    localStorage.removeItem('speechBackup');
+    localStorage.removeItem('tempGeneratedSpeech');
+    localStorage.removeItem('lastSpeechRequest');
+    
+    console.log('🗑️ Speech Lab state and all related data cleared');
   }, []);
 
   // Define step labels for the progress indicator
