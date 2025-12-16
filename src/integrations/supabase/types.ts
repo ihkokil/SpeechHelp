@@ -543,8 +543,11 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          deleted_at: string | null
+          event_date: string | null
           id: string
           speech_type: string
+          status: string | null
           title: string
           updated_at: string
           user_id: string
@@ -552,8 +555,11 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string
+          deleted_at?: string | null
+          event_date?: string | null
           id?: string
           speech_type: string
+          status?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -561,8 +567,11 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string
+          deleted_at?: string | null
+          event_date?: string | null
           id?: string
           speech_type?: string
+          status?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -671,6 +680,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_admin_profile_from_user_profile: {
+        Args: { admin_user_id_param: string }
+        Returns: Json
+      }
       get_admin_settings: {
         Args: { category_filter?: string }
         Returns: {
@@ -699,6 +712,10 @@ export type Database = {
       migrate_address_data_to_columns: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      soft_delete_speech: {
+        Args: { speech_id: string }
+        Returns: Json
       }
       toggle_user_admin_access: {
         Args: { user_id_param: string; enable_admin: boolean }
