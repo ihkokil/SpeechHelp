@@ -270,16 +270,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const deleteSpeech = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('speeches')
-        .delete()
-        .eq('id', id);
+      const { data, error } = await supabase
+        .rpc('soft_delete_speech', { speech_id: id });
 
       if (error) {
         throw error;
       }
 
-      console.log('Speech deleted successfully:', id);
+      // Parse the response data
+      const response = data as { success: boolean; error?: string };
+      if (response && !response.success) {
+        throw new Error(response.error || 'Failed to delete speech');
+      }
+
+      console.log('Speech soft deleted successfully:', id);
       await fetchSpeeches();
     } catch (error) {
       console.error('Error deleting speech:', error);
