@@ -30,29 +30,9 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
         date: event.date instanceof Date ? event.date : new Date(event.date)
       }));
       setUpcomingEvents(eventsWithDates);
-    } else if (speeches && speeches.length > 0) {
-      // Create example events only if speeches exist
-      const exampleEvents = speeches
-        .slice(0, Math.min(speeches.length, 3))
-        .map((speech, index) => {
-          const upcomingDate = new Date();
-          upcomingDate.setDate(upcomingDate.getDate() + (index + 1) * 3);
-          
-          const durationBase = parseInt(speech.id?.substring(0, 8) || '0', 16) || 20;
-          const duration = (durationBase % 20) + 15;
-          
-          return {
-            id: speech.id || crypto.randomUUID(),
-            title: speech.title || 'Upcoming Speech',
-            date: upcomingDate,
-            duration: duration,
-            category: speech.speech_type || 'speech',
-            status: 'upcoming' as const
-          };
-        });
-      
-      setUpcomingEvents(exampleEvents);
-      saveEventsToStorage(exampleEvents, user.id);
+    } else {
+      // No auto-generation - upcoming events should only be created explicitly
+      setUpcomingEvents([]);
     }
   }, [user, speeches]);
 
