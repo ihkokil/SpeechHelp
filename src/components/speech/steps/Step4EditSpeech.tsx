@@ -191,16 +191,14 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
 									<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
 								</svg>
 								<Translate text="common.saving" fallback="Saving..." />
-							</span> : isAutoSaved && autoSavedSpeechId ? <>
+							</span> : <>
 								<Save className="mr-2 h-4 w-4" />
-								<Translate text="speechLab.saveChanges" fallback="Save Changes" />
-							</> : <>
-								<Save className="mr-2 h-4 w-4" />
-								<Translate text="speechLab.save" />
+								Save & Exit
 							</>}
 					</ButtonCustom>
 				</CardFooter>
 			</Card>
 		</>;
 };
+
 export default Step4EditSpeech;
