@@ -452,6 +452,42 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_transitions: {
+        Row: {
+          created_at: string
+          from_plan: string | null
+          grandfathered_content: number | null
+          id: string
+          metadata: Json | null
+          to_plan: string
+          transition_date: string
+          transition_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_plan?: string | null
+          grandfathered_content?: number | null
+          id?: string
+          metadata?: Json | null
+          to_plan: string
+          transition_date?: string
+          transition_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          from_plan?: string | null
+          grandfathered_content?: number | null
+          id?: string
+          metadata?: Json | null
+          to_plan?: string
+          transition_date?: string
+          transition_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address_city: string | null
@@ -539,6 +575,45 @@ export type Database = {
         }
         Relationships: []
       }
+      speech_credits: {
+        Row: {
+          created_at: string
+          credits_granted: number
+          credits_used: number
+          id: string
+          is_active: boolean
+          period_end: string | null
+          period_start: string
+          plan_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_granted?: number
+          credits_used?: number
+          id?: string
+          is_active?: boolean
+          period_end?: string | null
+          period_start: string
+          plan_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_granted?: number
+          credits_used?: number
+          id?: string
+          is_active?: boolean
+          period_end?: string | null
+          period_start?: string
+          plan_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       speeches: {
         Row: {
           content: string
@@ -546,6 +621,8 @@ export type Database = {
           deleted_at: string | null
           event_date: string | null
           id: string
+          is_grandfathered: boolean | null
+          plan_period_id: string | null
           speech_type: string
           status: string | null
           title: string
@@ -558,6 +635,8 @@ export type Database = {
           deleted_at?: string | null
           event_date?: string | null
           id?: string
+          is_grandfathered?: boolean | null
+          plan_period_id?: string | null
           speech_type: string
           status?: string | null
           title: string
@@ -570,13 +649,23 @@ export type Database = {
           deleted_at?: string | null
           event_date?: string | null
           id?: string
+          is_grandfathered?: boolean | null
+          plan_period_id?: string | null
           speech_type?: string
           status?: string | null
           title?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "speeches_plan_period_id_fkey"
+            columns: ["plan_period_id"]
+            isOneToOne: false
+            referencedRelation: "speech_credits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_2fa: {
         Row: {
@@ -660,6 +749,10 @@ export type Database = {
           is_super_admin: boolean
         }[]
       }
+      can_create_speech_with_credits: {
+        Args: { user_id_param: string }
+        Returns: Json
+      }
       cleanup_expired_otps: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -692,6 +785,25 @@ export type Database = {
           setting_category: string
           updated_at: string
         }[]
+      }
+      handle_plan_transition: {
+        Args: {
+          user_id_param: string
+          from_plan_param: string
+          to_plan_param: string
+          transition_type_param: string
+          grandfathered_content_param?: number
+        }
+        Returns: Json
+      }
+      initialize_speech_credits: {
+        Args: {
+          user_id_param: string
+          plan_type_param: string
+          period_start_param?: string
+          period_end_param?: string
+        }
+        Returns: string
       }
       is_admin: {
         Args: Record<PropertyKey, never>
