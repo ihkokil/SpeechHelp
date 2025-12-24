@@ -71,10 +71,29 @@ export const loadEventsFromStorage = (userId: string): SpeechEvent[] | null => {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
       const events = JSON.parse(stored);
-      return events.map((event: any) => ({
-        ...event,
-        date: new Date(event.date)
-      }));
+      
+      // Convert date strings back to Date objects and filter out past events
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0); // Start of today
+      
+      const validEvents = events
+        .map((event: any) => ({
+          ...event,
+          date: new Date(event.date)
+        }))
+        .filter((event: SpeechEvent) => {
+          const eventDate = new Date(event.date);
+          eventDate.setHours(0, 0, 0, 0); // Start of event day
+          return eventDate >= currentDate; // Keep events from today onwards
+        });
+      
+      // If we filtered out events, save the cleaned list back to storage
+      if (validEvents.length !== events.length) {
+        saveEventsToStorage(validEvents, userId);
+        console.log(`🧹 Cleaned up ${events.length - validEvents.length} past events`);
+      }
+      
+      return validEvents;
     }
   } catch (error) {
     console.error('Error loading events from storage:', error);
@@ -92,5 +111,29 @@ export const saveEventsToStorage = (events: SpeechEvent[], userId: string): void
     localStorage.setItem(storageKey, JSON.stringify(eventsToStore));
   } catch (error) {
     console.error('Error saving events to storage:', error);
+  }
+};
+
+export const removeEventFromStorage = (eventId: string, userId: string): void => {
+  try {
+    const events = loadEventsFromStorage(userId) || [];
+    const filteredEvents = events.filter(event => event.id !== eventId);
+    saveEventsToStorage(filteredEvents, userId);
+    console.log(`🗑️ Removed event ${eventId} from storage`);
+  } catch (error) {
+    console.error('Error removing event from storage:', error);
+  }
+};
+
+export const markEventAsCompleted = (eventId: string, userId: string): void => {
+  try {
+    const events = loadEventsFromStorage(userId) || [];
+    const updatedEvents = events.map(event => 
+      event.id === eventId ? { ...event, status: 'completed' as const } : event
+    );
+    saveEventsToStorage(updatedEvents, userId);
+    console.log(`✅ Marked event ${eventId} as completed`);
+  } catch (error) {
+    console.error('Error marking event as completed:', error);
   }
 };

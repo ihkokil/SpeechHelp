@@ -159,7 +159,10 @@ const UpcomingEventActions = ({ event, onCreateSpeech, refreshEvents }: Upcoming
         variant="outline" 
         size="sm" 
         className="h-8 px-4 py-1 bg-pink-500 text-white hover:bg-pink-600 transition-colors rounded-md border-0"
-        onClick={() => onCreateSpeech(event)}
+        onClick={() => {
+          toast.success('Opening Speech Lab with event details...');
+          onCreateSpeech(event);
+        }}
       >
         Create
       </Button>

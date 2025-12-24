@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SpeechEvent } from './types';
 import { Speech } from '@/types/speech';
-import { loadEventsFromStorage, saveEventsToStorage } from './utils';
+import { loadEventsFromStorage, saveEventsToStorage, removeEventFromStorage } from './utils';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
@@ -67,7 +67,16 @@ export const useUpcomingEvents = (speeches: Speech[] = []) => {
         : new Date(event.date).toISOString()
     };
     
+    // Store the event details for the speech lab to pick up
     localStorage.setItem('currentEvent', JSON.stringify(processedEvent));
+    
+    // Remove the event from upcoming events since it's being converted to a speech
+    removeEventFromStorage(event.id, user.id);
+    
+    // Update local state to reflect the removal
+    setUpcomingEvents(prev => prev.filter(e => e.id !== event.id));
+    
+    // Navigate to speech lab which will initialize with the event data
     navigate('/speech-lab');
   }, [user, navigate]);
 

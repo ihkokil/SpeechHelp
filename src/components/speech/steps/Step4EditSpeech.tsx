@@ -155,6 +155,7 @@ const Step4EditSpeech: React.FC<Step4Props> = ({
       localStorage.removeItem('speechBackup');
       localStorage.removeItem('tempGeneratedSpeech');
       localStorage.removeItem('lastSpeechRequest');
+      localStorage.removeItem('currentEvent');
       clearSavedWork();
       // Clear speech lab state for fresh start next time
       onSaveSuccess?.();

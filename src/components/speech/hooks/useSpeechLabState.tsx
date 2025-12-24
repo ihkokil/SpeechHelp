@@ -29,6 +29,24 @@ export const useSpeechLabState = () => {
   // Load persisted state on mount
   useEffect(() => {
     try {
+      // First check for current event from upcoming speeches
+      const currentEventData = localStorage.getItem('currentEvent');
+      if (currentEventData) {
+        const currentEvent = JSON.parse(currentEventData);
+        console.log('🎯 Initializing Speech Lab from upcoming event:', currentEvent);
+        
+        // Pre-populate from the upcoming event
+        setSelectedSpeechType(currentEvent.category || '');
+        setSpeechTitle(currentEvent.title || '');
+        setCurrentStep(2); // Skip step 1 since we already have the type
+        
+        // Clear the current event from storage to prevent re-initialization
+        localStorage.removeItem('currentEvent');
+        setIsStateRestored(true);
+        return;
+      }
+
+      // Fall back to regular state restoration
       const savedState = localStorage.getItem(SPEECH_LAB_STATE_KEY);
       if (savedState) {
         const parsedState: SpeechLabState = JSON.parse(savedState);
@@ -123,6 +141,7 @@ export const useSpeechLabState = () => {
     localStorage.removeItem('speechBackup');
     localStorage.removeItem('tempGeneratedSpeech');
     localStorage.removeItem('lastSpeechRequest');
+    localStorage.removeItem('currentEvent');
     
     console.log('🗑️ Speech Lab state and all related data cleared');
   }, []);
