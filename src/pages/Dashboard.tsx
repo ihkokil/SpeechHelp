@@ -196,7 +196,7 @@ const Dashboard = () => {
                     icon={<ClockIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} 
                     count={dashboardMetrics.last30DaysCount} 
                     label="Last 30 Days" 
-                    period="Including Deleted" 
+                    period="Recent Activity" 
                     bgColor="bg-blue-50" 
                     showExpand={false}
                   />
@@ -205,7 +205,7 @@ const Dashboard = () => {
                     icon={<TrendingUpIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} 
                     count={dashboardMetrics.last7DaysCount} 
                     label="Last 7 Days" 
-                    period="Including Deleted" 
+                    period="This Week" 
                     bgColor="bg-green-50" 
                     showExpand={false}
                   />
