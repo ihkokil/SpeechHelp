@@ -74,6 +74,13 @@ export function usePlanLimits(): UserPlanLimits {
 			storageUsed: number;
 			teamMembersAdded: number;
 		};
+		speechPermissions?: {
+			allowed: boolean;
+			reason?: string;
+			credits_remaining?: number;
+			credits_granted?: number;
+			period_id?: string;
+		};
 	}>({
 		userId: '',
 		planType: SubscriptionPlan.FREE_TRIAL,
@@ -129,18 +136,24 @@ export function usePlanLimits(): UserPlanLimits {
 					endDate: profileData?.subscription_end_date
 				});
 
-				// Get speech count for the user
-				const { count: speechCount, error: speechError } = await supabase
-					.from('speeches')
-					.select('*', { count: 'exact', head: true })
-					.eq('user_id', user.id);
+	// Check speech creation permissions using the credit system
+	const { data: speechPermissionsRaw, error: speechError } = await supabase
+		.rpc('can_create_speech_with_credits', { user_id_param: user.id });
 
-				if (speechError) {
-					console.error('❌ Error fetching speech count:', speechError);
-					return;
-				}
+	if (speechError) {
+		console.error('❌ Error checking speech permissions:', speechError);
+		return;
+	}
 
-				console.log('🎤 Speech count:', speechCount);
+	const speechPermissions = speechPermissionsRaw as {
+		allowed: boolean;
+		reason?: string;
+		credits_remaining?: number;
+		credits_granted?: number;
+		period_id?: string;
+	} | null;
+
+	console.log('🎤 Speech permissions:', speechPermissions);
 
 				// Map database values to our user subscription model
 				const planType = (profileData?.subscription_plan as SubscriptionPlan) || SubscriptionPlan.FREE_TRIAL;
@@ -159,10 +172,13 @@ export function usePlanLimits(): UserPlanLimits {
 					endDate,
 					subscriptionStatus,
 					usageStats: {
-						speechesUsed: speechCount || 0,
+						speechesUsed: speechPermissions?.credits_remaining 
+							? speechPermissions.credits_granted - speechPermissions.credits_remaining
+							: 0,
 						storageUsed: 0, // This would need to be calculated based on your storage model
 						teamMembersAdded: 0, // This would need to be fetched from a team members table
 					},
+					speechPermissions, // Store the full permissions response
 				};
 
 				console.log('✅ Final subscription data:', {
@@ -229,17 +245,20 @@ export function usePlanLimits(): UserPlanLimits {
 		? `${PLAN_RULES[userSubscription.planType].displayName} (Expired)`
 		: PLAN_RULES[userSubscription.planType].displayName;
 
-	// Get speech creation permission
-	const speechCreationStatus = canCreateSpeech(userSubscription);
+	// Get speech creation permission from credit system
+	const speechCreationStatus = {
+		allowed: userSubscription.speechPermissions?.allowed || false,
+		reason: userSubscription.speechPermissions?.reason
+	};
 
 	// Calculate days remaining
 	const daysRemaining = getDaysRemaining(userSubscription);
 
-	// Calculate usage statistics and limits using effective plan
-	const speechesLimit = PLAN_RULES[effectiveStatus.effectivePlan].limits[LimitType.SPEECHES_COUNT];
-	const speechesRemaining = speechesLimit === Infinity
-		? Infinity
-		: speechesLimit - userSubscription.usageStats.speechesUsed;
+	// Calculate usage statistics and limits using credit system
+	const speechesLimit = userSubscription.speechPermissions?.credits_granted === 999999 
+		? Infinity 
+		: userSubscription.speechPermissions?.credits_granted || 0;
+	const speechesRemaining = userSubscription.speechPermissions?.credits_remaining || 0;
 
 	const storageLimit = PLAN_RULES[effectiveStatus.effectivePlan].limits[LimitType.STORAGE_MB];
 	const storageRemaining = storageLimit === Infinity

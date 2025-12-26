@@ -63,7 +63,21 @@ export function useSpeechCreation({ onSuccess, onUpgradeNeeded }: SpeechCreation
 		setIsCreating(true);
 
 		try {
-			// Create the speech in the database
+			// Check permissions again and get the period ID
+			const { data: permissionCheck, error: permissionError } = await supabase
+				.rpc('can_create_speech_with_credits', { user_id_param: user.id });
+
+			const permissions = permissionCheck as {
+				allowed: boolean;
+				reason?: string;
+				period_id?: string;
+			} | null;
+
+			if (permissionError || !permissions?.allowed) {
+				throw new Error(permissions?.reason || 'Unable to create speech');
+			}
+
+			// Create the speech in the database with the current credit period
 			const { data, error } = await supabase
 				.from('speeches')
 				.insert([
@@ -71,7 +85,8 @@ export function useSpeechCreation({ onSuccess, onUpgradeNeeded }: SpeechCreation
 						title,
 						content,
 						speech_type: speechType,
-						user_id: user.id
+						user_id: user.id,
+						plan_period_id: permissions.period_id
 					}
 				])
 				.select()
