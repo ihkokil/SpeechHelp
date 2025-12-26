@@ -11,6 +11,7 @@ interface SpeechSummaryCardProps {
   label: string;
   period: string;
   bgColor?: string;
+  showExpand?: boolean;
 }
 
 const SpeechSummaryCard = ({ 
@@ -18,7 +19,8 @@ const SpeechSummaryCard = ({
   count, 
   label, 
   period, 
-  bgColor = 'bg-white' 
+  bgColor = 'bg-white',
+  showExpand = true
 }: SpeechSummaryCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const { currentLanguage } = useLanguage();
@@ -45,19 +47,25 @@ const SpeechSummaryCard = ({
             </div>
           </div>
           
-          <button 
-            onClick={() => setExpanded(!expanded)}
-            className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-          >
-            {translatedPeriod}
-            <ChevronDownIcon className={cn(
-              "h-4 w-4 ml-1 transition-transform",
-              expanded && "transform rotate-180"
-            )} />
-          </button>
+          {showExpand && (
+            <button 
+              onClick={() => setExpanded(!expanded)}
+              className="flex items-center text-sm text-gray-500 hover:text-gray-700"
+            >
+              {translatedPeriod}
+              <ChevronDownIcon className={cn(
+                "h-4 w-4 ml-1 transition-transform",
+                expanded && "transform rotate-180"
+              )} />
+            </button>
+          )}
+          
+          {!showExpand && (
+            <span className="text-sm text-gray-500">{translatedPeriod}</span>
+          )}
         </div>
         
-        {expanded && (
+        {showExpand && expanded && (
           <div className="mt-4 pt-4 border-t border-gray-200">
             <p className="text-sm text-gray-600">
               Detailed statistics will be displayed here.

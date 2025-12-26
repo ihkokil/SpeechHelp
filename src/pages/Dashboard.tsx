@@ -12,12 +12,13 @@ import PreviousSpeeches from '@/components/dashboard/PreviousSpeeches';
 import { SubscriptionDebug } from '@/components/debug/SubscriptionDebug';
 import { SubscriptionSyncAlert } from '@/components/subscription/SubscriptionSyncAlert';
 import { useSubscriptionPolling } from '@/hooks/useSubscriptionPolling';
-import { CalendarIcon, FileTextIcon, ShieldIcon, TrendingUpIcon } from 'lucide-react';
+import { CalendarIcon, FileTextIcon, ClockIcon, TrendingUpIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/translations';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 const Dashboard = () => {
   const {
     user,
@@ -29,6 +30,7 @@ const Dashboard = () => {
   const [userName, setUserName] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [allSpeeches, setAllSpeeches] = useState<any[]>([]);
   const {
     currentLanguage
   } = useLanguage();
@@ -51,6 +53,29 @@ const Dashboard = () => {
     console.log('Dashboard - Speeches count:', speeches?.length || 0);
   }, [user, speeches]);
 
+  // Fetch all speeches including deleted ones
+  const fetchAllSpeeches = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('speeches')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching all speeches:', error);
+        return;
+      }
+
+      console.log('Fetched all speeches (including deleted):', data?.length || 0);
+      setAllSpeeches(data || []);
+    } catch (error) {
+      console.error('Error in fetchAllSpeeches:', error);
+    }
+  };
+
   // Fetch speeches when component mounts
   useEffect(() => {
     if (user) {
@@ -59,6 +84,7 @@ const Dashboard = () => {
         console.error('Error fetching speeches:', error);
         toast.error(t('errors.fetchSpeeches', currentLanguage.code));
       });
+      fetchAllSpeeches();
     }
   }, [user, fetchSpeeches, t, currentLanguage.code]);
   useEffect(() => {
@@ -83,35 +109,44 @@ const Dashboard = () => {
     }
   }, [user]);
   const dashboardMetrics = useMemo(() => {
-    const totalSpeeches = speeches?.length || 0;
+    // Total speeches including deleted ones
+    const totalSpeeches = allSpeeches?.length || 0;
+    
     const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-    const thisMonthSpeeches = speeches?.filter(speech => {
-      if (!speech?.created_at) return false;
-      const speechDate = new Date(speech.created_at);
-      return speechDate.getMonth() === currentMonth && speechDate.getFullYear() === currentYear;
-    }) || [];
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const last30DaysSpeeches = speeches?.filter(speech => {
+    
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    // Speeches in last 30 days including deleted ones
+    const last30DaysSpeeches = allSpeeches?.filter(speech => {
       if (!speech?.created_at) return false;
       const speechDate = new Date(speech.created_at);
       return speechDate >= thirtyDaysAgo;
     }) || [];
+    
+    // Speeches in last 7 days including deleted ones
+    const last7DaysSpeeches = allSpeeches?.filter(speech => {
+      if (!speech?.created_at) return false;
+      const speechDate = new Date(speech.created_at);
+      return speechDate >= sevenDaysAgo;
+    }) || [];
+
     const speechTypeDistribution = (speeches || []).reduce((acc, speech) => {
       if (speech?.speech_type) {
         acc[speech.speech_type] = (acc[speech.speech_type] || 0) + 1;
       }
       return acc;
     }, {} as Record<string, number>);
+    
     return {
       totalSpeeches,
-      inProgressCount: thisMonthSpeeches.length,
-      recentImprovementCount: last30DaysSpeeches.length,
+      last30DaysCount: last30DaysSpeeches.length,
+      last7DaysCount: last7DaysSpeeches.length,
       speechTypeDistribution
     };
-  }, [speeches]);
+  }, [allSpeeches, speeches]);
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
         <div className="flex flex-col items-center">
@@ -148,11 +183,32 @@ const Dashboard = () => {
                 <h2 className="text-xl font-bold text-gray-800 mb-3 sm:mb-4">{t('dashboard.summary', currentLanguage.code)}</h2>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                  <SpeechSummaryCard icon={<FileTextIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} count={dashboardMetrics.totalSpeeches} label="dashboard.totalSpeeches" period="dashboard.allTime" bgColor="bg-gray-100" />
+                  <SpeechSummaryCard 
+                    icon={<FileTextIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} 
+                    count={dashboardMetrics.totalSpeeches} 
+                    label="Total Speeches" 
+                    period="All Time" 
+                    bgColor="bg-gray-100" 
+                    showExpand={false}
+                  />
                   
-                  <SpeechSummaryCard icon={<ShieldIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} count={dashboardMetrics.inProgressCount} label="dashboard.inProgress" period="dashboard.thisMonth" bgColor="bg-red-50" />
+                  <SpeechSummaryCard 
+                    icon={<ClockIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} 
+                    count={dashboardMetrics.last30DaysCount} 
+                    label="Last 30 Days" 
+                    period="Including Deleted" 
+                    bgColor="bg-blue-50" 
+                    showExpand={false}
+                  />
                   
-                  <SpeechSummaryCard icon={<TrendingUpIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} count={dashboardMetrics.recentImprovementCount} label="dashboard.improvement" period="dashboard.last30Days" bgColor="bg-green-50" />
+                  <SpeechSummaryCard 
+                    icon={<TrendingUpIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} 
+                    count={dashboardMetrics.last7DaysCount} 
+                    label="Last 7 Days" 
+                    period="Including Deleted" 
+                    bgColor="bg-green-50" 
+                    showExpand={false}
+                  />
                 </div>
               </div>
               
