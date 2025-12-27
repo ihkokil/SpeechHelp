@@ -11,6 +11,7 @@ import BillingSettings from '@/components/settings/BillingSettings';
 import NotificationsSettings from '@/components/settings/NotificationsSettings';
 import SecuritySettings from '@/components/settings/SecuritySettings';
 import { supabase } from '@/integrations/supabase/client';
+import { usePlanPurchaseNotification } from '@/hooks/usePlanPurchaseNotification';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -18,6 +19,25 @@ const Settings = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { refreshUser } = useAuth();
+
+  // Handle plan purchase notifications
+  usePlanPurchaseNotification();
+
+  // Check URL params to set active tab
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    const purchaseComplete = urlParams.get('purchase_complete');
+    
+    if (tab && ['profile', 'billing', 'notifications', 'security'].includes(tab)) {
+      setActiveTab(tab);
+    }
+    
+    // If purchase completed, switch to billing tab
+    if (purchaseComplete === 'true') {
+      setActiveTab('billing');
+    }
+  }, []);
 
   // Check for success parameter and trigger subscription verification
   useEffect(() => {

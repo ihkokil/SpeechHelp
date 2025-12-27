@@ -73,8 +73,8 @@ export const usePricingTierCheckout = ({
           description: "Your 7-day free trial has started. Enjoy Speech Help!",
         });
         
-        // Redirect to dashboard
-        window.location.href = '/dashboard';
+        // Redirect to dashboard with success message
+        window.location.href = '/dashboard?trial_activated=true';
         return;
       }
 
@@ -103,7 +103,7 @@ export const usePricingTierCheckout = ({
         plan: planType,
         priceId: pricingPeriod === 'monthly' ? price.monthly.productId : price.yearly.productId,
         userId: user?.id,
-        returnUrl: `${window.location.origin}/settings?tab=billing`,
+        returnUrl: `${window.location.origin}/settings?tab=billing&purchase_complete=true`,
         pricingPeriod,
       });
 

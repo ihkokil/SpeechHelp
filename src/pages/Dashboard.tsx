@@ -12,6 +12,7 @@ import PreviousSpeeches from '@/components/dashboard/PreviousSpeeches';
 import { SubscriptionDebug } from '@/components/debug/SubscriptionDebug';
 import { SubscriptionSyncAlert } from '@/components/subscription/SubscriptionSyncAlert';
 import { useSubscriptionPolling } from '@/hooks/useSubscriptionPolling';
+import { usePlanPurchaseNotification } from '@/hooks/usePlanPurchaseNotification';
 import { CalendarIcon, FileTextIcon, ClockIcon, TrendingUpIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -46,6 +47,9 @@ const Dashboard = () => {
     enabled: true,
     aggressiveOnSpeechPages: true
   });
+
+  // Handle plan purchase notifications
+  usePlanPurchaseNotification();
 
   // Debug logging
   useEffect(() => {
