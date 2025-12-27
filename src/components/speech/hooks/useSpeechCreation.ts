@@ -67,15 +67,34 @@ export function useSpeechCreation({ onSuccess, onUpgradeNeeded }: SpeechCreation
 			const { data: permissionCheck, error: permissionError } = await supabase
 				.rpc('can_create_speech_with_credits', { user_id_param: user.id });
 
+			console.log('🔍 Permission check result:', { permissionCheck, permissionError });
+
 			const permissions = permissionCheck as {
 				allowed: boolean;
 				reason?: string;
 				period_id?: string;
+				plan_type?: string;
+				current_usage?: number;
+				credits_remaining?: number;
+				debug_info?: any;
 			} | null;
 
-			if (permissionError || !permissions?.allowed) {
+			if (permissionError) {
+				console.error('❌ Permission check failed:', permissionError);
+				throw new Error(`Permission check failed: ${permissionError.message}`);
+			}
+
+			if (!permissions?.allowed) {
+				console.warn('🚫 Speech creation not allowed:', permissions?.reason);
 				throw new Error(permissions?.reason || 'Unable to create speech');
 			}
+
+			console.log('✅ Speech creation allowed:', {
+				plan_type: permissions.plan_type,
+				current_usage: permissions.current_usage,
+				credits_remaining: permissions.credits_remaining,
+				period_id: permissions.period_id
+			});
 
 			// Create the speech in the database with the current credit period
 			const { data, error } = await supabase
