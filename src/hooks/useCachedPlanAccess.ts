@@ -14,7 +14,7 @@ interface CachedPlanAccess {
   timestamp: number;
 }
 
-const CACHE_DURATION = 2 * 60 * 1000; // Reduced to 2 minutes for more frequent checks
+const CACHE_DURATION = 30 * 1000; // Reduced to 30 seconds for debugging
 const CACHE_KEY_PREFIX = 'planAccess_';
 
 export const useCachedPlanAccess = (limitType: LimitType, featureName: string) => {
