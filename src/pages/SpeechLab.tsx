@@ -16,6 +16,14 @@ const SpeechLab = () => {
 		hasCachedData
 	} = useCachedPlanAccess(LimitType.SPEECHES_COUNT, 'Speech Lab');
 
+	console.log('🎯 SpeechLab render state:', {
+		loadingPlanLimits,
+		canCreateSpeech,
+		reasonCannotCreate,
+		shouldShowUpgradePrompt,
+		hasCachedData
+	});
+
 	// Show loading only on initial visit (no cached data)
 	if (loadingPlanLimits && !hasCachedData) {
 		return (
