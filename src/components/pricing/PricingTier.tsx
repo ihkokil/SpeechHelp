@@ -86,7 +86,6 @@ const PricingTier: React.FC<PricingTierProps> = ({
 			<PricingTierFeatures 
 				features={features}
 				isPlanDisabled={isPlanDisabled}
-				planType={planType}
 			/>
 
 			<PricingTierDisabledMessage

@@ -12,7 +12,6 @@ import PreviousSpeeches from '@/components/dashboard/PreviousSpeeches';
 import { SubscriptionDebug } from '@/components/debug/SubscriptionDebug';
 import { SubscriptionSyncAlert } from '@/components/subscription/SubscriptionSyncAlert';
 import { useSubscriptionPolling } from '@/hooks/useSubscriptionPolling';
-import { usePlanPurchaseNotification } from '@/hooks/usePlanPurchaseNotification';
 import { CalendarIcon, FileTextIcon, ClockIcon, TrendingUpIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -47,9 +46,6 @@ const Dashboard = () => {
     enabled: true,
     aggressiveOnSpeechPages: true
   });
-
-  // Handle plan purchase notifications
-  usePlanPurchaseNotification();
 
   // Debug logging
   useEffect(() => {
@@ -200,7 +196,7 @@ const Dashboard = () => {
                     icon={<ClockIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} 
                     count={dashboardMetrics.last30DaysCount} 
                     label="Last 30 Days" 
-                    period="Recent Activity" 
+                    period="Including Deleted" 
                     bgColor="bg-blue-50" 
                     showExpand={false}
                   />
@@ -209,7 +205,7 @@ const Dashboard = () => {
                     icon={<TrendingUpIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />} 
                     count={dashboardMetrics.last7DaysCount} 
                     label="Last 7 Days" 
-                    period="This Week" 
+                    period="Including Deleted" 
                     bgColor="bg-green-50" 
                     showExpand={false}
                   />

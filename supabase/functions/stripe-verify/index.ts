@@ -199,64 +199,6 @@ serve(async (req) => {
 					log('Successfully updated/inserted profile with ACTIVE status and correct dates');
 				}
 
-				// Get user's current plan to determine transition type
-				let currentPlan = null;
-				let grandfatheredContent = 0;
-				
-				try {
-					const { data: currentProfile } = await supabase
-						.from('profiles')
-						.select('subscription_plan')
-						.eq('id', userId)
-						.single();
-					
-					currentPlan = currentProfile?.subscription_plan;
-					
-					// Count existing speeches for grandfathering if upgrading/renewing
-					if (currentPlan && (currentPlan !== planType)) {
-						const { count } = await supabase
-							.from('speeches')
-							.select('*', { count: 'exact', head: true })
-							.eq('user_id', userId)
-							.is('deleted_at', null);
-						
-						grandfatheredContent = count || 0;
-					}
-				} catch (planCheckError) {
-					log('Error checking current plan:', planCheckError);
-				}
-
-				// Trigger plan transition to reset speech credits
-				try {
-					log('Triggering plan transition', { 
-						userId, 
-						fromPlan: currentPlan, 
-						toPlan: planType,
-						grandfatheredContent 
-					});
-					
-					const transitionType = currentPlan ? 
-						(currentPlan === planType ? 'renewal' : 'upgrade') : 
-						'initial_purchase';
-					
-					const { data: transitionResult, error: transitionError } = await supabase
-						.rpc('handle_plan_transition', {
-							user_id_param: userId,
-							from_plan_param: currentPlan,
-							to_plan_param: planType,
-							transition_type_param: transitionType,
-							grandfathered_content_param: grandfatheredContent
-						});
-
-					if (transitionError) {
-						log('Error in plan transition:', transitionError);
-					} else {
-						log('Successfully triggered plan transition:', transitionResult);
-					}
-				} catch (transitionError) {
-					log('Error triggering plan transition:', transitionError);
-				}
-
 				// Store payment history
 				try {
 					const { error: paymentError } = await supabase

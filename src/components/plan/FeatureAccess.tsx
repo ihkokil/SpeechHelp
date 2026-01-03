@@ -156,7 +156,6 @@ export function FeatureAccess({
 	// Check limit if specified (uses effective plan)
 	if (limitType) {
 		const hasReachedLimit = planLimits.hasReachedLimit(limitType);
-		console.log('🔍 FeatureAccess limit check:', { limitType, hasReachedLimit, planLimits });
 		if (hasReachedLimit) {
 			// Return custom fallback or the limit block
 			if (fallback) return <>{fallback}</>;

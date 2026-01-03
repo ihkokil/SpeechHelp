@@ -14,7 +14,7 @@ interface CachedPlanAccess {
   timestamp: number;
 }
 
-const CACHE_DURATION = 30 * 1000; // Reduced to 30 seconds for debugging
+const CACHE_DURATION = 2 * 60 * 1000; // Reduced to 2 minutes for more frequent checks
 const CACHE_KEY_PREFIX = 'planAccess_';
 
 export const useCachedPlanAccess = (limitType: LimitType, featureName: string) => {
@@ -55,7 +55,7 @@ export const useCachedPlanAccess = (limitType: LimitType, featureName: string) =
 
   // Update cache when plan limits are loaded
   useEffect(() => {
-    if (!planLimits.loadingPlanLimits && cacheKey) {
+    if (!planLimits.loadingPlanLimits && cacheKey && !cachedAccess) {
       const newCachedAccess: CachedPlanAccess = {
         hasAccess: planLimits.canCreateSpeech,
         canCreateSpeech: planLimits.canCreateSpeech,
@@ -88,6 +88,7 @@ export const useCachedPlanAccess = (limitType: LimitType, featureName: string) =
     planLimits.isExpired,
     planLimits.isActive,
     cacheKey, 
+    cachedAccess, 
     featureName
   ]);
 
@@ -100,11 +101,12 @@ export const useCachedPlanAccess = (limitType: LimitType, featureName: string) =
     }
   }, [cacheKey, featureName]);
 
-  // Use cached data if available, otherwise use live data
-  const effectiveAccess = cachedAccess ? cachedAccess.canCreateSpeech : planLimits.canCreateSpeech;
+  // If subscription is expired or inactive, always deny access regardless of cache
+  const effectiveAccess = cachedAccess?.isExpired || !cachedAccess?.isActive ? false : 
+    (cachedAccess?.canCreateSpeech ?? planLimits.canCreateSpeech);
 
   // Return cached data if available, otherwise use live data
-  const isLoading = planLimits.loadingPlanLimits && !cachedAccess;
+  const isLoading = isInitialCheck && planLimits.loadingPlanLimits && !cachedAccess;
   
   return {
     loadingPlanLimits: isLoading,

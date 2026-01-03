@@ -29,10 +29,10 @@ const PricingTierButton: React.FC<PricingTierButtonProps> = ({
       return 'Current Plan';
     }
     if (isRenewal) {
-      return 'Renew & Reset Credits';
+      return 'Renew Plan';
     }
     if (isUpgrade) {
-      return 'Upgrade & Reset Credits';
+      return 'Purchase';
     }
     if (isSwitch) {
       return 'Switch Plan';

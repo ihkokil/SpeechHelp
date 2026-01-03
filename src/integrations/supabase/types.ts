@@ -765,10 +765,6 @@ export type Database = {
         }
         Returns: string
       }
-      fix_speech_plan_period_ids: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
       generate_backup_codes: {
         Args: Record<PropertyKey, never>
         Returns: string[]
