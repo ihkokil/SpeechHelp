@@ -141,6 +141,24 @@ export function getDaysRemaining(subscription: UserSubscription): number {
 }
 
 /**
+ * Get billing cycle from pricing period
+ */
+export function getBillingCycleFromPeriod(pricingPeriod: 'monthly' | 'yearly'): 'monthly' | 'yearly' {
+	return pricingPeriod;
+}
+
+/**
+ * Check if user is repurchasing the same plan
+ */
+export function isRepurchasingSamePlan(
+	currentPlan: SubscriptionPlan,
+	newPlan: SubscriptionPlan,
+	currentStatus: string
+): boolean {
+	return currentPlan === newPlan && (currentStatus === 'active' || currentStatus === 'will_cancel');
+}
+
+/**
  * Check if a feature is available for the user's subscription
  */
 export function isFeatureAvailable(

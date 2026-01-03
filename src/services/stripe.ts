@@ -22,6 +22,7 @@ export async function createCheckoutSession({
 			userId,
 			returnUrl,
 			pricingPeriod,
+			billingCycle: pricingPeriod, // Add billing cycle for backend processing
 		};
 		console.log('Creating checkout session with body:', body);
 
