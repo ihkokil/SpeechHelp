@@ -496,7 +496,6 @@ export type Database = {
           address_street_address: string | null
           address_zip_code: string | null
           avatar_url: string | null
-          billing_period: string | null
           country_code: string | null
           created_at: string
           first_name: string | null
@@ -525,7 +524,6 @@ export type Database = {
           address_street_address?: string | null
           address_zip_code?: string | null
           avatar_url?: string | null
-          billing_period?: string | null
           country_code?: string | null
           created_at?: string
           first_name?: string | null
@@ -554,7 +552,6 @@ export type Database = {
           address_street_address?: string | null
           address_zip_code?: string | null
           avatar_url?: string | null
-          billing_period?: string | null
           country_code?: string | null
           created_at?: string
           first_name?: string | null
@@ -580,52 +577,40 @@ export type Database = {
       }
       speech_credits: {
         Row: {
-          billing_cycle: string | null
           created_at: string
           credits_granted: number
           credits_used: number
           id: string
           is_active: boolean
-          monthly_credits_granted: number | null
-          next_monthly_renewal: string | null
           period_end: string | null
           period_start: string
           plan_type: string
           updated_at: string
           user_id: string
-          yearly_total_credits: number | null
         }
         Insert: {
-          billing_cycle?: string | null
           created_at?: string
           credits_granted?: number
           credits_used?: number
           id?: string
           is_active?: boolean
-          monthly_credits_granted?: number | null
-          next_monthly_renewal?: string | null
           period_end?: string | null
           period_start: string
           plan_type: string
           updated_at?: string
           user_id: string
-          yearly_total_credits?: number | null
         }
         Update: {
-          billing_cycle?: string | null
           created_at?: string
           credits_granted?: number
           credits_used?: number
           id?: string
           is_active?: boolean
-          monthly_credits_granted?: number | null
-          next_monthly_renewal?: string | null
           period_end?: string | null
           period_start?: string
           plan_type?: string
           updated_at?: string
           user_id?: string
-          yearly_total_credits?: number | null
         }
         Relationships: []
       }
@@ -780,10 +765,6 @@ export type Database = {
         }
         Returns: string
       }
-      fix_speech_plan_period_ids: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
       generate_backup_codes: {
         Args: Record<PropertyKey, never>
         Returns: string[]
@@ -816,20 +797,12 @@ export type Database = {
         Returns: Json
       }
       initialize_speech_credits: {
-        Args:
-          | {
-              user_id_param: string
-              plan_type_param: string
-              period_start_param?: string
-              period_end_param?: string
-            }
-          | {
-              user_id_param: string
-              plan_type_param: string
-              period_start_param?: string
-              period_end_param?: string
-              billing_cycle_param?: string
-            }
+        Args: {
+          user_id_param: string
+          plan_type_param: string
+          period_start_param?: string
+          period_end_param?: string
+        }
         Returns: string
       }
       is_admin: {
@@ -849,10 +822,6 @@ export type Database = {
         Returns: string
       }
       migrate_address_data_to_columns: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      renew_monthly_credits_for_yearly_plans: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }

@@ -85,9 +85,8 @@ serve(async (req) => {
 				const pricingPeriod = session.metadata?.pricingPeriod || 'monthly';
 				const subscriptionId = session.subscription as string;
 				const planType = session.metadata?.plan || 'premium';
-				const billingCycle = pricingPeriod; // Use pricing period as billing cycle
 
-				log('Payment successful', { userId, pricingPeriod, subscriptionId, planType, billingCycle });
+				log('Payment successful', { userId, pricingPeriod, subscriptionId, planType });
 
 				if (!userId) {
 					log('Warning: No userId found in session client_reference_id');
@@ -154,7 +153,6 @@ serve(async (req) => {
 					subscription_plan: planType,
 					subscription_status: 'active',
 					subscription_period: pricingPeriod,
-					billing_period: billingCycle, // Add billing period to profile
 					subscription_start_date: subscriptionStartDate,
 					subscription_end_date: subscriptionEndDate,
 					subscription_price_id: priceId,
@@ -199,30 +197,6 @@ serve(async (req) => {
 					);
 				} else {
 					log('Successfully updated/inserted profile with ACTIVE status and correct dates');
-				}
-
-				// Initialize speech credits with new billing cycle logic
-				try {
-					const { data: creditResult, error: creditError } = await supabase.rpc(
-						'initialize_speech_credits',
-						{
-							user_id_param: userId,
-							plan_type_param: planType,
-							period_start_param: subscriptionStartDate,
-							period_end_param: subscriptionEndDate,
-							billing_cycle_param: billingCycle
-						}
-					);
-
-					if (creditError) {
-						log('Error initializing speech credits:', creditError);
-						// Don't fail the whole process for credit errors
-					} else {
-						log('Successfully initialized speech credits:', creditResult);
-					}
-				} catch (creditInitError) {
-					log('Error in credit initialization:', creditInitError);
-					// Don't fail the whole process for credit errors
 				}
 
 				// Store payment history
