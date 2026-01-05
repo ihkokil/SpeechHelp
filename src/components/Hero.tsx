@@ -55,7 +55,7 @@ const Hero = () => {
           className="absolute inset-x-0 z-0 overflow-hidden" 
           style={{ 
             top: navbarHeight,
-            height: `calc(100% - ${navbarHeight}px + ${isMobile ? '15vh' : '40vh'})` 
+            height: `calc(100% - ${navbarHeight}px + ${isMobile ? '30vh' : '60vh'})` 
           }}
         >
           <video
@@ -63,7 +63,7 @@ const Hero = () => {
             muted
             loop
             playsInline
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover object-[center_40%]"
             poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
           >
             <source src={videoUrl} type="video/quicktime" />
