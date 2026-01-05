@@ -4,6 +4,7 @@ import { QuestionItem } from '../../questionnaires';
 import TextQuestion from './TextQuestion';
 import TextareaQuestion from './TextareaQuestion';
 import RadioQuestion from './RadioQuestion';
+import SelectQuestion from './SelectQuestion';
 
 interface QuestionRendererProps {
   questionData: QuestionItem;
@@ -44,6 +45,16 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           value={value}
           onChange={onChange}
           options={options || []}
+        />
+      );
+    case 'select':
+      return (
+        <SelectQuestion 
+          question={question}
+          value={value}
+          onChange={onChange}
+          options={options || []}
+          placeholder={placeholder}
         />
       );
     default:

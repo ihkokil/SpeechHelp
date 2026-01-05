@@ -1,5 +1,5 @@
 
-import { QuestionItem } from './types';
+import { QuestionItem, DURATION_OPTIONS } from './types';
 import { 
   introductionQuestion,
   emotionalImpactQuestion,
@@ -45,9 +45,10 @@ export const informativeQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., 100 college students, Community group" 
   },
   { 
-    question: "Desired length of the speech (in minutes)?", 
-    type: "text", 
-    placeholder: "E.g., 15 minutes"
+    question: "How long should the speech be?", 
+    type: "select", 
+    options: DURATION_OPTIONS,
+    placeholder: "Select speech duration"
   },
   { 
     question: "Tone of the speech?", 

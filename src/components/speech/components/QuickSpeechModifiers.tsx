@@ -32,6 +32,8 @@ const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({
     }
   };
 
+  const buttonClasses = "flex items-center justify-center text-sm transition-colors hover:text-white hover:border-purple-300 min-w-[120px]";
+  
   return (
     <div className={cn("space-y-2", className)}>
       <div className="flex flex-wrap gap-2 mb-4">
@@ -40,9 +42,9 @@ const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({
           size="sm"
           onClick={() => onModify('longer')}
           disabled={isProcessing}
-          className="flex items-center text-sm transition-colors hover:text-white hover:border-purple-300"
+          className={buttonClasses}
         >
-          <ArrowUp className="h-3.5 w-3.5 mr-1" />
+          <ArrowUp className="h-3.5 w-3.5 mr-1.5" />
           {t('speechLab.makeLonger', currentLanguage.code)}
         </Button>
         
@@ -51,9 +53,9 @@ const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({
           size="sm"
           onClick={() => onModify('shorter')}
           disabled={isProcessing}
-          className="flex items-center text-sm transition-colors hover:text-white hover:border-purple-300"
+          className={buttonClasses}
         >
-          <ArrowDown className="h-3.5 w-3.5 mr-1" />
+          <ArrowDown className="h-3.5 w-3.5 mr-1.5" />
           {t('speechLab.makeShorter', currentLanguage.code)}
         </Button>
         
@@ -62,9 +64,9 @@ const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({
           size="sm"
           onClick={() => onModify('formal')}
           disabled={isProcessing}
-          className="flex items-center text-sm transition-colors hover:text-white hover:border-purple-300"
+          className={buttonClasses}
         >
-          <FileText className="h-3.5 w-3.5 mr-1" />
+          <FileText className="h-3.5 w-3.5 mr-1.5" />
           {t('speechLab.makeFormal', currentLanguage.code)}
         </Button>
         
@@ -73,9 +75,9 @@ const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({
           size="sm"
           onClick={() => onModify('humor')}
           disabled={isProcessing}
-          className="flex items-center text-sm transition-colors hover:text-white hover:border-purple-300"
+          className={buttonClasses}
         >
-          <Smile className="h-3.5 w-3.5 mr-1" />
+          <Smile className="h-3.5 w-3.5 mr-1.5" />
           {t('speechLab.addHumor', currentLanguage.code)}
         </Button>
 
@@ -84,10 +86,10 @@ const QuickSpeechModifiers: React.FC<QuickSpeechModifiersProps> = ({
           size="sm"
           onClick={() => setShowCustomInput(!showCustomInput)}
           disabled={isProcessing}
-          className="flex items-center text-sm transition-colors hover:text-white hover:border-purple-300"
+          className={buttonClasses}
         >
-          <Pencil className="h-3.5 w-3.5 mr-1" />
-          {t('speechLab.customInstruction', currentLanguage.code) || "Custom Instruction"}
+          <Pencil className="h-3.5 w-3.5 mr-1.5" />
+          {t('speechLab.customInstruction', currentLanguage.code) || "Custom"}
         </Button>
       </div>
 

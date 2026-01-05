@@ -1,5 +1,5 @@
 
-import { QuestionItem } from './types';
+import { QuestionItem, DURATION_OPTIONS } from './types';
 import { 
   introductionQuestion,
   emotionalImpactQuestion,
@@ -46,9 +46,10 @@ export const weddingQuestionnaire: QuestionItem[] = [
     placeholder: "Share the story of how they came together..." 
   },
   { 
-    question: "How long should the speech be (in minutes)?", 
-    type: "text", 
-    placeholder: "E.g., 3-5 minutes" 
+    question: "How long should the speech be?", 
+    type: "select", 
+    options: DURATION_OPTIONS,
+    placeholder: "Select speech duration" 
   },
   { 
     question: "Preferred tone of the speech?", 

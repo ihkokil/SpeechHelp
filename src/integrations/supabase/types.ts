@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -496,6 +496,7 @@ export type Database = {
           address_street_address: string | null
           address_zip_code: string | null
           avatar_url: string | null
+          billing_period: string | null
           country_code: string | null
           created_at: string
           first_name: string | null
@@ -524,6 +525,7 @@ export type Database = {
           address_street_address?: string | null
           address_zip_code?: string | null
           avatar_url?: string | null
+          billing_period?: string | null
           country_code?: string | null
           created_at?: string
           first_name?: string | null
@@ -552,6 +554,7 @@ export type Database = {
           address_street_address?: string | null
           address_zip_code?: string | null
           avatar_url?: string | null
+          billing_period?: string | null
           country_code?: string | null
           created_at?: string
           first_name?: string | null
@@ -577,40 +580,52 @@ export type Database = {
       }
       speech_credits: {
         Row: {
+          billing_cycle: string | null
           created_at: string
           credits_granted: number
           credits_used: number
           id: string
           is_active: boolean
+          monthly_credits_granted: number | null
+          next_monthly_renewal: string | null
           period_end: string | null
           period_start: string
           plan_type: string
           updated_at: string
           user_id: string
+          yearly_total_credits: number | null
         }
         Insert: {
+          billing_cycle?: string | null
           created_at?: string
           credits_granted?: number
           credits_used?: number
           id?: string
           is_active?: boolean
+          monthly_credits_granted?: number | null
+          next_monthly_renewal?: string | null
           period_end?: string | null
           period_start: string
           plan_type: string
           updated_at?: string
           user_id: string
+          yearly_total_credits?: number | null
         }
         Update: {
+          billing_cycle?: string | null
           created_at?: string
           credits_granted?: number
           credits_used?: number
           id?: string
           is_active?: boolean
+          monthly_credits_granted?: number | null
+          next_monthly_renewal?: string | null
           period_end?: string | null
           period_start?: string
           plan_type?: string
           updated_at?: string
           user_id?: string
+          yearly_total_credits?: number | null
         }
         Relationships: []
       }
@@ -706,73 +721,71 @@ export type Database = {
         Args: { permission_name: string }
         Returns: boolean
       }
-      admin_update_user_profile: {
-        Args:
-          | {
-              user_id_param: string
+      admin_update_user_profile:
+        | {
+            Args: {
               display_name: string
-              user_email: string
-              phone_number: string
               is_active_status: boolean
+              phone_number: string
+              user_email: string
+              user_id_param: string
               user_metadata?: Json
             }
-          | {
-              user_id_param: string
-              first_name_param: string
-              last_name_param: string
-              user_email: string
-              phone_number: string
-              is_active_status: boolean
-              user_metadata?: Json
-            }
-          | {
-              user_id_param: string
-              first_name_param: string
-              last_name_param: string
-              user_email: string
-              phone_number?: string
-              street_address_param?: string
+            Returns: Json
+          }
+        | {
+            Args: {
               city_param?: string
-              state_param?: string
-              zip_code_param?: string
               country_param?: string
+              first_name_param: string
               is_active_status?: boolean
+              last_name_param: string
+              phone_number?: string
+              state_param?: string
+              street_address_param?: string
+              user_email: string
+              user_id_param: string
+              zip_code_param?: string
             }
-        Returns: Json
-      }
+            Returns: Json
+          }
+        | {
+            Args: {
+              first_name_param: string
+              is_active_status: boolean
+              last_name_param: string
+              phone_number: string
+              user_email: string
+              user_id_param: string
+              user_metadata?: Json
+            }
+            Returns: Json
+          }
       authenticate_admin: {
         Args: { email_input: string; password_input: string }
         Returns: {
-          id: string
           email: string
-          username: string
+          id: string
           is_super_admin: boolean
+          username: string
         }[]
       }
       can_create_speech_with_credits: {
         Args: { user_id_param: string }
         Returns: Json
       }
-      cleanup_expired_otps: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_expired_otps: { Args: never; Returns: undefined }
       create_first_admin: {
         Args: {
           email_input: string
-          username_input: string
           password_input: string
+          username_input: string
         }
         Returns: string
       }
-      generate_backup_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
-      }
-      get_admin_dashboard_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      fix_speech_plan_period_ids: { Args: never; Returns: Json }
+      generate_backup_codes: { Args: never; Returns: string[] }
+      get_admin_dashboard_stats: { Args: never; Returns: Json }
       get_admin_profile_from_user_profile: {
         Args: { admin_user_id_param: string }
         Returns: Json
@@ -780,97 +793,103 @@ export type Database = {
       get_admin_settings: {
         Args: { category_filter?: string }
         Returns: {
+          setting_category: string
           setting_key: string
           setting_value: Json
-          setting_category: string
           updated_at: string
         }[]
       }
       handle_plan_transition: {
         Args: {
-          user_id_param: string
           from_plan_param: string
+          grandfathered_content_param?: number
           to_plan_param: string
           transition_type_param: string
-          grandfathered_content_param?: number
+          user_id_param: string
         }
         Returns: Json
       }
-      initialize_speech_credits: {
-        Args: {
-          user_id_param: string
-          plan_type_param: string
-          period_start_param?: string
-          period_end_param?: string
-        }
-        Returns: string
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      initialize_speech_credits:
+        | {
+            Args: {
+              period_end_param?: string
+              period_start_param?: string
+              plan_type_param: string
+              user_id_param: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              billing_cycle_param?: string
+              period_end_param?: string
+              period_start_param?: string
+              plan_type_param: string
+              user_id_param: string
+            }
+            Returns: string
+          }
+      is_admin: { Args: never; Returns: boolean }
       log_admin_activity: {
         Args: {
-          admin_id_input: string
           action_input: string
-          entity_type_input: string
-          entity_id_input: string
+          admin_id_input: string
           details_input: Json
+          entity_id_input: string
+          entity_type_input: string
           ip_address_input?: string
           user_agent_input?: string
         }
         Returns: string
       }
-      migrate_address_data_to_columns: {
-        Args: Record<PropertyKey, never>
+      migrate_address_data_to_columns: { Args: never; Returns: undefined }
+      renew_monthly_credits_for_yearly_plans: {
+        Args: never
         Returns: undefined
       }
-      soft_delete_speech: {
-        Args: { speech_id: string }
-        Returns: Json
-      }
+      soft_delete_speech: { Args: { speech_id: string }; Returns: Json }
       toggle_user_admin_access: {
-        Args: { user_id_param: string; enable_admin: boolean }
+        Args: { enable_admin: boolean; user_id_param: string }
         Returns: Json
       }
       toggle_user_admin_status: {
         Args: {
-          user_id_param: string
-          new_admin_status: boolean
           new_admin_role?: string
+          new_admin_status: boolean
+          user_id_param: string
         }
         Returns: Json
       }
       update_user_admin_status: {
         Args: {
-          user_id: string
-          is_admin_status?: boolean
           admin_role_value?: string
+          is_admin_status?: boolean
           permissions_value?: Json
+          user_id: string
         }
         Returns: Json
       }
       update_user_subscription: {
-        Args: { user_id: string; plan: string; end_date: string }
+        Args: { end_date: string; plan: string; user_id: string }
         Returns: Json
       }
       update_user_subscription_after_payment: {
         Args: {
-          user_id_param: string
-          plan_type_param: string
+          amount_param: number
           billing_period_param: string
+          plan_type_param: string
+          price_id_param: string
           stripe_customer_id_param: string
           stripe_subscription_id_param: string
-          amount_param: number
-          price_id_param: string
+          user_id_param: string
         }
         Returns: Json
       }
       upsert_admin_setting: {
         Args: {
+          setting_category_param: string
           setting_key_param: string
           setting_value_param: Json
-          setting_category_param: string
         }
         Returns: Json
       }
