@@ -48,14 +48,14 @@ const Hero = () => {
     <>
       <section 
         ref={heroRef}
-        className="text-white pb-8 sm:pb-16 md:pb-24 overflow-hidden relative w-full"
+        className="text-white pb-8 sm:pb-16 md:pb-24 overflow-hidden relative"
         style={{ paddingTop: navbarHeight + 20 }}
       >
         <div 
-          className="absolute inset-x-0 z-0 overflow-hidden bg-black" 
+          className="absolute inset-0 z-0 overflow-hidden" 
           style={{ 
             top: navbarHeight,
-            height: `calc(100% - ${navbarHeight}px + ${isMobile ? '40vh' : '80vh'})` 
+            height: `calc(100% - ${navbarHeight}px + ${isMobile ? '5vh' : '20vh'})` 
           }}
         >
           <video
@@ -63,14 +63,14 @@ const Hero = () => {
             muted
             loop
             playsInline
-            className="w-full h-full object-contain object-center"
+            className="w-full h-full object-cover object-center"
             poster="/lovable-uploads/68db13b8-6c44-4a91-85dc-bc5cd4405e8c.png"
           >
             <source src={videoUrl} type="video/quicktime" />
             <source src={videoUrlMP4} type="video/mp4" />
           </video>
-          {/* Lighter video overlay for better visibility */}
-          <div className="absolute inset-0 bg-black/30 backdrop-brightness-95"></div>
+          {/* Enhanced video overlay with improved readability */}
+          <div className="absolute inset-0 bg-black/50 backdrop-brightness-75 backdrop-contrast-125"></div>
         </div>
         
         <div className="relative z-10 mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 pt-8 sm:pt-16 pb-6 sm:pb-12 max-w-[1600px]">
