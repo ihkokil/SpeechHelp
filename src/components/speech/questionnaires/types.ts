@@ -1,6 +1,6 @@
 
 // Define types for questionnaire items
-export type QuestionType = 'text' | 'textarea' | 'radio';
+export type QuestionType = 'text' | 'textarea' | 'radio' | 'select';
 
 export type QuestionItem = {
   question: string;
@@ -20,3 +20,12 @@ export type SpeechContentFormat = {
   content: string;
   metadata?: Record<string, any>;
 };
+
+// Duration options for speech length selection
+export const DURATION_OPTIONS = [
+  '< 3 minutes',
+  '3-5 minutes',
+  '5-10 minutes',
+  '10-15 minutes',
+  '15+ minutes'
+];

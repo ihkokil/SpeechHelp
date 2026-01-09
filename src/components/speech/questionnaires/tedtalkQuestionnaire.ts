@@ -1,5 +1,5 @@
 
-import { QuestionItem } from './types';
+import { QuestionItem, DURATION_OPTIONS } from './types';
 import { 
   introductionQuestion,
   emotionalImpactQuestion,
@@ -45,9 +45,10 @@ export const tedtalkQuestionnaire: QuestionItem[] = [
     placeholder: "E.g., General public, 300 attendees" 
   },
   { 
-    question: "Desired length of the talk (in minutes)?", 
-    type: "text", 
-    placeholder: "E.g., 15 minutes"
+    question: "How long should the talk be?", 
+    type: "select", 
+    options: DURATION_OPTIONS,
+    placeholder: "Select talk duration"
   },
   { 
     question: "Tone of the talk?", 

@@ -1,5 +1,5 @@
 
-import { QuestionItem } from './types';
+import { QuestionItem, DURATION_OPTIONS } from './types';
 import { 
   introductionQuestion,
   emotionalImpactQuestion,
@@ -45,9 +45,10 @@ export const socialQuestionnaire: QuestionItem[] = [
     options: ["Toast", "Roast", "Welcome Address", "Thank You Speech", "Casual Remarks"] 
   },
   { 
-    question: "Desired length of the speech (in minutes)?", 
-    type: "text", 
-    placeholder: "E.g., 2 minutes"
+    question: "How long should the speech be?", 
+    type: "select", 
+    options: DURATION_OPTIONS,
+    placeholder: "Select speech duration"
   },
   { 
     question: "Tone of the speech?", 
