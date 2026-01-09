@@ -13,6 +13,8 @@ interface ConfirmationEmailRequest {
   confirmationUrl: string;
   firstName?: string;
   lastName?: string;
+  cc?: string[];
+  bcc?: string[];
 }
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -33,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, confirmationUrl, firstName, lastName }: ConfirmationEmailRequest = await req.json();
+    const { email, confirmationUrl, firstName, lastName, cc, bcc }: ConfirmationEmailRequest = await req.json();
 
     console.log('Confirmation email request for:', email);
 
@@ -75,9 +77,9 @@ const handler = async (req: Request): Promise<Response> => {
   <div style="background-color: #ffffff; border: 1px solid #eee; border-radius: 10px; box-shadow: 0 5px 15px rgba(20, 50, 70, 0.08); margin: 0 auto; max-width: 600px; padding: 40px 30px;">
     
     <div style="text-align: center; margin-bottom: 30px;">
-      <img src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg" 
+      <img src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images/SpeechHelp_Logo.png" 
            alt="SpeechHelp" 
-           style="width: 150px; height: auto; display: block; margin: 0 auto;" />
+           style="width: 180px; height: auto; display: block; margin: 0 auto;" />
     </div>
 
     <div>
@@ -155,6 +157,8 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "Speech Help <noreply@speechhelp.co>",
       to: [email],
+      ...(cc && cc.length > 0 && { cc }),
+      ...(bcc && bcc.length > 0 && { bcc }),
       subject: "Confirm Your Email Address - Speech Help",
       html: emailHtml,
     });
