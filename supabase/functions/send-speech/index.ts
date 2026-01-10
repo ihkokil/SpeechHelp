@@ -14,6 +14,8 @@ interface EmailSpeechRequest {
   title: string;
   content: string;
   recipientEmail: string;
+  cc?: string[];
+  bcc?: string[];
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -23,7 +25,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { title, content, recipientEmail }: EmailSpeechRequest = await req.json();
+    const { title, content, recipientEmail, cc, bcc }: EmailSpeechRequest = await req.json();
 
     if (!title || !content || !recipientEmail) {
       return new Response(
@@ -48,16 +50,34 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "SpeechHelp <hello@speechhelp.ai>",
       to: [recipientEmail],
+      ...(cc && cc.length > 0 && { cc }),
+      ...(bcc && bcc.length > 0 && { bcc }),
       subject: `Your Speech: ${title}`,
       html: `
-        <h1>${title}</h1>
-        <div style="white-space: pre-wrap; font-family: Arial, sans-serif; line-height: 1.6;">
-          ${cleanContent.replace(/\n/g, '<br />')}
-        </div>
-        <hr />
-        <p style="color: #777; font-size: 12px;">
-          This speech was generated using SpeechHelp.
-        </p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="background-color: #f6f9fc; font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif; padding: 40px 0; margin: 0;">
+          <div style="background-color: #ffffff; border: 1px solid #eee; border-radius: 10px; box-shadow: 0 5px 15px rgba(20, 50, 70, 0.08); margin: 0 auto; max-width: 600px; padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <img src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images/SpeechHelp_Logo.png" 
+                   alt="SpeechHelp" 
+                   style="width: 180px; height: auto; display: block; margin: 0 auto;" />
+            </div>
+            <h1 style="color: #be185d; font-size: 24px; font-weight: bold; margin: 0 0 20px; text-align: center;">${title}</h1>
+            <div style="white-space: pre-wrap; font-family: Georgia, serif; line-height: 1.8; color: #374151; font-size: 16px; padding: 20px; background-color: #f9fafb; border-radius: 8px;">
+              ${cleanContent.replace(/\n/g, '<br />')}
+            </div>
+            <hr style="border: none; border-top: 1px solid #eaeaea; margin: 30px 0;" />
+            <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+              This speech was generated using SpeechHelp. Visit <a href="https://speechhelp.co" style="color: #be185d;">speechhelp.co</a>
+            </p>
+          </div>
+        </body>
+        </html>
       `
     });
 

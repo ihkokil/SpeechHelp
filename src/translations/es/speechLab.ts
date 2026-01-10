@@ -46,5 +46,15 @@ export const speechLab = {
   'speechLab.content': 'Contenido del discurso',
   'speechLab.generatedSpeech': 'Discurso Generado',
   'speechLab.edit': 'Editar',
-  'speechLab.preview': 'Vista previa'
+  'speechLab.preview': 'Vista previa',
+  
+  // Duration options
+  'speechLab.duration.lessThan3': 'Menos de 3 minutos',
+  'speechLab.duration.3to5': '3-5 minutos',
+  'speechLab.duration.5to10': '5-10 minutos',
+  'speechLab.duration.10to15': '10-15 minutos',
+  
+  // Tips
+  'speechLab.tips.title': 'Consejos de escritura',
+  'speechLab.tips.close': 'Cerrar consejos'
 };

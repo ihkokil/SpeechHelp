@@ -46,7 +46,7 @@ export function PlanLimitBlock({
 	limitType,
 	requiredPlan,
 	featureName = 'this feature',
-	buttonText = 'Upgrade Plan',
+	buttonText = 'Upgrade Now',
 	upgradeUrl = '/pricing',
 	showUpgradeButton = true,
 	className = '',
@@ -73,7 +73,13 @@ export function PlanLimitBlock({
 	// Set default message based on limit type if not provided
 	if (!message) {
 		if (limitType === LimitType.SPEECHES_COUNT) {
-			message = `You've reached your limit of ${planLimits.speechesLimit} speeches on your ${planLimits.planDisplayName}.`;
+			// Check if it's a trial plan for specific messaging
+			const isTrial = planLimits.planDisplayName.toLowerCase().includes('trial');
+			if (isTrial) {
+				message = `You've reached the limit of ${planLimits.speechesLimit} speech${planLimits.speechesLimit === 1 ? '' : 'es'} on your free trial. Upgrade to create more speeches!`;
+			} else {
+				message = `You've reached your limit of ${planLimits.speechesLimit} speeches on your ${planLimits.planDisplayName}.`;
+			}
 		} else if (limitType === LimitType.ACTIVE_DAYS) {
 			message = `Your ${planLimits.planDisplayName} has expired.`;
 		} else if (limitType === LimitType.STORAGE_MB) {

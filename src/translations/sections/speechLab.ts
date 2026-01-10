@@ -46,5 +46,15 @@ export const speechLabTranslations = {
   'speechLab.content': 'Speech Content',
   'speechLab.generatedSpeech': 'Generated Speech',
   'speechLab.edit': 'Edit',
-  'speechLab.preview': 'Preview'
+  'speechLab.preview': 'Preview',
+  
+  // Duration options
+  'speechLab.duration.lessThan3': 'Less than 3 minutes',
+  'speechLab.duration.3to5': '3-5 minutes',
+  'speechLab.duration.5to10': '5-10 minutes',
+  'speechLab.duration.10to15': '10-15 minutes',
+  
+  // Tips
+  'speechLab.tips.title': 'Writing Tips',
+  'speechLab.tips.close': 'Close tips'
 };
