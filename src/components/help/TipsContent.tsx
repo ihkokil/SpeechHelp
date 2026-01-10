@@ -2,6 +2,7 @@
 import React from 'react';
 import { Accordion } from "@/components/ui/accordion";
 import TipSection from '@/components/help/TipSection';
+import Translate from '@/components/Translate';
 
 interface TipsContentProps {
   tipsSections: Array<{
@@ -15,8 +16,10 @@ interface TipsContentProps {
 
 const TipsContent: React.FC<TipsContentProps> = ({ tipsSections, openArticle }) => {
   return (
-    <div className="container mx-auto px-4 md:px-6 py-8">
-      <h2 className="text-3xl font-bold text-gray-800 mb-4">Resources</h2>
+    <div className="container mx-auto px-4 md:px-6 py-8 max-w-6xl">
+      <h2 className="text-fluid-3xl font-bold text-gray-800 mb-4">
+        <Translate text="tips.resources" fallback="Resources" />
+      </h2>
       
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <Accordion type="single" collapsible className="w-full">

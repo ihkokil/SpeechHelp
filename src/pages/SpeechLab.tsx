@@ -6,6 +6,7 @@ import { LimitType } from '@/lib/plan_rules';
 import { FeatureAccess } from '@/components/plan/FeatureAccess';
 import { useCachedPlanAccess } from '@/hooks/useCachedPlanAccess';
 import { Loader2 } from 'lucide-react';
+import Translate from '@/components/Translate';
 
 const SpeechLab = () => {
 	const {
@@ -23,7 +24,9 @@ const SpeechLab = () => {
 				<div className="flex items-center justify-center min-h-[400px]">
 					<div className="flex flex-col items-center space-y-4">
 						<Loader2 className="h-8 w-8 animate-spin text-magenta-500" />
-						<p className="text-gray-600">Checking plan access...</p>
+						<p className="text-gray-600">
+							<Translate text="plan.checkingAccess" fallback="Checking plan access..." />
+						</p>
 					</div>
 				</div>
 			</SpeechLabLayout>

@@ -20,7 +20,7 @@ const SpeechLabLayout: React.FC<SpeechLabLayoutProps> = ({ children }) => {
       <DashboardSidebar />
       
       <div className={`flex-1 ${contentClasses} overflow-x-hidden`}>
-        <div className="p-4 md:p-6 lg:p-8">
+        <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
           {children}
         </div>
       </div>
