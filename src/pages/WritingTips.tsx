@@ -11,12 +11,15 @@ import { articleContent, WritingArticle } from '@/components/help/articleContent
 import TipsHeader from '@/components/help/TipsHeader';
 import TipsContent from '@/components/help/TipsContent';
 import { allTipsSections } from '@/components/help/TipsData';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
+import Translate from '@/components/Translate';
 
 const WritingTips = () => {
   const { user, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { translate } = useTranslatedContent();
   
   // State for the article dialog
   const [isArticleOpen, setIsArticleOpen] = useState(false);
@@ -40,8 +43,8 @@ const WritingTips = () => {
       setIsArticleOpen(true);
     } else {
       toast({
-        title: "Article not found",
-        description: "The requested article could not be found.",
+        title: translate('tips.articleNotFound'),
+        description: translate('tips.articleNotFoundDescription'),
         variant: "destructive"
       });
     }
@@ -52,7 +55,9 @@ const WritingTips = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-pink-600 to-purple-600">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-          <p className="mt-4 text-white text-lg font-medium">Loading...</p>
+          <p className="mt-4 text-white text-lg font-medium">
+            <Translate text="common.loading" fallback="Loading..." />
+          </p>
         </div>
       </div>
     );
@@ -69,7 +74,7 @@ const WritingTips = () => {
         exit={{ x: '100%' }}
         transition={{ type: 'tween', duration: 0.3 }}
       >
-        <div className="h-full overflow-auto pb-16">
+        <div className="h-full overflow-auto pb-16 max-w-6xl mx-auto w-full">
           <TipsHeader handleClose={handleClose} />
           <TipsContent tipsSections={allTipsSections} openArticle={openArticle} />
         </div>

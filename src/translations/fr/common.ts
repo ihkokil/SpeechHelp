@@ -33,5 +33,10 @@ export const common = {
   'plan.checkingAccess': 'Vérification de l\'accès...',
   'plan.currentPlan': 'Actuel',
   'plan.requiredPlan': 'Requis',
-  'plan.planComparison': 'Comparaison des forfaits'
+  'plan.planComparison': 'Comparaison des forfaits',
+  
+  // Tips
+  'tips.resources': 'Ressources',
+  'tips.articleNotFound': 'Article introuvable',
+  'tips.articleNotFoundDescription': 'L\'article demandé n\'a pas pu être trouvé.'
 };

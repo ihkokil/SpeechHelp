@@ -33,5 +33,10 @@ export const common = {
   'plan.checkingAccess': 'Verificando acceso...',
   'plan.currentPlan': 'Actual',
   'plan.requiredPlan': 'Requerido',
-  'plan.planComparison': 'Comparación de planes'
+  'plan.planComparison': 'Comparación de planes',
+  
+  // Tips
+  'tips.resources': 'Recursos',
+  'tips.articleNotFound': 'Artículo no encontrado',
+  'tips.articleNotFoundDescription': 'El artículo solicitado no se pudo encontrar.'
 };

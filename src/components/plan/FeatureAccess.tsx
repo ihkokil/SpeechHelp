@@ -4,6 +4,8 @@ import { usePlanLimits } from '@/hooks/usePlanLimits';
 import { LimitType, SubscriptionPlan, PLAN_RULES } from '@/lib/plan_rules';
 import { PlanLimitBlock } from './PlanLimitBlock';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from '@/translations';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface FeatureAccessProps {
 	/**
@@ -85,13 +87,15 @@ export function FeatureAccess({
 	blockClassName,
 }: FeatureAccessProps) {
 	const planLimits = usePlanLimits();
+	const { t } = useTranslation();
+	const { currentLanguage } = useLanguage();
 
 	// Show loading state if we're still loading plan data
 	if (planLimits.loadingPlanLimits) {
 		return (
 			<div className="flex justify-center items-center py-8">
 				<Loader2 className="h-8 w-8 animate-spin text-purple-500" />
-				<span className="ml-2 text-gray-600">Checking plan access...</span>
+				<span className="ml-2 text-gray-600">{t('plan.checkingAccess', currentLanguage.code)}</span>
 			</div>
 		);
 	}

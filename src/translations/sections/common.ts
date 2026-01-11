@@ -33,5 +33,10 @@ export const commonTranslations = {
   'plan.checkingAccess': 'Checking plan access...',
   'plan.currentPlan': 'Current',
   'plan.requiredPlan': 'Required',
-  'plan.planComparison': 'Plan Comparison'
+  'plan.planComparison': 'Plan Comparison',
+  
+  // Tips
+  'tips.resources': 'Resources',
+  'tips.articleNotFound': 'Article not found',
+  'tips.articleNotFoundDescription': 'The requested article could not be found.'
 };
