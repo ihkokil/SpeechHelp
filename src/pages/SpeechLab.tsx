@@ -1,9 +1,8 @@
-
 import React from 'react';
 import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 import SpeechLabContent from '@/components/speech/SpeechLabContent';
 import { LimitType } from '@/lib/plan_rules';
-import { FeatureAccess } from '@/components/plan/FeatureAccess';
+import { PlanLimitBlock } from '@/components/plan/PlanLimitBlock';
 import { useCachedPlanAccess } from '@/hooks/useCachedPlanAccess';
 import { Loader2 } from 'lucide-react';
 import Translate from '@/components/Translate';
@@ -14,7 +13,9 @@ const SpeechLab = () => {
 		canCreateSpeech,
 		reasonCannotCreate,
 		shouldShowUpgradePrompt,
-		hasCachedData
+		hasCachedData,
+		isExpired,
+		isActive
 	} = useCachedPlanAccess(LimitType.SPEECHES_COUNT, 'Speech Lab');
 
 	// Show loading only on initial visit (no cached data)
@@ -33,20 +34,36 @@ const SpeechLab = () => {
 		);
 	}
 
-	// If user doesn't have access, show upgrade prompt
+	// If user doesn't have access, show upgrade prompt directly with PlanLimitBlock
 	if (!canCreateSpeech) {
+		// Determine the appropriate title and description based on the reason
+		let title = "Speech Limit Reached";
+		let description = "Our Premium plan gives you access to 3 speeches per month, and our Pro plan offers unlimited speeches along with additional features.";
+		
+		// Check for expired trial/subscription
+		if (isExpired || reasonCannotCreate?.toLowerCase().includes('expired')) {
+			title = "Subscription Expired";
+			description = "Your subscription has expired. Renew or upgrade your plan to continue creating speeches.";
+		} else if (!isActive) {
+			title = "Subscription Inactive";
+			description = "Your subscription is not active. Please subscribe to a plan to start creating speeches.";
+		} else if (reasonCannotCreate?.toLowerCase().includes('no active subscription')) {
+			title = "No Active Plan";
+			description = "You don't have an active plan. Subscribe to start creating speeches.";
+		}
+
 		return (
 			<SpeechLabLayout>
-				<FeatureAccess
-					limitType={LimitType.SPEECHES_COUNT}
-					featureName="Speech Lab"
-					limitDescription={reasonCannotCreate || "Our Premium plan gives you access to 3 speeches per month, and our Pro plan offers unlimited speeches along with additional features."}
-					blockClassName="max-w-xl mx-auto my-8"
-					upgradeUrl="/pricing"
-				>
-					{/* This will show the upgrade prompt */}
-					<div></div>
-				</FeatureAccess>
+				<div className="max-w-xl mx-auto my-8">
+					<PlanLimitBlock
+						title={title}
+						limitType={LimitType.SPEECHES_COUNT}
+						message={reasonCannotCreate || "You've reached your speech creation limit."}
+						description={description}
+						upgradeUrl="/pricing"
+						showUpgradeButton={true}
+					/>
+				</div>
 			</SpeechLabLayout>
 		);
 	}
