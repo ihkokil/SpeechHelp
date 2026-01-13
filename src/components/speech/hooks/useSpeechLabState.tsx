@@ -25,9 +25,12 @@ export const useSpeechLabState = () => {
   const [generatedSpeech, setGeneratedSpeech] = useState('');
   const [autoSavedSpeechId, setAutoSavedSpeechId] = useState<string | undefined>(undefined);
   const [isStateRestored, setIsStateRestored] = useState(false);
+  const [wasActuallyRestored, setWasActuallyRestored] = useState(false);
 
   // Load persisted state on mount
   useEffect(() => {
+    let didRestore = false;
+    
     try {
       // First check for current event from upcoming speeches
       const currentEventData = localStorage.getItem('currentEvent');
@@ -42,7 +45,7 @@ export const useSpeechLabState = () => {
         
         // Clear the current event from storage to prevent re-initialization
         localStorage.removeItem('currentEvent');
-        setIsStateRestored(true);
+        didRestore = true;
         return;
       }
 
@@ -59,6 +62,7 @@ export const useSpeechLabState = () => {
           setSpeechTitle(parsedState.speechTitle);
           setGeneratedSpeech(parsedState.generatedSpeech);
           setAutoSavedSpeechId(parsedState.autoSavedSpeechId);
+          didRestore = true;
           
           console.log(`🔄 Speech Lab state restored from step ${parsedState.currentStep}`);
         } else if (isExpired) {
@@ -70,6 +74,7 @@ export const useSpeechLabState = () => {
     } catch (error) {
       console.error('Error loading Speech Lab state:', error);
     } finally {
+      setWasActuallyRestored(didRestore);
       setIsStateRestored(true);
     }
   }, []);
@@ -163,6 +168,7 @@ export const useSpeechLabState = () => {
     autoSavedSpeechId,
     steps,
     isStateRestored,
+    wasActuallyRestored,
     setSelectedSpeechType,
     setSpeechTitle,
     setSpeechDetails,

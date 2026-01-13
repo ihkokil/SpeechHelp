@@ -186,7 +186,7 @@ html {
   background-size: cover;
 }
 
-/* Large screen optimizations */
+/* Large screen optimizations - use proportional container widths */
 @media (min-width: 1536px) {
   .container {
     max-width: 1400px;
@@ -196,12 +196,5 @@ html {
 @media (min-width: 1800px) {
   .container {
     max-width: 1600px;
-  }
-}
-
-/* Ensure content uses more screen width on large displays */
-@media (min-width: 1280px) {
-  .max-w-7xl {
-    max-width: 90rem;
   }
 }

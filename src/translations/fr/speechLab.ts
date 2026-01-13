@@ -56,5 +56,10 @@ export const speechLab = {
   
   // Tips
   'speechLab.tips.title': 'Conseils',
-  'speechLab.tips.close': 'Fermer'
+  'speechLab.tips.close': 'Fermer',
+  
+  // State restoration
+  'speechLab.restoredProgress': 'Nous avons restauré votre discours en cours.',
+  'speechLab.dismiss': 'Ignorer',
+  'speechLab.startFresh': 'Recommencer'
 };

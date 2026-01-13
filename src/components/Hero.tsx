@@ -48,15 +48,12 @@ const Hero = () => {
     <>
       <section 
         ref={heroRef}
-        className="text-white pb-8 sm:pb-16 md:pb-24 overflow-hidden relative"
+        className="text-white pb-8 sm:pb-16 md:pb-24 overflow-hidden relative min-h-[75vh] md:min-h-[85vh]"
         style={{ paddingTop: navbarHeight + 20 }}
       >
         <div 
           className="absolute inset-0 z-0 overflow-hidden" 
-          style={{ 
-            top: navbarHeight,
-            height: `calc(100% - ${navbarHeight}px + ${isMobile ? '5vh' : '20vh'})` 
-          }}
+          style={{ top: navbarHeight }}
         >
         <video
             autoPlay

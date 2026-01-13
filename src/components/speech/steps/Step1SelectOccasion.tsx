@@ -57,9 +57,9 @@ const Step1SelectOccasion: React.FC<Step1Props> = ({
                 </div>
               )}
               <div className="absolute bottom-0 left-0 p-3">
-                <h3 className="text-white text-sm 5xl:text-4xl font-medium">{type.label}</h3>
+                <h3 className="text-white text-sm md:text-base lg:text-lg font-medium">{type.label}</h3>
                 {type.description && (
-                  <p className="text-white/70 text-xs 5xl:text-3xl mt-1">{type.description}</p>
+                  <p className="text-white/70 text-xs md:text-sm mt-1">{type.description}</p>
                 )}
               </div>
             </AspectRatio>
