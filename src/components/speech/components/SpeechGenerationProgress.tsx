@@ -72,8 +72,8 @@ const SpeechGenerationProgress: React.FC<SpeechGenerationProgressProps> = ({ sho
 			)}
 
 			{/* Spectacular Fireworks and Confetti */}
-			{showConfetti && progress >= 100 && (
-				<>
+			{showConfetti && (
+				<div className="fixed inset-0 z-50 pointer-events-none">
 					{/* Main Confetti Burst */}
 					<Confetti
 						width={window.innerWidth}
@@ -147,7 +147,7 @@ const SpeechGenerationProgress: React.FC<SpeechGenerationProgressProps> = ({ sho
 					/>
 					
 					{/* Background Animation */}
-					<div className="fixed inset-0 pointer-events-none z-0">
+					<div className="absolute inset-0 pointer-events-none">
 						<div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5 animate-pulse"></div>
 						{/* Floating sparkles across the screen */}
 						{Array.from({ length: 20 }).map((_, i) => (
@@ -175,7 +175,7 @@ const SpeechGenerationProgress: React.FC<SpeechGenerationProgressProps> = ({ sho
 							/>
 						))}
 					</div>
-				</>
+				</div>
 			)}
 		</div>
 	);
