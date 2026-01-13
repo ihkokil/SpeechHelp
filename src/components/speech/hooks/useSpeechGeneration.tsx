@@ -57,10 +57,14 @@ export const useSpeechGeneration = ({
 
 	useEffect(() => {
 		if (showConfetti) {
-			// Immediately proceed to next step - no delay
-			setShowConfetti(false);
-			clearSavedWork(); // Clear saved work after successful completion
-			onSuccess(autoSavedSpeechId || undefined);
+			// Let the user enjoy the confetti celebration for 3.5 seconds
+			const celebrationTimer = setTimeout(() => {
+				setShowConfetti(false);
+				clearSavedWork();
+				onSuccess(autoSavedSpeechId || undefined);
+			}, 3500);
+
+			return () => clearTimeout(celebrationTimer);
 		}
 	}, [showConfetti, onSuccess, clearSavedWork, autoSavedSpeechId]);
 
