@@ -53,31 +53,42 @@ export const useCachedPlanAccess = (limitType: LimitType, featureName: string) =
     }
   }, [cacheKey, featureName]);
 
-  // Update cache when plan limits are loaded
+  // Update cache when plan limits are loaded or detect subscription status changes
   useEffect(() => {
-    if (!planLimits.loadingPlanLimits && cacheKey && !cachedAccess) {
-      const newCachedAccess: CachedPlanAccess = {
-        hasAccess: planLimits.canCreateSpeech,
-        canCreateSpeech: planLimits.canCreateSpeech,
-        reasonCannotCreate: planLimits.reasonCannotCreate,
-        shouldShowUpgrade: planLimits.shouldShowUpgradePrompt,
-        isExpired: planLimits.isExpired,
-        isActive: planLimits.isActive,
-        timestamp: Date.now()
-      };
+    if (!planLimits.loadingPlanLimits && cacheKey) {
+      // Detect subscription status change: if live data shows access but cache shows no access
+      if (cachedAccess && planLimits.canCreateSpeech && !cachedAccess.canCreateSpeech) {
+        console.log('🔄 Subscription status changed - invalidating cache');
+        localStorage.removeItem(cacheKey);
+        setCachedAccess(null);
+        // Don't return - let it create new cache below
+      }
+      
+      // Create cache if not exists
+      if (!cachedAccess) {
+        const newCachedAccess: CachedPlanAccess = {
+          hasAccess: planLimits.canCreateSpeech,
+          canCreateSpeech: planLimits.canCreateSpeech,
+          reasonCannotCreate: planLimits.reasonCannotCreate,
+          shouldShowUpgrade: planLimits.shouldShowUpgradePrompt,
+          isExpired: planLimits.isExpired,
+          isActive: planLimits.isActive,
+          timestamp: Date.now()
+        };
 
-      setCachedAccess(newCachedAccess);
-      setIsInitialCheck(false);
+        setCachedAccess(newCachedAccess);
+        setIsInitialCheck(false);
 
-      try {
-        localStorage.setItem(cacheKey, JSON.stringify(newCachedAccess));
-        console.log(`💾 Cached plan access for ${featureName}`, {
-          canCreate: newCachedAccess.canCreateSpeech,
-          isExpired: newCachedAccess.isExpired,
-          isActive: newCachedAccess.isActive
-        });
-      } catch (error) {
-        console.error('Error caching plan access:', error);
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(newCachedAccess));
+          console.log(`💾 Cached plan access for ${featureName}`, {
+            canCreate: newCachedAccess.canCreateSpeech,
+            isExpired: newCachedAccess.isExpired,
+            isActive: newCachedAccess.isActive
+          });
+        } catch (error) {
+          console.error('Error caching plan access:', error);
+        }
       }
     }
   }, [

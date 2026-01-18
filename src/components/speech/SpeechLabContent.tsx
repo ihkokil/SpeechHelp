@@ -53,11 +53,29 @@ const SpeechLabContent = () => {
         return null;
     }
   };
-  return <div className="w-full p-6 space-y-8">
-      {showRestorationAlert}
+  return (
+    <div className="w-full p-6 space-y-8">
+      {showRestorationAlert && (
+        <Alert className="mb-4 border-amber-200 bg-amber-50">
+          <AlertDescription className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <span className="text-amber-800">We've restored your previous speech in progress.</span>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={handleDismissAlert} className="text-amber-700 hover:bg-amber-100">
+                <X className="h-4 w-4 mr-1" />
+                Dismiss
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleStartOver} className="border-amber-300 text-amber-800 hover:bg-amber-100">
+                <RotateCcw className="h-4 w-4 mr-1" />
+                Start Fresh
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
       
       <SpeechStepIndicator currentStep={currentStep} steps={steps} />
       {renderStep()}
-    </div>;
+    </div>
+  );
 };
 export default SpeechLabContent;

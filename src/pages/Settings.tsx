@@ -45,6 +45,22 @@ const Settings = () => {
           } else if (data?.success) {
             console.log('Purchase verified successfully:', data);
             
+            // Clear Speech Lab state so user starts fresh after subscription
+            localStorage.removeItem('speechLabState');
+            localStorage.removeItem('generatedSpeech');
+            localStorage.removeItem('speechBackup');
+            localStorage.removeItem('tempGeneratedSpeech');
+            localStorage.removeItem('lastSpeechRequest');
+            localStorage.removeItem('currentEvent');
+            
+            // Clear plan access cache for all limit types
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user?.id) {
+              localStorage.removeItem(`planAccess_${user.id}_SPEECHES_COUNT`);
+            }
+            
+            console.log('🗑️ Cleared Speech Lab state and plan cache after subscription');
+            
             // Force refresh the user's auth session and profile
             await refreshUser();
             
