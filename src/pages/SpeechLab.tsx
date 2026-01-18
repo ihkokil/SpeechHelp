@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import SpeechLabLayout from '@/components/layouts/SpeechLabLayout';
 import SpeechLabContent from '@/components/speech/SpeechLabContent';
 import { LimitType } from '@/lib/plan_rules';
@@ -17,6 +17,31 @@ const SpeechLab = () => {
 		isExpired,
 		isActive
 	} = useCachedPlanAccess(LimitType.SPEECHES_COUNT, 'Speech Lab');
+
+	// Clear stale Speech Lab state when subscription becomes active
+	useEffect(() => {
+		if (canCreateSpeech) {
+			const savedState = localStorage.getItem('speechLabState');
+			if (savedState) {
+				try {
+					const parsedState = JSON.parse(savedState);
+					const stateAge = Date.now() - parsedState.lastActiveTimestamp;
+					// If state is older than 1 hour and user now has access, assume it's stale from before subscription
+					if (stateAge > 60 * 60 * 1000 && parsedState.currentStep > 1) {
+						console.log('🗑️ Clearing stale Speech Lab state from before subscription');
+						localStorage.removeItem('speechLabState');
+						localStorage.removeItem('generatedSpeech');
+						localStorage.removeItem('speechBackup');
+						localStorage.removeItem('tempGeneratedSpeech');
+						// Reload to get fresh state
+						window.location.reload();
+					}
+				} catch (error) {
+					console.error('Error checking Speech Lab state age:', error);
+				}
+			}
+		}
+	}, [canCreateSpeech]);
 
 	// Show loading only on initial visit (no cached data)
 	if (loadingPlanLimits && !hasCachedData) {
