@@ -453,7 +453,7 @@ const BillingSettings = () => {
                     {capitalizeSubscriptionType(payment.plan_type)} Plan - {capitalizeSubscriptionType(payment.billing_period)}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {format(new Date(payment.payment_date), 'MMM dd, yyyy')}
+                    {format(new Date(payment.payment_date), 'MMM dd, yyyy h:mm a')}
                   </p>
                 </div>
                 <div className="text-right">

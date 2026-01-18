@@ -38,7 +38,7 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
 
   // Format the subscription end date for display
   const formattedEndDate = user.subscription_end_date 
-    ? format(new Date(user.subscription_end_date), 'PPP') 
+    ? format(new Date(user.subscription_end_date), 'PPP p') 
     : 'N/A';
   
   // Determine the subscription status
@@ -236,7 +236,7 @@ export const UserBilling: React.FC<UserBillingProps> = ({ user }) => {
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Created:</span>
               <span className="text-sm">
-                {user.created_at ? format(new Date(user.created_at), 'PPP') : 'N/A'}
+                {user.created_at ? format(new Date(user.created_at), 'PPP p') : 'N/A'}
               </span>
             </div>
             <div className="flex justify-between">

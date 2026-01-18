@@ -20,7 +20,7 @@ export const formatDisplayDate = (date: string | null): string => {
     }
     
     // Format the date
-    return format(parsedDate, 'MMM d, yyyy');
+    return format(parsedDate, 'MMM d, yyyy h:mm a');
   } catch (error) {
     console.error('Error formatting date:', error, 'Date value:', date);
     return 'N/A';

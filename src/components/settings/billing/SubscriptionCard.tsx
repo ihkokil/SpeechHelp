@@ -315,12 +315,12 @@ const SubscriptionCard = ({
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4" />
-                <span>Started: {format(subscriptionData.startDate, 'MMM dd, yyyy')}</span>
+                <span>Started: {format(subscriptionData.startDate, 'MMM dd, yyyy h:mm a')}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <RefreshCw className="h-4 w-4" />
                 <span>
-                  {subscriptionData.status === 'active' && !isFreeTrial() ? 'Renews' : 'Ends'}: {format(subscriptionData.endDate, 'MMM dd, yyyy')}
+                  {subscriptionData.status === 'active' && !isFreeTrial() ? 'Renews' : 'Ends'}: {format(subscriptionData.endDate, 'MMM dd, yyyy h:mm a')}
                 </span>
               </div>
               {subscriptionData.paymentMethod && (
