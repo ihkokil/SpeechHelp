@@ -61,7 +61,7 @@ export const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ user }) => {
               <div>
                 <h4 className="text-sm font-medium text-gray-500 mb-1">Started</h4>
                 <p className="text-sm">
-                  {format(new Date(user.subscription_start_date), 'PPP')}
+                  {format(new Date(user.subscription_start_date), 'PPP p')}
                 </p>
               </div>
             )}
@@ -70,7 +70,7 @@ export const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ user }) => {
               <div>
                 <h4 className="text-sm font-medium text-gray-500 mb-1">Expires</h4>
                 <p className="text-sm">
-                  {format(new Date(user.subscription_end_date), 'PPP')}
+                  {format(new Date(user.subscription_end_date), 'PPP p')}
                 </p>
               </div>
             )}

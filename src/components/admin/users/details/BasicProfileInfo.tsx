@@ -95,7 +95,7 @@ export const BasicProfileInfo: React.FC<BasicProfileInfoProps> = ({ user }) => {
               <div className="flex-1">
                 <h4 className="text-sm font-medium text-gray-500">Member Since</h4>
                 <p className="text-sm">
-                  {format(new Date(user.created_at), 'PPP')}
+                  {format(new Date(user.created_at), 'PPP p')}
                 </p>
               </div>
             </div>

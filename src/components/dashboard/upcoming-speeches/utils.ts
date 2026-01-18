@@ -56,7 +56,7 @@ export const getCategoryColor = (category: string): string => {
 
 export const formatDate = (date: Date | string, locale: string = 'en-US'): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return format(dateObj, 'MMM dd, yyyy');
+  return format(dateObj, 'MMM dd, yyyy h:mm a');
 };
 
 export const getDaysRemaining = (date: Date | string): number => {
