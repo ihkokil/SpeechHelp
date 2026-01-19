@@ -17,6 +17,8 @@ export * from './speechTypes';
 export * from './settings';
 export * from './admin';
 export * from './legal';
+export * from './auth';
+export * from './toasts';
 
 import { 
   common
@@ -72,6 +74,12 @@ import {
 import {
   legal
 } from './legal';
+import {
+  auth
+} from './auth';
+import {
+  toasts
+} from './toasts';
 
 export const frTranslations = {
   ...common,
@@ -91,5 +99,7 @@ export const frTranslations = {
   ...speechTypes,
   ...settings,
   ...admin,
-  ...legal
+  ...legal,
+  ...auth,
+  ...toasts
 };
