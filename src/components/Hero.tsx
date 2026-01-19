@@ -66,8 +66,8 @@ const Hero = () => {
             <source src={videoUrl} type="video/quicktime" />
             <source src={videoUrlMP4} type="video/mp4" />
           </video>
-          {/* Lighter video overlay for better visibility */}
-          <div className="absolute inset-0 bg-black/25"></div>
+          {/* Video overlay for better text visibility */}
+          <div className="absolute inset-0 bg-black/50"></div>
         </div>
         
         <div className="relative z-10 mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 pt-8 sm:pt-16 pb-6 sm:pb-12 max-w-[1600px]">
