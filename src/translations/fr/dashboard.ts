@@ -1,34 +1,34 @@
 
 export const dashboard = {
   // Dashboard main
-  'dashboard.title': 'Tableau de Bord',
-  'dashboard.welcome': 'Bon retour !',
+  'dashboard.title': 'Mon tableau de bord',
+  'dashboard.welcome': 'Bonjour !',
   'dashboard.summary': 'Résumé',
-  'dashboard.performanceMetrics': 'Métriques de Performance',
-  'dashboard.recentActivities': 'Activités Récentes',
-  'dashboard.upcomingSpeeches': 'Discours à Venir',
-  'dashboard.previousSpeeches': 'Discours Précédents',
-  'dashboard.createNewSpeech': 'Créer un Nouveau Discours',
-  'dashboard.createFirstSpeech': 'Créez Votre Premier Discours',
-  'dashboard.noSpeeches': 'Aucun discours pour le moment',
-  'dashboard.viewAll': 'Voir Tout',
-  'dashboard.basedOn': 'Basé sur votre activité de discours et vos métriques d\'engagement',
+  'dashboard.performanceMetrics': 'Statistiques',
+  'dashboard.recentActivities': 'Activité récente',
+  'dashboard.upcomingSpeeches': 'Prochains discours',
+  'dashboard.previousSpeeches': 'Discours précédents',
+  'dashboard.createNewSpeech': 'Créer un discours',
+  'dashboard.createFirstSpeech': 'Créez votre premier discours',
+  'dashboard.noSpeeches': 'Vous n\'avez pas encore de discours',
+  'dashboard.viewAll': 'Tout voir',
+  'dashboard.basedOn': 'Basé sur votre activité et engagement',
   
   // Time periods
-  'dashboard.allTime': 'Tout Temps',
-  'dashboard.thisMonth': 'Ce Mois',
-  'dashboard.last30Days': 'Derniers 30 Jours',
+  'dashboard.allTime': 'Depuis le début',
+  'dashboard.thisMonth': 'Ce mois-ci',
+  'dashboard.last30Days': '30 derniers jours',
   
   // Metrics
-  'dashboard.totalSpeeches': 'Total des Discours',
-  'dashboard.inProgress': 'En Cours',
-  'dashboard.improvement': 'Activité Récente',
-  'dashboard.currentScore': 'Score Actuel',
-  'dashboard.monthlyChange': 'Changement Mensuel',
+  'dashboard.totalSpeeches': 'Total des discours',
+  'dashboard.inProgress': 'En cours',
+  'dashboard.improvement': 'Activité récente',
+  'dashboard.currentScore': 'Score actuel',
+  'dashboard.monthlyChange': 'Évolution mensuelle',
   
   // Loading states
   'loading': 'Chargement',
   
   // Errors
-  'errors.fetchSpeeches': 'Échec de la récupération des discours',
+  'errors.fetchSpeeches': 'Impossible de charger les discours',
 };

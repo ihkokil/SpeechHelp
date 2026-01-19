@@ -1,34 +1,34 @@
 
 export const dashboard = {
   // Dashboard main
-  'dashboard.title': 'Panel de Control',
-  'dashboard.welcome': '¡Bienvenido de vuelta!',
+  'dashboard.title': 'Mi panel',
+  'dashboard.welcome': '¡Hola de nuevo!',
   'dashboard.summary': 'Resumen',
-  'dashboard.performanceMetrics': 'Métricas de Rendimiento',
-  'dashboard.recentActivities': 'Actividades Recientes',
-  'dashboard.upcomingSpeeches': 'Discursos Próximos',
-  'dashboard.previousSpeeches': 'Discursos Anteriores',
-  'dashboard.createNewSpeech': 'Crear Nuevo Discurso',
-  'dashboard.createFirstSpeech': 'Crea Tu Primer Discurso',
-  'dashboard.noSpeeches': 'Aún no hay discursos',
-  'dashboard.viewAll': 'Ver Todo',
-  'dashboard.basedOn': 'Basado en tu actividad de discursos y métricas de participación',
+  'dashboard.performanceMetrics': 'Estadísticas',
+  'dashboard.recentActivities': 'Actividad reciente',
+  'dashboard.upcomingSpeeches': 'Próximos discursos',
+  'dashboard.previousSpeeches': 'Discursos anteriores',
+  'dashboard.createNewSpeech': 'Crear discurso',
+  'dashboard.createFirstSpeech': 'Crea tu primer discurso',
+  'dashboard.noSpeeches': 'Aún no tienes discursos',
+  'dashboard.viewAll': 'Ver todos',
+  'dashboard.basedOn': 'Basado en tu actividad y participación',
   
   // Time periods
-  'dashboard.allTime': 'Todo el Tiempo',
-  'dashboard.thisMonth': 'Este Mes',
-  'dashboard.last30Days': 'Últimos 30 Días',
+  'dashboard.allTime': 'Histórico',
+  'dashboard.thisMonth': 'Este mes',
+  'dashboard.last30Days': 'Últimos 30 días',
   
   // Metrics
-  'dashboard.totalSpeeches': 'Total de Discursos',
-  'dashboard.inProgress': 'En Progreso',
-  'dashboard.improvement': 'Actividad Reciente',
-  'dashboard.currentScore': 'Puntuación Actual',
-  'dashboard.monthlyChange': 'Cambio Mensual',
+  'dashboard.totalSpeeches': 'Total de discursos',
+  'dashboard.inProgress': 'En progreso',
+  'dashboard.improvement': 'Actividad reciente',
+  'dashboard.currentScore': 'Puntuación actual',
+  'dashboard.monthlyChange': 'Cambio mensual',
   
   // Loading states
   'loading': 'Cargando',
   
   // Errors
-  'errors.fetchSpeeches': 'Error al obtener discursos',
+  'errors.fetchSpeeches': 'Error al cargar los discursos',
 };

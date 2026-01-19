@@ -1,6 +1,6 @@
 
 export const gallery = {
-  'gallery.header': 'Discours pour',
-  'gallery.headerHighlight': 'Toute Occasion',
-  'gallery.subheader': 'Nous proposons des modèles de discours et des questionnaires "assistant de rédaction" faciles à utiliser pour tous types d\'événements et d\'occasions',
+  'gallery.header': 'Des discours pour',
+  'gallery.headerHighlight': 'chaque occasion',
+  'gallery.subheader': 'Choisissez parmi nos types de discours, conçus pour s\'adapter à tout événement ou besoin.',
 };
