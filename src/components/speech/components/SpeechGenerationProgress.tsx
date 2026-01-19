@@ -6,30 +6,38 @@ import { Loader2 } from 'lucide-react';
 
 interface SpeechGenerationProgressProps {
 	showConfetti: boolean;
+	isComplete?: boolean;
 }
 
-const SpeechGenerationProgress: React.FC<SpeechGenerationProgressProps> = ({ showConfetti }) => {
+const SpeechGenerationProgress: React.FC<SpeechGenerationProgressProps> = ({ showConfetti, isComplete }) => {
 	const [progress, setProgress] = useState(0);
 	const [showDeliveryMessage, setShowDeliveryMessage] = useState(false);
 
+	// When isComplete becomes true, immediately jump to 100%
 	useEffect(() => {
+		if (isComplete) {
+			setProgress(100);
+			setShowDeliveryMessage(true);
+		}
+	}, [isComplete]);
+
+	useEffect(() => {
+		// Don't run the fake progress if already complete
+		if (isComplete) return;
+
 		const interval = setInterval(() => {
 			setProgress(prevProgress => {
-				// Show delivery message at around 80% (approximately 10 seconds)
-				if (prevProgress >= 80 && !showDeliveryMessage) {
-					setShowDeliveryMessage(true);
-				}
-				
-				if (prevProgress >= 100) {
+				// Cap at 95% until actually complete - never show "DELIVERY!" prematurely
+				if (prevProgress >= 95) {
 					clearInterval(interval);
-					return 100;
+					return 95;
 				}
 				return prevProgress + 1;
 			});
-		}, 125); // Slower progression: 125ms per 1% = ~12.5 seconds total
+		}, 125); // 125ms per 1% = ~12 seconds to reach 95%
 
 		return () => clearInterval(interval);
-	}, [showDeliveryMessage]);
+	}, [isComplete]);
 
 	const getProgressMessage = () => {
 		if (progress < 20) return "Hmm, let me think about this...";

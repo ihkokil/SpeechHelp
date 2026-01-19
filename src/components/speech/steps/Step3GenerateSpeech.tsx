@@ -29,9 +29,10 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
 }) => {
   const { 
     generating, 
-    showConfetti, 
+    showConfetti,
+    isComplete,
     generateSpeech 
-  } = useSpeechGeneration({ 
+  } = useSpeechGeneration({
     speechTitle, 
     speechDetails, 
     speechType: selectedSpeechType,
@@ -69,8 +70,8 @@ const Step3GenerateSpeech: React.FC<Step3GenerateSpeechProps> = ({
           speechDetails={speechDetails}
         />
 
-        {generating && (
-          <SpeechGenerationProgress showConfetti={showConfetti} />
+        {(generating || showConfetti) && (
+          <SpeechGenerationProgress showConfetti={showConfetti} isComplete={isComplete} />
         )}
 
         <div className="flex justify-between pt-4">

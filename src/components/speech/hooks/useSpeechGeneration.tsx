@@ -23,6 +23,7 @@ export const useSpeechGeneration = ({
 	const [generating, setGenerating] = useState(false);
 	const [generationLocked, setGenerationLocked] = useState(false);
 	const [showConfetti, setShowConfetti] = useState(false);
+	const [isComplete, setIsComplete] = useState(false);
 	const [generatedSpeech, setGeneratedSpeech] = useState('');
 	const [autoSavedSpeechId, setAutoSavedSpeechId] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -107,6 +108,7 @@ export const useSpeechGeneration = ({
 		setAutoSavedSpeechId(null);
 		setGeneratedSpeech('');
 		setShowConfetti(false);
+		setIsComplete(false);
 
 		// Immediately save work state before starting generation
 		autoSaveToLocalStorage();
@@ -151,6 +153,7 @@ export const useSpeechGeneration = ({
 					description: "Your AI-powered speech has been created and automatically saved to your account",
 				});
 
+				setIsComplete(true);
 				setShowConfetti(true);
 
 			} catch (saveError) {
@@ -162,6 +165,7 @@ export const useSpeechGeneration = ({
 					description: "Your speech was generated successfully. You can manually save it in the next step.",
 				});
 				
+				setIsComplete(true);
 				setShowConfetti(true);
 			}
 
@@ -182,6 +186,7 @@ export const useSpeechGeneration = ({
 	return {
 		generating: generating || generationLocked,
 		showConfetti,
+		isComplete,
 		generatedSpeech,
 		autoSavedSpeechId,
 		error,
