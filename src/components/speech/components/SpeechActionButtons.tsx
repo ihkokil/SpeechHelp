@@ -60,8 +60,15 @@ const SpeechActionButtons: React.FC<SpeechActionButtonsProps> = ({
         setIsPlaying(false);
       };
       speechSynthRef.current.onerror = event => {
-        console.error('Speech synthesis error:', event);
         setIsPlaying(false);
+        
+        // Don't show error toast if it was cancelled by the user
+        // When cancelled, error type is 'interrupted' or 'canceled'
+        if (event.error === 'interrupted' || event.error === 'canceled') {
+          return;
+        }
+        
+        console.error('Speech synthesis error:', event);
         toast({
           title: "Text-to-Speech Error",
           description: "An error occurred while trying to read the speech.",

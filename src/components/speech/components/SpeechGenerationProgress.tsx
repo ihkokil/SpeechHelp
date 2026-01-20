@@ -21,31 +21,57 @@ const SpeechGenerationProgress: React.FC<SpeechGenerationProgressProps> = ({ sho
 		}
 	}, [isComplete]);
 
+	// Track cycling message index for waiting phase
+	const [waitingMessageIndex, setWaitingMessageIndex] = useState(0);
+
 	useEffect(() => {
 		// Don't run the fake progress if already complete
 		if (isComplete) return;
 
 		const interval = setInterval(() => {
 			setProgress(prevProgress => {
-				// Cap at 95% until actually complete - never show "DELIVERY!" prematurely
-				if (prevProgress >= 95) {
+				// Cap at 90% until actually complete
+				if (prevProgress >= 90) {
 					clearInterval(interval);
-					return 95;
+					return 90;
+				}
+				// Slow down after 70%
+				if (prevProgress >= 70) {
+					return prevProgress + 0.5;
 				}
 				return prevProgress + 1;
 			});
-		}, 125); // 125ms per 1% = ~12 seconds to reach 95%
+		}, 200); // 200ms per 1% = slower, more realistic progress
 
 		return () => clearInterval(interval);
 	}, [isComplete]);
 
+	// Cycle through waiting messages when stuck at 85-90%
+	useEffect(() => {
+		if (progress >= 85 && progress < 100 && !isComplete) {
+			const messageInterval = setInterval(() => {
+				setWaitingMessageIndex(prev => (prev + 1) % 4);
+			}, 3000);
+			return () => clearInterval(messageInterval);
+		}
+	}, [progress, isComplete]);
+
 	const getProgressMessage = () => {
-		if (progress < 20) return "Hmm, let me think about this...";
-		if (progress < 40) return "Gathering inspiration from the speech gods...";
-		if (progress < 60) return "Writing... no wait, that's not quite right...";
-		if (progress < 80) return "Ah yes! This is much better!";
-		if (progress < 95) return "Adding the perfect finishing touches...";
-		if (progress < 100) return "Almost there... just straightening my tie...";
+		if (progress < 15) return "Hmm, let me think about this...";
+		if (progress < 30) return "Gathering inspiration from the speech gods...";
+		if (progress < 45) return "Writing... no wait, that's not quite right...";
+		if (progress < 60) return "Ah yes! This is much better!";
+		if (progress < 75) return "Adding the perfect finishing touches...";
+		if (progress < 85) return "Almost there... just straightening my tie...";
+		if (progress < 100) {
+			const waitMessages = [
+				"Polishing every word to perfection...",
+				"Making sure it sounds just right...",
+				"Final review in progress...",
+				"Just a moment more..."
+			];
+			return waitMessages[waitingMessageIndex];
+		}
 		return "DELIVERY! Your speech is ready! 🎉";
 	};
 
