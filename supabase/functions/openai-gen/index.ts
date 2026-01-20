@@ -17,7 +17,7 @@ interface RequestBody {
 
 // OpenAI API configuration
 const API_URL = 'https://api.openai.com/v1/chat/completions';
-const MODEL = 'gpt-4.1'; // Using GPT-4o for high-quality speech generation
+const MODEL = 'gpt-5.1'; // Using GPT-5 for high-quality speech generation
 
 interface OpenAIMessage {
 	role: 'system' | 'user' | 'assistant';
