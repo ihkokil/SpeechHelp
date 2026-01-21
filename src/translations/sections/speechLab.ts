@@ -56,5 +56,10 @@ export const speechLabTranslations = {
   
   // Tips
   'speechLab.tips.title': 'Writing Tips',
-  'speechLab.tips.close': 'Close tips'
+  'speechLab.tips.close': 'Close tips',
+  
+  // State restoration
+  'speechLab.restoredProgress': 'We\'ve restored your previous speech in progress.',
+  'speechLab.dismiss': 'Dismiss',
+  'speechLab.startFresh': 'Start Fresh'
 };

@@ -8,6 +8,8 @@ import Step4EditSpeech from './steps/Step4EditSpeech';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RotateCcw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Translate from '@/components/Translate';
+
 const SpeechLabContent = () => {
   const {
     currentStep,
@@ -16,7 +18,7 @@ const SpeechLabContent = () => {
     speechTitle,
     autoSavedSpeechId,
     steps,
-    isStateRestored,
+    wasActuallyRestored,
     setSelectedSpeechType,
     nextStep,
     prevStep,
@@ -26,12 +28,12 @@ const SpeechLabContent = () => {
   } = useSpeechLabState();
   const [showRestorationAlert, setShowRestorationAlert] = useState(false);
 
-  // Show restoration alert if we restored from a step > 1
+  // Show restoration alert only if state was actually restored
   useEffect(() => {
-    if (isStateRestored && currentStep > 1) {
+    if (wasActuallyRestored) {
       setShowRestorationAlert(true);
     }
-  }, [isStateRestored, currentStep]);
+  }, [wasActuallyRestored]);
   const handleDismissAlert = () => {
     setShowRestorationAlert(false);
   };
@@ -58,15 +60,15 @@ const SpeechLabContent = () => {
       {showRestorationAlert && (
         <Alert className="mb-4 border-amber-200 bg-amber-50">
           <AlertDescription className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <span className="text-amber-800">We've restored your previous speech in progress.</span>
+            <span className="text-amber-800"><Translate text="speechLab.restoredProgress" /></span>
             <div className="flex gap-2">
               <Button variant="ghost" size="sm" onClick={handleDismissAlert} className="text-amber-700 hover:bg-amber-100">
                 <X className="h-4 w-4 mr-1" />
-                Dismiss
+                <Translate text="speechLab.dismiss" />
               </Button>
               <Button variant="outline" size="sm" onClick={handleStartOver} className="border-amber-300 text-amber-800 hover:bg-amber-100">
                 <RotateCcw className="h-4 w-4 mr-1" />
-                Start Fresh
+                <Translate text="speechLab.startFresh" />
               </Button>
             </div>
           </AlertDescription>
