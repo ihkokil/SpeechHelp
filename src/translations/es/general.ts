@@ -1,5 +1,7 @@
 
 export const general = {
   'app.name': 'SpeechHelp',
-  'loading': 'Cargando...'
+  'loading': 'Cargando...',
+  'error': 'Ha ocurrido un error',
+  'success': '¡Listo!'
 };

@@ -11,8 +11,8 @@ export const common = {
   'common.delete': 'Eliminar',
   'common.save': 'Guardar',
   'common.saving': 'Guardando...',
-  'common.saveChanges': 'Guardar Cambios',
-  'common.areYouSure': '¿Estás seguro?',
+  'common.saveChanges': 'Guardar cambios',
+  'common.areYouSure': '¿Seguro que quieres continuar?',
   'common.loading': 'Cargando...',
   'common.next': 'Siguiente',
   'common.back': 'Atrás',
@@ -23,20 +23,20 @@ export const common = {
   'common.refresh': 'Actualizar',
   
   // Plan limits
-  'plan.upgradeNow': 'Actualizar ahora',
-  'plan.upgradePlan': 'Actualizar plan',
-  'plan.trialLimitReached': '¡Has alcanzado el límite de tu prueba gratuita. Actualiza para crear más discursos!',
-  'plan.speechLimitReached': 'Has alcanzado tu límite de discursos.',
+  'plan.upgradeNow': 'Mejorar plan',
+  'plan.upgradePlan': 'Mejorar plan',
+  'plan.trialLimitReached': 'Has usado tu discurso de prueba. ¡Mejora tu plan para crear más!',
+  'plan.speechLimitReached': 'Has alcanzado el límite de discursos de este período.',
   'plan.subscriptionExpired': 'Tu suscripción ha expirado.',
   'plan.subscriptionInactive': 'Tu suscripción no está activa.',
-  'plan.planRequired': 'Esta función requiere un plan superior.',
+  'plan.planRequired': 'Necesitas un plan superior para esta función.',
   'plan.checkingAccess': 'Verificando acceso...',
-  'plan.currentPlan': 'Actual',
-  'plan.requiredPlan': 'Requerido',
-  'plan.planComparison': 'Comparación de planes',
+  'plan.currentPlan': 'Plan actual',
+  'plan.requiredPlan': 'Plan necesario',
+  'plan.planComparison': 'Comparar planes',
   
   // Tips
   'tips.resources': 'Recursos',
   'tips.articleNotFound': 'Artículo no encontrado',
-  'tips.articleNotFoundDescription': 'El artículo solicitado no se pudo encontrar.'
+  'tips.articleNotFoundDescription': 'No pudimos encontrar el artículo que buscas.'
 };

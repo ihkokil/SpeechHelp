@@ -1,65 +1,65 @@
 export const speechTypes = {
   // Wedding speeches
-  'speechTypes.wedding.title': 'Discurso de boda',
-  'speechTypes.wedding.description': 'Padrino, Dama de honor, Padre/Madre',
+  'speechTypes.wedding.title': 'Boda',
+  'speechTypes.wedding.description': 'Padrino, testigo, brindis nupcial',
   
   // Graduation
-  'speechTypes.graduation.title': 'Discurso de graduación',
-  'speechTypes.graduation.description': 'Valedictorian, Profesor, Director',
+  'speechTypes.graduation.title': 'Graduación',
+  'speechTypes.graduation.description': 'Discurso de promoción, valedictorian',
   
   // Birthday
-  'speechTypes.birthday.title': 'Discurso de cumpleaños',
-  'speechTypes.birthday.description': 'Aniversarios, Celebraciones de hitos',
+  'speechTypes.birthday.title': 'Cumpleaños',
+  'speechTypes.birthday.description': 'Celebraciones y aniversarios',
   
   // Business
-  'speechTypes.business.title': 'Discurso de negocios',
-  'speechTypes.business.description': 'Reuniones, Presentaciones, Ventas',
+  'speechTypes.business.title': 'Negocios',
+  'speechTypes.business.description': 'Reuniones, presentaciones, ventas',
   
   // TED Talk
-  'speechTypes.tedtalk.title': 'Charla estilo TED',
-  'speechTypes.tedtalk.description': 'Inspirador, Informativo, Impactante',
+  'speechTypes.tedtalk.title': 'Estilo TED',
+  'speechTypes.tedtalk.description': 'Inspirador e impactante',
   
   // Motivational
-  'speechTypes.motivational.title': 'Discurso motivacional',
-  'speechTypes.motivational.description': 'Inspirador, Superación, Éxito',
+  'speechTypes.motivational.title': 'Motivacional',
+  'speechTypes.motivational.description': 'Inspiración y superación',
   
   // Funeral/Memorial
-  'speechTypes.funeral.title': 'Discurso fúnebre',
-  'speechTypes.funeral.description': 'Conmemorativo, Eulogía, Homenaje',
+  'speechTypes.funeral.title': 'Funeral',
+  'speechTypes.funeral.description': 'Eulogía y homenaje',
   
   // Keynote address
-  'speechTypes.keynote.title': 'Discurso principal',
-  'speechTypes.keynote.description': 'Conferencias, Eventos, Convenciones',
+  'speechTypes.keynote.title': 'Conferencia magistral',
+  'speechTypes.keynote.description': 'Eventos y convenciones',
   
   // Social event
   'speechTypes.social.title': 'Evento social',
-  'speechTypes.social.description': 'Galas, Inauguraciones, Lanzamientos',
+  'speechTypes.social.description': 'Galas, inauguraciones, lanzamientos',
   
   // Farewell
-  'speechTypes.farewell.title': 'Discurso de despedida',
-  'speechTypes.farewell.description': 'Jubilación, Cambio de trabajo, Mudanza',
+  'speechTypes.farewell.title': 'Despedida',
+  'speechTypes.farewell.description': 'Jubilación, cambio de trabajo',
   
   // Informative
-  'speechTypes.informative.title': 'Discurso informativo',
-  'speechTypes.informative.description': 'Educativo, Instructivo, Explicativo',
+  'speechTypes.informative.title': 'Informativo',
+  'speechTypes.informative.description': 'Educativo y explicativo',
   
   // Persuasive
-  'speechTypes.persuasive.title': 'Discurso persuasivo',
-  'speechTypes.persuasive.description': 'Convincente, Argumentativo, Influyente',
+  'speechTypes.persuasive.title': 'Persuasivo',
+  'speechTypes.persuasive.description': 'Convincente y argumentativo',
   
   // Entertaining
-  'speechTypes.entertaining.title': 'Discurso de entretenimiento',
-  'speechTypes.entertaining.description': 'Humorístico, Creativo, Divertido',
+  'speechTypes.entertaining.title': 'Entretenimiento',
+  'speechTypes.entertaining.description': 'Humor y creatividad',
   
   // Retirement
-  'speechTypes.retirement.title': 'Discurso de jubilación',
-  'speechTypes.retirement.description': 'Celebración, Carrera, Legado',
+  'speechTypes.retirement.title': 'Jubilación',
+  'speechTypes.retirement.description': 'Celebración de carrera',
   
   // Award acceptance
-  'speechTypes.award.title': 'Discurso de aceptación',
-  'speechTypes.award.description': 'Premios, Reconocimientos, Honores',
+  'speechTypes.award.title': 'Aceptación de premio',
+  'speechTypes.award.description': 'Premios y reconocimientos',
   
   // Other
-  'speechTypes.other.title': 'Otros discursos',
-  'speechTypes.other.description': 'Personalizados para cualquier ocasión'
+  'speechTypes.other.title': 'Otro',
+  'speechTypes.other.description': 'Personalizado para tu ocasión'
 };
