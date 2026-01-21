@@ -4,6 +4,7 @@ import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface ForgotPasswordFormProps {
   onBackToSignIn: () => void;
@@ -15,6 +16,7 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const { toast } = useToast();
+  const { translate } = useTranslatedContent();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,8 +37,8 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
     } catch (error: any) {
       console.error('Password reset request error:', error);
       toast({
-        title: "Error",
-        description: "Failed to send reset link. Please try again.",
+        title: translate('toast.error.generic'),
+        description: translate('auth.errors.sendResetFailed'),
         variant: "destructive"
       });
     } finally {
@@ -48,9 +50,9 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
     return (
       <>
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Check Your Email</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">{translate('auth.forgotPassword.checkEmail')}</h1>
           <p className="text-gray-600">
-            We've sent a password reset link to <span className="font-semibold">{email}</span>
+            {translate('auth.forgotPassword.emailSent')} <span className="font-semibold">{email}</span>
           </p>
         </div>
         
@@ -62,11 +64,11 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-green-800">
-                  Email sent successfully
+                  {translate('auth.forgotPassword.emailSentSuccess')}
                 </h3>
                 <div className="mt-2 text-sm text-green-700">
                   <p>
-                    Click the link in your email to reset your password. The link will expire in 24 hours.
+                    {translate('auth.forgotPassword.linkExpiry')}
                   </p>
                 </div>
               </div>
@@ -83,7 +85,7 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
                 }}
                 className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
               >
-                Try a different email
+                {translate('auth.forgotPassword.tryDifferentEmail')}
               </button>
               
               <button
@@ -92,7 +94,7 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
                 className="text-pink-600 hover:text-pink-800 font-semibold transition-colors inline-flex items-center"
               >
                 <ArrowLeft className="mr-1 h-4 w-4" />
-                Back to Sign In
+                {translate('auth.forgotPassword.backToSignIn')}
               </button>
             </div>
           </div>
@@ -104,14 +106,14 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
   return (
     <>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Forgot Password</h1>
-        <p className="text-gray-600">Enter your email to receive a password reset link</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">{translate('auth.forgotPassword.title')}</h1>
+        <p className="text-gray-600">{translate('auth.forgotPassword.subtitle')}</p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
-            Email Address
+            {translate('auth.labels.email')}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -124,7 +126,7 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
-              placeholder="Enter your email address"
+              placeholder={translate('auth.placeholders.email')}
               autoFocus
             />
           </div>
@@ -142,10 +144,10 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Sending Reset Link...
+              {translate('auth.forgotPassword.loading')}
             </span>
           ) : (
-            "Send Reset Link"
+            translate('auth.forgotPassword.button')
           )}
         </ButtonCustom>
 
@@ -156,7 +158,7 @@ const ForgotPasswordForm = ({ onBackToSignIn, onCodeSent }: ForgotPasswordFormPr
             className="text-pink-600 hover:text-pink-800 font-semibold transition-colors inline-flex items-center"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Sign In
+            {translate('auth.forgotPassword.backToSignIn')}
           </button>
         </div>
       </form>

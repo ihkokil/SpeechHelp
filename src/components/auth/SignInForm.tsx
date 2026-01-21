@@ -6,6 +6,7 @@ import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import TwoFactorVerification from './TwoFactorVerification';
 import { verifyEmail, verifyPassword, verify2FA, completeLogin, resendConfirmationEmail } from '@/services/authService';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface SignInFormProps {
   onSwitchToSignUp: () => void;
@@ -23,6 +24,7 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const { toast } = useToast();
   const { refreshUser } = useAuth();
+  const { translate } = useTranslatedContent();
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,18 +51,17 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
       if (has2FA) {
         setStep('2fa');
       } else {
-        // Complete login for users without 2FA
         const loginResult = await completeLogin(email, password, toast);
         if (loginResult.success) {
           await refreshUser();
           toast({
-            title: "Welcome back!",
-            description: "You have been signed in successfully.",
+            title: translate('auth.signIn.welcomeBack'),
+            description: translate('auth.signIn.successDescription'),
           });
         }
       }
     } else if (result.error === "email_not_confirmed") {
-      setConfirmationMessage(result.message || "Please confirm your email address before signing in.");
+      setConfirmationMessage(result.message || translate('auth.emailConfirmation.title'));
       setStep('email_confirmation');
     }
     
@@ -74,8 +75,8 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
     if (loginResult.success) {
       await refreshUser();
       toast({
-        title: "Welcome back!",
-        description: "You have been signed in successfully.",
+        title: translate('auth.signIn.welcomeBack'),
+        description: translate('auth.signIn.successDescription'),
       });
     }
     
@@ -112,10 +113,10 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
           <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
             <Mail className="h-8 w-8 text-yellow-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Email Confirmation Required</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">{translate('auth.emailConfirmation.title')}</h1>
           <p className="text-gray-600 mb-4">{confirmationMessage}</p>
           <p className="text-sm text-gray-500">
-            Check your inbox for <strong>{email}</strong> and click the confirmation link.
+            {translate('auth.emailConfirmation.checkInbox')} <strong>{email}</strong> {translate('auth.emailConfirmation.clickLink')}
           </p>
         </div>
 
@@ -132,12 +133,12 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Sending...
+                {translate('auth.emailConfirmation.sending')}
               </span>
             ) : (
               <span className="flex items-center justify-center">
                 <Mail className="mr-2 h-4 w-4" />
-                Resend Confirmation Email
+                {translate('auth.emailConfirmation.resend')}
               </span>
             )}
           </ButtonCustom>
@@ -147,7 +148,7 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
             onClick={handleBackToPassword}
             className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
           >
-            Back to Sign In
+            {translate('auth.emailConfirmation.backToSignIn')}
           </button>
         </div>
       </div>
@@ -157,15 +158,15 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
   return (
     <>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-        <p className="text-gray-600">Sign in to your account to continue</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">{translate('auth.signIn.title')}</h1>
+        <p className="text-gray-600">{translate('auth.signIn.subtitle')}</p>
       </div>
       
       {step === 'email' ? (
         <form onSubmit={handleEmailSubmit} className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
-              Email Address
+              {translate('auth.labels.email')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -178,7 +179,7 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
-                placeholder="Enter your email address"
+                placeholder={translate('auth.placeholders.email')}
                 autoFocus
               />
             </div>
@@ -196,11 +197,11 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Verifying Email...
+                {translate('auth.signIn.verifyingEmail')}
               </span>
             ) : (
               <span className="flex items-center justify-center">
-                Continue
+                {translate('auth.signIn.continue')}
                 <LogIn className="ml-2 h-4 w-4" />
               </span>
             )}
@@ -212,18 +213,18 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
               onClick={onForgotPassword}
               className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors block w-full"
             >
-              Forgot your password?
+              {translate('auth.signIn.forgotPassword')}
             </button>
             
             <div>
               <p className="text-gray-600">
-                Don't have an account?{' '}
+                {translate('auth.signIn.noAccount')}{' '}
                 <button
                   type="button"
                   onClick={onSwitchToSignUp}
                   className="text-pink-600 hover:text-pink-800 font-semibold transition-colors"
                 >
-                  Sign up here
+                  {translate('auth.signIn.signUpHere')}
                 </button>
               </p>
             </div>
@@ -233,7 +234,7 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
         <form onSubmit={handlePasswordSubmit} className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="email-display" className="block text-sm font-semibold text-gray-700">
-              Email Address
+              {translate('auth.labels.email')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -251,7 +252,7 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
 
           <div className="space-y-2">
             <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
-              Password
+              {translate('auth.labels.password')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -264,7 +265,7 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
-                placeholder="Enter your password"
+                placeholder={translate('auth.placeholders.password')}
                 autoFocus
               />
               <button
@@ -293,12 +294,12 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Signing In...
+                {translate('auth.signIn.loading')}
               </span>
             ) : (
               <span className="flex items-center justify-center">
                 <LogIn className="mr-2 h-4 w-4" />
-                Sign In
+                {translate('auth.signIn.button')}
               </span>
             )}
           </ButtonCustom>
@@ -309,7 +310,7 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
               onClick={handleBackToEmail}
               className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors"
             >
-              Use different email
+              {translate('auth.signIn.useDifferentEmail')}
             </button>
             
             <button
@@ -317,18 +318,18 @@ const SignInForm = ({ onSwitchToSignUp, onForgotPassword }: SignInFormProps) => 
               onClick={onForgotPassword}
               className="text-pink-600 hover:text-pink-800 text-sm font-semibold transition-colors block w-full"
             >
-              Forgot your password?
+              {translate('auth.signIn.forgotPassword')}
             </button>
             
             <div>
               <p className="text-gray-600">
-                Don't have an account?{' '}
+                {translate('auth.signIn.noAccount')}{' '}
                 <button
                   type="button"
                   onClick={onSwitchToSignUp}
                   className="text-pink-600 hover:text-pink-800 font-semibold transition-colors"
                 >
-                  Sign up here
+                  {translate('auth.signIn.signUpHere')}
                 </button>
               </p>
             </div>

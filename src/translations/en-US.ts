@@ -17,7 +17,9 @@ import {
   speechTypesTranslations,
   settingsTranslations,
   adminTranslations,
-  legalTranslations
+  legalTranslations,
+  authTranslations,
+  toastsTranslations
 } from './sections';
 
 export const enUSTranslations = {
@@ -38,7 +40,9 @@ export const enUSTranslations = {
   ...speechTypesTranslations,
   ...settingsTranslations,
   ...adminTranslations,
-  ...legalTranslations
+  ...legalTranslations,
+  ...authTranslations,
+  ...toastsTranslations
 };
 
 export const enUS = enUSTranslations;

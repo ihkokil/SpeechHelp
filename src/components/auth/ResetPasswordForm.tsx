@@ -4,6 +4,7 @@ import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 import { Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslatedContent } from '@/hooks/useTranslatedContent';
 
 interface ResetPasswordFormProps {
   email: string;
@@ -20,8 +21,8 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
   const [userEmail, setUserEmail] = useState(email);
   const [hasValidSession, setHasValidSession] = useState(false);
   const { toast } = useToast();
+  const { translate } = useTranslatedContent();
 
-  // Check for valid recovery session and get user email
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -40,8 +41,8 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
           setHasValidSession(false);
           if (!email) {
             toast({
-              title: "Session expired",
-              description: "Please click the reset link in your email again.",
+              title: translate('auth.errors.sessionExpired'),
+              description: translate('auth.errors.sessionExpiredDesc'),
               variant: "destructive"
             });
           }
@@ -53,7 +54,7 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
     };
 
     checkSession();
-  }, [email, toast]);
+  }, [email, toast, translate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,8 +62,8 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
 
     if (newPassword !== confirmPassword) {
       toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
+        title: translate('auth.errors.passwordsDontMatch'),
+        description: translate('auth.errors.passwordsDontMatchDesc'),
         variant: "destructive"
       });
       setLoading(false);
@@ -71,19 +72,18 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
 
     if (newPassword.length < 6) {
       toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters long.",
+        title: translate('auth.errors.passwordTooShort'),
+        description: translate('auth.errors.passwordTooShortDesc'),
         variant: "destructive"
       });
       setLoading(false);
       return;
     }
 
-    // Check if we have a valid session before attempting password update
     if (!hasValidSession) {
       toast({
-        title: "Session expired",
-        description: "Please click the reset link in your email again.",
+        title: translate('auth.errors.sessionExpired'),
+        description: translate('auth.errors.sessionExpiredDesc'),
         variant: "destructive"
       });
       setLoading(false);
@@ -100,11 +100,10 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
       }
 
       toast({
-        title: "Password updated successfully",
-        description: "Your password has been updated. Please sign in with your new password.",
+        title: translate('auth.success.passwordUpdated'),
+        description: translate('auth.success.passwordUpdatedDesc'),
       });
 
-      // Sign out the user after successful password reset so they need to sign in again
       await supabase.auth.signOut();
       
       onResetSuccess();
@@ -114,14 +113,14 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
       
       if (error.message?.includes('session')) {
         toast({
-          title: "Session expired",
-          description: "Please click the reset link in your email again.",
+          title: translate('auth.errors.sessionExpired'),
+          description: translate('auth.errors.sessionExpiredDesc'),
           variant: "destructive"
         });
       } else {
         toast({
-          title: "Reset failed",
-          description: error.message || "Failed to reset password. Please try again.",
+          title: translate('auth.errors.resetFailed'),
+          description: error.message || translate('auth.errors.resetFailedDesc'),
           variant: "destructive"
         });
       }
@@ -133,17 +132,17 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
   return (
     <>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Set New Password</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">{translate('auth.resetPassword.title')}</h1>
         <p className="text-gray-600">
           {userEmail ? (
-            <>Enter a new password for <span className="font-semibold">{userEmail}</span></>
+            <>{translate('auth.resetPassword.subtitleFor')} <span className="font-semibold">{userEmail}</span></>
           ) : (
-            "Enter your new password"
+            translate('auth.resetPassword.subtitleGeneric')
           )}
         </p>
         {!hasValidSession && (
           <p className="text-red-600 text-sm mt-2">
-            Session expired. Please click the reset link in your email again.
+            {translate('auth.resetPassword.sessionExpired')}
           </p>
         )}
       </div>
@@ -151,7 +150,7 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-700">
-            New Password
+            {translate('auth.labels.newPassword')}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -164,7 +163,7 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
-              placeholder="Enter new password"
+              placeholder={translate('auth.placeholders.newPassword')}
               autoFocus
               disabled={!hasValidSession}
             />
@@ -184,7 +183,7 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
 
         <div className="space-y-2">
           <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
-            Confirm New Password
+            {translate('auth.labels.confirmNewPassword')}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -197,7 +196,7 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors"
-              placeholder="Confirm new password"
+              placeholder={translate('auth.placeholders.confirmNewPassword')}
               disabled={!hasValidSession}
             />
             <button
@@ -226,10 +225,10 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Updating Password...
+              {translate('auth.resetPassword.loading')}
             </span>
           ) : (
-            "Update Password"
+            translate('auth.resetPassword.button')
           )}
         </ButtonCustom>
 
@@ -240,7 +239,7 @@ const ResetPasswordForm = ({ email, onBackToForgot, onResetSuccess }: ResetPassw
             className="text-pink-600 hover:text-pink-800 font-semibold transition-colors inline-flex items-center"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Back to Email Entry
+            {translate('auth.resetPassword.backToEmail')}
           </button>
         </div>
       </form>
