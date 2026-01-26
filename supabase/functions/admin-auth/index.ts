@@ -16,23 +16,86 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Custom implementation for password verification
-// This uses a simpler approach that's compatible with Deno
+// Secure password verification using bcrypt
 const verifyPassword = async (password: string, storedHash: string): Promise<boolean> => {
   try {
-    // For default admin, use hardcoded verification to bypass bcrypt issues
-    if (password === "Admin@123" && storedHash.startsWith("$2")) {
-      console.log("Using fallback verification for admin credentials");
-      return true;
-    }
-    
-    // For future implementations, use a more secure method
-    // This is just a temporary solution to make login work
-    return false;
+    // Use bcrypt.compare for proper password verification
+    const isValid = await bcrypt.compare(password, storedHash);
+    console.log(`Password verification completed`);
+    return isValid;
   } catch (error) {
     console.error("Error in password verification:", error);
     return false;
   }
+};
+
+// Helper function to verify super admin authentication from request
+const verifySuperAdminAuth = async (req: Request): Promise<{ isValid: boolean; adminId?: string; error?: string }> => {
+  try {
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return { isValid: false, error: "Missing or invalid authorization header" };
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    
+    // Parse the admin session token (base64 encoded JSON)
+    let sessionData;
+    try {
+      sessionData = JSON.parse(atob(token));
+    } catch {
+      return { isValid: false, error: "Invalid session token format" };
+    }
+
+    const { adminId, expiresAt } = sessionData;
+    
+    if (!adminId || !expiresAt) {
+      return { isValid: false, error: "Invalid session token data" };
+    }
+
+    // Check if token is expired
+    if (new Date(expiresAt) < new Date()) {
+      return { isValid: false, error: "Session token expired" };
+    }
+
+    // Verify the admin exists and is a super admin
+    const { data: admin, error } = await supabaseClient
+      .from("admin_users")
+      .select("id, is_super_admin, is_active")
+      .eq("id", adminId)
+      .maybeSingle();
+
+    if (error || !admin) {
+      return { isValid: false, error: "Admin not found" };
+    }
+
+    if (!admin.is_active) {
+      return { isValid: false, error: "Admin account is inactive" };
+    }
+
+    if (!admin.is_super_admin) {
+      return { isValid: false, error: "Super admin privileges required" };
+    }
+
+    return { isValid: true, adminId: admin.id };
+  } catch (error) {
+    console.error("Error verifying super admin auth:", error);
+    return { isValid: false, error: "Authentication verification failed" };
+  }
+};
+
+// Check if any admin users exist (for first-time setup)
+const hasExistingAdmins = async (): Promise<boolean> => {
+  const { count, error } = await supabaseClient
+    .from("admin_users")
+    .select("id", { count: "exact", head: true });
+  
+  if (error) {
+    console.error("Error checking for existing admins:", error);
+    return true; // Assume admins exist on error to be safe
+  }
+  
+  return (count ?? 0) > 0;
 };
 
 serve(async (req) => {
@@ -54,11 +117,10 @@ serve(async (req) => {
       
       if (contentType.includes("application/json")) {
         const text = await req.text();
-        console.log(`Request body text: ${text}`);
+        console.log(`Request body received`);
         
         if (text) {
           body = JSON.parse(text);
-          console.log("Parsed JSON body:", body);
         } else {
           body = {};
           console.log("Empty request body");
@@ -66,16 +128,14 @@ serve(async (req) => {
       } else {
         // For non-JSON content types
         body = await req.json().catch(() => ({}));
-        console.log("Parsed body using req.json():", body);
       }
     } catch (error) {
       console.error("Error parsing request body:", error);
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "Invalid request body format", 
-        details: error.message 
+        error: "Invalid request body format"
       }), {
-        status: 200, // Use 200 even for errors to prevent edge function errors
+        status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -104,7 +164,7 @@ serve(async (req) => {
         success: false, 
         error: "Invalid request parameters"
       }), {
-        status: 200, // Use 200 even for errors to prevent edge function errors
+        status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -113,7 +173,7 @@ serve(async (req) => {
     let response;
     switch (requestType) {
       case "create_admin":
-        response = await handleCreateAdmin(body);
+        response = await handleCreateAdmin(body, req);
         break;
       case "verify_password":
         response = await handleVerifyPassword(body);
@@ -132,7 +192,7 @@ serve(async (req) => {
           success: false, 
           error: "Invalid request type" 
         }), {
-          status: 200, // Use 200 even for errors to prevent edge function errors
+          status: 200,
           headers: { "Content-Type": "application/json", ...corsHeaders },
         });
     }
@@ -142,21 +202,74 @@ serve(async (req) => {
     console.error("Error in admin-auth function:", error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: "Internal server error", 
-      details: error.message 
+      error: "Internal server error"
     }), {
-      status: 200, // Use 200 even for errors to prevent edge function errors
+      status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 });
 
-// Create an admin user (for first-time setup)
-async function handleCreateAdmin(data) {
+// Create an admin user (requires super admin auth, except for first admin)
+async function handleCreateAdmin(data: any, req: Request) {
   const { username, password, email, is_super_admin = false } = data;
 
   try {
-    console.log(`Creating admin user: ${username}, email: ${email}`);
+    console.log(`Admin creation request for username: ${username}`);
+    
+    // Check if any admins exist
+    const adminsExist = await hasExistingAdmins();
+    
+    if (adminsExist) {
+      // Require super admin authentication for creating new admins
+      const authResult = await verifySuperAdminAuth(req);
+      
+      if (!authResult.isValid) {
+        console.log(`Admin creation denied: ${authResult.error}`);
+        return new Response(JSON.stringify({ 
+          success: false, 
+          error: authResult.error || "Super admin authentication required to create new admins"
+        }), {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+      
+      console.log(`Admin creation authorized by super admin: ${authResult.adminId}`);
+    } else {
+      console.log("No admins exist - allowing first admin creation without authentication");
+    }
+    
+    // Validate input
+    if (!username || typeof username !== 'string' || username.length < 3) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Username must be at least 3 characters" 
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    if (!password || typeof password !== 'string' || password.length < 8) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Password must be at least 8 characters" 
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Valid email is required" 
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
     
     // Check if admin with this username already exists
     const { data: existingAdmin, error: checkError } = await supabaseClient
@@ -171,17 +284,17 @@ async function handleCreateAdmin(data) {
     }
 
     if (existingAdmin) {
-      console.log("Admin user already exists, returning friendly message");
+      console.log("Admin user already exists");
       return new Response(JSON.stringify({ 
         success: false, 
         error: "Admin user already exists" 
       }), {
-        status: 200, // Use 200 even for existing admin to prevent edge function errors
+        status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // Hash password
+    // Hash password using bcrypt
     const hashedPassword = await bcrypt.hash(password);
     console.log("Password hashed successfully");
 
@@ -192,7 +305,7 @@ async function handleCreateAdmin(data) {
         username,
         email,
         hashed_password: hashedPassword,
-        is_super_admin
+        is_super_admin: adminsExist ? is_super_admin : true // First admin is always super admin
       })
       .select()
       .single();
@@ -220,21 +333,41 @@ async function handleCreateAdmin(data) {
     console.error("Error creating admin user:", error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: "Failed to create admin user", 
-      details: error.message 
+      error: "Failed to create admin user"
     }), {
-      status: 200, // Use 200 even for errors to prevent edge function errors
+      status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 }
 
 // Verify admin password
-async function handleVerifyPassword(data) {
+async function handleVerifyPassword(data: any) {
   const { username, password } = data;
 
   try {
     console.log(`Verifying password for username: ${username}`);
+    
+    // Validate input
+    if (!username || typeof username !== 'string') {
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: "Invalid credentials"
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    if (!password || typeof password !== 'string') {
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: "Invalid credentials"
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
     
     // Get admin user from database
     const { data: admin, error } = await supabaseClient
@@ -249,7 +382,7 @@ async function handleVerifyPassword(data) {
         success: false,
         error: "Failed to verify credentials"
       }), {
-        status: 200, // Use 200 even for errors to prevent edge function errors
+        status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -260,7 +393,7 @@ async function handleVerifyPassword(data) {
         success: false,
         error: "Invalid credentials or account is inactive."
       }), {
-        status: 200, // Use 200 even for errors to prevent edge function errors
+        status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -271,24 +404,39 @@ async function handleVerifyPassword(data) {
         success: false,
         error: "Invalid credentials or account is inactive."
       }), {
-        status: 200, // Use 200 even for errors to prevent edge function errors
+        status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // Use custom verify function instead of bcrypt.compare
+    // Use proper bcrypt verification
     const passwordMatch = await verifyPassword(password, admin.hashed_password);
-    console.log(`Password verification result: ${passwordMatch}`);
+    console.log(`Password verification completed for: ${username}`);
 
     if (!passwordMatch) {
+      // Increment failed login attempts
+      await supabaseClient
+        .from("admin_users")
+        .update({ failed_login_attempts: admin.failed_login_attempts + 1 })
+        .eq("id", admin.id);
+        
       return new Response(JSON.stringify({ 
         success: false,
         error: "Invalid credentials."
       }), {
-        status: 200, // Use 200 even for errors to prevent edge function errors
+        status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
+
+    // Reset failed login attempts on successful login
+    await supabaseClient
+      .from("admin_users")
+      .update({ 
+        failed_login_attempts: 0,
+        last_login: new Date().toISOString()
+      })
+      .eq("id", admin.id);
 
     // Check if 2FA is enabled for this admin
     const { data: twoFactorData } = await supabaseClient
@@ -317,17 +465,16 @@ async function handleVerifyPassword(data) {
     console.error("Error verifying password:", error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: "Password verification failed", 
-      details: error.message 
+      error: "Password verification failed"
     }), {
-      status: 200, // Use 200 even for errors to prevent edge function errors
+      status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 }
 
 // Set up two-factor authentication
-async function handleSetup2FA(data) {
+async function handleSetup2FA(data: any) {
   const { adminId } = data;
 
   try {
@@ -372,17 +519,16 @@ async function handleSetup2FA(data) {
     console.error("Error setting up 2FA:", error);
     return new Response(JSON.stringify({ 
       success: false,
-      error: "Failed to set up 2FA", 
-      details: error.message 
+      error: "Failed to set up 2FA"
     }), {
-      status: 200, // Use 200 even for errors to prevent edge function errors
+      status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 }
 
 // Verify two-factor authentication code
-async function handleVerify2FA(data) {
+async function handleVerify2FA(data: any) {
   const { adminId, code } = data;
 
   try {
@@ -401,7 +547,7 @@ async function handleVerify2FA(data) {
         success: false, 
         error: "2FA not set up" 
       }), {
-        status: 200, // Use 200 even for errors to prevent edge function errors
+        status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -414,7 +560,7 @@ async function handleVerify2FA(data) {
       window: 1, // Allow 1 step before and after for time skew
     });
 
-    console.log(`2FA verification result: ${verified}`);
+    console.log(`2FA verification completed`);
 
     if (verified) {
       // Enable 2FA if this is the first verification
@@ -432,21 +578,31 @@ async function handleVerify2FA(data) {
     console.error("Error verifying 2FA code:", error);
     return new Response(JSON.stringify({ 
       success: false,
-      error: "2FA verification failed", 
-      details: error.message 
+      error: "2FA verification failed"
     }), {
-      status: 200, // Use 200 even for errors to prevent edge function errors
+      status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 }
 
 // Handle password reset
-async function handleResetPassword(data) {
+async function handleResetPassword(data: any) {
   const { token, newPassword } = data;
 
   try {
     console.log(`Processing password reset with token`);
+    
+    // Validate new password
+    if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Password must be at least 8 characters" 
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
     
     // Verify token
     const { data: resetData, error: resetError } = await supabaseClient
@@ -460,7 +616,7 @@ async function handleResetPassword(data) {
         success: false, 
         error: "Invalid or expired token" 
       }), {
-        status: 200, // Use 200 even for errors to prevent edge function errors
+        status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -471,12 +627,12 @@ async function handleResetPassword(data) {
         success: false, 
         error: "Token expired" 
       }), {
-        status: 200, // Use 200 even for errors to prevent edge function errors
+        status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // Hash new password
+    // Hash new password using bcrypt
     const hashedPassword = await bcrypt.hash(newPassword);
 
     // Update password
@@ -503,11 +659,10 @@ async function handleResetPassword(data) {
   } catch (error) {
     console.error("Error resetting password:", error);
     return new Response(JSON.stringify({ 
-      success: false,
-      error: "Password reset failed", 
-      details: error.message 
+      success: false, 
+      error: "Password reset failed"
     }), {
-      status: 200, // Use 200 even for errors to prevent edge function errors
+      status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }

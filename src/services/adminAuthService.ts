@@ -29,17 +29,40 @@ interface Verify2FAResponse {
   error?: string;
 }
 
+// Helper to get admin session token for authenticated requests
+const getAdminAuthToken = (): string | null => {
+  try {
+    const storedSession = sessionStorage.getItem('adminSession') || localStorage.getItem('adminSession');
+    if (!storedSession) return null;
+    
+    const session = JSON.parse(storedSession);
+    if (!session.user?.id || !session.expiresAt) return null;
+    
+    // Create a token that the edge function can verify
+    const tokenData = {
+      adminId: session.user.id,
+      expiresAt: session.expiresAt
+    };
+    
+    return btoa(JSON.stringify(tokenData));
+  } catch {
+    return null;
+  }
+};
+
 export const adminAuthService = {
-  // Create default admin user (for initial setup)
+  // Create default admin user (for initial setup - no auth required for first admin)
   async createDefaultAdmin(): Promise<{ success: boolean; error?: string }> {
     try {
       console.log('Attempting to create default admin user');
       
+      // For the first admin, no authentication is required
+      // The edge function will check if any admins exist
       const functionResult = await supabase.functions.invoke('admin-auth', {
         body: { 
           action: 'create_admin',
           username: 'speechhelpmaster', 
-          password: 'Admin@123', 
+          password: 'SecureAdmin2024!', // Changed to a more secure default password
           email: 'admin@speechhelp.com',
           is_super_admin: true
         },
@@ -85,6 +108,63 @@ export const adminAuthService = {
       return { success: true };
     } catch (err: any) {
       console.error('Create default admin error:', err);
+      return { 
+        success: false, 
+        error: 'An unexpected error occurred. Please try again later.' 
+      };
+    }
+  },
+
+  // Create a new admin user (requires super admin authentication)
+  async createAdmin(username: string, password: string, email: string, isSuperAdmin: boolean = false): Promise<{ success: boolean; error?: string; user?: any }> {
+    try {
+      console.log('Attempting to create new admin user');
+      
+      const authToken = getAdminAuthToken();
+      if (!authToken) {
+        return { 
+          success: false, 
+          error: 'Super admin authentication required to create new admins' 
+        };
+      }
+      
+      const functionResult = await supabase.functions.invoke('admin-auth', {
+        body: { 
+          action: 'create_admin',
+          username,
+          password,
+          email,
+          is_super_admin: isSuperAdmin
+        },
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      }).catch(error => {
+        console.error('Error invoking admin-auth function:', error);
+        return { error };
+      });
+      
+      if (functionResult.error) {
+        console.error('Error creating admin:', functionResult.error);
+        return { 
+          success: false, 
+          error: functionResult.error.message || 'Failed to create admin' 
+        };
+      }
+      
+      const responseData = functionResult && 'data' in functionResult ? functionResult.data : null;
+      
+      if (!responseData?.success) {
+        return { 
+          success: false, 
+          error: responseData?.error || 'Failed to create admin' 
+        };
+      }
+
+      console.log('Admin user created successfully');
+      return { success: true, user: responseData.user };
+    } catch (err: any) {
+      console.error('Create admin error:', err);
       return { 
         success: false, 
         error: 'An unexpected error occurred. Please try again later.' 
