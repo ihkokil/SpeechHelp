@@ -721,46 +721,6 @@ export type Database = {
         Args: { permission_name: string }
         Returns: boolean
       }
-      admin_update_user_profile:
-        | {
-            Args: {
-              display_name: string
-              is_active_status: boolean
-              phone_number: string
-              user_email: string
-              user_id_param: string
-              user_metadata?: Json
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              city_param?: string
-              country_param?: string
-              first_name_param: string
-              is_active_status?: boolean
-              last_name_param: string
-              phone_number?: string
-              state_param?: string
-              street_address_param?: string
-              user_email: string
-              user_id_param: string
-              zip_code_param?: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              first_name_param: string
-              is_active_status: boolean
-              last_name_param: string
-              phone_number: string
-              user_email: string
-              user_id_param: string
-              user_metadata?: Json
-            }
-            Returns: Json
-          }
       authenticate_admin: {
         Args: { email_input: string; password_input: string }
         Returns: {
@@ -789,15 +749,6 @@ export type Database = {
       get_admin_profile_from_user_profile: {
         Args: { admin_user_id_param: string }
         Returns: Json
-      }
-      get_admin_settings: {
-        Args: { category_filter?: string }
-        Returns: {
-          setting_category: string
-          setting_key: string
-          setting_value: Json
-          updated_at: string
-        }[]
       }
       handle_plan_transition: {
         Args: {
@@ -853,23 +804,6 @@ export type Database = {
         Args: { enable_admin: boolean; user_id_param: string }
         Returns: Json
       }
-      toggle_user_admin_status: {
-        Args: {
-          new_admin_role?: string
-          new_admin_status: boolean
-          user_id_param: string
-        }
-        Returns: Json
-      }
-      update_user_admin_status: {
-        Args: {
-          admin_role_value?: string
-          is_admin_status?: boolean
-          permissions_value?: Json
-          user_id: string
-        }
-        Returns: Json
-      }
       update_user_subscription: {
         Args: { end_date: string; plan: string; user_id: string }
         Returns: Json
@@ -883,14 +817,6 @@ export type Database = {
           stripe_customer_id_param: string
           stripe_subscription_id_param: string
           user_id_param: string
-        }
-        Returns: Json
-      }
-      upsert_admin_setting: {
-        Args: {
-          setting_category_param: string
-          setting_key_param: string
-          setting_value_param: Json
         }
         Returns: Json
       }
