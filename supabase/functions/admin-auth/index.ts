@@ -20,7 +20,16 @@ const ERROR_MESSAGES = {
   OPERATION_FAILED: "Operation failed",
   FORBIDDEN: "Access denied",
   RATE_LIMITED: "Too many attempts. Please try again later.",
+  ACCOUNT_LOCKED: "Account temporarily locked. Please try again in 15 minutes.",
 } as const;
+
+// Rate limiting configuration
+const RATE_LIMIT_CONFIG = {
+  MAX_FAILED_ATTEMPTS: 5,
+  LOCKOUT_DURATION_MINUTES: 15,
+  PROGRESSIVE_DELAY_BASE_MS: 1000,
+  MAX_DELAY_MS: 10000,
+};
 
 // Secure password verification using bcrypt
 const verifyPassword = async (password: string, storedHash: string): Promise<boolean> => {
@@ -32,6 +41,34 @@ const verifyPassword = async (password: string, storedHash: string): Promise<boo
     console.error("Error in password verification:", error);
     return false;
   }
+};
+
+// Check if account is locked due to too many failed attempts
+const isAccountLocked = (failedAttempts: number, lastFailedAt: string | null): boolean => {
+  if (failedAttempts < RATE_LIMIT_CONFIG.MAX_FAILED_ATTEMPTS) {
+    return false;
+  }
+  
+  if (!lastFailedAt) {
+    return false;
+  }
+  
+  const lockoutUntil = new Date(lastFailedAt);
+  lockoutUntil.setMinutes(lockoutUntil.getMinutes() + RATE_LIMIT_CONFIG.LOCKOUT_DURATION_MINUTES);
+  
+  return new Date() < lockoutUntil;
+};
+
+// Calculate progressive delay based on failed attempts
+const getProgressiveDelay = (failedAttempts: number): number => {
+  if (failedAttempts < 2) return 0;
+  
+  const delay = Math.min(
+    RATE_LIMIT_CONFIG.PROGRESSIVE_DELAY_BASE_MS * Math.pow(2, failedAttempts - 2),
+    RATE_LIMIT_CONFIG.MAX_DELAY_MS
+  );
+  
+  return delay;
 };
 
 // Helper function to verify super admin authentication from request
@@ -348,7 +385,7 @@ async function handleCreateAdmin(data: any, req: Request, corsHeaders: Record<st
   }
 }
 
-// Verify admin password
+// Verify admin password with rate limiting
 async function handleVerifyPassword(data: any, corsHeaders: Record<string, string>) {
   const { username, password } = data;
 
@@ -377,7 +414,7 @@ async function handleVerifyPassword(data: any, corsHeaders: Record<string, strin
     
     const { data: admin, error } = await supabaseClient
       .from("admin_users")
-      .select("*")
+      .select("*, updated_at")
       .eq("username", username)
       .maybeSingle();
 
@@ -394,11 +431,25 @@ async function handleVerifyPassword(data: any, corsHeaders: Record<string, strin
 
     if (!admin) {
       console.log(`Admin user not found for username: ${username}`);
+      // Add a small delay to prevent timing attacks
+      await new Promise(resolve => setTimeout(resolve, 500));
       return new Response(JSON.stringify({ 
         success: false,
         error: ERROR_MESSAGES.INVALID_CREDENTIALS
       }), {
         status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Check if account is locked due to too many failed attempts
+    if (isAccountLocked(admin.failed_login_attempts, admin.updated_at)) {
+      console.log(`Account locked for user: ${username} due to too many failed attempts`);
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: ERROR_MESSAGES.ACCOUNT_LOCKED
+      }), {
+        status: 429,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -414,14 +465,28 @@ async function handleVerifyPassword(data: any, corsHeaders: Record<string, strin
       });
     }
 
+    // Apply progressive delay based on previous failed attempts
+    const delay = getProgressiveDelay(admin.failed_login_attempts);
+    if (delay > 0) {
+      console.log(`Applying progressive delay of ${delay}ms for user: ${username}`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
     const passwordMatch = await verifyPassword(password, admin.hashed_password);
     console.log(`Password verification completed for: ${username}`);
 
     if (!passwordMatch) {
+      // Increment failed attempts and update timestamp
       await supabaseClient
         .from("admin_users")
-        .update({ failed_login_attempts: admin.failed_login_attempts + 1 })
+        .update({ 
+          failed_login_attempts: admin.failed_login_attempts + 1,
+          updated_at: new Date().toISOString()
+        })
         .eq("id", admin.id);
+      
+      const attemptsRemaining = RATE_LIMIT_CONFIG.MAX_FAILED_ATTEMPTS - admin.failed_login_attempts - 1;
+      console.log(`Failed login attempt for: ${username}. Attempts remaining: ${attemptsRemaining}`);
         
       return new Response(JSON.stringify({ 
         success: false,
@@ -432,6 +497,7 @@ async function handleVerifyPassword(data: any, corsHeaders: Record<string, strin
       });
     }
 
+    // Reset failed attempts on successful login
     await supabaseClient
       .from("admin_users")
       .update({ 
@@ -507,21 +573,19 @@ async function handleSetup2FA(data: any, corsHeaders: Record<string, string>) {
       });
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        secret: secret.base32,
-        qrCode: qrCodeUrl,
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    console.log("2FA setup completed successfully");
+    return new Response(JSON.stringify({
+      success: true,
+      qrCode: qrCodeUrl,
+      secret: secret.base32,
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   } catch (error) {
     console.error("Error setting up 2FA:", error);
     return new Response(JSON.stringify({ 
-      success: false,
+      success: false, 
       error: ERROR_MESSAGES.OPERATION_FAILED
     }), {
       status: 500,
@@ -541,43 +605,54 @@ async function handleVerify2FA(data: any, corsHeaders: Record<string, string>) {
       .from("admin_2fa")
       .select("secret_key")
       .eq("admin_user_id", adminId)
-      .single();
+      .maybeSingle();
 
     if (error || !twoFactorData) {
-      console.error("2FA data not found:", error);
+      console.error("Error retrieving 2FA data:", error);
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "2FA not configured" 
+        error: ERROR_MESSAGES.AUTH_FAILED
       }), {
-        status: 400,
+        status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    const verified = speakeasy.totp.verify({
+    const isValid = speakeasy.totp.verify({
       secret: twoFactorData.secret_key,
       encoding: "base32",
       token: code,
       window: 1,
     });
 
-    console.log(`2FA verification completed`);
-
-    if (verified) {
-      await supabaseClient
-        .from("admin_2fa")
-        .update({ is_enabled: true })
-        .eq("admin_user_id", adminId);
+    if (!isValid) {
+      console.log("Invalid 2FA code");
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: ERROR_MESSAGES.INVALID_CREDENTIALS
+      }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
-    return new Response(JSON.stringify({ success: verified }), {
-      status: verified ? 200 : 401,
+    // Enable 2FA if not already enabled
+    await supabaseClient
+      .from("admin_2fa")
+      .update({ is_enabled: true })
+      .eq("admin_user_id", adminId);
+
+    console.log("2FA verification successful");
+    return new Response(JSON.stringify({ 
+      success: true 
+    }), {
+      status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error) {
-    console.error("Error verifying 2FA code:", error);
+    console.error("Error verifying 2FA:", error);
     return new Response(JSON.stringify({ 
-      success: false,
+      success: false, 
       error: ERROR_MESSAGES.AUTH_FAILED
     }), {
       status: 500,
@@ -586,13 +661,23 @@ async function handleVerify2FA(data: any, corsHeaders: Record<string, string>) {
   }
 }
 
-// Handle password reset
+// Reset password with token
 async function handleResetPassword(data: any, corsHeaders: Record<string, string>) {
   const { token, newPassword } = data;
 
   try {
-    console.log(`Processing password reset with token`);
+    console.log("Processing password reset request");
     
+    if (!token || typeof token !== 'string') {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: ERROR_MESSAGES.INVALID_REQUEST
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
     if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
       return new Response(JSON.stringify({ 
         success: false, 
@@ -602,39 +687,49 @@ async function handleResetPassword(data: any, corsHeaders: Record<string, string
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
-    
-    const { data: resetData, error: resetError } = await supabaseClient
+
+    // Look up the reset token
+    const { data: resetToken, error: tokenError } = await supabaseClient
       .from("admin_reset_tokens")
-      .select("admin_user_id, expires_at")
+      .select("*")
       .eq("token", token)
-      .single();
+      .eq("is_used", false)
+      .maybeSingle();
 
-    if (resetError || !resetData) {
+    if (tokenError || !resetToken) {
+      console.log("Invalid or expired reset token");
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "Invalid or expired token" 
+        error: ERROR_MESSAGES.INVALID_REQUEST
       }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    if (new Date(resetData.expires_at) < new Date()) {
+    // Check if token is expired
+    if (new Date(resetToken.expires_at) < new Date()) {
+      console.log("Reset token has expired");
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "Token expired" 
+        error: "Reset token has expired" 
       }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
+    // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword);
 
+    // Update the admin user's password
     const { error: updateError } = await supabaseClient
       .from("admin_users")
-      .update({ hashed_password: hashedPassword })
-      .eq("id", resetData.admin_user_id);
+      .update({ 
+        hashed_password: hashedPassword,
+        failed_login_attempts: 0 // Reset failed attempts on password change
+      })
+      .eq("id", resetToken.admin_user_id);
 
     if (updateError) {
       console.error("Error updating password:", updateError);
@@ -647,12 +742,16 @@ async function handleResetPassword(data: any, corsHeaders: Record<string, string
       });
     }
 
+    // Mark the token as used
     await supabaseClient
       .from("admin_reset_tokens")
-      .delete()
-      .eq("token", token);
+      .update({ is_used: true })
+      .eq("id", resetToken.id);
 
-    return new Response(JSON.stringify({ success: true }), {
+    console.log("Password reset completed successfully");
+    return new Response(JSON.stringify({ 
+      success: true 
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });

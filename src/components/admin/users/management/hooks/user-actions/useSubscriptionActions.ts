@@ -57,14 +57,11 @@ export const useSubscriptionActions = () => {
         }
       }
       
-      // Update the user's active status in the database
-      const { data, error } = await supabase.rpc('admin_update_user_profile', {
-        user_id_param: userId,
-        display_name: displayName,
-        user_email: '', // Not changing email
-        phone_number: phoneNumber,
-        is_active_status: !isActive
-      });
+      // Update the user's active status in the database directly
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ is_active: !isActive })
+        .eq('id', userId);
       
       if (error) {
         throw error;
