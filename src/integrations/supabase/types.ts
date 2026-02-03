@@ -829,6 +829,7 @@ export type Database = {
             }
             Returns: string
           }
+      is_active_admin: { Args: { user_id: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       log_admin_activity: {
         Args: {
