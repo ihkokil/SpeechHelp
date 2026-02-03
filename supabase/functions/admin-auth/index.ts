@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.26.0";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import * as speakeasy from "https://esm.sh/speakeasy@2.0.0";
 import * as qrcode from "https://esm.sh/qrcode@1.5.3";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 // Initialize Supabase client with service role
 const supabaseClient = createClient(
@@ -11,15 +12,19 @@ const supabaseClient = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// Generic error messages for client responses
+const ERROR_MESSAGES = {
+  INVALID_REQUEST: "Invalid request",
+  INVALID_CREDENTIALS: "Invalid credentials",
+  AUTH_FAILED: "Authentication failed",
+  OPERATION_FAILED: "Operation failed",
+  FORBIDDEN: "Access denied",
+  RATE_LIMITED: "Too many attempts. Please try again later.",
+} as const;
 
 // Secure password verification using bcrypt
 const verifyPassword = async (password: string, storedHash: string): Promise<boolean> => {
   try {
-    // Use bcrypt.compare for proper password verification
     const isValid = await bcrypt.compare(password, storedHash);
     console.log(`Password verification completed`);
     return isValid;
@@ -34,31 +39,28 @@ const verifySuperAdminAuth = async (req: Request): Promise<{ isValid: boolean; a
   try {
     const authHeader = req.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return { isValid: false, error: "Missing or invalid authorization header" };
+      return { isValid: false, error: "missing_auth" };
     }
 
     const token = authHeader.replace("Bearer ", "");
     
-    // Parse the admin session token (base64 encoded JSON)
     let sessionData;
     try {
       sessionData = JSON.parse(atob(token));
     } catch {
-      return { isValid: false, error: "Invalid session token format" };
+      return { isValid: false, error: "invalid_token" };
     }
 
     const { adminId, expiresAt } = sessionData;
     
     if (!adminId || !expiresAt) {
-      return { isValid: false, error: "Invalid session token data" };
+      return { isValid: false, error: "invalid_token_data" };
     }
 
-    // Check if token is expired
     if (new Date(expiresAt) < new Date()) {
-      return { isValid: false, error: "Session token expired" };
+      return { isValid: false, error: "token_expired" };
     }
 
-    // Verify the admin exists and is a super admin
     const { data: admin, error } = await supabaseClient
       .from("admin_users")
       .select("id, is_super_admin, is_active")
@@ -66,21 +68,22 @@ const verifySuperAdminAuth = async (req: Request): Promise<{ isValid: boolean; a
       .maybeSingle();
 
     if (error || !admin) {
-      return { isValid: false, error: "Admin not found" };
+      console.error("Admin lookup error:", error);
+      return { isValid: false, error: "admin_not_found" };
     }
 
     if (!admin.is_active) {
-      return { isValid: false, error: "Admin account is inactive" };
+      return { isValid: false, error: "account_inactive" };
     }
 
     if (!admin.is_super_admin) {
-      return { isValid: false, error: "Super admin privileges required" };
+      return { isValid: false, error: "insufficient_privileges" };
     }
 
     return { isValid: true, adminId: admin.id };
   } catch (error) {
     console.error("Error verifying super admin auth:", error);
-    return { isValid: false, error: "Authentication verification failed" };
+    return { isValid: false, error: "auth_error" };
   }
 };
 
@@ -92,7 +95,7 @@ const hasExistingAdmins = async (): Promise<boolean> => {
   
   if (error) {
     console.error("Error checking for existing admins:", error);
-    return true; // Assume admins exist on error to be safe
+    return true;
   }
   
   return (count ?? 0) > 0;
@@ -101,14 +104,15 @@ const hasExistingAdmins = async (): Promise<boolean> => {
 serve(async (req) => {
   console.log(`Request method: ${req.method}, URL: ${req.url}`);
   
-  // Handle CORS preflight requests
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === "OPTIONS") {
     console.log("Handling CORS preflight request");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Parse the request body
     let body;
     
     try {
@@ -126,21 +130,19 @@ serve(async (req) => {
           console.log("Empty request body");
         }
       } else {
-        // For non-JSON content types
         body = await req.json().catch(() => ({}));
       }
     } catch (error) {
       console.error("Error parsing request body:", error);
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "Invalid request body format"
+        error: ERROR_MESSAGES.INVALID_REQUEST
       }), {
-        status: 200,
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
     
-    // Determine the request type based on body parameters
     let requestType = "";
     
     if (body.action === "create_admin") {
@@ -162,37 +164,36 @@ serve(async (req) => {
       console.log("Unknown request type with body keys:", Object.keys(body).join(", "));
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "Invalid request parameters"
+        error: ERROR_MESSAGES.INVALID_REQUEST
       }), {
-        status: 200,
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
     
-    // Handle different authentication endpoints based on identified request type
     let response;
     switch (requestType) {
       case "create_admin":
-        response = await handleCreateAdmin(body, req);
+        response = await handleCreateAdmin(body, req, corsHeaders);
         break;
       case "verify_password":
-        response = await handleVerifyPassword(body);
+        response = await handleVerifyPassword(body, corsHeaders);
         break;
       case "verify_2fa":
-        response = await handleVerify2FA(body);
+        response = await handleVerify2FA(body, corsHeaders);
         break;
       case "setup_2fa":
-        response = await handleSetup2FA(body);
+        response = await handleSetup2FA(body, corsHeaders);
         break;
       case "reset_password":
-        response = await handleResetPassword(body);
+        response = await handleResetPassword(body, corsHeaders);
         break;
       default:
         response = new Response(JSON.stringify({ 
           success: false, 
-          error: "Invalid request type" 
+          error: ERROR_MESSAGES.INVALID_REQUEST
         }), {
-          status: 200,
+          status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders },
         });
     }
@@ -202,35 +203,33 @@ serve(async (req) => {
     console.error("Error in admin-auth function:", error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: "Internal server error"
+      error: ERROR_MESSAGES.OPERATION_FAILED
     }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
+      status: 500,
+      headers: { "Content-Type": "application/json", ...getCorsHeaders(req.headers.get("origin")) },
     });
   }
 });
 
 // Create an admin user (requires super admin auth, except for first admin)
-async function handleCreateAdmin(data: any, req: Request) {
+async function handleCreateAdmin(data: any, req: Request, corsHeaders: Record<string, string>) {
   const { username, password, email, is_super_admin = false } = data;
 
   try {
     console.log(`Admin creation request for username: ${username}`);
     
-    // Check if any admins exist
     const adminsExist = await hasExistingAdmins();
     
     if (adminsExist) {
-      // Require super admin authentication for creating new admins
       const authResult = await verifySuperAdminAuth(req);
       
       if (!authResult.isValid) {
         console.log(`Admin creation denied: ${authResult.error}`);
         return new Response(JSON.stringify({ 
           success: false, 
-          error: authResult.error || "Super admin authentication required to create new admins"
+          error: ERROR_MESSAGES.FORBIDDEN
         }), {
-          status: 200,
+          status: 403,
           headers: { "Content-Type": "application/json", ...corsHeaders },
         });
       }
@@ -240,13 +239,12 @@ async function handleCreateAdmin(data: any, req: Request) {
       console.log("No admins exist - allowing first admin creation without authentication");
     }
     
-    // Validate input
     if (!username || typeof username !== 'string' || username.length < 3) {
       return new Response(JSON.stringify({ 
         success: false, 
         error: "Username must be at least 3 characters" 
       }), {
-        status: 200,
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -256,7 +254,7 @@ async function handleCreateAdmin(data: any, req: Request) {
         success: false, 
         error: "Password must be at least 8 characters" 
       }), {
-        status: 200,
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -266,12 +264,11 @@ async function handleCreateAdmin(data: any, req: Request) {
         success: false, 
         error: "Valid email is required" 
       }), {
-        status: 200,
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
     
-    // Check if admin with this username already exists
     const { data: existingAdmin, error: checkError } = await supabaseClient
       .from("admin_users")
       .select("id")
@@ -280,7 +277,13 @@ async function handleCreateAdmin(data: any, req: Request) {
 
     if (checkError) {
       console.error("Error checking for existing admin:", checkError);
-      throw checkError;
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: ERROR_MESSAGES.OPERATION_FAILED
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     if (existingAdmin) {
@@ -289,30 +292,34 @@ async function handleCreateAdmin(data: any, req: Request) {
         success: false, 
         error: "Admin user already exists" 
       }), {
-        status: 200,
+        status: 409,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // Hash password using bcrypt
     const hashedPassword = await bcrypt.hash(password);
     console.log("Password hashed successfully");
 
-    // Create admin user
     const { data: newAdmin, error: createError } = await supabaseClient
       .from("admin_users")
       .insert({
         username,
         email,
         hashed_password: hashedPassword,
-        is_super_admin: adminsExist ? is_super_admin : true // First admin is always super admin
+        is_super_admin: adminsExist ? is_super_admin : true
       })
       .select()
       .single();
 
     if (createError) {
       console.error("Error creating admin user:", createError);
-      throw createError;
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: ERROR_MESSAGES.OPERATION_FAILED
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     console.log("Admin user created successfully:", newAdmin.id);
@@ -326,35 +333,34 @@ async function handleCreateAdmin(data: any, req: Request) {
         is_super_admin: newAdmin.is_super_admin
       }
     }), {
-      status: 200,
+      status: 201,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error) {
     console.error("Error creating admin user:", error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: "Failed to create admin user"
+      error: ERROR_MESSAGES.OPERATION_FAILED
     }), {
-      status: 200,
+      status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 }
 
 // Verify admin password
-async function handleVerifyPassword(data: any) {
+async function handleVerifyPassword(data: any, corsHeaders: Record<string, string>) {
   const { username, password } = data;
 
   try {
     console.log(`Verifying password for username: ${username}`);
     
-    // Validate input
     if (!username || typeof username !== 'string') {
       return new Response(JSON.stringify({ 
         success: false,
-        error: "Invalid credentials"
+        error: ERROR_MESSAGES.INVALID_CREDENTIALS
       }), {
-        status: 200,
+        status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -362,14 +368,13 @@ async function handleVerifyPassword(data: any) {
     if (!password || typeof password !== 'string') {
       return new Response(JSON.stringify({ 
         success: false,
-        error: "Invalid credentials"
+        error: ERROR_MESSAGES.INVALID_CREDENTIALS
       }), {
-        status: 200,
+        status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
     
-    // Get admin user from database
     const { data: admin, error } = await supabaseClient
       .from("admin_users")
       .select("*")
@@ -380,9 +385,9 @@ async function handleVerifyPassword(data: any) {
       console.error("Error fetching admin user:", error);
       return new Response(JSON.stringify({ 
         success: false,
-        error: "Failed to verify credentials"
+        error: ERROR_MESSAGES.AUTH_FAILED
       }), {
-        status: 200,
+        status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -391,9 +396,9 @@ async function handleVerifyPassword(data: any) {
       console.log(`Admin user not found for username: ${username}`);
       return new Response(JSON.stringify({ 
         success: false,
-        error: "Invalid credentials or account is inactive."
+        error: ERROR_MESSAGES.INVALID_CREDENTIALS
       }), {
-        status: 200,
+        status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -402,19 +407,17 @@ async function handleVerifyPassword(data: any) {
       console.log(`Admin account is inactive: ${username}`);
       return new Response(JSON.stringify({ 
         success: false,
-        error: "Invalid credentials or account is inactive."
+        error: ERROR_MESSAGES.INVALID_CREDENTIALS
       }), {
-        status: 200,
+        status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // Use proper bcrypt verification
     const passwordMatch = await verifyPassword(password, admin.hashed_password);
     console.log(`Password verification completed for: ${username}`);
 
     if (!passwordMatch) {
-      // Increment failed login attempts
       await supabaseClient
         .from("admin_users")
         .update({ failed_login_attempts: admin.failed_login_attempts + 1 })
@@ -422,14 +425,13 @@ async function handleVerifyPassword(data: any) {
         
       return new Response(JSON.stringify({ 
         success: false,
-        error: "Invalid credentials."
+        error: ERROR_MESSAGES.INVALID_CREDENTIALS
       }), {
-        status: 200,
+        status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // Reset failed login attempts on successful login
     await supabaseClient
       .from("admin_users")
       .update({ 
@@ -438,14 +440,12 @@ async function handleVerifyPassword(data: any) {
       })
       .eq("id", admin.id);
 
-    // Check if 2FA is enabled for this admin
     const { data: twoFactorData } = await supabaseClient
       .from("admin_2fa")
       .select("is_enabled")
       .eq("admin_user_id", admin.id)
       .maybeSingle();
 
-    // Return user info
     return new Response(JSON.stringify({ 
       success: true,
       requires2FA: twoFactorData?.is_enabled || false,
@@ -465,31 +465,28 @@ async function handleVerifyPassword(data: any) {
     console.error("Error verifying password:", error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: "Password verification failed"
+      error: ERROR_MESSAGES.AUTH_FAILED
     }), {
-      status: 200,
+      status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 }
 
 // Set up two-factor authentication
-async function handleSetup2FA(data: any) {
+async function handleSetup2FA(data: any, corsHeaders: Record<string, string>) {
   const { adminId } = data;
 
   try {
     console.log(`Setting up 2FA for admin ID: ${adminId}`);
     
-    // Generate secret
     const secret = speakeasy.generateSecret({
       name: "SpeechHelp Admin",
     });
 
-    // Get QR code as data URL
     const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url);
 
-    // Store secret in database
-    const { data, error } = await supabaseClient
+    const { data: twoFactorResult, error } = await supabaseClient
       .from("admin_2fa")
       .upsert({
         admin_user_id: adminId,
@@ -501,7 +498,13 @@ async function handleSetup2FA(data: any) {
 
     if (error) {
       console.error("Error storing 2FA secret:", error);
-      throw error;
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: ERROR_MESSAGES.OPERATION_FAILED
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     return new Response(
@@ -519,22 +522,21 @@ async function handleSetup2FA(data: any) {
     console.error("Error setting up 2FA:", error);
     return new Response(JSON.stringify({ 
       success: false,
-      error: "Failed to set up 2FA"
+      error: ERROR_MESSAGES.OPERATION_FAILED
     }), {
-      status: 200,
+      status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 }
 
 // Verify two-factor authentication code
-async function handleVerify2FA(data: any) {
+async function handleVerify2FA(data: any, corsHeaders: Record<string, string>) {
   const { adminId, code } = data;
 
   try {
     console.log(`Verifying 2FA code for admin ID: ${adminId}`);
     
-    // Get secret from database
     const { data: twoFactorData, error } = await supabaseClient
       .from("admin_2fa")
       .select("secret_key")
@@ -545,25 +547,23 @@ async function handleVerify2FA(data: any) {
       console.error("2FA data not found:", error);
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "2FA not set up" 
+        error: "2FA not configured" 
       }), {
-        status: 200,
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // Verify code
     const verified = speakeasy.totp.verify({
       secret: twoFactorData.secret_key,
       encoding: "base32",
       token: code,
-      window: 1, // Allow 1 step before and after for time skew
+      window: 1,
     });
 
     console.log(`2FA verification completed`);
 
     if (verified) {
-      // Enable 2FA if this is the first verification
       await supabaseClient
         .from("admin_2fa")
         .update({ is_enabled: true })
@@ -571,40 +571,38 @@ async function handleVerify2FA(data: any) {
     }
 
     return new Response(JSON.stringify({ success: verified }), {
-      status: 200,
+      status: verified ? 200 : 401,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error) {
     console.error("Error verifying 2FA code:", error);
     return new Response(JSON.stringify({ 
       success: false,
-      error: "2FA verification failed"
+      error: ERROR_MESSAGES.AUTH_FAILED
     }), {
-      status: 200,
+      status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 }
 
 // Handle password reset
-async function handleResetPassword(data: any) {
+async function handleResetPassword(data: any, corsHeaders: Record<string, string>) {
   const { token, newPassword } = data;
 
   try {
     console.log(`Processing password reset with token`);
     
-    // Validate new password
     if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
       return new Response(JSON.stringify({ 
         success: false, 
         error: "Password must be at least 8 characters" 
       }), {
-        status: 200,
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
     
-    // Verify token
     const { data: resetData, error: resetError } = await supabaseClient
       .from("admin_reset_tokens")
       .select("admin_user_id, expires_at")
@@ -616,26 +614,23 @@ async function handleResetPassword(data: any) {
         success: false, 
         error: "Invalid or expired token" 
       }), {
-        status: 200,
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // Check if token is expired
     if (new Date(resetData.expires_at) < new Date()) {
       return new Response(JSON.stringify({ 
         success: false, 
         error: "Token expired" 
       }), {
-        status: 200,
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // Hash new password using bcrypt
     const hashedPassword = await bcrypt.hash(newPassword);
 
-    // Update password
     const { error: updateError } = await supabaseClient
       .from("admin_users")
       .update({ hashed_password: hashedPassword })
@@ -643,10 +638,15 @@ async function handleResetPassword(data: any) {
 
     if (updateError) {
       console.error("Error updating password:", updateError);
-      throw updateError;
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: ERROR_MESSAGES.OPERATION_FAILED
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
-    // Delete used token
     await supabaseClient
       .from("admin_reset_tokens")
       .delete()
@@ -660,9 +660,9 @@ async function handleResetPassword(data: any) {
     console.error("Error resetting password:", error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: "Password reset failed"
+      error: ERROR_MESSAGES.OPERATION_FAILED
     }), {
-      status: 200,
+      status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
