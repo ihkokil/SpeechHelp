@@ -20,7 +20,7 @@ interface AdminAuthContextType {
     success: boolean;
     requires2FA?: boolean;
     error?: string;
-    user?: AdminUser;  // Add user to the return type
+    user?: AdminUser;
   }>;
   verify2FA: (code: string) => Promise<{
     success: boolean;
@@ -39,6 +39,17 @@ interface AdminAuthContextType {
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
 
+// Session key constant - only use sessionStorage for security
+const SESSION_KEY = 'adminAuth';
+const TEMP_USER_KEY = 'tempAdminAuth';
+
+// Helper to get minimal session data (only what's needed for UI)
+const getMinimalUserData = (user: AdminUser) => ({
+  id: user.id,
+  username: user.username,
+  is_super_admin: user.is_super_admin,
+});
+
 export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,21 +61,29 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
       setIsLoading(true);
       
       try {
-        const storedSession = sessionStorage.getItem('adminSession') || localStorage.getItem('adminSession');
+        // Only use sessionStorage (more secure than localStorage)
+        const storedSession = sessionStorage.getItem(SESSION_KEY);
         
         if (storedSession) {
           const session = JSON.parse(storedSession);
           const now = new Date().getTime();
           
           // Check if session is still valid (24 hour expiry)
-          if (session.expiresAt && session.expiresAt > now) {
-            setAdminUser(session.user);
-            console.log("Found valid admin session", session.user);
+          if (session.expiresAt && session.expiresAt > now && session.user) {
+            // Restore minimal user data - sensitive info comes from server on each request
+            setAdminUser({
+              id: session.user.id,
+              username: session.user.username,
+              email: '', // Not stored client-side for security
+              is_active: true, // Assume active, server validates on each request
+              is_super_admin: session.user.is_super_admin,
+              last_login: null,
+            });
+            console.log("Found valid admin session");
           } else {
             // Clear expired session
             console.log("Clearing expired admin session");
-            sessionStorage.removeItem('adminSession');
-            localStorage.removeItem('adminSession');
+            sessionStorage.removeItem(SESSION_KEY);
           }
         } else {
           console.log("No admin session found");
@@ -72,8 +91,7 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
       } catch (error) {
         console.error('Error checking admin session:', error);
         // Clear potentially corrupted session
-        sessionStorage.removeItem('adminSession');
-        localStorage.removeItem('adminSession');
+        sessionStorage.removeItem(SESSION_KEY);
       }
       
       setIsLoading(false);
@@ -93,32 +111,34 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
     try {
       console.log(`Attempting sign in for username: ${username}`);
       const result = await adminAuthService.signIn({ username, password });
-      console.log("Sign in result:", result);
+      console.log("Sign in result:", result.success);
       
       if (result.success && !result.requires2FA && result.user) {
-        // Set admin session
+        // Set admin session with minimal data
         const expiresAt = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 hours
         const sessionData = {
-          user: result.user,
+          user: getMinimalUserData(result.user),
           expiresAt
         };
         
-        sessionStorage.setItem('adminSession', JSON.stringify(sessionData));
-        localStorage.setItem('adminSession', JSON.stringify(sessionData));
+        // Only use sessionStorage (not localStorage) for better security
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
         
-        setAdminUser(result.user || null);
+        setAdminUser(result.user);
         toast({
           title: "Login successful",
-          description: `Welcome back, ${result.user?.username}!`,
+          description: `Welcome back, ${result.user.username}!`,
         });
       } else if (result.success && result.requires2FA && result.user) {
         // Set pending user for 2FA verification
-        setPendingUserId(result.user?.id || null);
+        setPendingUserId(result.user.id);
         
-        // Store user data temporarily for after 2FA verification
-        if (result.user) {
-          sessionStorage.setItem('tempAdminUser', JSON.stringify(result.user));
-        }
+        // Store minimal user data temporarily for after 2FA verification
+        const tempData = {
+          user: getMinimalUserData(result.user),
+          fullUser: result.user,
+        };
+        sessionStorage.setItem(TEMP_USER_KEY, JSON.stringify(tempData));
       } else if (!result.success) {
         toast({
           title: "Login failed",
@@ -150,28 +170,31 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
     setIsLoading(true);
     
     try {
-      console.log(`Verifying 2FA code for user ID: ${pendingUserId}`);
+      console.log(`Verifying 2FA code for user`);
       const result = await adminAuthService.verify2FA(pendingUserId, code);
       
       if (result.success) {
         // Retrieve user information
-        const storedData = sessionStorage.getItem('tempAdminUser');
+        const storedData = sessionStorage.getItem(TEMP_USER_KEY);
         let user = null;
+        let minimalUser = null;
         
         if (storedData) {
-          user = JSON.parse(storedData);
-          sessionStorage.removeItem('tempAdminUser');
+          const parsed = JSON.parse(storedData);
+          user = parsed.fullUser;
+          minimalUser = parsed.user;
+          sessionStorage.removeItem(TEMP_USER_KEY);
         }
         
-        // Set admin session
+        // Set admin session with minimal data
         const expiresAt = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 hours
         const sessionData = {
-          user,
+          user: minimalUser,
           expiresAt
         };
         
-        sessionStorage.setItem('adminSession', JSON.stringify(sessionData));
-        localStorage.setItem('adminSession', JSON.stringify(sessionData));
+        // Only use sessionStorage for security
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
         
         setAdminUser(user);
         setPendingUserId(null);
@@ -208,9 +231,9 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
         await adminAuthService.signOut(adminUser.id);
       }
       
-      // Clear session
-      sessionStorage.removeItem('adminSession');
-      localStorage.removeItem('adminSession');
+      // Clear session from sessionStorage only
+      sessionStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(TEMP_USER_KEY);
       
       setAdminUser(null);
       toast({
