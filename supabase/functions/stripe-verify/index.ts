@@ -303,19 +303,12 @@ serve(async (req) => {
 			);
 		}
 	} catch (error) {
+		// Log error server-side only, don't expose details to client
 		log('Unhandled error:', error);
-
-		// Determine if it's a JSON parsing error
-		let errorMessage = error.message;
-		if (errorMessage.includes('JSON')) {
-			errorMessage = 'Invalid JSON in request body';
-		}
 
 		return new Response(
 			JSON.stringify({
-				error: 'Server error',
-				message: errorMessage,
-				stack: Deno.env.get('NODE_ENV') === 'production' ? undefined : error.stack
+				error: 'Verification failed'
 			}),
 			{
 				status: 500,
@@ -323,4 +316,4 @@ serve(async (req) => {
 			}
 		);
 	}
-}); 
+});

@@ -7,19 +7,38 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Constant time delay to prevent timing attacks
+const CONSTANT_RESPONSE_TIME_MS = 500;
+
 serve(async (req) => {
+  const startTime = Date.now();
   console.log('verify-password function called');
   
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Helper to ensure constant-time response
+  const respondAfterDelay = async (response: Response): Promise<Response> => {
+    const elapsed = Date.now() - startTime;
+    const remainingDelay = Math.max(0, CONSTANT_RESPONSE_TIME_MS - elapsed);
+    if (remainingDelay > 0) {
+      await new Promise(resolve => setTimeout(resolve, remainingDelay));
+    }
+    return response;
+  };
+
   try {
     const { email, password } = await req.json();
-    console.log('Verifying password for email:', email);
+    console.log('Verifying password for email:', email ? '[REDACTED]' : 'missing');
     
     if (!email || !password) {
-      throw new Error("Missing email or password");
+      return await respondAfterDelay(new Response(JSON.stringify({
+        success: false,
+        error: "Invalid credentials"
+      }), {
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }));
     }
 
     // Create Supabase client with service role key
@@ -37,55 +56,58 @@ serve(async (req) => {
     });
 
     if (error) {
-      console.error('Password verification failed:', error.message);
+      console.error('Password verification failed');
       
       // Check if the error is due to email not confirmed
       if (error.message.includes('Email not confirmed')) {
-        return new Response(JSON.stringify({
+        return await respondAfterDelay(new Response(JSON.stringify({
           success: false,
           error: "email_not_confirmed",
           message: "Please confirm your email address before signing in."
         }), {
           headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
+        }));
       }
       
-      return new Response(JSON.stringify({
+      // Generic error - don't reveal if user exists or not
+      return await respondAfterDelay(new Response(JSON.stringify({
         success: false,
         error: "Invalid credentials"
       }), {
         headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+      }));
     }
 
     if (data.user) {
-      console.log('Password verified successfully for user:', data.user.id);
+      console.log('Password verified successfully');
       
       // Immediately sign out to prevent auto-login
       await supabaseClient.auth.signOut();
       
-      return new Response(JSON.stringify({
+      return await respondAfterDelay(new Response(JSON.stringify({
         success: true,
         userId: data.user.id
       }), {
         headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+      }));
     }
 
-    return new Response(JSON.stringify({
+    // Generic error for all other cases
+    return await respondAfterDelay(new Response(JSON.stringify({
       success: false,
       error: "Invalid credentials"
     }), {
       headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    }));
   } catch (error) {
-    console.error("Error in verify-password function:", error);
-    return new Response(JSON.stringify({ 
+    console.error("Error in verify-password function");
+    // Don't expose error details in production
+    return await respondAfterDelay(new Response(JSON.stringify({ 
       success: false, 
-      error: error.message 
+      error: "An error occurred during verification"
     }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    }));
   }
 });
