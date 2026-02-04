@@ -9,18 +9,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Helper function to decode JWT and get user ID
-function getUserIdFromToken(authHeader: string): string | null {
-  try {
-    const token = authHeader.replace('Bearer ', '');
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.sub || null;
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return null;
-  }
-}
-
 // Generate a random secret for 2FA
 function generateSecret(): { secret: string; base32: string; otpauthUrl: string } {
   // Generate 20 random bytes for the secret
@@ -75,21 +63,43 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     console.log('Authorization header:', authHeader ? 'present' : 'missing');
     
-    if (!authHeader) {
-      console.error('No authorization header found');
-      throw new Error("No authorization header");
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('No valid authorization header found');
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Unauthorized" 
+      }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
-    // Extract user ID from JWT token
-    const userId = getUserIdFromToken(authHeader);
-    if (!userId) {
-      console.error('Could not extract user ID from token');
-      throw new Error("Invalid token");
+    // Create Supabase client with anon key for JWT verification
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    // Properly verify the JWT token using Supabase's built-in verification
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('JWT verification failed:', authError?.message);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Invalid authentication token" 
+      }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
-    console.log('User ID extracted from token:', userId);
+    const userId = user.id;
+    console.log('User ID verified from token:', userId);
 
-    // Create Supabase client with service role key
+    // Create Supabase client with service role key for database operations
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -104,7 +114,7 @@ serve(async (req) => {
       .eq('id', userId)
       .single();
 
-    const userEmail = userData?.username || 'user@example.com';
+    const userEmail = userData?.username || user.email || 'user@example.com';
 
     // Generate secret using our custom function
     const secretData = generateSecret();
@@ -131,7 +141,13 @@ serve(async (req) => {
 
     if (insertError) {
       console.error('Error storing 2FA secret:', insertError);
-      throw insertError;
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Failed to setup 2FA" 
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     console.log('2FA setup completed successfully');
@@ -149,7 +165,7 @@ serve(async (req) => {
     console.error("Error in setup-2fa function:", error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message 
+      error: "An unexpected error occurred" 
     }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },

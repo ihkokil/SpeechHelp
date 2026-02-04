@@ -1,24 +1,11 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.26.0";
-import { decodeToString } from "https://deno.land/std@0.168.0/encoding/base32.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-// Helper function to decode JWT and get user ID
-function getUserIdFromToken(authHeader: string): string | null {
-  try {
-    const token = authHeader.replace('Bearer ', '');
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.sub || null;
-  } catch (error) {
-    console.error('Error decoding token:', error);
-    return null;
-  }
-}
 
 // Generate a random backup code
 function generateRandomCode(): string {
@@ -65,12 +52,8 @@ function verifyTOTP(secret: string, token: string): boolean {
   }
 }
 
-// Since this is just for demonstration, we'll use a simplified HOTP function
-// In production, you'd want to use a proper TOTP implementation
+// Simplified HOTP function for demonstration
 function generateHOTP(key: string, counter: number): string {
-  // This is a simplified mock implementation
-  // We're just converting the counter to a string and taking the last 6 digits
-  // In production, use proper TOTP libraries or algorithms
   const counterStr = counter.toString().padStart(16, '0');
   let hash = 0;
   for (let i = 0; i < counterStr.length; i++) {
@@ -78,10 +61,7 @@ function generateHOTP(key: string, counter: number): string {
     hash |= 0;
   }
   
-  // Make sure the hash is positive
   hash = Math.abs(hash);
-  
-  // Return last 6 digits as string, padded with zeros
   return (hash % 1000000).toString().padStart(6, '0');
 }
 
@@ -98,21 +78,43 @@ serve(async (req) => {
     
     // Get the authorization header
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      console.error('No authorization header found');
-      throw new Error("No authorization header");
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('No valid authorization header found');
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Unauthorized" 
+      }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
-    // Extract user ID from JWT token
-    const userId = getUserIdFromToken(authHeader);
-    if (!userId) {
-      console.error('Could not extract user ID from token');
-      throw new Error("Invalid token");
+    // Create Supabase client with anon key for JWT verification
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    // Properly verify the JWT token using Supabase's built-in verification
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('JWT verification failed:', authError?.message);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Invalid authentication token" 
+      }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
-    console.log('User ID extracted from token:', userId);
+    const userId = user.id;
+    console.log('User ID verified from token:', userId);
 
-    // Create Supabase client with service role key
+    // Create Supabase client with service role key for database operations
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -129,7 +131,13 @@ serve(async (req) => {
 
     if (fetchError || !twoFactorData) {
       console.error('Error fetching 2FA data:', fetchError);
-      throw new Error("2FA setup not found");
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "2FA setup not found" 
+      }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     console.log('2FA data fetched, verifying code...');
@@ -144,6 +152,7 @@ serve(async (req) => {
         success: false,
         error: "Invalid verification code"
       }), {
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -167,7 +176,13 @@ serve(async (req) => {
 
     if (updateError) {
       console.error('Error enabling 2FA:', updateError);
-      throw updateError;
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Failed to enable 2FA" 
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     console.log('2FA setup completed successfully');
@@ -182,7 +197,7 @@ serve(async (req) => {
     console.error("Error in verify-2fa-setup function:", error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message 
+      error: "An unexpected error occurred" 
     }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
