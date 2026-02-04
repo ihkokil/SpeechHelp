@@ -330,12 +330,11 @@ serve(async (req) => {
 			}
 		);
 	} catch (error) {
+		// Log error server-side only, don't expose details to client
 		log('Unhandled error in webhook processing:', error);
 		return new Response(
 			JSON.stringify({
-				error: 'Server error',
-				message: error.message,
-				stack: Deno.env.get('NODE_ENV') === 'production' ? undefined : error.stack
+				error: 'Webhook processing failed'
 			}),
 			{
 				status: 500,
