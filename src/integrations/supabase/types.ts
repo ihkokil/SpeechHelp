@@ -59,6 +59,13 @@ export type Database = {
             referencedRelation: "admin_users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "activity_logs_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       admin_2fa: {
@@ -89,6 +96,13 @@ export type Database = {
             columns: ["admin_user_id"]
             isOneToOne: true
             referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_2fa_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users_public"
             referencedColumns: ["id"]
           },
         ]
@@ -133,6 +147,13 @@ export type Database = {
             columns: ["admin_user_id"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_activity_logs_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users_public"
             referencedColumns: ["id"]
           },
         ]
@@ -267,6 +288,13 @@ export type Database = {
             columns: ["admin_user_id"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_user_roles_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users_public"
             referencedColumns: ["id"]
           },
           {
@@ -714,7 +742,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_users_public: {
+        Row: {
+          allowed_ip_addresses: string[] | null
+          created_at: string | null
+          email: string | null
+          failed_login_attempts: number | null
+          id: string | null
+          is_active: boolean | null
+          is_super_admin: boolean | null
+          last_login: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          allowed_ip_addresses?: string[] | null
+          created_at?: string | null
+          email?: string | null
+          failed_login_attempts?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          is_super_admin?: boolean | null
+          last_login?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          allowed_ip_addresses?: string[] | null
+          created_at?: string | null
+          email?: string | null
+          failed_login_attempts?: number | null
+          id?: string | null
+          is_active?: boolean | null
+          is_super_admin?: boolean | null
+          last_login?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_has_permission: {
