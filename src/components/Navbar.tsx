@@ -10,7 +10,7 @@ import MobileNav from "./navigation/MobileNav";
 const Logo = memo(({ logoPath, isMobile }: { logoPath: string; isMobile: boolean }) => (
   <Link
     to="/"
-    className="flex items-center space-x-2"
+    className="flex items-center flex-shrink-0 mr-4 lg:mr-8"
     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
   >
     <img 
