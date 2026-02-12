@@ -6,7 +6,7 @@ import LanguageSelector from "../common/LanguageSelector";
 
 const DesktopNav = () => {
   return (
-    <div className="hidden md:flex items-center space-x-8">
+    <div className="hidden lg:flex items-center space-x-6">
       <NavLinks />
       <UserMenu />
       <LanguageSelector />

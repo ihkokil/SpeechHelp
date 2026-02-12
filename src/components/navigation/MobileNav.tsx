@@ -12,7 +12,7 @@ const MobileNav = () => {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <div className="md:hidden">
+    <div className="lg:hidden">
       <div className="flex items-center">
         <UserMenu />
         <LanguageSelector />
