@@ -5,7 +5,11 @@
 <h1 align="center">SpeechHelp AI</h1>
 
 <p align="center">
-  <strong>AI-powered speech writing assistant</strong>
+  <strong>The Ultimate AI-Powered Speech Writing Assistant</strong>
+</p>
+
+<p align="center">
+  SpeechHelp AI transforms the daunting task of speech writing into a seamless, creative journey. By leveraging advanced GPT-4 models, it crafts personalized, high-impact speeches tailored to your unique audience, tone, and event.
 </p>
 
 <p align="center">
@@ -19,43 +23,63 @@
 
 <p align="center">
   <a href="#features">Features</a> •
+  <a href="#why-speechhelp">Why SpeechHelp?</a> •
   <a href="#tech-stack">Tech Stack</a> •
   <a href="#quick-start">Quick Start</a> •
-  <a href="#project-structure">Structure</a> •
-  <a href="#subscription-plans">Pricing</a>
+  <a href="#roadmap">Roadmap</a> •
+  <a href="#pricing">Pricing</a>
 </p>
 
 ---
 
-## Features
+## 🌟 Why SpeechHelp AI?
 
-- **AI Speech Generation** - Create professional speeches in minutes using GPT-5
-- **Multi-step Wizard** - Guided interface for event type, audience, tone, and key points
-- **Real-time Editing** - Edit and preview speeches before saving
-- **Export Options** - Download as PDF, DOCX, PPTX, or HTML
-- **Subscription Management** - Flexible pricing tiers with Stripe integration
-- **Multi-language Support** - English, Spanish, and French translations
-- **Admin Dashboard** - User management, analytics, and system monitoring
-- **Two-Factor Authentication** - Enhanced security for admin access
+- **Precision Craftsmanship**: Beyond simple templates, our AI understands context, emotion, and rhetorical devices to create speeches that resonate.
+- **Empowerment**: Designed for everyone—from best men and bridesmaids to CEOs and public speakers—giving you the confidence to own the stage.
+- **Speed & Quality**: Generate a professional, structured 10-minute speech in less than 3 minutes, saving you hours of writer's block.
+- **Privacy First**: Your personal data, speech drafts, and sensitive information are secured with enterprise-grade encryption and Supabase Auth.
 
 ---
 
-## Table of Contents
+## ✨ Features
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Quick Start](#quick-start)
-- [Project Structure](#project-structure)
-- [Database Schema](#database-schema)
-- [Authentication](#authentication)
-- [Subscription Plans](#subscription-plans)
-- [API Integrations](#api-integrations)
-- [Development](#development)
-- [Deployment](#deployment)
+- **AI Speech Generation** - Create professional speeches in minutes using GPT-4 and custom prompt engineering.
+- **Multi-step Wizard** - Intuitive guided interface for event type, audience analysis, tone selection, and key talking points.
+- **Real-time Editing** - Seamlessly edit and preview speeches before saving to your personal library.
+- **Export Options** - Download your creations in multiple formats including PDF, DOCX, PPTX, or HTML.
+- **Subscription Management** - Flexible pricing tiers with secure Stripe integration for trial and pro access.
+- **Multi-language Support** - Fully localized interface and generation for English, Spanish, and French.
+- **Admin Dashboard** - Comprehensive suite for user management, analytics, and system monitoring.
+- **Two-Factor Authentication** - Enhanced security protocols for admin access using TOTP.
 
 ---
 
-## Quick Start
+## 🛠️ Tech Stack
+
+### Frontend
+| Technology | Purpose |
+|------------|---------|
+| **React 18** | High-performance UI framework |
+| **TypeScript** | Robust type safety and developer productivity |
+| **Vite** | Modern build tool & blazing fast dev server |
+| **Tailwind CSS** | Utility-first styling for beautiful, responsive layouts |
+| **shadcn/ui** | Accessible, customizable component library |
+| **Framer Motion** | Fluid animations and micro-interactions |
+| **React Query** | Elegant server state management and caching |
+
+### Backend & Services
+| Technology | Purpose |
+|------------|---------|
+| **Supabase** | Backend-as-a-Service (Auth, DB, Storage) |
+| **PostgreSQL** | Reliable, relational data storage |
+| **Edge Functions** | Scalable, low-latency serverless API (Deno) |
+| **OpenAI API** | Cutting-edge AI for natural language generation |
+| **Stripe** | Global payment processing & subscriptions |
+| **Resend** | High-deliverability transactional email |
+
+---
+
+## 🚀 Quick Start
 
 ```bash
 # Clone the repository
@@ -75,214 +99,65 @@ npm run dev
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 18+ 
-- [npm](https://www.npmjs.com/) / [pnpm](https://pnpm.io/) / [bun](https://bun.sh/)
-- [Supabase CLI](https://supabase.com/docs/guides/cli) (optional, for local development)
+- **Node.js 18+**
+- **npm / pnpm / bun**
+- **Supabase CLI** (for local backend development)
 
 ---
 
-## Tech Stack
-
-### Frontend
-| Technology | Purpose |
-|------------|---------|
-| **React 18** | UI framework |
-| **TypeScript** | Type safety |
-| **Vite** | Build tool & dev server |
-| **Tailwind CSS** | Styling |
-| **shadcn/ui** | Component library |
-| **Radix UI** | Headless UI primitives |
-| **Framer Motion** | Animations |
-| **React Router v6** | Client-side routing |
-| **React Query** | Server state management |
-| **React Hook Form** | Form handling |
-| **Zod** | Schema validation |
-
-### Backend & Services
-| Technology | Purpose |
-|------------|---------|
-| **Supabase** | Backend-as-a-Service (Auth, DB, Storage) |
-| **PostgreSQL** | Primary database |
-| **Supabase Edge Functions** | Serverless API (Deno) |
-| **OpenAI API** | AI speech generation |
-| **Stripe** | Payment processing |
-| **Resend** | Email delivery |
-
-### Development Tools
-| Tool | Purpose |
-|------|---------|
-| **ESLint** | Code linting |
-| **PostCSS** | CSS processing |
-| **tsx** | TypeScript execution |
-
----
-
-## Project Structure
+## 📂 Project Structure
 
 ```
 speech-helper-ai/
 ├── src/
-│   ├── components/          # React components (ui, admin, layouts, speech)
-│   ├── pages/               # Route pages
-│   │   └── admin/           # Admin pages
-│   ├── contexts/            # Auth, AdminAuth, Language contexts
-│   ├── hooks/               # Custom React hooks
-│   ├── services/            # API service functions
-│   ├── lib/                 # Utilities & plan rules
-│   ├── types/               # TypeScript definitions
-│   ├── translations/        # i18n files (en, es, fr)
-│   └── integrations/        # Supabase client
+│   ├── components/          # Reusable UI, admin, and speech-specific components
+│   ├── pages/               # Application routes and screen layouts
+│   ├── contexts/            # Global state (Auth, Language, Admin)
+│   ├── hooks/               # Custom React hooks for business logic
+│   ├── services/            # API interaction layers
+│   ├── lib/                 # Core utilities and business rules
+│   ├── translations/        # i18n localization files
+│   └── integrations/        # Initialized external clients
 ├── supabase/
-│   ├── functions/           # 30+ Edge Functions
-│   └── migrations/          # Database migrations
-├── docs/                    # Documentation
-└── public/                  # Static assets
+│   ├── functions/           # 30+ specialized Edge Functions
+│   └── migrations/          # Version-controlled database schema
+└── docs/                    # Technical documentation and guides
 ```
 
 ---
 
-## Screenshots
+## 🗺️ Roadmap
 
-<p align="center">
-  <img src="./Speech%20Help%20-%20Hero%20Section%20Main%20Image.jpg" alt="SpeechHelp AI Hero" width="80%">
-</p>
-
----
-
-## Core Features
-
-| Feature | Description |
-|---------|-------------|
-| **AI Speech Generation** | Multi-step wizard using GPT-4 to create personalized speeches |
-| **Speech Management** | Save, edit, delete, and export speeches (PDF, DOCX, PPTX, HTML) |
-| **Subscription System** | Three-tier pricing with Stripe integration |
-| **User Dashboard** | Track usage, manage profile, view subscription status |
-| **Admin Panel** | User management, speech oversight, analytics dashboard |
-| **Multi-language** | i18n support for English, Spanish, and French |
-| **2FA Security** | TOTP-based two-factor authentication for admins |
-| **Soft Delete** | Data retention with soft delete for speeches |
+- [ ] **Voice Synthesis**: Preview your speech with high-fidelity AI-generated voice narrations.
+- [ ] **Sentiment Analysis**: Real-time feedback on how your speech might be perceived by the audience.
+- [ ] **Mobile Application**: Capture inspiration and edit your speeches on the go with a native mobile experience.
+- [ ] **Collaboration Suite**: Invite friends or colleagues to review and polish your drafts in real-time.
 
 ---
 
-## Database Schema
-
-### Core Tables
-
-| Table | Key Fields |
-|-------|------------|
-| **`profiles`** | User profile data with subscription info (plan, status, dates, stripe IDs) |
-| **`speeches`** | Speech content with soft delete support (`is_deleted`, `deleted_at`) |
-| **`admin_users`** | Admin accounts with 2FA settings (`two_factor_enabled`, `two_factor_secret`) |
-| **`admin_audit_logs`** | Audit trail for admin actions |
-
-### Key Relationships
-
-```
-auth.users (Supabase Auth)
-    ├── 1:1 → profiles
-    ├── 1:N → speeches
-    └── 1:1 → admin_users (optional)
-```
-
----
-
-## Authentication
-
-| Type | Features |
-|------|----------|
-| **User Auth** | Email/password via Supabase Auth, JWT tokens with auto-refresh, 7-day free trial on signup |
-| **Admin Auth** | Separate auth context with mandatory 2FA (TOTP), role-based access (super_admin, admin), audit logging |
-
----
-
-## Subscription Plans
+## 💎 Subscription Plans
 
 | Feature | Free Trial | Premium | Pro |
 |---------|-----------|---------|-----|
 | **Speeches/Month** | 1 total | 3 | Unlimited |
 | **Storage** | 100 MB | 1 GB | Unlimited |
 | **Team Members** | 1 | 5 | Unlimited |
-| **Duration** | 7 days | Unlimited | Unlimited |
 | **AI Analysis** | ✅ | ✅ | ✅ |
-| **Team Collaboration** | ❌ | ✅ | ✅ |
-| **Custom Branding** | ❌ | ❌ | ✅ |
 | **Export Formats** | PDF | PDF, DOCX, PPTX | All + HTML |
 | **Support** | Basic | Priority Email | Fast-track |
-| **Price (Monthly)** | $0 | $9.99 | $29.99 |
-| **Price (Yearly)** | $0 | $99.99 | $299.99 |
+| **Price (Monthly)** | **$0** | **$9.99** | **$29.99** |
 
 ---
 
-## API Integrations
+## 🛡️ Project Principles
 
-### Supabase Edge Functions (30+)
-
-| Function | Purpose |
-|----------|---------|
-| `openai-gen` | Speech generation via GPT-4 |
-| `stripe-checkout` / `stripe-verify` / `stripe-webhook` | Payment processing |
-| `admin-auth` / `admin-*` | Admin management with 2FA |
-| `send-email` / `send-contact-form` | Email delivery (Resend) |
-
-### External APIs
-
-- **OpenAI** - GPT-4 for AI speech generation
-- **Stripe** - Payment processing & subscriptions
-- **Resend** - Transactional email delivery
-
----
-
-## Development
-
-### Environment Variables
-
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-STRIPE_SECRET_KEY=sk_test_...
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
-```
-
-> **Note:** OpenAI and Resend API keys are set via Supabase secrets: `supabase secrets set KEY=value`
-
-### Available Scripts
-
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Build for production |
-| `npm run lint` | Run ESLint |
-| `npm run stripe:setup` | Create Stripe products/prices |
-
----
-
-## Deployment
-
-```bash
-# Build the application
-npm run build
-
-# Deploy to hosting (Netlify, Vercel, etc.)
-# Upload dist/ folder and configure env variables
-
-# Deploy Supabase Edge Functions
-supabase functions deploy
-
-# Run database migrations
-supabase db push
-
-# Set up Stripe products
-npm run stripe:setup
-```
-
----
-
-## License
-
-This project is proprietary software.
+1. **User Empowerment**: Every feature is designed to give users a voice and the confidence to speak.
+2. **Quality Above All**: We prioritize the quality of AI output over generic generation.
+3. **Privacy & Trust**: Your words are your own. We ensure they stay that way through rigorous security.
 
 ---
 
 <p align="center">
-  Built with ❤️ using <a href="https://react.dev">React</a>, <a href="https://supabase.com">Supabase</a>, and <a href="https://openai.com">OpenAI</a>
+  Built with ❤️ by the SpeechHelp Team using <a href="https://react.dev">React</a>, <a href="https://supabase.com">Supabase</a>, and <a href="https://openai.com">OpenAI</a>
 </p>
+

@@ -41,12 +41,6 @@ double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
 enable_confirmations = false
 
-# Use pre-defined map of claims
-[auth.jwt]
-default_group_name = ""
-admin_group_name = ""
-namespace = ""
-
 # Allow list of external OAuth providers you wish to integrate with.
 [auth.external.apple]
 enabled = false
@@ -272,5 +266,3 @@ gcp_jwt_path = "supabase/gcp.json"
 
 [functions]
 # A mapping of function names to their corresponding Docker image.
-[functions._cmd]
-import_map = "./functions/import_map.json"
