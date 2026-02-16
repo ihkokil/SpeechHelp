@@ -1,16 +1,23 @@
-<p align="center">
-  <img src="./SpeechHelp-Logo.png" alt="SpeechHelp AI Logo" width="200">
-</p>
+<div align="center">
+  <img src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg" alt="SpeechHelp AI Logo" width="250"/>
+  <br />
+  <h1>SpeechHelp.ai</h1>
+  <p><strong>Your personal AI-powered speech writing assistant.</strong></p>
+  <p>
+    <a href="https://speechhelp.ai/" target="_blank">
+      <img src="https://img.shields.io/badge/Live_Demo-4CAF50?style=for-the-badge&logo=react&logoColor=white" alt="Live Demo"/>
+    </a>
+  </p>
+</div>
 
-<h1 align="center">SpeechHelp AI</h1>
+---
 
-<p align="center">
-  <strong>The Ultimate AI-Powered Speech Writing Assistant</strong>
-</p>
+**SpeechHelp.ai** is a sophisticated web application that leverages advanced AI to help users generate high-quality, personalized speeches for any occasion. From wedding toasts to corporate keynotes, the platform provides an intuitive, guided experience to craft memorable and impactful speeches effortlessly.
 
-<p align="center">
-  SpeechHelp AI transforms the daunting task of speech writing into a seamless, creative journey. By leveraging advanced GPT-4 models, it crafts personalized, high-impact speeches tailored to your unique audience, tone, and event.
-</p>
+This project is a full-stack application built with a modern technology stack, featuring a React frontend and a comprehensive Supabase backend that handles the database, authentication, file storage, and serverless edge functions.
+
+---
+
 
 <p align="center">
   <a href="https://react.dev"><img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white" alt="React"></a>
