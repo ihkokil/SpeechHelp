@@ -66,7 +66,7 @@ cd speech-helper-ai
 npm install
 
 # Set up environment variables
-cp sample.env .env
+cp .env.example .env
 # Edit .env with your credentials
 
 # Start development server
