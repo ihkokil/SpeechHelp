@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://yotrueuqjxmgcwlbbyps.supabase.co/storage/v1/object/public/images//SpeechHelp_Logo.svg" alt="SpeechHelp AI Logo" width="250"/>
+  <img src="./public/speechhelp-logo.svg" alt="SpeechHelp AI Logo" width="250"/>
   <br />
   <h1>SpeechHelp.ai</h1>
   <p><strong>Your personal AI-powered speech writing assistant.</strong></p>
@@ -15,9 +15,6 @@
 **SpeechHelp.ai** is a sophisticated web application that leverages advanced AI to help users generate high-quality, personalized speeches for any occasion. From wedding toasts to corporate keynotes, the platform provides an intuitive, guided experience to craft memorable and impactful speeches effortlessly.
 
 This project is a full-stack application built with a modern technology stack, featuring a React frontend and a comprehensive Supabase backend that handles the database, authentication, file storage, and serverless edge functions.
-
----
-
 
 <p align="center">
   <a href="https://react.dev"><img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white" alt="React"></a>
@@ -48,16 +45,18 @@ This project is a full-stack application built with a modern technology stack, f
 
 ---
 
-## ✨ Features
+### ✨ Core Features
 
-- **AI Speech Generation** - Create professional speeches in minutes using GPT-4 and custom prompt engineering.
-- **Multi-step Wizard** - Intuitive guided interface for event type, audience analysis, tone selection, and key talking points.
-- **Real-time Editing** - Seamlessly edit and preview speeches before saving to your personal library.
-- **Export Options** - Download your creations in multiple formats including PDF, DOCX, PPTX, or HTML.
-- **Subscription Management** - Flexible pricing tiers with secure Stripe integration for trial and pro access.
-- **Multi-language Support** - Fully localized interface and generation for English, Spanish, and French.
-- **Admin Dashboard** - Comprehensive suite for user management, analytics, and system monitoring.
-- **Two-Factor Authentication** - Enhanced security protocols for admin access using TOTP.
+* **🤖 AI-Powered Generation**: Utilizes the OpenAI API to generate unique speeches tailored to the user's specific occasion, tone, and key talking points.
+* **👤 User Dashboard**: A secure, personal workspace for users to create, edit, manage, and archive their speeches.
+* **💳 Stripe Subscription Management**: Seamless and secure integration with Stripe for handling user subscriptions, payment methods, and billing cycles.
+* **🔐 Secure Authentication & 2FA**: A complete authentication system including user registration, login, password reset, and Two-Factor Authentication (2FA) for enhanced security.
+* **👑 Full-Featured Admin Panel**: An extensive dashboard for administrators to manage users, monitor all generated speeches, and configure system settings.
+* **🌍 Multi-Language Support**: Built with internationalization (i18n) to support a global user base.
+* **📱 Responsive & Modern UI**: A polished and intuitive user interface built with Tailwind CSS and Shadcn/UI, ensuring a flawless experience on any device.
+
+_Add a screenshot or GIF of the application dashboard here._
+![SpeechHelp.ai Dashboard Screenshot](./public/og-image.png)
 
 ---
 
@@ -165,6 +164,6 @@ speech-helper-ai/
 ---
 
 <p align="center">
-  Built with ❤️ by the SpeechHelp Team using <a href="https://react.dev">React</a>, <a href="https://supabase.com">Supabase</a>, and <a href="https://openai.com">OpenAI</a>
+  Built with ❤️ by <strong>Md. Iqbal Haider Khan</strong> (<a href="mailto:ihkokil@gmail.com">ihkokil@gmail.com</a>) and the SpeechHelp Team using <a href="https://react.dev">React</a>, <a href="https://supabase.com">Supabase</a>, and <a href="https://openai.com">OpenAI</a>
 </p>
 
